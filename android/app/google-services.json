@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "954700599379-60sbdv04n37o4rjug5hii117cc650sf7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hoverdroids.pika_joe",
+            "certificate_hash": "4c6383e2d1166c435fc8fc7d1bb967e5157613b2"
+          }
+        },
+        {
           "client_id": "954700599379-ufpa7kr9jvqfvk5ael476cp6dbffmc8b.apps.googleusercontent.com",
           "client_type": 3
         }

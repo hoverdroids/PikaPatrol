@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:pika_joe/services/auth.dart';
 import 'package:pika_joe/shared/constants.dart';
+import 'package:pika_joe/shared/loading.dart';
 
 class Register extends StatefulWidget {
   final Function toggleView;
@@ -15,6 +16,7 @@ class _Register extends State<Register> {
 
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
+  bool loading = false;
 
   String email = '';
   String password = '';
@@ -22,7 +24,7 @@ class _Register extends State<Register> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return loading ? Loading() : Scaffold(
       backgroundColor: Colors.brown[100],
       appBar: AppBar(
         backgroundColor: Colors.brown[400],
@@ -70,9 +72,13 @@ class _Register extends State<Register> {
                 ),
                 onPressed: () async {
                   if(_formKey.currentState.validate()) {
+                    setState(() => loading = true);
                     dynamic result = await _auth.registerWithEmailAndPassword(email, password);
                     if(result == null) {
-                      setState(() => error = 'please supply a valid email');
+                      setState(() {
+                        error = 'please supply a valid email';
+                        loading = false;
+                      });
                       //Once the user is signed in, the home page is displayed via the stream
                     }
                   }

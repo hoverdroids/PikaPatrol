@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pika_joe/services/database.dart';
 
 import '../user.dart';
 
@@ -46,6 +47,10 @@ class AuthService {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
+      
+      //Create a new document for the user with the uid
+      await DatabaseService(uid: user.uid).updateUserData('0', 'new crew member', 100);
+      
       return _userFromFirebaseUser(user);
     } catch (e) {
       print('Failed to create user:' + e.toString());

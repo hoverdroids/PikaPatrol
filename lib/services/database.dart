@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pika_joe/model/brew.dart';
+import 'package:pika_joe/model/user.dart';
 
 class DatabaseService {
 
@@ -35,9 +36,23 @@ class DatabaseService {
     return list;
   }
 
+  //userData from snapsho
+  UserData _userDataFromSnapshot(DocumentSnapshot snapshot) {
+    return UserData(
+      uid: uid,
+      name: snapshot.data['name'],
+      sugars: snapshot.data['sugars'],
+      strength: snapshot.data['strength']
+    );
+  }
+
   //Get brews stream
   Stream<List<Brew>> get brews {
       return brewCollection.snapshots().map(_brewListFromSnapshot);
   }
 
+  //Get user doc stream
+  Stream<UserData> get userData {
+      return brewCollection.document(uid).snapshots().map(_userDataFromSnapshot);
+  }
 }

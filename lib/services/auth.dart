@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/services/database.dart';
-
-import '../user.dart';
 
 class AuthService {
 

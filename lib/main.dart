@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:pika_joe/screens/wrapper.dart';
 import 'package:pika_joe/services/auth.dart';
-import 'package:pika_joe/user.dart';
 import 'package:provider/provider.dart';
+
+import 'model/user.dart';
 
 void main() {
   runApp(MyApp());

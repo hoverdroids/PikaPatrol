@@ -1,3 +1,4 @@
+import 'package:pika_joe/tools/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:pika_joe/screens/wrapper.dart';
 import 'package:pika_joe/services/auth.dart';
@@ -12,6 +13,7 @@ import 'package:flutter/widgets.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 
+// Forms --------------------------------------------------------------
 /*void main() {
   runApp(MyApp());
 }*/
@@ -97,7 +99,9 @@ class _ImageCaptureState extends State<ImageCapture> {
   }
 }*/
 
-void main() async {
+// Camera -------------------------------------------------------------------
+
+/*void main() async {
   runApp(MyApp());
 }
 
@@ -284,5 +288,8 @@ class _UploaderState extends State<Uploader> {
           onPressed: _startUpload);
     }
   }
-}
+}*/
+
+//File Picker -----------------------------------------------------------
+void main() => runApp(new FilePicker());
 

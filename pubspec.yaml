@@ -41,9 +41,13 @@ dependencies:
   image_cropper: ^1.2.3
   image_picker: ^0.6.7+4
 
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+  file_picker:
+    path: ../
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

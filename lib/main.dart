@@ -292,4 +292,3 @@ class _UploaderState extends State<Uploader> {
 
 //File Picker -----------------------------------------------------------
 void main() => runApp(new FilePickerScreen());
-

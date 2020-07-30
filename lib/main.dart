@@ -1,5 +1,5 @@
-import 'package:pika_joe/tools/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:pika_joe/screens/tools/file_picker_screen.dart';
 import 'package:pika_joe/screens/wrapper.dart';
 import 'package:pika_joe/services/auth.dart';
 import 'package:provider/provider.dart';
@@ -291,5 +291,5 @@ class _UploaderState extends State<Uploader> {
 }*/
 
 //File Picker -----------------------------------------------------------
-void main() => runApp(new FilePicker());
+void main() => runApp(new FilePickerScreen());
 

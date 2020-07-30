@@ -1,201 +1,131 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:file_picker/file_picker.dart';
+import 'dart:async';
+import 'dart:io';
 
-class FilePicker extends StatefulWidget {
-  @override
-  _FilePickerState createState() => new _FilePickerState();
-}
+import 'package:file_picker_platform_interface/file_picker_platform_interface.dart';
+import 'package:file_picker_platform_interface/method_channel_file_picker.dart';
 
-class _FilePickerState extends State<FilePicker> {
+export 'package:file_picker_platform_interface/file_picker_platform_interface.dart'
+    show FileType;
 
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  String _fileName;
-  String _path;
-  Map<String, String> _paths;
-  String _extension;
-  bool _loadingPath = false;
-  bool _multiPick = false;
-  FileType _pickingType = FileType.any;
-  TextEditingController _controller = new TextEditingController();
+final MethodChannelFilePicker _filePickerPlatform = FilePickerPlatform.instance;
 
-  void _openFileExplorer() async {
-    setState(() => _loadingPath = true);
-    try {
-      if (_multiPick) {
-        _path = null;
-        _paths = await FilePicker.getMultiFilePath(
-          type: _pickingType,
-          allowedExtensions: (_extension?.isNotEmpty ?? false)
-              ? _extension?.replaceAll(' ', '')?.split(',')
-              : null,
-        );
-      } else {
-        _paths = null;
-        _path = await FilePicker.getFilePath(
-          type: _pickingType,
-          allowedExtensions: (_extension?.isNotEmpty ?? false)
-              ? _extension?.replaceAll(' ', '')?.split(',')
-              : null,
-        );
-      }
-    } on PlatformException catch (e) {
-      print("Unsupported operation" + e.toString());
-    }
-    if (!mounted) return;
-    setState(() {
-      _loadingPath = false;
-      _fileName = _path != null
-          ? _path.split('/').last
-          : _paths != null ? _paths.keys.toString() : '...';
-    });
-  }
+class FilePicker {
+  FilePicker._();
 
-  void _clearCachedFiles() {
-    FilePicker.clearTemporaryFiles().then((result) {
-      _scaffoldKey.currentState.showSnackBar(
-        SnackBar(
-          backgroundColor: result ? Colors.green : Colors.red,
-          content: Text((result
-              ? 'Temporary files removed with success.'
-              : 'Failed to clean temporary files')),
-        ),
+  /// Returns an absolute file path from the calling platform.
+  ///
+  /// Extension filters are allowed with [FileType.custom], when used, make sure to provide a [List]
+  /// of `allowedExtensions` (e.g. [`pdf`, `svg`, `jpg`].).
+  ///
+  /// If you want to track picking status, for example, because some files may take some time to be
+  /// cached (particularly those picked from cloud providers), you may want to set [onFileLoading] handler
+  /// that will give you the current status of picking.
+  ///
+  /// If you plan on picking images/videos and don't want them to be compressed automatically by OS,
+  /// you should set `allowCompression` to [false]. Calling this on Android won't have any effect, as
+  /// it already provides you the original file (or integral copy).
+  ///
+  /// Defaults to [FileType.any] which will display all file types.
+  static Future<String> getFilePath({
+    FileType type = FileType.any,
+    List<String> allowedExtensions,
+    Function(FilePickerStatus) onFileLoading,
+    bool allowCompression,
+  }) async =>
+      await _filePickerPlatform.getFiles(
+        type: type,
+        allowedExtensions: allowedExtensions,
+        onFileLoading: onFileLoading,
+        allowCompression: allowCompression,
       );
-    });
-  }
 
-  void _selectFolder() {
-    FilePicker.getDirectoryPath().then((value) {
-      setState(() => _path = value);
-    });
-  }
+  /// Returns an iterable [Map<String,String>] where the `key` is the name of the file
+  /// and the `value` the path.
+  ///
+  /// A [List] with `allowedExtensions` can be provided to filter the allowed files to picked.
+  /// If provided, make sure you select [FileType.custom] as type.
+  ///
+  /// If you want to track picking status, for example, because some files may take some time to be
+  /// cached (particularly those picked from cloud providers), you may want to set `onFileLoading` handler
+  /// that will give you the current status of picking.
+  ///
+  /// If you plan on picking images/videos and don't want them to be compressed automatically by OS,
+  /// you should set `allowCompression` to [false]. Calling this on Android won't have any effect, as
+  /// it already provides you the original file (or integral copy).
+  ///
+  /// Defaults to `FileType.any`, which allows any combination of files to be multi selected at once.
+  static Future<Map<String, String>> getMultiFilePath({
+    FileType type = FileType.any,
+    List<String> allowedExtensions,
+    Function(FilePickerStatus) onFileLoading,
+    bool allowCompression,
+  }) async =>
+      await _filePickerPlatform.getFiles(
+        type: type,
+        allowMultiple: true,
+        allowedExtensions: allowedExtensions,
+        onFileLoading: onFileLoading,
+        allowCompression: allowCompression,
+      );
 
-  @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        key: _scaffoldKey,
-        appBar: new AppBar(
-          title: const Text('File Picker example app'),
-        ),
-        body: new Center(
-          child: new Padding(
-            padding: const EdgeInsets.only(left: 10.0, right: 10.0),
-            child: new SingleChildScrollView(
-              child: new Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  new Padding(
-                    padding: const EdgeInsets.only(top: 20.0),
-                    child: new DropdownButton(
-                        hint: new Text('LOAD PATH FROM'),
-                        value: _pickingType,
-                        items: <DropdownMenuItem>[
-                          new DropdownMenuItem(
-                            child: new Text('From Audio'),
-                            value: FileType.audio,
-                          ),
-                          new DropdownMenuItem(
-                            child: new Text('From Image'),
-                            value: FileType.image,
-                          ),
-                          new DropdownMenuItem(
-                            child: new Text('From Video'),
-                            value: FileType.video,
-                          ),
-                          new DropdownMenuItem(
-                            child: new Text('From Media'),
-                            value: FileType.media,
-                          ),
-                          new DropdownMenuItem(
-                            child: new Text('From Any'),
-                            value: FileType.any,
-                          ),
-                          new DropdownMenuItem(
-                            child: new Text('Custom Format'),
-                            value: FileType.custom,
-                          ),
-                        ],
-                        onChanged: (value) => setState((){
-                          _pickingType = value;
-                          if(_pickingType != FileType.custom) {
-                            _controller.text = _extension = '';
-                          }
-                        })),
-                  ),
-                  new ConstrainedBox(
-                    constraints: BoxConstraints.tightFor(width: 100.0),
-                    child: _pickingType == FileType.custom
-                      ? new TextFormField(
-                          maxLength: 15,
-                          autovalidate: true,
-                          controller: _controller,
-                          decoration: InputDecoration(labelText: 'File Extension'),
-                          keyboardType: TextInputType.text,
-                          textCapitalization: TextCapitalization.none,
-                    ) : new Container(),
-                  ),
-                  new ConstrainedBox(
-                    constraints: BoxConstraints.tightFor(width: 200.0),
-                    child: new SwitchListTile.adaptive(
-                      title: new Text('Pick multiple files', textAlign: TextAlign.right),
-                      value: _multiPick,
-                      onChanged: (bool value) => setState(() => _multiPick = value),
-                    ),
-                  ),
-                  new Padding(
-                    padding: const EdgeInsets.only(top: 50.0, bottom: 20.0),
-                    child: Column(
-                      children: <Widget>[
-                        new RaisedButton(
-                          onPressed: () => _openFileExplorer(),
-                          child: new Text('Open File picker'),
-                        ),
-                        new RaisedButton(
-                          onPressed: () => _selectFolder(),
-                          child: new Text('Pick Folder'),
-                        ),
-                        new RaisedButton(
-                          onPressed: () => _clearCachedFiles(),
-                          child: new Text('Clear temporary files'),
-                        ),
-                      ],
-                    ),
-                  ),
-                  new Builder(
-                    builder: (BuildContext context) => _loadingPath
-                      ? Padding(
-                          padding: const EdgeInsets.only(bottom: 10.0),
-                          child: const CircularProgressIndicator(),
-                        )
-                      : _path != null || _paths != null
-                        ? new Container(
-                            padding: const EdgeInsets.only(bottom: 30.0),
-                            height: MediaQuery.of(context).size.height * 0.50,
-                            child: new Scrollbar(
-                              child: new ListView.separated(
-                                  separatorBuilder: (BuildContext context, int index) => new Divider(),
-                                  itemCount: _paths != null && _paths.isNotEmpty ? _paths.length : 1,
-                                  itemBuilder: (BuildContext context, int index){
-                                    final bool isMultiPath = _paths != null && _paths.isNotEmpty;
-                                    final String name = 'File $index: ' + (isMultiPath ? _paths.keys.toList()[index] : _fileName ?? '...');
-                                    final path = isMultiPath ? _paths.values.toList()[index].toString() : _path;
-                                    return new ListTile(
-                                      title: new Text(name),
-                                      subtitle: new Text(path),
-                                    );
-                                  },
-                              ),
-                            )
-                          )
-                        : new Container()
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      )
+  /// Returns a [File] object from the selected file path.
+  ///
+  /// This is an utility method that does the same of [getFilePath] but saving some boilerplate if
+  /// you are planing to create a [File] for the returned path.
+  static Future<File> getFile({
+    FileType type = FileType.any,
+    List<String> allowedExtensions,
+    Function(FilePickerStatus) onFileLoading,
+    bool allowCompression,
+  }) async {
+    final String filePath = await _filePickerPlatform.getFiles(
+      type: type,
+      allowedExtensions: allowedExtensions,
+      onFileLoading: onFileLoading,
+      allowCompression: allowCompression,
     );
+    return filePath != null ? File(filePath) : null;
+  }
+
+  /// Returns a [List<File>] object from the selected files paths.
+  ///
+  /// This is an utility method that does the same of [getMultiFilePath] but saving some boilerplate if
+  /// you are planing to create a list of [File]`s for the returned paths.
+  static Future<List<File>> getMultiFile({
+    FileType type = FileType.any,
+    List<String> allowedExtensions,
+    Function(FilePickerStatus) onFileLoading,
+    bool allowCompression,
+  }) async {
+    final Map<String, String> paths = await _filePickerPlatform.getFiles(
+      type: type,
+      allowMultiple: true,
+      allowedExtensions: allowedExtensions,
+      onFileLoading: onFileLoading,
+      allowCompression: allowCompression,
+    );
+
+    return paths != null && paths.isNotEmpty
+        ? paths.values.map((path) => File(path)).toList()
+        : null;
+  }
+
+  /// Selects a directory and returns its absolute path.
+  ///
+  /// On Android, this requires to be running on SDK 21 or above, else won't work.
+  /// Returns [null] if folder path couldn't be resolved.
+  static Future<String> getDirectoryPath() async {
+    return _filePickerPlatform.getDirectoryPath();
+  }
+
+  /// Asks the underlying platform to remove any temporary files created by this plugin.
+  ///
+  /// This typically relates to cached files that are stored in the cache directory of
+  /// each platform and it isn't required to invoke this as the system should take care
+  /// of it whenever needed. However, this will force the cleanup if you want to manage those on your own.
+  ///
+  /// Returns [true] if the files were removed with success, [false] otherwise.
+  static Future<bool> clearTemporaryFiles() async {
+    return _filePickerPlatform.clearTemporaryFiles();
   }
 }

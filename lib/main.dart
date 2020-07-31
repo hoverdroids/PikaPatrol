@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pika_joe/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_joe/screens/tools/file_picker_screen.dart';
 import 'package:pika_joe/screens/wrapper.dart';
 import 'package:pika_joe/services/auth.dart';
@@ -291,4 +292,22 @@ class _UploaderState extends State<Uploader> {
 }*/
 
 //File Picker -----------------------------------------------------------
-void main() => runApp(new FilePickerScreen());
+//void main() => runApp(new FilePickerScreen());
+
+
+//Let's start building this out for real!
+void main() => runApp(MyApp());
+
+class MyApp extends StatelessWidget {
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: PikaPatrolSplashScreen(),
+    );
+  }
+}

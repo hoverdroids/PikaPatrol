@@ -17,7 +17,7 @@ class _PikaPatrolSplashScreenState extends State<PikaPatrolSplashScreen> {
     super.initState();
 
     _mockCheckForSession().then(
-            (status) {
+      (status) {
           if (status) {
             _navigateToHome();
           } else {

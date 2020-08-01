@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
+import 'package:pika_joe/screens/liquid_swipe_wrapper.dart';
 import 'package:pika_joe/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_joe/screens/tools/file_picker_screen.dart';
 import 'package:pika_joe/screens/wrapper.dart';
@@ -299,15 +302,14 @@ class _UploaderState extends State<Uploader> {
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.lightBlue
       ),
       debugShowCheckedModeBanner: false,
-      home: PikaPatrolSplashScreen(),
+      home: LiquidSwipeWrapper(),
     );
   }
 }

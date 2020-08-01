@@ -44,6 +44,7 @@ dependencies:
   image_picker: ^0.6.7+4
   file_picker: ^1.13.0+1
   shimmer: ^1.1.1
+  liquid_swipe: ^1.4.3
 
 
 dev_dependencies:
@@ -64,7 +65,9 @@ flutter:
   # To add assets to your application, add an assets section, like this:
   assets:
     - assets/
-    - assets/img/bg.png
+    - assets/img/
+  #  - assets/img/firstImage.png
+  #  - assets/img/secondImage.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
@@ -83,6 +86,8 @@ flutter:
     - family: Pacifico
       fonts:
         - asset: assets/font/Pacifico-Regular.ttf
+        - asset: assets/font/Product_Sans_Bold.ttf
+        - asset: assets/font/Product_Sans_Regular.ttf
   #       - asset: fonts/Schyler-Italic.ttf
   #         style: italic
   #   - family: Trajan Pro

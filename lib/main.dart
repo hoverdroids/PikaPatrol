@@ -302,6 +302,13 @@ class _UploaderState extends State<Uploader> {
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+
+  final TextStyle goldcoinGreyStyle2 = TextStyle(
+      color: Colors.grey,
+      fontSize: 20.0,
+      fontWeight: FontWeight.bold,
+      fontFamily: "Product Sans");
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

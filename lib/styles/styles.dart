@@ -3,6 +3,22 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:pika_joe/styles/colors.dart';
+
+
+final TextStyle adventureSplashStyle = TextStyle(
+    color: Colors.white,
+    fontSize: 90.0,
+    fontFamily: 'Product Sans',
+    shadows: <Shadow>[
+      Shadow(
+          blurRadius: 18.0,
+          color: Colors.black87,
+          offset: Offset.fromDirection(120, 12)
+      )
+    ]
+);
+
 
 final TextStyle goldcoinGreyStyle = TextStyle(
     color: Colors.grey,

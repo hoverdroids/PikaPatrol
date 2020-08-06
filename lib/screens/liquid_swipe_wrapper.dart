@@ -91,85 +91,110 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
               ignoreUserGestureWhileAnimating: true,
               //TODO - onPageChangeCallback: pageChangeCallback,
             ),
-            SizedBox(
-              width:sidebarSize,
-              child: GestureDetector(
-                onPanUpdate: (details) {
-                  if(details.localPosition.dx <= sidebarSize) {
-                    setState((){
-                      _offset = details.localPosition;
+            AnimatedPositioned(
+              duration: Duration(milliseconds: 1500),
+              left: isMenuOpen?0: -sidebarSize+20,
+              top: 0,
+              curve: Curves.elasticOut,
+              child: SizedBox(
+                width:sidebarSize,
+                child: GestureDetector(
+                  onPanUpdate: (details) {
+                    if(details.localPosition.dx <= sidebarSize) {
+                      setState((){
+                        _offset = details.localPosition;
+                      });
+                    }
+
+                    if(details.localPosition.dx>sidebarSize-20 && details.delta.distanceSquared>2){
+                      setState(() {
+                        isMenuOpen = true;
+                      });
+                    }
+                  },
+                  onPanEnd: (details) {
+                    setState(() {
+                      _offset = Offset(0,0);
                     });
-                  }
-                },
-                onPanEnd: (details) {
-                  setState(() {
-                    _offset = Offset(0,0);
-                  });
-                },
-                child: Stack(
-                  children: <Widget>[
-                    CustomPaint(
-                      size: Size(sidebarSize, mediaQuery.height),
-                      painter: DrawerPainter(offset: _offset),
-                    ),
-                    Container(
-                      height: mediaQuery.height,
-                      width: sidebarSize,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.max,
-                        children: <Widget>[
-                          Container(
-                            height: mediaQuery.height * 0.25,
-                            child: Center(
+                  },
+                  child: Stack(
+                    children: <Widget>[
+                      CustomPaint(
+                        size: Size(sidebarSize, mediaQuery.height),
+                        painter: DrawerPainter(offset: _offset),
+                      ),
+                      Container(
+                        height: mediaQuery.height,
+                        width: sidebarSize,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          mainAxisSize: MainAxisSize.max,
+                          children: <Widget>[
+                            Container(
+                              height: mediaQuery.height * 0.25,
+                              child: Center(
+                                child: Column(
+                                  children: [
+                                    Image.asset("assets/img/frppLogo.png", width: sidebarSize/2),
+                                    Text("FRPP Rocks", style: TextStyle(color: Colors.amber))
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Divider(thickness: 1,),
+                            Container(
+                              key: globalKey,
+                              width: double.infinity,
+                              height: menuContainerHeight,
                               child: Column(
-                                children: [
-                                  Image.asset("assets/img/frppLogo.png", width: sidebarSize/2),
-                                  Text("FRPP Rocks", style: TextStyle(color: Colors.amber))
+                                children: <Widget>[
+                                  MyButton(
+                                    text: "Profile",
+                                    iconData: Icons.person,
+                                    textSize: getSize(0),
+                                    height: (menuContainerHeight)/5,
+                                  ),
+                                  MyButton(
+                                      text: "Payments",
+                                      iconData: Icons.payment,
+                                      textSize: getSize(1),
+                                      height: (menuContainerHeight)/5,),
+                                  MyButton(
+                                    text: "Notifications",
+                                    iconData: Icons.notifications,
+                                    textSize: getSize(2),
+                                    height: (mediaQuery.height/2)/5,),
+                                  MyButton(
+                                    text: "Settings",
+                                    iconData: Icons.settings,
+                                    textSize: getSize(3),
+                                    height: (menuContainerHeight)/5,),
+                                  MyButton(
+                                    text: "My Files",
+                                    iconData: Icons.attach_file,
+                                    textSize: getSize(4),
+                                    height: (menuContainerHeight)/5,),
                                 ],
                               ),
                             ),
-                          ),
-                          Divider(thickness: 1,),
-                          Container(
-                            key: globalKey,
-                            width: double.infinity,
-                            height: menuContainerHeight,
-                            child: Column(
-                              children: <Widget>[
-                                MyButton(
-                                  text: "Profile",
-                                  iconData: Icons.person,
-                                  textSize: getSize(0),
-                                  height: (menuContainerHeight)/5,
-                                ),
-                                MyButton(
-                                  text: "Payments",
-                                  iconData: Icons.payment,
-                                  textSize: getSize(1),
-                                  height: 20),//(menuContainerHeight)/5,),
-                                MyButton(
-                                  text: "Notifications",
-                                  iconData: Icons.notifications,
-                                  textSize: getSize(2),
-                                  height: (mediaQuery.height/2)/5,),
-                                MyButton(
-                                  text: "Settings",
-                                  iconData: Icons.settings,
-                                  textSize: getSize(3),
-                                  height: (menuContainerHeight)/5,),
-                                MyButton(
-                                  text: "My Files",
-                                  iconData: Icons.attach_file,
-                                  textSize: getSize(4),
-                                  height: (menuContainerHeight)/5,),
-                              ],
+                            AnimatedPositioned(
+                              duration: Duration(milliseconds: 400),
+                              right: (isMenuOpen)?10:sidebarSize,
+                              bottom: 30,
+                              child: IconButton(
+                                enableFeedback: true,
+                                icon: Icon(Icons.keyboard_backspace,color: Colors.black45,size: 30,),
+                                onPressed: (){
+                                  this.setState(() {
+                                    isMenuOpen = false;
+                                  });
+                                },),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),

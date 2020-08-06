@@ -18,13 +18,46 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
   LiquidController liquidController = LiquidController();
 
   //TODO - make the drawer its own widget
+  //Credit to: https://www.youtube.com/watch?v=1KurAaGLwHc&t=1602s
   Offset _offset = Offset(0,0);
+  GlobalKey globalKey = GlobalKey();
+  List<double> limits = [0,0,0,0,0,0];
+
+  bool isMenuOpen = false;
+
+  @override
+  void initState() {
+    limits= [0, 0, 0, 0, 0, 0];
+    WidgetsBinding.instance.addPostFrameCallback(getPosition);
+    super.initState();
+  }
+
+  getPosition(duration) {
+    RenderBox renderBox = globalKey.currentContext.findRenderObject();
+    final position = renderBox.localToGlobal(Offset.zero);
+    double start = position.dy - 20;
+    double contLimit = position.dy + renderBox.size.height - 20;
+    double step = (contLimit-start)/5;
+    limits = [];
+    for (double x = start; x <= contLimit; x = x + step) {
+      limits.add(x);
+    }
+    setState(() {
+      limits = limits;
+    });
+  }
+
+  double getSize(int x) {
+    double size  = (_offset.dy > limits[x] && _offset.dy < limits[x + 1]) ? 25 : 20;
+    return size;
+  }
 
   @override
   Widget build(BuildContext context) {
 
     Size mediaQuery = MediaQuery.of(context).size;
     double sidebarSize = mediaQuery.width * 0.65;
+    double menuContainerHeight = mediaQuery.height/2;
 
     return Scaffold(
       appBar: AppBar(
@@ -62,9 +95,11 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
               width:sidebarSize,
               child: GestureDetector(
                 onPanUpdate: (details) {
-                  setState((){
-                    _offset = details.localPosition;
-                  });
+                  if(details.localPosition.dx <= sidebarSize) {
+                    setState((){
+                      _offset = details.localPosition;
+                    });
+                  }
                 },
                 onPanEnd: (details) {
                   setState(() {
@@ -76,6 +111,63 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
                     CustomPaint(
                       size: Size(sidebarSize, mediaQuery.height),
                       painter: DrawerPainter(offset: _offset),
+                    ),
+                    Container(
+                      height: mediaQuery.height,
+                      width: sidebarSize,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.max,
+                        children: <Widget>[
+                          Container(
+                            height: mediaQuery.height * 0.25,
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Image.asset("assets/img/frppLogo.png", width: sidebarSize/2),
+                                  Text("FRPP Rocks", style: TextStyle(color: Colors.amber))
+                                ],
+                              ),
+                            ),
+                          ),
+                          Divider(thickness: 1,),
+                          Container(
+                            key: globalKey,
+                            width: double.infinity,
+                            height: menuContainerHeight,
+                            child: Column(
+                              children: <Widget>[
+                                MyButton(
+                                  text: "Profile",
+                                  iconData: Icons.person,
+                                  textSize: getSize(0),
+                                  height: (menuContainerHeight)/5,
+                                ),
+                                MyButton(
+                                  text: "Payments",
+                                  iconData: Icons.payment,
+                                  textSize: getSize(1),
+                                  height: 20),//(menuContainerHeight)/5,),
+                                MyButton(
+                                  text: "Notifications",
+                                  iconData: Icons.notifications,
+                                  textSize: getSize(2),
+                                  height: (mediaQuery.height/2)/5,),
+                                MyButton(
+                                  text: "Settings",
+                                  iconData: Icons.settings,
+                                  textSize: getSize(3),
+                                  height: (menuContainerHeight)/5,),
+                                MyButton(
+                                  text: "My Files",
+                                  iconData: Icons.attach_file,
+                                  textSize: getSize(4),
+                                  height: (menuContainerHeight)/5,),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -139,5 +231,41 @@ class DrawerPainter extends CustomPainter {
   @override
   bool shouldRepaint(CustomPainter oldDelegate) {
     return true;
+  }
+}
+
+//TODO - make own widget
+class MyButton extends StatelessWidget {
+  final String text;
+  final IconData iconData;
+  final double textSize;
+  final double height;
+
+  MyButton({this.text, this.iconData, this.textSize,this.height});
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return MaterialButton(
+      height: height,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: <Widget>[
+          Icon(
+            iconData,
+            color: Colors.black45,
+          ),
+          SizedBox(
+            width: 10,
+          ),
+          Text(
+            text,
+            style: TextStyle(color: Colors.black45, fontSize: textSize),
+          ),
+        ],
+      ),
+      onPressed: () {},
+    );
   }
 }

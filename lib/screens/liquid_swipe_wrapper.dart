@@ -6,10 +6,19 @@ import 'package:pika_joe/screens/splash/page1.dart';
 import 'package:pika_joe/screens/splash/page2.dart';
 import 'package:pika_joe/screens/splash/page3.dart';
 
-class LiquidSwipeWrapper extends StatelessWidget {
+
+class LiquidSwipeWrapper extends StatefulWidget {
+  @override
+  _LiquidSwipeWrapperState createState() => _LiquidSwipeWrapperState();
+}
+
+class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
 
   //TODO - https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
   LiquidController liquidController = LiquidController();
+
+  //TODO - make the drawer its own widget
+  Offset _offset = Offset(0,0);
 
   @override
   Widget build(BuildContext context) {
@@ -51,13 +60,25 @@ class LiquidSwipeWrapper extends StatelessWidget {
             ),
             SizedBox(
               width:sidebarSize,
-              child: Stack(
-                children: <Widget>[
-                  CustomPaint(
-                    size: Size(sidebarSize, mediaQuery.height),
-                    painter: DrawerPainter(),
-                  ),
-                ],
+              child: GestureDetector(
+                onPanUpdate: (details) {
+                  setState((){
+                    _offset = details.localPosition;
+                  });
+                },
+                onPanEnd: (details) {
+                  setState(() {
+                    _offset = Offset(0,0);
+                  });
+                },
+                child: Stack(
+                  children: <Widget>[
+                    CustomPaint(
+                      size: Size(sidebarSize, mediaQuery.height),
+                      painter: DrawerPainter(offset: _offset),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -89,12 +110,25 @@ class LiquidSwipeWrapper extends StatelessWidget {
 //TODO - move!
 class DrawerPainter extends CustomPainter {
 
+  final Offset offset;
+
+  DrawerPainter({ this.offset });
+
+  double getControlPointX(double width) {
+    if(offset.dx == 0) {
+      return width;
+    } else {
+      return offset.dx > width ? offset.dx : width + 75;
+    }
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()..color = Colors.white..style = PaintingStyle.fill;
     Path path = Path();
     path.moveTo(-size.width, 0);
     path.lineTo(size.width, 0);
+    path.quadraticBezierTo(getControlPointX(size.width), offset.dy, size.width, size.height);
     path.lineTo(size.width, size.height);
     path.lineTo(-size.width, size.height);
     path.close();

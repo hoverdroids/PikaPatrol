@@ -60,3 +60,8 @@ final TextStyle descriptionWhiteStyle = TextStyle(
   fontSize: 20.0,
   fontFamily: "Product Sans",
 );
+
+final TextStyle sidebarItemStyle = TextStyle(
+  color: Colors.black45,
+    fontSize: 20
+);

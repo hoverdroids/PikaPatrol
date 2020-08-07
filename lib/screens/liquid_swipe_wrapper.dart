@@ -5,6 +5,7 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:pika_joe/screens/splash/page1.dart';
 import 'package:pika_joe/screens/splash/page2.dart';
 import 'package:pika_joe/screens/splash/page3.dart';
+import 'package:pika_joe/widget/sidebar_item.dart';
 
 
 class LiquidSwipeWrapper extends StatefulWidget {
@@ -47,10 +48,10 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
     });
   }
 
-  double getSize(int x) {
+  /*double getSize(int x) {
     double size  = (_offset.dy > limits[x] && _offset.dy < limits[x + 1]) ? 25 : 20;
     return size;
-  }
+  }*/
 
   @override
   Widget build(BuildContext context) {
@@ -148,39 +149,37 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
                               height: menuContainerHeight,
                               child: Column(
                                 children: <Widget>[
-                                  MyButton(
+                                  SidebarItem(
                                     text: "Profile",
                                     iconData: Icons.person,
-                                    textSize: getSize(0),
-                                    height: (menuContainerHeight)/5,
+                                    height: 20,
                                   ),
-                                  MyButton(
-                                      text: "Payments",
+                                  SidebarItem(
+                                      text: "Taining Materials",
                                       iconData: Icons.payment,
-                                      textSize: getSize(1),
-                                      height: (menuContainerHeight)/5,),
-                                  MyButton(
-                                    text: "Notifications",
+                                      height: 20,
+                                  ),
+                                  SidebarItem(
+                                    text: "Front Range \nPika Project",
                                     iconData: Icons.notifications,
-                                    textSize: getSize(2),
-                                    height: (mediaQuery.height/2)/5,),
-                                  MyButton(
-                                    text: "Settings",
+                                    height: 20,
+                                  ),
+                                  SidebarItem(
+                                    text: "Denver Zoo",
                                     iconData: Icons.settings,
-                                    textSize: getSize(3),
-                                    height: (menuContainerHeight)/5,),
-                                  MyButton(
-                                    text: "My Files",
+                                    height: 20,
+                                  ),
+                                  SidebarItem(
+                                    text: "Rocky Mountain \nWild",
                                     iconData: Icons.attach_file,
-                                    textSize: getSize(4),
-                                    height: (menuContainerHeight)/5,),
+                                    height: 20
+                                  ),
                                 ],
                               ),
                             ),
                             AnimatedPositioned(
                               duration: Duration(milliseconds: 400),
                               right: (isMenuOpen)?10:sidebarSize,
-                              bottom: 30,
                               child: IconButton(
                                 enableFeedback: true,
                                 icon: Icon(Icons.keyboard_backspace,color: Colors.black45,size: 30,),
@@ -260,37 +259,3 @@ class DrawerPainter extends CustomPainter {
 }
 
 //TODO - make own widget
-class MyButton extends StatelessWidget {
-  final String text;
-  final IconData iconData;
-  final double textSize;
-  final double height;
-
-  MyButton({this.text, this.iconData, this.textSize,this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    return MaterialButton(
-      height: height,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: <Widget>[
-          Icon(
-            iconData,
-            color: Colors.black45,
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Text(
-            text,
-            style: TextStyle(color: Colors.black45, fontSize: textSize),
-          ),
-        ],
-      ),
-      onPressed: () {},
-    );
-  }
-}

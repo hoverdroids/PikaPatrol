@@ -6,11 +6,21 @@ var frppBlue = Color(0xff00929F);
 var frppGreen = Color(0xff6D8D23);
 var frppBrown = Color(0xff564319);
 
+var gradient1StartColor = Color(0xFF1b1e44);
+var gradient1EndColor = Color(0xFF2d3447);
+
+//------------------- Navigation Bar ----------
+var navbarColor = Colors.white;
+var navbarBgColor = gradient1StartColor;
+var navbarButtonColor = Colors.white;
+var navbarIconColor = navbarBgColor;
+
 //------------------- Icons ---------------
 var iconColor = Colors.white;
+var iconDarkColor = gradient1StartColor;
 
 // ------------------ Pages ----------------
-var observationsPageBgGradient = [Color(0xFF1b1e44), Color(0xFF2d3447)];
+var observationsPageBgGradient = [gradient1StartColor, gradient1EndColor];
 
 // ------------------ Cards ----------------
 var cardDecorationColor = Colors.white;

@@ -81,6 +81,11 @@ var buttonStyle1Font = "SF-Pro-Text-Regular";
 var appbarIconMargin = 30.0;
 var appbarIconSize = 30.0;//TODO - make this a generic size, eg mini, small, med, large
 
+//-------------- Nav Bar -------------------------
+var navbarHeight = 50.0;
+var navbarIconSize = 30.0;
+var navbarAnimationDuration = 200;
+
 //------------- Cards ----------------------------
 var cardAspectRatio = 12.0 / 16.0;
 var cardScrollWidgetAspectRatio = cardAspectRatio * 1.2;

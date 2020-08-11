@@ -5,6 +5,8 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/splash/page2.dart';
 import 'package:pika_joe/screens/splash/page3.dart';
+import 'package:pika_joe/styles/colors.dart';
+import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/sidebar_item.dart';
 import 'package:pika_joe/widget/standard_app_bar.dart';
 
@@ -200,20 +202,20 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
         ),
       ),
       bottomNavigationBar: CurvedNavigationBar(
-        color: Colors.amber,
-        backgroundColor: Colors.white,
-        buttonBackgroundColor: Colors.blueAccent,
-        height: 50,
+        color: navbarColor,
+        backgroundColor: navbarBgColor,
+        buttonBackgroundColor: navbarButtonColor,
+        height: navbarHeight,
         items: <Widget>[
-          Icon(Icons.add, size: 30),
-          Icon(Icons.list, size: 30),
-          Icon(Icons.compare_arrows, size: 30),
+          Icon(Icons.add, size: navbarIconSize, color: navbarIconColor),
+          Icon(Icons.list, size: navbarIconSize, color: navbarIconColor),
+          Icon(Icons.compare_arrows, size: navbarIconSize, color: navbarIconColor),
         ],
         onTap: (index) {
           //TODO - liquidController.animateToPage(page: 2);//liquidController.currentPage + 1, duration: 500);
         },
         animationDuration: Duration(
-          milliseconds: 200
+          milliseconds: navbarAnimationDuration
         ),
         animationCurve: Curves.bounceInOut,
         index: 1,

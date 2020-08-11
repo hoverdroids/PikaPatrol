@@ -76,7 +76,7 @@ class _ElasticSidebarState extends State<ElasticSidebar> {
             });
           },
           child: Container(
-            decoration: BoxDecoration(
+            /*decoration: BoxDecoration(
               color: Colors.green,
               shape: BoxShape.rectangle,
               boxShadow: [
@@ -86,7 +86,7 @@ class _ElasticSidebarState extends State<ElasticSidebar> {
                   spreadRadius: 2.0,
                 ),
               ],
-            ),
+            ),*/
             child:Stack(
               children: <Widget>[
                 CustomPaint(

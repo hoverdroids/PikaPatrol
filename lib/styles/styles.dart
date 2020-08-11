@@ -87,9 +87,9 @@ var navbarIconSize = 30.0;
 var navbarAnimationDuration = 200;
 
 //-------------- Left Sidebar -----------------------
-var sidebarPercentWidthWhenOpen = 0.65;
+var sidebarPercentWidthWhenOpen = 0.70;
 var sidebarAnimationDuration = 1500;
-var sidebarPixelsShownWhenClosed = 10.0;
+var sidebarPixelsShownWhenClosed = 0.0;
 var sidebarArchHeight = 75;
 
 //------------- Cards ----------------------------

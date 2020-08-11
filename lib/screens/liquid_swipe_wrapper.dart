@@ -76,6 +76,25 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
         animationCurve: Curves.bounceInOut,
         index: 1,
       ),
+      drawer: Container(
+        width: mediaQuery.width * 0.70,
+        child:Drawer(
+
+          //child: Center(
+          // child: Column(
+          //mainAxisAlignment: MainAxisAlignment.center,
+          //children: <Widget>[
+          child:ElasticSidebar(
+            percentOfWidth: sidebarPercentWidthWhenOpen,
+                   animationDuration: sidebarAnimationDuration,
+                   pixelsShownWhenClosed: sidebarPixelsShownWhenClosed,
+                   archHeight: sidebarArchHeight,
+                 ),
+               //],
+             //),
+           //),
+      ),
+    )
     );
   }
 }

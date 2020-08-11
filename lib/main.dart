@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import 'package:pika_joe/screens/home_with_sidebar.dart';
 import 'package:pika_joe/screens/liquid_swipe_wrapper.dart';
 import 'package:pika_joe/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_joe/screens/tools/file_picker_screen.dart';
@@ -306,7 +307,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: LiquidSwipeWrapper()
+      home: HomeWithSidebar()
     );
   }
 }

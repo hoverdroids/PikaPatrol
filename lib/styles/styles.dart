@@ -86,6 +86,12 @@ var navbarHeight = 50.0;
 var navbarIconSize = 30.0;
 var navbarAnimationDuration = 200;
 
+//-------------- Left Sidebar -----------------------
+var sidebarPercentWidthWhenOpen = 0.65;
+var sidebarAnimationDuration = 1500;
+var sidebarPixelsShownWhenClosed = 10.0;
+var sidebarArchHeight = 75;
+
 //------------- Cards ----------------------------
 var cardAspectRatio = 12.0 / 16.0;
 var cardScrollWidgetAspectRatio = cardAspectRatio * 1.2;

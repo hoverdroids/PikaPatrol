@@ -14,7 +14,7 @@ var mainAppBar = AppBar(
     onPressed: () => print('Menu'),//TODO - connect this to opening/closing the menu via a callback
     icon: Icon(Icons.menu),
     iconSize: appbarIconSize,
-    color: iconColor,
+    color: iconDarkBgColor,
   ),
   actions: <Widget>[
     IconButton(
@@ -22,7 +22,7 @@ var mainAppBar = AppBar(
       onPressed: () => print('Search'),//todo - connect this to a relevant action via a callback
       icon: Icon(Icons.search),
       iconSize: appbarIconSize,
-      color: iconColor,
+      color: iconDarkBgColor,
     ),
   ],
 );

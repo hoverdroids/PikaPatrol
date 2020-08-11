@@ -9,15 +9,18 @@ var frppBrown = Color(0xff564319);
 var gradient1StartColor = Color(0xFF1b1e44);
 var gradient1EndColor = Color(0xFF2d3447);
 
+var textLightBgColor = Colors.black45;
+var textDarkBgColor = Colors.white;
+
 //------------------- Navigation Bar ----------
 var navbarColor = Colors.white;
 var navbarBgColor = Colors.transparent;
-var navbarButtonColor = Colors.white;
-var navbarIconColor = gradient1StartColor;
+var navbarButtonColor = navbarColor;
+var navbarIconColor = textLightBgColor;
 
 //------------------- Icons ---------------
-var iconColor = Colors.white;
-var iconDarkColor = gradient1StartColor;
+var iconLightBgColor = textLightBgColor;
+var iconDarkBgColor = textDarkBgColor;
 
 // ------------------ Pages ----------------
 var observationsPageBgGradient = [gradient1StartColor, gradient1EndColor];

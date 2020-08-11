@@ -8,7 +8,7 @@ import 'package:pika_joe/screens/splash/page3.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/elastic_sidebar.dart';
-import 'package:pika_joe/widget/standard_app_bar.dart';
+import 'package:pika_joe/widget/main_appbar.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithSidebar extends StatefulWidget {
@@ -18,6 +18,7 @@ class HomeWithSidebar extends StatefulWidget {
 
 class _HomeWithSidebarState extends State<HomeWithSidebar> {
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   LiquidController liquidController = LiquidController();
 
   @override
@@ -26,9 +27,10 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
     Size mediaQuery = MediaQuery.of(context).size;
 
     return Scaffold(
+      key: _scaffoldKey,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: mainAppBar,
+      appBar: MainAppBar(openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); }),
       body: Container(
         width: mediaQuery.width,
         child: Stack(
@@ -77,7 +79,7 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
         index: 1,
       ),
       drawer: Container(
-        width: mediaQuery.width * 0.70,
+        width: mediaQuery.width * sidebarPercentWidthWhenOpen,
         child:Drawer(
           child:ElasticSidebar(
             percentOfWidth: sidebarPercentWidthWhenOpen,

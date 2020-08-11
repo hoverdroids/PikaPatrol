@@ -65,3 +65,36 @@ final TextStyle sidebarItemStyle = TextStyle(
   color: Colors.black45,
     fontSize: 20
 );
+
+//------------- Fonts ---------------------------
+var heading1FontSize = 25.0;
+var heading1Font = "SF-Pro-Text-Regular";
+
+//------------- Buttons -------------------------
+var buttonStyle1PaddingHorz = 22.0;
+var buttonStyle1PaddingVert = 6.0;
+var buttonStyle1BorderRadius = 20.0;
+var buttonStyle1FontSize = 10.0;
+var buttonStyle1Font = "SF-Pro-Text-Regular";
+
+//-------------- App Bar -------------------------
+var appbarIconMargin = 30.0;
+var appbarIconSize = 30.0;//TODO - make this a generic size, eg mini, small, med, large
+
+//------------- Cards ----------------------------
+var cardAspectRatio = 12.0 / 16.0;
+var cardScrollWidgetAspectRatio = cardAspectRatio * 1.2;
+var cardScrollWidgetPadding = 20.0;
+var cardScrollWidgetVerticalInset = 20.0;
+var cardBorderRadius = 16.0;
+var cardShadow = BoxShadow(
+    color: cardShadowColor,
+    offset: Offset(3.0, 6.0),
+    blurRadius: 10.0,
+);
+var cardTitleInsetLeft = 16.0;
+var cardTitleInsetBottom = 8.0;
+var cardTitleSpacer = SizedBox(height: 10.0);
+var cardButtonInsetLeft = 12.0;
+var cardButtonInsetBottom = 12.0;
+

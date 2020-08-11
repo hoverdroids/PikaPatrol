@@ -2,10 +2,11 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
-import 'package:pika_joe/screens/splash/page1.dart';
+import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/splash/page2.dart';
 import 'package:pika_joe/screens/splash/page3.dart';
 import 'package:pika_joe/widget/sidebar_item.dart';
+import 'package:pika_joe/widget/standard_app_bar.dart';
 
 
 class LiquidSwipeWrapper extends StatefulWidget {
@@ -61,10 +62,8 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
     double menuContainerHeight = mediaQuery.height/2;
 
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        title: Text('Pika Patrol'),//TODO - apply a style
-      ),
+      extendBodyBehindAppBar: true,
+      appBar: mainAppBar,
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -79,7 +78,7 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
           children: <Widget>[
             LiquidSwipe(
               pages: <Container>[
-                Page1(),
+                ObservationsPage(),
                 Page2(),
                 Page3(),
               ],

@@ -1,22 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:liquid_swipe/liquid_swipe.dart';
-import 'package:pika_joe/screens/home_with_sidebar.dart';
-import 'package:pika_joe/screens/liquid_swipe_wrapper.dart';
-import 'package:pika_joe/screens/splash/pika_patrol_splash_screen.dart';
-import 'package:pika_joe/screens/tools/file_picker_screen.dart';
-import 'package:pika_joe/screens/wrapper.dart';
-import 'package:pika_joe/services/auth.dart';
-import 'package:provider/provider.dart';
-
-import 'model/user.dart';
-
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:pika_joe/screens/home_with_sidebar.dart';
 
 // Forms --------------------------------------------------------------
 /*void main() {

@@ -65,6 +65,7 @@ class _LiquidSwipeWrapperState extends State<LiquidSwipeWrapper> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      extendBody: true,
       appBar: mainAppBar,
       body: Container(
         decoration: BoxDecoration(

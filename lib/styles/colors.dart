@@ -11,9 +11,9 @@ var gradient1EndColor = Color(0xFF2d3447);
 
 //------------------- Navigation Bar ----------
 var navbarColor = Colors.white;
-var navbarBgColor = gradient1StartColor;
+var navbarBgColor = Colors.transparent;
 var navbarButtonColor = Colors.white;
-var navbarIconColor = navbarBgColor;
+var navbarIconColor = gradient1StartColor;
 
 //------------------- Icons ---------------
 var iconColor = Colors.white;

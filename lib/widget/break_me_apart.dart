@@ -5,6 +5,9 @@ import 'package:pika_joe/mock/data.dart';
 
 import 'customIcons.dart';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
+
 class MyApp2 extends StatefulWidget {
   @override
   _MyAppState2 createState() => new _MyAppState2();
@@ -123,6 +126,8 @@ class _MyAppState2 extends State<MyApp2> {
                         itemCount: images.length,
                         controller: controller,
                         reverse: true,
+                        scrollDirection: Axis.horizontal,
+                        allowImplicitScrolling: true,
                         itemBuilder: (context, index) {
                           return Container();
                         },

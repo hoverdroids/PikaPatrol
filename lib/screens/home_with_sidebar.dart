@@ -26,6 +26,8 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
 
     Size mediaQuery = MediaQuery.of(context).size;
 
+    List<Widget> pages=[ObservationsPage(),ObservationsPage(),ObservationsPage()];
+
     return Scaffold(
       key: _scaffoldKey,
       extendBodyBehindAppBar: true,
@@ -35,7 +37,11 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
         width: mediaQuery.width,
         child: Stack(
           children: <Widget>[
-            LiquidSwipe(
+            PageView.builder(
+              itemCount: 3,
+              itemBuilder: (context, position) => pages[position],
+            ),
+            /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),
                 Page2(),
@@ -50,13 +56,7 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
               ignoreUserGestureWhileAnimating: true,
               disableUserGesture: true,
               //TODO - onPageChangeCallback: pageChangeCallback,
-            ),
-            ElasticSidebar(
-              percentOfWidth: sidebarPercentWidthWhenOpen,
-              animationDuration: sidebarAnimationDuration,
-              pixelsShownWhenClosed: sidebarPixelsShownWhenClosed,
-              archHeight: sidebarArchHeight,
-            ),
+            ),*/
           ],
         ),
       ),

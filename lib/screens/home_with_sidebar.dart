@@ -48,6 +48,7 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
               positionSlideIcon: 0.5,
               liquidController: liquidController,
               ignoreUserGestureWhileAnimating: true,
+              disableUserGesture: true,
               //TODO - onPageChangeCallback: pageChangeCallback,
             ),
             ElasticSidebar(

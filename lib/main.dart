@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pika_joe/screens/home_with_sidebar.dart';
+import 'package:pika_joe/widget/break_me_apart.dart';
 
 // Forms --------------------------------------------------------------
 /*void main() {

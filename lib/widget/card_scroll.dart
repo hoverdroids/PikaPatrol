@@ -7,9 +7,6 @@ import 'package:pika_joe/mock/data.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/card_item.dart';
 
-//TODO - get these images from the api
-
-
 class CardScrollWidget extends StatelessWidget {
 
   var currentPage;

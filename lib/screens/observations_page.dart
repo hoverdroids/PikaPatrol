@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pika_joe/mock/data.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
+import 'package:pika_joe/widget/break_me_apart.dart';
 
 //We are extending and returning the container because that's what the pager requires. Otherwise it would b
 //better to simpply return the ObservationsScrollView
@@ -9,7 +10,8 @@ class ObservationsPage extends Container {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return MyApp2();
+    /*return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: observationsPageBgGradient,
@@ -19,7 +21,7 @@ class ObservationsPage extends Container {
         ),
       ),
       child: ObservationsScrollView(),
-    );
+    );*/
   }
 }
 
@@ -48,6 +50,7 @@ class _ObservationsScrollViewState extends State<ObservationsScrollView> {
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
+              CardScrollWidget(0)
 
             ],
           ),

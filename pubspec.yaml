@@ -67,6 +67,7 @@ flutter:
   assets:
     - assets/
     - assets/img/
+    - assets/images/
   #  - assets/img/firstImage.png
   #  - assets/img/secondImage.png
   #   - images/a_dot_burr.jpeg

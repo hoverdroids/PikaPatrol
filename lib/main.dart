@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:pika_joe/widget/netflix/home_screen.dart';
+import 'package:pika_joe/widget/netflix/netflix_home_screen.dart';
 
 // Forms --------------------------------------------------------------
 /*void main() {

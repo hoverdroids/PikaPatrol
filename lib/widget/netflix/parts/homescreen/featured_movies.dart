@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
-import 'package:pika_joe/widget/netflix/parts/homescreen/movie_selector.dart';
+import 'file:///C:/Users/sprag/Google%20Drive%20(spragucm)/Projects/Pika%20Joe%20App/2/pika_joe/pika_joe/lib/widget/netflix/parts/featuredmovies/interactive_movie_card.dart';
 
 class FeaturedMovies extends StatefulWidget {
   _FeaturedMoviesState createState() => _FeaturedMoviesState();
@@ -9,7 +9,7 @@ class FeaturedMovies extends StatefulWidget {
 class _FeaturedMoviesState extends State<FeaturedMovies> {
 
   PageController _pageController;
-  
+
   @override
   void initState() {
     super.initState();

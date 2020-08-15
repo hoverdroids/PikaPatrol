@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
@@ -288,7 +289,10 @@ class _UploaderState extends State<Uploader> {
 
 
 //Let's start building this out for real!
-void main() => runApp(MyApp());
+void main(){
+  debugPrintGestureArenaDiagnostics = true;
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override

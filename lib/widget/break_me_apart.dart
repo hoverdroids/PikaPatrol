@@ -10,6 +10,8 @@ import 'customIcons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
+import 'package:flutter/gestures.dart';
+
 class MyApp2 extends StatefulWidget {
   @override
   _MyAppState2 createState() => new _MyAppState2();
@@ -245,6 +247,19 @@ class CardScrollWidget extends StatelessWidget {
 
         List<Widget> cardList = new List();
 
+        _onPanDown(DragUpdateDetails details) {
+          print('Pan Down');
+        }
+
+        _onPanUpdate(DragUpdateDetails details) {
+          print('Pan Update');
+        }
+
+        _onPanEnd(_) {
+          print('Pan End');
+          return true;
+        }
+
         for (var i = 0; i < images.length; i++) {
           var delta = i - currentPage;
           bool isOnRight = delta > 0;
@@ -304,8 +319,26 @@ class CardScrollWidget extends StatelessWidget {
                                   decoration: BoxDecoration(
                                       color: Colors.blueAccent,
                                       borderRadius: BorderRadius.circular(20.0)),
-                                  child: Text("Read Later",
+                                  child: RawGestureDetector(
+                                    gestures: <Type, GestureRecognizerFactory>{
+                                      CustomPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
+                                          () => CustomPanGestureRecognizer(
+                                              onPanDown: () => _onPanDown,
+                                              onPanUpdate: () => _onPanUpdate,
+                                              onPanEnd:  () => _onPanEnd
+                                          ),
+                                          (CustomPanGestureRecognizer instance) {},
+                                      ),
+                                    },
+                                    /*onTap: () => Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => MovieScreen(movie: movies[2]),
+                                      ),
+                                    ),*/
+                                    child: Text("Read Later",
                                       style: TextStyle(color: Colors.white)),
+                                  ),
                                 ),
                               )
                             ],
@@ -326,4 +359,42 @@ class CardScrollWidget extends StatelessWidget {
       }),
     );
   }
+}
+
+class CustomPanGestureRecognizer extends OneSequenceGestureRecognizer {
+  final Function onPanDown;
+  final Function onPanUpdate;
+  final Function onPanEnd;
+
+  CustomPanGestureRecognizer(
+      {@required this.onPanDown,
+        @required this.onPanUpdate,
+        @required this.onPanEnd});
+
+  @override
+  void addPointer(PointerEvent event) {
+    if (onPanDown(event.position)) {
+      startTrackingPointer(event.pointer);
+      resolve(GestureDisposition.accepted);
+    } else {
+      stopTrackingPointer(event.pointer);
+    }
+  }
+
+  @override
+  void handleEvent(PointerEvent event) {
+    if (event is PointerMoveEvent) {
+      onPanUpdate(event.position);
+    }
+    if (event is PointerUpEvent) {
+      onPanEnd(event.position);
+      stopTrackingPointer(event.pointer);
+    }
+  }
+
+  @override
+  String get debugDescription => 'customPan';
+
+  @override
+  void didStopTrackingLastPointer(int pointer) {}
 }

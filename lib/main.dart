@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
+import 'package:pika_joe/screens/home_with_sidebar.dart';
+import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/widget/netflix/netflix_home_screen.dart';
 
 // Forms --------------------------------------------------------------
@@ -297,15 +299,15 @@ class MyApp extends StatelessWidget {
     ]);
     
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.red,
+      statusBarColor: gradient1EndColor,
       statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.red,
-      systemNavigationBarIconBrightness: Brightness.light
+      systemNavigationBarColor: Colors.white,
+      systemNavigationBarIconBrightness: Brightness.dark
     ));
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: NetflixHomeScreen()//HomeWithSidebar()
+      home: HomeWithSidebar()
     );
   }
 }

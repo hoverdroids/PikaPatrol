@@ -23,7 +23,7 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
 
   @override
   Widget build(BuildContext context) {
-
+    print('Build home with sidebar');
     Size mediaQuery = MediaQuery.of(context).size;
 
     List<Widget> pages=[ObservationsPage(),ObservationsPage(),ObservationsPage()];

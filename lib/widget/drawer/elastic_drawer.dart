@@ -1,34 +1,34 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pika_joe/widget/sidebar_item.dart';
+import 'package:pika_joe/widget/drawer/drawer_item.dart';
 
 //Credit to: https://www.youtube.com/watch?v=1KurAaGLwHc&t=1602s
 
-class ElasticSidebar extends StatefulWidget {
+class ElasticDrawer extends StatefulWidget {
   final double percentOfWidth;
   final int animationDuration;
   final double pixelsShownWhenClosed;
   final int archHeight;
 
-  ElasticSidebar({ this.percentOfWidth, this.animationDuration, this.pixelsShownWhenClosed, this.archHeight});
+  ElasticDrawer({ this.percentOfWidth, this.animationDuration, this.pixelsShownWhenClosed, this.archHeight});
 
   @override
-  _ElasticSidebarState createState() => _ElasticSidebarState(
+  _ElasticDrawerState createState() => _ElasticDrawerState(
       percentOfWidth: percentOfWidth,
       animationDuration: animationDuration,
       pixelsShownWhenClosed: pixelsShownWhenClosed,
       archHeight: archHeight);
 }
 
-class _ElasticSidebarState extends State<ElasticSidebar> {
+class _ElasticDrawerState extends State<ElasticDrawer> {
 
   final double percentOfWidth;
   final int animationDuration;
   final double pixelsShownWhenClosed;
   final int archHeight;
 
-  _ElasticSidebarState({this.percentOfWidth, this.animationDuration, this.pixelsShownWhenClosed, this.archHeight});
+  _ElasticDrawerState({this.percentOfWidth, this.animationDuration, this.pixelsShownWhenClosed, this.archHeight});
 
   GlobalKey globalKey = GlobalKey();//TODO - does this need a more descriptive name?
   bool isMenuOpen = false;//TODO - this was static; should it remain static?
@@ -106,27 +106,27 @@ class _ElasticSidebarState extends State<ElasticSidebar> {
                       height: menuContainerHeight,
                       child: Column(
                         children: <Widget>[
-                          SidebarItem(
+                          DrawerItem(
                             text: "Profile",
                             iconData: Icons.person,
                             height: 20,
                           ),
-                          SidebarItem(
+                          DrawerItem(
                             text: "Taining Materials222",
                             iconData: Icons.payment,
                             height: 20,
                           ),
-                          SidebarItem(
+                          DrawerItem(
                             text: "Front Range \nPika Project",
                             iconData: Icons.notifications,
                             height: 20,
                           ),
-                          SidebarItem(
+                          DrawerItem(
                             text: "Denver Zoo2",
                             iconData: Icons.settings,
                             height: 20,
                           ),
-                          SidebarItem(
+                          DrawerItem(
                               text: "Rocky Mountain \nWild",
                               iconData: Icons.attach_file,
                               height: 20

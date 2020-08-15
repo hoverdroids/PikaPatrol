@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:pika_joe/screens/observations_page.dart';
-import 'package:pika_joe/screens/splash/page2.dart';
-import 'package:pika_joe/screens/splash/page3.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/widget/elastic_sidebar.dart';
-import 'package:pika_joe/widget/main_appbar.dart';
+import 'package:pika_joe/widget/drawer/elastic_drawer.dart';
+import 'package:pika_joe/widget/drawer/main_drawer.dart';
+import 'package:pika_joe/widget/navigation/main_appbar.dart';
+import 'package:pika_joe/widget/navigation/main_navbar.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithSidebar extends StatefulWidget {
@@ -60,36 +60,8 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
           ],
         ),
       ),
-      bottomNavigationBar: CurvedNavigationBar(
-        color: navbarColor,
-        backgroundColor: navbarBgColor,
-        buttonBackgroundColor: navbarButtonColor,
-        height: navbarHeight,
-        items: <Widget>[
-          Icon(Icons.add, size: navbarIconSize, color: navbarIconColor),
-          Icon(Icons.list, size: navbarIconSize, color: navbarIconColor),
-          Icon(Icons.compare_arrows, size: navbarIconSize, color: navbarIconColor),
-        ],
-        onTap: (index) {
-          //TODO - liquidController.animateToPage(page: 2);//liquidController.currentPage + 1, duration: 500);
-        },
-        animationDuration: Duration(
-          milliseconds: navbarAnimationDuration
-        ),
-        animationCurve: Curves.bounceInOut,
-        index: 1,
-      ),
-      drawer: Container(
-        width: mediaQuery.width * sidebarPercentWidthWhenOpen,
-        child:Drawer(
-          child:ElasticSidebar(
-            percentOfWidth: sidebarPercentWidthWhenOpen,
-            animationDuration: sidebarAnimationDuration,
-            pixelsShownWhenClosed: sidebarPixelsShownWhenClosed,
-            archHeight: sidebarArchHeight,
-          ),
-        ),
-      )
+      bottomNavigationBar: MainNavbar(),
+      drawer: MainDrawer(),
     );
   }
 }

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/styles.dart';
 
-class SidebarItem extends StatelessWidget {
+class DrawerItem extends StatelessWidget {
 
   final String text;
   final IconData iconData;
   final double height;
   final double size;
 
-  SidebarItem({this.text, this.iconData, this.height, this.size});
+  DrawerItem({this.text, this.iconData, this.height, this.size});
 
   @override
   Widget build(BuildContext context) {

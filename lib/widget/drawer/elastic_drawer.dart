@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/drawer/drawer_item.dart';
 
 //Credit to: https://www.youtube.com/watch?v=1KurAaGLwHc&t=1602s
@@ -49,107 +50,112 @@ class _ElasticDrawerState extends State<ElasticDrawer> {
     double sidebarSize = mediaQuery.width * percentOfWidth;
     double menuContainerHeight = mediaQuery.height / 2;
 
-    return AnimatedPositioned(
-      duration: Duration(milliseconds: animationDuration),
-      left: isMenuOpen ? 0 : -sidebarSize + pixelsShownWhenClosed,
-      top: 0,
-      curve: Curves.elasticOut,
-      child: SizedBox(//TODO - change this to a scrollView
-        width:sidebarSize,
-        child: GestureDetector(//TODO - swipe left to close
-          onPanUpdate: (details) {
-            if(details.localPosition.dx <= sidebarSize) {
-              setState((){
-                _offset = details.localPosition;
-              });
-            }
+    return Container(
+      width: mediaQuery.width * sidebarPercentWidthWhenOpen,
+      child: Drawer(
+        child: AnimatedPositioned(
+          duration: Duration(milliseconds: animationDuration),
+          left: isMenuOpen ? 0 : -sidebarSize + pixelsShownWhenClosed,
+          top: 0,
+          curve: Curves.elasticOut,
+          child: SizedBox(//TODO - change this to a scrollView
+            width:sidebarSize,
+            child: GestureDetector(//TODO - swipe left to close
+              onPanUpdate: (details) {
+                if(details.localPosition.dx <= sidebarSize) {
+                  setState((){
+                    _offset = details.localPosition;
+                  });
+                }
 
-            if(details.localPosition.dx>sidebarSize - pixelsShownWhenClosed && details.delta.distanceSquared > 2){
-              setState(() {
-                isMenuOpen = true;
-              });
-            }
-          },
-          onPanEnd: (details) {
-            setState(() {
-              _offset = Offset(0,0);
-            });
-          },
-          child: Stack(
-            children: <Widget>[
-              CustomPaint(
-                size: Size(sidebarSize, mediaQuery.height),
-                painter: DrawerPainter(offset: _offset, archHeight: archHeight),
-              ),
-              Container(
-                height: mediaQuery.height,
-                width: sidebarSize,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.max,
-                  children: <Widget>[
-                    Container(
-                      height: mediaQuery.height * 0.25,//TODO - pass a header widget
-                      child: Center(
-                        child: Column(
-                          children: [
-                            Image.asset("assets/img/frppLogo.png", width: sidebarSize / 2),
-                            Text("FRPP Rocks", style: TextStyle(color: Colors.amber))
-                          ],
+                if(details.localPosition.dx>sidebarSize - pixelsShownWhenClosed && details.delta.distanceSquared > 2){
+                  setState(() {
+                    isMenuOpen = true;
+                  });
+                }
+              },
+              onPanEnd: (details) {
+                setState(() {
+                  _offset = Offset(0,0);
+                });
+              },
+              child: Stack(
+                children: <Widget>[
+                  CustomPaint(
+                    size: Size(sidebarSize, mediaQuery.height),
+                    painter: DrawerPainter(offset: _offset, archHeight: archHeight),
+                  ),
+                  Container(
+                    height: mediaQuery.height,
+                    width: sidebarSize,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.max,
+                      children: <Widget>[
+                        Container(
+                          height: mediaQuery.height * 0.25,//TODO - pass a header widget
+                          child: Center(
+                            child: Column(
+                              children: [
+                                Image.asset("assets/img/frppLogo.png", width: sidebarSize / 2),
+                                Text("FRPP Rocks", style: TextStyle(color: Colors.amber))
+                              ],
+                            ),
+                          ),
                         ),
-                      ),
+                        Divider(thickness: 1),//TODO - pass a divider widget?
+                        Container(//TODO - pass N items
+                          key: globalKey,
+                          width: double.infinity,
+                          height: menuContainerHeight,
+                          child: Column(
+                            children: <Widget>[
+                              DrawerItem(
+                                text: "Profile",
+                                iconData: Icons.person,
+                                height: 20,
+                              ),
+                              DrawerItem(
+                                text: "Taining Materials222",
+                                iconData: Icons.payment,
+                                height: 20,
+                              ),
+                              DrawerItem(
+                                text: "Front Range \nPika Project",
+                                iconData: Icons.notifications,
+                                height: 20,
+                              ),
+                              DrawerItem(
+                                text: "Denver Zoo2",
+                                iconData: Icons.settings,
+                                height: 20,
+                              ),
+                              DrawerItem(
+                                  text: "Rocky Mountain \nWild",
+                                  iconData: Icons.attach_file,
+                                  height: 20
+                              ),
+                            ],
+                          ),
+                        ),
+                        AnimatedPositioned(//TODO - move the back arrow to top right corner
+                          duration: Duration(milliseconds: animationDuration),
+                          right: (isMenuOpen) ? 10 : sidebarSize,
+                          child: IconButton(//TODO - pass in a back widget?
+                            enableFeedback: true,
+                            icon: Icon(Icons.keyboard_backspace,color: Colors.black45,size: 30,),
+                            onPressed: (){
+                              this.setState(() {
+                                isMenuOpen = false;
+                              });
+                            },),
+                        ),
+                      ],
                     ),
-                    Divider(thickness: 1),//TODO - pass a divider widget?
-                    Container(//TODO - pass N items
-                      key: globalKey,
-                      width: double.infinity,
-                      height: menuContainerHeight,
-                      child: Column(
-                        children: <Widget>[
-                          DrawerItem(
-                            text: "Profile",
-                            iconData: Icons.person,
-                            height: 20,
-                          ),
-                          DrawerItem(
-                            text: "Taining Materials222",
-                            iconData: Icons.payment,
-                            height: 20,
-                          ),
-                          DrawerItem(
-                            text: "Front Range \nPika Project",
-                            iconData: Icons.notifications,
-                            height: 20,
-                          ),
-                          DrawerItem(
-                            text: "Denver Zoo2",
-                            iconData: Icons.settings,
-                            height: 20,
-                          ),
-                          DrawerItem(
-                              text: "Rocky Mountain \nWild",
-                              iconData: Icons.attach_file,
-                              height: 20
-                          ),
-                        ],
-                      ),
-                    ),
-                    AnimatedPositioned(//TODO - move the back arrow to top right corner
-                      duration: Duration(milliseconds: animationDuration),
-                      right: (isMenuOpen) ? 10 : sidebarSize,
-                      child: IconButton(//TODO - pass in a back widget?
-                        enableFeedback: true,
-                        icon: Icon(Icons.keyboard_backspace,color: Colors.black45,size: 30,),
-                        onPressed: (){
-                          this.setState(() {
-                            isMenuOpen = false;
-                          });
-                        },),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

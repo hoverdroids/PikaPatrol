@@ -6,7 +6,6 @@ import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/drawer/elastic_drawer.dart';
-import 'package:pika_joe/widget/drawer/main_drawer.dart';
 import 'package:pika_joe/widget/navigation/main_appbar.dart';
 import 'package:pika_joe/widget/navigation/main_navbar.dart';
 
@@ -61,7 +60,12 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
         ),
       ),
       bottomNavigationBar: MainNavbar(),
-      drawer: MainDrawer(),
+      drawer: ElasticDrawer(
+        percentOfWidth: sidebarPercentWidthWhenOpen,
+        animationDuration: sidebarAnimationDuration,
+        pixelsShownWhenClosed: sidebarPixelsShownWhenClosed,
+        archHeight: sidebarArchHeight,
+      ),
     );
   }
 }

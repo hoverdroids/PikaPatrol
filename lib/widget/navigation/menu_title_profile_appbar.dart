@@ -4,17 +4,19 @@ import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 
-class MainAppBar extends AppBar {
+class MenuTitleProfileAppBar extends AppBar {
 
+  final String appName;
   Function openMenuCallback;
+  Function openProfileCallback;
 
-  MainAppBar({this.openMenuCallback}) : super(
+  MenuTitleProfileAppBar({this.appName, this.openMenuCallback, this.openProfileCallback}) : super(
     backgroundColor: Colors.transparent,
-    title: Text('Pika Patrol'),//TODO - apply a style
+    title: Text(appName),//TODO - apply a style
     centerTitle: true,
     elevation: 0.0,
     leading: IconButton(
-      padding: EdgeInsets.only(left: appbarIconMargin),
+      //padding: EdgeInsets.only(left: appbarIconMargin),
       onPressed: openMenuCallback,
       icon: Icon(Icons.menu),
       iconSize: appbarIconSize,
@@ -22,9 +24,9 @@ class MainAppBar extends AppBar {
     ),
     actions: <Widget>[
       IconButton(
-        padding: EdgeInsets.only(right: appbarIconMargin),
-        onPressed: () => print('Search'),//todo - connect this to a relevant action via a callback
-        icon: Icon(Icons.search),
+        //padding: EdgeInsets.only(right: appbarIconMargin),
+        onPressed: openProfileCallback,
+        icon: Icon(Icons.account_circle),
         iconSize: appbarIconSize,
         color: iconDarkBgColor,
       ),

@@ -6,16 +6,16 @@ import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/drawer/elastic_drawer.dart';
-import 'package:pika_joe/widget/navigation/main_appbar.dart';
+import 'package:pika_joe/widget/navigation/menu_title_profile_appbar.dart';
 import 'package:pika_joe/widget/navigation/main_navbar.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
-class HomeWithSidebar extends StatefulWidget {
+class HomeWithDrawer extends StatefulWidget {
   @override
-  _HomeWithSidebarState createState() => _HomeWithSidebarState();
+  _HomeWithDrawerState createState() => _HomeWithDrawerState();
 }
 
-class _HomeWithSidebarState extends State<HomeWithSidebar> {
+class _HomeWithDrawerState extends State<HomeWithDrawer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
   LiquidController liquidController = LiquidController();
@@ -31,7 +31,11 @@ class _HomeWithSidebarState extends State<HomeWithSidebar> {
       key: _scaffoldKey,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: MainAppBar(openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); }),
+      appBar: MenuTitleProfileAppBar(
+        appName: 'Pika Patrol',
+        openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
+        openProfileCallback: (){ _scaffoldKey.currentState.openDrawer(); },
+      ),
       body: Container(
         width: mediaQuery.width,
         child: Stack(

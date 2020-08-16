@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 
-class MainNavbar extends CurvedNavigationBar {
-  MainNavbar() : super(
+class StatsObservationsMapNavigationBar extends CurvedNavigationBar {
+
+  StatsObservationsMapNavigationBar(PageController pageController) : super(
     color: navbarColor,
     backgroundColor: navbarBgColor,
     buttonBackgroundColor: navbarButtonColor,
@@ -15,12 +16,13 @@ class MainNavbar extends CurvedNavigationBar {
       Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
     ],
     onTap: (index) {
-    //TODO - liquidController.animateToPage(page: 2);//liquidController.currentPage + 1, duration: 500);
+      pageController.animateToPage(
+          index,
+          duration: Duration(milliseconds: navbarAnimationDuration),
+          curve: Curves.easeInOut);
     },
-    animationDuration: Duration(
-      milliseconds: navbarAnimationDuration
-    ),
-    animationCurve: Curves.bounceInOut,
-    index: 1,
+    animationDuration: Duration(milliseconds: navbarAnimationDuration),
+    animationCurve: Curves.easeInOut,
+    index: pageController.initialPage,
   );
 }

@@ -84,7 +84,8 @@ var appbarIconSize = 30.0;//TODO - make this a generic size, eg mini, small, med
 //-------------- Nav Bar -------------------------
 var navbarHeight = 50.0;
 var navbarIconSize = 30.0;
-var navbarAnimationDuration = 200;
+var navbarAnimationDuration = 500;
+var initialPage = 2;
 
 //-------------- Left Sidebar -----------------------
 var sidebarPercentWidthWhenOpen = 0.70;

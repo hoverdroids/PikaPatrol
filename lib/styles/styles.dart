@@ -110,3 +110,69 @@ var cardTitleSpacer = SizedBox(height: 10.0);
 var cardButtonInsetLeft = 12.0;
 var cardButtonInsetBottom = 12.0;
 
+//-------------------- Standardizing Sizing -------------------
+enum ElementSize {
+  XS, S, M, L, XL, XXL
+}
+
+enum ElementStyle {
+  DARK_ON_LIGHT,
+  DARK_ON_DARK,
+  LIGHT_ON_DARK,
+  LIGHT_ON_LIGHT
+}
+
+enum WidthStyle {
+  WRAPPED, MATCH_PARENT, STRETCH
+}
+
+//https://material.io/components/buttons#hierarchy-and-placement
+var buttonCornerRadii = [
+  2,  //  xs
+  4,  //  s
+  6,  //  m
+  8,  // L
+  10, // XL
+  12  // XXL
+];
+
+
+enum Emphasis {
+  NONE, LOW, MEDIUM, HIGH
+}
+
+enum ShadowIntensity {
+  NONE, LIGHT, MEDIUM, DARK
+}
+
+enum ShadowOverlayedOn {
+  LIGHT, DARK, PRIMARY
+}
+
+enum BackgroundShades {
+  LIGHT, DARK
+}
+
+//Login button and social icons
+var BUTTON_ELEVATION = [
+  0.0, //No shadows
+  2.0, //Light
+  4.0, //Medium
+  6.0  //Dark
+];
+
+
+//--------------   Generalized spacing between form elements -----------------
+enum SpacingTypes {
+  NONE, TOP_BOTTOM, TOP, BOTTOM
+}
+var FORM_ELEMENT_SPACING = 25.0;
+var STANDARDIZED_SPACING = [
+  EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),                   //NONE
+  EdgeInsets.symmetric(vertical: FORM_ELEMENT_SPACING, horizontal: 0.0),  //TOP_BOTTOM
+  EdgeInsets.only(top: FORM_ELEMENT_SPACING),                             //TOP
+  EdgeInsets.only(bottom: FORM_ELEMENT_SPACING)                           //BOTTOM
+];
+
+var BIG_BUTTON_HORIZONTAL_PADDING = 15.0;
+

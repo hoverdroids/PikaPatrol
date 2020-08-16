@@ -2,6 +2,9 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+var primaryStartColor = Color(0xffff8800);
+var primaryEndColor = Color(0xffff3300);
+
 var frppBlue = Color(0xff00929F);
 var frppGreen = Color(0xff6D8D23);
 var frppBrown = Color(0xff564319);
@@ -31,3 +34,12 @@ var cardShadowColor = Colors.black12;
 var cardTitleColor = Colors.white;
 var cardButtonColor = Colors.blueAccent;
 var cardButtonTextColor = Colors.white;
+
+
+//---------------------- Text ----------------------------
+var LIGHT_ON_DARK_TEXT_COLOR = Colors.white;
+var DARK_ON_LIGHT_TEXT_COLOR = Colors.black45;
+var COLORED_ON_LIGHT_TEXT_COLOR = primaryStartColor;
+
+//TODO - material guideline has primary and the onPrimary for text colors
+//when used over the primary

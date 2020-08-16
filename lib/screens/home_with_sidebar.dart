@@ -7,8 +7,8 @@ import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/drawer/elastic_drawer.dart';
 import 'package:pika_joe/widget/navigation/menu_title_profile_appbar.dart';
-import 'package:pika_joe/widget/navigation/pagetransitions/center_bounce_in.dart';
-import 'package:pika_joe/widget/navigation/pagetransitions/top_right_scale_in.dart';
+import 'package:pika_joe/widget/navigation/transitions/center_bounce_in.dart';
+import 'package:pika_joe/widget/navigation/transitions/top_right_scale_in.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
 import 'package:pika_joe/widget/profile/login_page.dart';
 
@@ -41,7 +41,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         appName: 'Pika Patrol',
         openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
         openProfileCallback: (){
-          Navigator.push(context, TopRightScaleIn(widget: LoginPage()));
+          Navigator.push(context, TopRightScaleIn(widget: LoginScreen()));
         },
       ),
       body: Container(

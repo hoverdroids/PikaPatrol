@@ -138,7 +138,18 @@ class _LoginScreenState extends State<LoginScreen> {
                       PasswordEntry(),
                       ForgotPasswordButton(),
                       RememberMeCheckbox(),
-                      StandardizedButton(text:"Login", emphasis: Emphasis.HIGH, spacingType: SpacingTypes.TOP_BOTTOM),
+                      StandardizedButton(
+                        text:"Login",
+                        elementSize: ElementSize.M,               //TODO
+                        widthStyle: WidthStyle.MATCH_PARENT,
+                        elementStyle: ElementStyle.LIGHT_ON_LIGHT,//TODO
+                        emphasis: Emphasis.NONE,                  //TODO
+                        shadowIntensity: ShadowIntensity.DARK,    //TODO
+                        shadowSize: ShadowSize.SMALL,
+                        spacingType: SpacingTypes.TOP_BOTTOM,
+                        backgroundShade: BackgroundShades.LIGHT,  //TODO
+                        cornerType: CornerTypes.CIRCULAR,
+                      ),
                       _buildSignInWithText(),
                       _buildSocialBtnRow(),
                       _buildSignupBtn(),

@@ -141,24 +141,42 @@ enum Emphasis {
   NONE, LOW, MEDIUM, HIGH
 }
 
+enum ShadowSize {
+  NONE, SMALL, MEDIUM, LARGE
+}
+
 enum ShadowIntensity {
   NONE, LIGHT, MEDIUM, DARK
 }
 
-enum ShadowOverlayedOn {
-  LIGHT, DARK, PRIMARY
+enum ShadowColoringType {
+  LIGHT,    //Grayscale over light bg
+  DARK,     //Grayscale over dark bg
+  PRIMARY,  //Takes on hue of primary colored bg
+  BUTTON    //Takes on hue of the button's color, like a glow
 }
+
+enum CornerTypes {
+  SQUARE, ROUNDED, CIRCULAR
+}
+var cornerRadii = [
+  0.0,    //SQUARE
+  10.0,   //ROUNDED
+  30.0,   //CIRCULAR
+];
+
 
 enum BackgroundShades {
   LIGHT, DARK
 }
 
-//Login button and social icons
+//https://material.io/design/environment/light-shadows.html#shadows
 var BUTTON_ELEVATION = [
-  0.0, //No shadows
-  2.0, //Light
-  4.0, //Medium
-  6.0  //Dark
+  0.0,  //No shadows
+  2.0,
+  6.0,
+  12.0,
+  24.0  //Very high elevation shadows
 ];
 
 

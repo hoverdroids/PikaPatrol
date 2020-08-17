@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/constants.dart';
+import 'package:pika_joe/styles/gradients.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/buttons/standardized_button.dart';
 import 'package:pika_joe/widget/buttons/circular_button.dart';
@@ -12,12 +14,22 @@ import 'package:pika_joe/widget/forms/password_entry.dart';
 import 'elements/remember_me_checkbox.dart';
 
 class LoginScreen extends StatefulWidget {
+
+  final ScreenStyles screenStyle;
+
+  LoginScreen({this.screenStyle = ScreenStyles.PRIMARY_ON_LIGHT}) : super();
+
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  _LoginScreenState createState() => _LoginScreenState(screenStyle: screenStyle);
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  
+
+  final ScreenStyles screenStyle;
+
+  _LoginScreenState({this.screenStyle}) : super();
+
+
   Widget _buildSignInWithText() {
     return Column(
       children: <Widget>[
@@ -84,6 +96,12 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+
+
+
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -93,30 +111,14 @@ class _LoginScreenState extends State<LoginScreen> {
           onTap: () => FocusScope.of(context).unfocus(),
           child: Stack(
             children: <Widget>[
-              Container(
-                height: double.infinity,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Color(0xFF73AEF5),
-                      Color(0xFF61A4F1),
-                      Color(0xFF478DE0),
-                      Color(0xFF398AE5),
-                    ],
-                    stops: [0.1, 0.4, 0.7, 0.9],
-                  ),
-                ),
-              ),
+              getBackgroundGradient(screenStyle),
               Container(
                 height: double.infinity,
                 child: SingleChildScrollView(
                   physics: AlwaysScrollableScrollPhysics(),
                   padding: EdgeInsets.symmetric(
                     horizontal: 40.0,
-                    vertical: 120.0,
+                    vertical: 40.0,
                   ),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -143,7 +145,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         elementSize: ElementSize.M,               //TODO
                         widthStyle: WidthStyle.MATCH_PARENT,
                         elementStyle: ElementStyle.LIGHT_ON_LIGHT,//TODO
-                        emphasis: Emphasis.NONE,                  //TODO
+                        emphasis: Emphasis.PRIMARY_CALL_TO_ACTION,                  //TODO
                         shadowIntensity: ShadowIntensity.DARK,    //TODO
                         shadowSize: ShadowSize.SMALL,
                         spacingType: SpacingTypes.TOP_BOTTOM,

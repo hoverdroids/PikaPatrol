@@ -10,7 +10,7 @@ import 'package:pika_joe/widget/navigation/menu_title_profile_appbar.dart';
 import 'package:pika_joe/widget/navigation/transitions/center_bounce_in.dart';
 import 'package:pika_joe/widget/navigation/transitions/top_right_scale_in.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
-import 'package:pika_joe/widget/profile/login_page.dart';
+import 'package:pika_joe/widget/profile/login_screen.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -41,7 +41,12 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         appName: 'Pika Patrol',
         openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
         openProfileCallback: (){
-          Navigator.push(context, TopRightScaleIn(widget: LoginScreen()));
+          Navigator.push(
+              context,
+              TopRightScaleIn(
+                  widget: LoginScreen(screenStyle: ScreenStyles.LIGHT_ON_PRIMARY)
+              )
+          );
         },
       ),
       body: Container(

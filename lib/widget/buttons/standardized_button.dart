@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/colors.dart';
+import 'package:pika_joe/styles/constants.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/widget/text/standardized_text.dart';
 
@@ -64,10 +65,6 @@ class StandardizedButton extends StatelessWidget {
           - Dark Bg   White
     */
 
-    Color color = LIGHT_ON_DARK_TEXT_COLOR;
-    TextStyle textStyle = COLORED_ON_LIGHT_TEXT_STYLE_1;
-
-
     var width;
     if(widthStyle == WidthStyle.WRAPPED){
       width = null;
@@ -77,23 +74,29 @@ class StandardizedButton extends StatelessWidget {
       //TODO - need to include stretch
     }
 
-    //TODO - the corner radius will depend on the height of the button; so, different button
-    //size will require different radii
-
     return Container(
       padding: STANDARDIZED_SPACING[spacingType.index],
       width: width,
-      child: RaisedButton(
-        elevation: BUTTON_ELEVATION[shadowSize.index],
-        onPressed: () => onTapped,
-        padding: EdgeInsets.all(15.0),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(cornerRadii[cornerType.index]),
-        ),
-        color: color,
-        child: Text(text, style: textStyle),
-      ),
+      child: _buildButton(),
     );
+  }
+
+  Widget _buildButton() {
+    if (emphasis == Emphasis.NONE) {
+      return _buildNoEmphasisButton();
+    } else if (emphasis == Emphasis.LOW) {
+      return _buildLowEmphasisButton();
+    } else if (emphasis == Emphasis.MEDIUM) {
+      return _buildMediumEmphasisButton();
+    } else if (emphasis == Emphasis.HIGH) {
+      return _buildHighEmphasisButton();
+    } else {
+      return _buildPrimaryCallToActionButton();
+    }
+  }
+
+  Widget _buildCircularButton() {
+
   }
 
   //TODO - small, clickable for getting more info
@@ -108,27 +111,68 @@ class StandardizedButton extends StatelessWidget {
 
   //Text that is bold, capitalized, and not colorized
   Widget _buildNoEmphasisButton() {
-    return TextButton();
+    return FlatButton(
+      onPressed: () => onTapped,
+      //padding: EdgeInsets.all(15.0),
+      //color: LIGHT_ON_DARK_TEXT_COLOR,
+      child: Text(text, style: kLabelStyle),
+    );
   }
 
   //Text that is bold, capitalized, and colorized
   Widget _buildLowEmphasisButton() {
-
+    return RaisedButton(
+      elevation: BUTTON_ELEVATION[shadowSize.index],
+      onPressed: () => onTapped,
+      padding: EdgeInsets.all(15.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cornerRadii[cornerType.index]),
+      ),
+      color: LIGHT_ON_DARK_TEXT_COLOR,
+      child: Text(text, style: COLORED_ON_LIGHT_TEXT_STYLE_1),
+    );
   }
 
   //No-fill button with text that is bold and capitalized; rounded corners
   Widget _buildMediumEmphasisButton() {
-
+    return RaisedButton(
+      elevation: BUTTON_ELEVATION[shadowSize.index],
+      onPressed: () => onTapped,
+      padding: EdgeInsets.all(15.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cornerRadii[cornerType.index]),
+      ),
+      color: LIGHT_ON_DARK_TEXT_COLOR,
+      child: Text(text, style: COLORED_ON_LIGHT_TEXT_STYLE_1),
+    );
   }
 
   //Filled button with text that is bold and capitalized; rounded corners
   Widget _buildHighEmphasisButton() {
-
+    return RaisedButton(
+      elevation: BUTTON_ELEVATION[shadowSize.index],
+      onPressed: () => onTapped,
+      padding: EdgeInsets.all(15.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cornerRadii[cornerType.index]),
+      ),
+      color: LIGHT_ON_DARK_TEXT_COLOR,
+      child: Text(text, style: COLORED_ON_LIGHT_TEXT_STYLE_1),
+    );
   }
 
   //Filled button with text that is bold and capitalized; circular ends
   Widget _buildPrimaryCallToActionButton() {
-
+    return RaisedButton(
+      elevation: BUTTON_ELEVATION[shadowSize.index],
+      onPressed: () => onTapped,
+      padding: EdgeInsets.all(15.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(cornerRadii[cornerType.index]),
+      ),
+      color: LIGHT_ON_DARK_TEXT_COLOR,
+      child: Text(text, style: COLORED_ON_LIGHT_TEXT_STYLE_1),
+    );
   }
 
 }

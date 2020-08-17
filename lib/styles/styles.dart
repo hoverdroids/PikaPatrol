@@ -138,7 +138,7 @@ var buttonCornerRadii = [
 
 
 enum Emphasis {
-  NONE, LOW, MEDIUM, HIGH
+  NONE, LOW, MEDIUM, HIGH, PRIMARY_CALL_TO_ACTION
 }
 
 enum ShadowSize {
@@ -193,4 +193,18 @@ var STANDARDIZED_SPACING = [
 ];
 
 var BIG_BUTTON_HORIZONTAL_PADDING = 15.0;
+
+
+//------------------ Generalizing Screen Themes -------------
+enum ScreenStyles {
+  PRIMARY_ON_LIGHT,
+  LIGHT_ON_LIGHT,
+  DARK_ON_LIGHT,
+  PRIMARY_ON_DARK,
+  LIGHT_ON_DARK,
+  DARK_ON_DARK,
+  PRIMARY_ON_PRIMARY,
+  LIGHT_ON_PRIMARY,
+  DARK_ON_PRIMARY
+}
 

@@ -196,6 +196,7 @@ var BIG_BUTTON_HORIZONTAL_PADDING = 15.0;
 
 
 //------------------ Generalizing Screen Themes -------------
+const DEFAULT_SCREEN_STYLE = ScreenStyles.PRIMARY_ON_LIGHT;
 enum ScreenStyles {
   PRIMARY_ON_LIGHT,
   LIGHT_ON_LIGHT,

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/constants.dart';
+import 'package:pika_joe/styles/styles.dart';
 
 class EmailEntry extends StatelessWidget {
 
   final bool showLabel;
+  final ScreenStyles screenStyle;
 
-  EmailEntry({this.showLabel = true}) : super();
+  EmailEntry({this.showLabel = true, this.screenStyle = DEFAULT_SCREEN_STYLE}) : super();
 
   @override
   Widget build(BuildContext context) {

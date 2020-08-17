@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/constants.dart';
 import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/widget/text/standardized_text.dart';
+import 'file:///C:/Users/sprag/Google%20Drive%20(spragucm)/Projects/Pika%20Joe%20App/2/pika_joe/pika_joe/lib/styles/texts.dart';
 
 class StandardizedButton extends StatelessWidget {
 

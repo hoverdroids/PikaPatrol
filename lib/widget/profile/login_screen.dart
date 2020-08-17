@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
@@ -17,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 
   final ScreenStyles screenStyle;
 
-  LoginScreen({this.screenStyle = ScreenStyles.PRIMARY_ON_LIGHT}) : super();
+  LoginScreen({this.screenStyle = DEFAULT_SCREEN_STYLE}) : super();
 
   @override
   _LoginScreenState createState() => _LoginScreenState(screenStyle: screenStyle);

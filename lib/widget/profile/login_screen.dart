@@ -12,8 +12,7 @@ import 'package:pika_joe/widget/buttons/circular_button.dart';
 import 'package:pika_joe/widget/forms/email_entry.dart';
 import 'package:pika_joe/widget/forms/forgot_password_button.dart';
 import 'package:pika_joe/widget/forms/password_entry.dart';
-
-import 'elements/remember_me_checkbox.dart';
+import 'package:pika_joe/widget/forms/remember_me_checkbox.dart';
 
 class LoginScreen extends StatefulWidget {
 

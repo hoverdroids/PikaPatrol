@@ -293,6 +293,7 @@ class _UploaderState extends State<Uploader> {
 
 
 //Let's start building this out for real!
+
 void main(){
   debugPrintGestureArenaDiagnostics = true;
   runApp(
@@ -310,6 +311,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
+    //First things first...set our theme to fit our brand!
+    ColorPalette colorPalette = ColorPalette(
+        primary: Colors.teal,
+        primaryAccent: Colors.tealAccent,
+        secondary: Colors.brown,
+        secondaryAccent: Colors.brown
+    );
+    context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
+
     //Lock the app to one orientation
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitDown,
@@ -319,7 +329,7 @@ class MyApp extends StatelessWidget {
     //Colorize the system status bar and system navigation
     //TODO - revisit and determine if we want a light/dark theme mode adjustment
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: context.watch<MaterialThemesManager>().getPrimaryTheme().primaryColor,
+      statusBarColor: context.watch<MaterialThemesManager>().colorPalette().primary,
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark

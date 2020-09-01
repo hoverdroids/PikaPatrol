@@ -136,11 +136,6 @@ var buttonCornerRadii = [
   12  // XXL
 ];
 
-
-enum Emphasis {
-  NONE, LOW, MEDIUM, HIGH, PRIMARY_CALL_TO_ACTION
-}
-
 enum ShadowSize {
   NONE, SMALL, MEDIUM, LARGE
 }

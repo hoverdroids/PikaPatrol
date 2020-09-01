@@ -3,9 +3,13 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
-import 'package:pika_joe/screens/home_with_sidebar.dart';
+import 'package:pika_joe/screens/home_with_drawer.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/widget/netflix/netflix_home_screen.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:flutter/material.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:provider/provider.dart';
 
 // Forms --------------------------------------------------------------
 /*void main() {
@@ -291,27 +295,43 @@ class _UploaderState extends State<Uploader> {
 //Let's start building this out for real!
 void main(){
   debugPrintGestureArenaDiagnostics = true;
-  runApp(MyApp());
+  runApp(
+    // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => MaterialThemesManager()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+
+    //Lock the app to one orientation
     SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitDown,
       DeviceOrientation.portraitUp
     ]);
-    
+
+    //Colorize the system status bar and system navigation
+    //TODO - revisit and determine if we want a light/dark theme mode adjustment
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: gradient1EndColor,
+      statusBarColor: context.watch<MaterialThemesManager>().getPrimaryTheme().primaryColor,
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark
     ));
 
     return MaterialApp(
+      title: "Pika Patrol",
+      home: HomeWithDrawer(),
       debugShowCheckedModeBanner: false,
-      home: HomeWithDrawer()
+      themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
+      theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
+      darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
     );
   }
 }

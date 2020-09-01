@@ -255,19 +255,19 @@ packages:
     source: hosted
     version: "0.12.6"
   material_themes_manager:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: material_themes_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.2"
+    version: "0.0.16"
   material_themes_widgets:
     dependency: "direct main"
     description:
       name: material_themes_widgets
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.1"
+    version: "0.0.2"
   meta:
     dependency: transitive
     description:

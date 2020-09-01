@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
 
+//TODO - this whole class needs to be migrated to ThemedWidgets
 class StatsObservationsMapNavigationBar extends CurvedNavigationBar {
 
   StatsObservationsMapNavigationBar(PageController pageController) : super(

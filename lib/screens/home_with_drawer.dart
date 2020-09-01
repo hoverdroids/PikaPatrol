@@ -1,16 +1,15 @@
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/clippaths/clip_paths.dart';
+import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
-import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/widget/drawer/elastic_drawer.dart';
 import 'package:pika_joe/widget/navigation/menu_title_profile_appbar.dart';
-import 'package:pika_joe/widget/navigation/transitions/center_bounce_in.dart';
-import 'package:pika_joe/widget/navigation/transitions/top_right_scale_in.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
-import 'package:pika_joe/widget/profile/login_screen.dart';
+
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -40,14 +39,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       appBar: MenuTitleProfileAppBar(
         appName: 'Pika Patrol',
         openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
-        openProfileCallback: (){
-          Navigator.push(
-              context,
-              TopRightScaleIn(
-                  widget: LoginScreen(screenStyle: ScreenStyles.LIGHT_ON_PRIMARY)
-              )
-          );
-        },
+        openProfileCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
       ),
       body: Container(
         width: mediaQuery.width,
@@ -78,11 +70,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         ),
       ),
       bottomNavigationBar: StatsObservationsMapNavigationBar(pageController),
-      drawer: ElasticDrawer(
-        percentOfWidth: sidebarPercentWidthWhenOpen,
-        animationDuration: sidebarAnimationDuration,
-        pixelsShownWhenClosed: sidebarPixelsShownWhenClosed,
-        archHeight: sidebarArchHeight,
+      drawer: SimpleClipPathDrawer(
+        child: LoginScreen(),
+        padding: 0.0,
+        clipPathType: ClipPathType.NONE,
+        backgroundGradientType: BackgroundGradientType.MAIN_BG,
       ),
     );
   }

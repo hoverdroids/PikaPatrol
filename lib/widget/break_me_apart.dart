@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'dart:math';
 
 import 'package:pika_joe/mock/data.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 
 import 'package:flutter/gestures.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
 
 class MyApp2 extends StatefulWidget {
   @override
@@ -78,18 +80,12 @@ class _MyAppState2 extends State<MyApp2> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text("Trending",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 46.0,
-                            fontFamily: "Calibre-Semibold",
-                            letterSpacing: 1.0,
-                          )),
-                      IconButton(
+                      ThemedH4("Community", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                      IconButton(//TODO - figure out why this isn't displaying; then apply to partner logos
                         icon: Icon(
-                          CustomIcons.option,
-                          size: 12.0,
-                          color: Colors.white,
+                          CustomIcons.menu,
+                          //size: 12.0,
+                          //color: Colors.white,
                         ),
                         onPressed: () {},
                       )
@@ -116,7 +112,7 @@ class _MyAppState2 extends State<MyApp2> {
                             child: Padding(
                               padding: EdgeInsets.symmetric(
                                   horizontal: 22.0, vertical: 6.0),
-                              child: Text("Animated",
+                              child: Text("Latest",
                                   style: TextStyle(color: Colors.white)),
                             ),
                           ),
@@ -126,8 +122,24 @@ class _MyAppState2 extends State<MyApp2> {
                       SizedBox(
                         width: 15.0,
                       ),
-                      Text("25+ Stories",
-                          style: TextStyle(color: Colors.blueAccent))
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(20.0),
+                        ),
+                        child: Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
+                            child: Text("PIKA",
+                                style: TextStyle(color: Colors.white)),
+                          ),
+                        ),
+                      ),
+                      SizedBox(
+                        width: 15.0,
+                      ),
+                      Text("25+ Observations",
+                          style: TextStyle(color: Colors.blueAccent)),
                     ],
                   ),
                 ),
@@ -167,13 +179,7 @@ class _MyAppState2 extends State<MyApp2> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: <Widget>[
-                      Text("Favourite",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 46.0,
-                            fontFamily: "Calibre-Semibold",
-                            letterSpacing: 1.0,
-                          )),
+                      ThemedH4("Yours", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                       IconButton(
                         icon: Icon(
                           CustomIcons.option,
@@ -196,9 +202,8 @@ class _MyAppState2 extends State<MyApp2> {
                         ),
                         child: Center(
                           child: Padding(
-                            padding: EdgeInsets.symmetric(
-                                horizontal: 22.0, vertical: 6.0),
-                            child: Text("Latest",
+                            padding: EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
+                            child: Text("PIKA",
                                 style: TextStyle(color: Colors.white)),
                           ),
                         ),
@@ -206,7 +211,7 @@ class _MyAppState2 extends State<MyApp2> {
                       SizedBox(
                         width: 15.0,
                       ),
-                      Text("9+ Stories",
+                      Text("9+ Observations",
                           style: TextStyle(color: Colors.blueAccent))
                     ],
                   ),

@@ -2,14 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/appbars/menu_title_profile_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/lists/list_item_model.dart';
+import 'package:material_themes_widgets/lists/scaling_items_list.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/widget/navigation/menu_title_profile_appbar.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
-
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -37,7 +38,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: MenuTitleProfileAppBar(
-        appName: 'Pika Patrol',
+        title: 'Pika Patrol',
         openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
         openProfileCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
       ),
@@ -71,6 +72,19 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       ),
       bottomNavigationBar: StatsObservationsMapNavigationBar(pageController),
       drawer: SimpleClipPathDrawer(
+        child: ScalingItemsList(
+            "assets/pika3.jpg",
+            [
+              ListItemModel("Front Range Pika Project", Icons.add, iconClickedCallback: () => print("Clicked item 1")),
+              ListItemModel("Denver Zoo", Icons.account_circle, iconClickedCallback: () => print("Clicked item 1")),
+              ListItemModel("Rocky Mountain Wild", Icons.ac_unit, iconClickedCallback: () => print("Clicked item 1")),
+            ]
+        ),
+        padding: 0.0,
+        clipPathType: ClipPathType.NONE,
+        backgroundGradientType: BackgroundGradientType.MAIN_BG,
+      ),
+      endDrawer: SimpleClipPathDrawer(
         child: LoginScreen(),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,

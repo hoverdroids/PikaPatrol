@@ -47,7 +47,7 @@ dependencies:
   liquid_swipe: ^1.5.0
   curved_navigation_bar: ^0.3.3
   flutter_audio_recorder: ^0.5.5
-  material_themes_widgets: ^0.0.2
+  material_themes_widgets: ^0.0.4
 
 dev_dependencies:
   flutter_test:
@@ -70,6 +70,7 @@ flutter:
     - assets/img/
     - assets/images/
     - assets/img/social/
+    - assets/custom_icons.ttf
   #  - assets/img/firstImage.png
   #  - assets/img/secondImage.png
   #   - images/a_dot_burr.jpeg

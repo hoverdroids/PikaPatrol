@@ -328,12 +328,12 @@ class MyApp extends StatelessWidget {
 
     //Colorize the system status bar and system navigation
     //TODO - revisit and determine if we want a light/dark theme mode adjustment
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    /*SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
       statusBarColor: context.watch<MaterialThemesManager>().colorPalette().primary,
       statusBarIconBrightness: Brightness.light,
       systemNavigationBarColor: Colors.white,
       systemNavigationBarIconBrightness: Brightness.dark
-    ));
+    ));*/
 
     return MaterialApp(
       title: "Pika Patrol",

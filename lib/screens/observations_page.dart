@@ -46,12 +46,12 @@ class _ObservationsScrollViewState extends State<ObservationsScrollView> {
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.red,
         body: SingleChildScrollView(
           child: Column(
             children: <Widget>[
-              CardScrollWidget(0)
-
+              //CardScrollWidget(0)
+              Container()
             ],
           ),
         ),

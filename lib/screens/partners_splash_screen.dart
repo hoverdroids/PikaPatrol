@@ -26,9 +26,9 @@ class _PartnersSplashScreenState extends State<PartnersSplashScreen> {
                 FrontRangePikaProjectSplashScreen(),
                 DenverZooSplashScreen()
               ],
-              enableLoop: true,
+              enableLoop: false,
               fullTransitionValue: 300,
-              enableSlideIcon: true,
+              enableSlideIcon: false,
               waveType: WaveType.liquidReveal,
               positionSlideIcon: 0.5,
               liquidController: liquidController,

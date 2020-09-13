@@ -69,8 +69,14 @@ flutter:
     - assets/
     - assets/img/
     - assets/images/
+    - assets/images/denver_zoo_logo.png
+    - assets/images/front_range_pika_project_logo.png
+    - assets/images/pika_patrol_logo.png
+    - assets/images/rocky_mountain_wild_logo.png
     - assets/img/social/
     - assets/custom_icons.ttf
+
+
   #  - assets/img/firstImage.png
   #  - assets/img/secondImage.png
   #   - images/a_dot_burr.jpeg

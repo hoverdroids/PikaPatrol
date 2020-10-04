@@ -8,12 +8,12 @@ import 'package:pika_joe/screens/splash/partnering_with_splash_screen.dart';
 
 import '../home_with_drawer.dart';
 
-class PartnersSplashScreen extends StatefulWidget {
+class PartnersSplashScreensPager extends StatefulWidget {
   @override
-  _PartnersSplashScreenState createState() => _PartnersSplashScreenState();
+  _PartnersSplashScreensPagerState createState() => _PartnersSplashScreensPagerState();
 }
 
-class _PartnersSplashScreenState extends State<PartnersSplashScreen> {
+class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> {
 
   LiquidController liquidController = LiquidController();
 

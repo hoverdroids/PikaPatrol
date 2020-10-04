@@ -9,6 +9,7 @@ import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
+import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
@@ -79,15 +80,20 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
         child: HeaderList(
           [
-            ListItemModel(title: "Front Range Pika Project2", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+            ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
             ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
             ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "Training", itemClickedCallback: () => print("Clicked training"))
+            ListItemModel(title: "Training", itemClickedCallback: () => {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => TrainingScreensPager())
+              )
+            })
           ],
           imageUrl: "assets/pika3.jpg",
           avatarImageUrl: "assets/pika4.jpg",
           avatarTitle: "Chris Sprague",
           avatarSubtitle: "Lead Developer",
+          cardElevationLevel: ElevationLevel.LOW,
           usePolygonAvatar: true,
           headerGradientType: BackgroundGradientType.PRIMARY,
         ),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:pika_joe/screens/home_with_drawer.dart';
-import 'package:pika_joe/screens/splash/partners_splash_screen.dart';
+import 'package:pika_joe/screens/splash/partners_splash_screens_pager.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/widget/netflix/netflix_home_screen.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -316,8 +316,8 @@ class MyApp extends StatelessWidget {
     ColorPalette colorPalette = ColorPalette(
         primary: Colors.teal,
         primaryAccent: Colors.tealAccent,
-        secondary: Colors.brown,
-        secondaryAccent: Colors.brown
+        secondary: Color.fromARGB(255, 139, 69, 19),
+        secondaryAccent: Color.fromARGB(255, 111, 55, 15)
     );
     context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 
@@ -338,7 +338,7 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
       title: "Pika Patrol",
-      home: PartnersSplashScreen(),
+      home: HomeWithDrawer(),//TODO PartnersSplashScreensPager(),
       debugShowCheckedModeBanner: false,
       themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
       theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),

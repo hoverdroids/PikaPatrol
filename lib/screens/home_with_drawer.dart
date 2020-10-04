@@ -5,8 +5,8 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/menu_title_profile_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
-import 'package:material_themes_widgets/lists/scaling_items_list.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/styles/styles.dart';
@@ -72,13 +72,23 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       ),
       bottomNavigationBar: StatsObservationsMapNavigationBar(pageController),
       drawer: SimpleClipPathDrawer(
-        child: ScalingItemsList(
-            "assets/pika3.jpg",
-            [
-              ListItemModel("Front Range Pika Project", Icons.add, iconClickedCallback: () => print("Clicked item 1")),
-              ListItemModel("Denver Zoo", Icons.account_circle, iconClickedCallback: () => print("Clicked item 1")),
-              ListItemModel("Rocky Mountain Wild", Icons.ac_unit, iconClickedCallback: () => print("Clicked item 1")),
-            ]
+        leftIconType: ThemeGroupType.MOP,
+        leftIconClickedCallback: () => Navigator.pop(context),
+        rightIconType: ThemeGroupType.MOP,
+        rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
+        child: HeaderList(
+          [
+            ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => print("Clicked item 1")),
+            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => print("Clicked item 1")),
+            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => print("Clicked rmw")),
+            ListItemModel(title: "Training", itemClickedCallback: () => print("Clicked training"))
+          ],
+          imageUrl: "assets/pika3.jpg",
+          avatarImageUrl: "assets/pika4.jpg",
+          avatarTitle: "Chris Sprague",
+          avatarSubtitle: "Lead Developer",
+          usePolygonAvatar: true,
+          headerGradientType: BackgroundGradientType.PRIMARY,
         ),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,

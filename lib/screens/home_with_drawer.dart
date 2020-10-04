@@ -10,6 +10,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/styles/styles.dart';
+import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
@@ -78,9 +79,9 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
         child: HeaderList(
           [
-            ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => print("Clicked item 1")),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => print("Clicked item 1")),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => print("Clicked rmw")),
+            ListItemModel(title: "Front Range Pika Project2", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
+            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
             ListItemModel(title: "Training", itemClickedCallback: () => print("Clicked training"))
           ],
           imageUrl: "assets/pika3.jpg",

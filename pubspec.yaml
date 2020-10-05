@@ -47,7 +47,7 @@ dependencies:
   liquid_swipe: ^1.5.0
   curved_navigation_bar: ^0.3.3
   flutter_audio_recorder: ^0.5.5
-  material_themes_widgets: ^0.0.6
+  material_themes_widgets: ^0.0.8
   url_launcher: ^5.7.2
 
 dev_dependencies:

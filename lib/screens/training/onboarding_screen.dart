@@ -12,6 +12,9 @@ class OnboardingScreen extends Container {
   final String title;
   final String description;
   final String imageUrl;
+  SimpleClipPath imageClipPath;
+  final BlendMode imageBlendMode;
+  final Color imageBlendColor;
 
   OnboardingScreen(
   {
@@ -19,9 +22,16 @@ class OnboardingScreen extends Container {
     this.description,
     this.imageUrl,
     this.backgroundGradientType = BackgroundGradientType.PRIMARY,
-    this.clipPathType = ClipPathType.BOILER_PLATE,
-    EdgeInsetsGeometry padding
-  }): super(padding: padding != null ? padding : EdgeInsets.all(0.0));
+    this.clipPathType = ClipPathType.NONE,
+    EdgeInsetsGeometry padding,
+    this.imageClipPath,
+    this.imageBlendMode,
+    this.imageBlendColor
+  }): super(padding: padding != null ? padding : EdgeInsets.all(0.0)) {
+    imageClipPath = imageClipPath != null ? imageClipPath : SimpleClipPath(
+        type: ClipPathType.ROUNDED_CORNERS
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,8 +59,10 @@ class OnboardingScreen extends Container {
             child: Stack(
               children: <Widget>[
                 context.watch<MaterialThemesManager>().getBackgroundGradient(backgroundGradientType),
-                Column(
-                  children: children,
+                SafeArea(
+                  child: Column(
+                    children: children,
+                  )
                 )
               ],
             ),
@@ -83,7 +95,29 @@ class OnboardingScreen extends Container {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-          child: Image.asset(imageUrl),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(10.0),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black54,
+                  offset: Offset(0.0, 4.0),
+                  blurRadius: 10.0,
+                ),
+              ],
+            ),
+            child: ClipPath(
+              child: Image(
+                image: AssetImage(imageUrl),
+                width: double.infinity,
+                height: double.infinity,
+                fit: BoxFit.fitHeight,
+                colorBlendMode: imageBlendMode,
+                color: imageBlendColor,
+              ),
+              clipper: imageClipPath,
+            ),
+          ),
         ),
       ),
     );

@@ -136,21 +136,6 @@ var buttonCornerRadii = [
   12  // XXL
 ];
 
-enum ShadowSize {
-  NONE, SMALL, MEDIUM, LARGE
-}
-
-enum ShadowIntensity {
-  NONE, LIGHT, MEDIUM, DARK
-}
-
-enum ShadowColoringType {
-  LIGHT,    //Grayscale over light bg
-  DARK,     //Grayscale over dark bg
-  PRIMARY,  //Takes on hue of primary colored bg
-  BUTTON    //Takes on hue of the button's color, like a glow
-}
-
 enum CornerTypes {
   SQUARE, ROUNDED, CIRCULAR
 }

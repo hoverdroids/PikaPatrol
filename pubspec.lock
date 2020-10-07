@@ -302,14 +302,14 @@ packages:
       name: material_themes_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.19"
+    version: "0.0.23"
   material_themes_widgets:
     dependency: "direct main"
     description:
       name: material_themes_widgets
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.8"
+    version: "0.0.13"
   meta:
     dependency: transitive
     description:

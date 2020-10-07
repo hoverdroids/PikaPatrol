@@ -3,6 +3,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:pika_joe/styles/styles.dart';
 import 'package:provider/provider.dart';
 
 class OnboardingScreen extends Container {
@@ -43,7 +44,7 @@ class OnboardingScreen extends Container {
     //}
 
     ////if (imageUrl != null) {
-      children.add(_createImage());
+      children.add(_createImage(context));
     //}
 
     //if (description != null) {
@@ -89,23 +90,14 @@ class OnboardingScreen extends Container {
     );
   }
 
-  Widget _createImage() {
+  Widget _createImage(BuildContext context) {
     return Flexible(
       flex: 4,
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
           child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10.0),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black54,
-                  offset: Offset(0.0, 4.0),
-                  blurRadius: 10.0,
-                ),
-              ],
-            ),
+            decoration: context.watch<MaterialThemesManager>().getBoxDecorationShadow(),
             child: ClipPath(
               child: Image(
                 image: AssetImage(imageUrl),

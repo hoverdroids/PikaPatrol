@@ -102,10 +102,13 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         backgroundGradientType: BackgroundGradientType.MAIN_BG,
       ),
       endDrawer: SimpleClipPathDrawer(
+        leftIconType: ThemeGroupType.MOP,
+        leftIconClickedCallback: () => Navigator.pop(context),
+        showRightIcon: false,
         child: LoginScreen(),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,
-        backgroundGradientType: BackgroundGradientType.MAIN_BG,
+        backgroundGradientType: BackgroundGradientType.PRIMARY,
       ),
     );
   }

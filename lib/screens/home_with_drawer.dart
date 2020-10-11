@@ -9,6 +9,8 @@ import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
+import 'package:material_themes_widgets/screens/profile_screen.dart';
+import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/firebase_auth_service.dart';
@@ -36,13 +38,15 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   bool loading = false;
   String email = "";
   String password = "";
+  bool showSignIn = true;
 
   @override
   Widget build(BuildContext context) {
-    print('Build home with sidebar');
-    Size mediaQuery = MediaQuery.of(context).size;
 
+    Size mediaQuery = MediaQuery.of(context).size;
     List<Widget> pages=[ObservationsPage(),ObservationsPage(),ObservationsPage()];
+
+    //TODO - final user = Provider.of<User>(context);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -117,41 +121,48 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            LoginScreen(
-              showForgots: false,
-              showLabels: false,
-              onPasswordChangedCallback: (value) => { password = value },
-              onEmailChangedCallback: (value) => { email = value },
-              onTapLogin: () async {
-                setState(() => loading = true);
-                dynamic result = await _auth.signInWithEmailAndPassword(email, password);
-                if(result == null) {
-                  Fluttertoast.showToast(
-                      msg: "Could not sign in with those credentials",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.CENTER,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                      textColor: Colors.white,
-                      fontSize: 16.0
-                  );
-                  setState((){
-                    loading = false;
-                  });
-                  //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
-                } else {
-                  Fluttertoast.showToast(
-                      msg: "Successfully Logged In",
-                      toastLength: Toast.LENGTH_SHORT,
-                      gravity: ToastGravity.CENTER,
-                      timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                      textColor: Colors.white,
-                      fontSize: 16.0
-                  );
-                }
-              },
-            ),
+            if(showSignIn) ... [
+              LoginScreen(
+                showForgots: false,
+                showLabels: false,
+                onPasswordChangedCallback: (value) => { password = value },
+                onEmailChangedCallback: (value) => { email = value },
+                onTapLogin: () async {
+                  setState(() => loading = true);
+                  dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                  if(result == null) {
+                    Fluttertoast.showToast(
+                        msg: "Could not sign in with those credentials",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                        textColor: Colors.white,
+                        fontSize: 16.0
+                    );
+                    setState((){
+                      loading = false;
+                    });
+                    //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
+                  } else {
+                    Fluttertoast.showToast(
+                        msg: "Successfully Logged In",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                        textColor: Colors.white,
+                        fontSize: 16.0
+                    );
+                  }
+                },
+                onTapRegister: () => { setState(() => showSignIn = !showSignIn) },
+              ),
+            ] else ... [
+              ProfileScreen(
+                onTapLogin: () => { setState(() => showSignIn = !showSignIn) },
+              ),
+            ],
             if(loading) ... [
               Container(
                 width: double.infinity,

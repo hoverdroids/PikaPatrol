@@ -14,6 +14,8 @@ import 'package:pika_joe/services/firebase_auth_service.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:provider/provider.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -33,7 +35,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   bool loading = false;
   String email = "";
   String password = "";
-  String loginError = "";
 
   @override
   Widget build(BuildContext context) {
@@ -121,13 +122,29 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             setState(() => loading = true);
             dynamic result = await _auth.signInWithEmailAndPassword(email, password);
             if(result == null) {
+              Fluttertoast.showToast(
+                  msg: "Could not sign in with those credentials",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.CENTER,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                  textColor: Colors.white,
+                  fontSize: 16.0
+              );
               setState((){
-                loginError = 'Could not sign in with those credentials';
                 loading = false;
               });
               //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
             } else {
-              print("Logged IN :)");
+              Fluttertoast.showToast(
+                  msg: "Successfully Logged In",
+                  toastLength: Toast.LENGTH_SHORT,
+                  gravity: ToastGravity.CENTER,
+                  timeInSecForIosWeb: 1,
+                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                  textColor: Colors.white,
+                  fontSize: 16.0
+              );
             }
           },
         ),

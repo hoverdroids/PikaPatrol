@@ -5,6 +5,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/menu_title_profile_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
@@ -113,40 +114,53 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),
         showRightIcon: false,
-        child: LoginScreen(
-          showForgots: false,
-          showLabels: false,
-          onPasswordChangedCallback: (value) => { password = value },
-          onEmailChangedCallback: (value) => { email = value },
-          onTapLogin: () async {
-            setState(() => loading = true);
-            dynamic result = await _auth.signInWithEmailAndPassword(email, password);
-            if(result == null) {
-              Fluttertoast.showToast(
-                  msg: "Could not sign in with those credentials",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-              setState((){
-                loading = false;
-              });
-              //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
-            } else {
-              Fluttertoast.showToast(
-                  msg: "Successfully Logged In",
-                  toastLength: Toast.LENGTH_SHORT,
-                  gravity: ToastGravity.CENTER,
-                  timeInSecForIosWeb: 1,
-                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                  textColor: Colors.white,
-                  fontSize: 16.0
-              );
-            }
-          },
+        child: Stack(
+          alignment: Alignment.center,
+          children: <Widget>[
+            LoginScreen(
+              showForgots: false,
+              showLabels: false,
+              onPasswordChangedCallback: (value) => { password = value },
+              onEmailChangedCallback: (value) => { email = value },
+              onTapLogin: () async {
+                setState(() => loading = true);
+                dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                if(result == null) {
+                  Fluttertoast.showToast(
+                      msg: "Could not sign in with those credentials",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                      textColor: Colors.white,
+                      fontSize: 16.0
+                  );
+                  setState((){
+                    loading = false;
+                  });
+                  //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
+                } else {
+                  Fluttertoast.showToast(
+                      msg: "Successfully Logged In",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                      textColor: Colors.white,
+                      fontSize: 16.0
+                  );
+                }
+              },
+            ),
+            if(loading) ... [
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white.withOpacity(0.70),
+                child: Loading(),
+              )
+            ]
+          ],
         ),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,

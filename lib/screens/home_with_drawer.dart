@@ -10,6 +10,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_screen.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
+import 'package:pika_joe/services/firebase_auth_service.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
@@ -27,6 +28,12 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
 
   //TODO - replace the following with liquidController eventually
   PageController pageController = PageController(initialPage: initialPage);
+
+  final FirebaeAuthService _auth = FirebaeAuthService();
+  bool loading = false;
+  String email = "";
+  String password = "";
+  String loginError = "";
 
   @override
   Widget build(BuildContext context) {
@@ -105,10 +112,28 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),
         showRightIcon: false,
-        child: LoginScreen(),
+        child: LoginScreen(
+          showForgots: false,
+          showLabels: false,
+          onPasswordChangedCallback: (value) => { password = value },
+          onEmailChangedCallback: (value) => { email = value },
+          onTapLogin: () async {
+            setState(() => loading = true);
+            dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+            if(result == null) {
+              setState((){
+                loginError = 'Could not sign in with those credentials';
+                loading = false;
+              });
+              //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
+            } else {
+              print("Logged IN :)");
+            }
+          },
+        ),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,
-        backgroundGradientType: BackgroundGradientType.PRIMARY,
+        backgroundGradientType: BackgroundGradientType.PRIMARY
       ),
     );
   }

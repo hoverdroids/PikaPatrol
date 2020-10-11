@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:pika_joe/services/auth.dart';
-import 'file:///C:/Users/sprag/Google%20Drive%20(spragucm)/Projects/Pika%20Joe%20App/2/pika_joe/pika_joe/lib/styles/constants.dart';
+import 'package:pika_joe/styles/constants.dart';
 import 'package:pika_joe/shared/loading.dart';
 
 class SignIn extends StatefulWidget {

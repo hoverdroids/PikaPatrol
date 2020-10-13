@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:provider/provider.dart';
+import 'package:pika_joe/services/firebase_auth_service.dart';
+import 'model/user.dart';
 
 // Forms --------------------------------------------------------------
 /*void main() {
@@ -336,13 +339,16 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark
     ));*/
 
-    return MaterialApp(
-      title: "Pika Patrol",
-      home: HomeWithDrawer(),//TODO PartnersSplashScreensPager(),
-      debugShowCheckedModeBanner: false,
-      themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
-      theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
-      darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
+    return StreamProvider<User>.value(
+      value: FirebaeAuthService().user,
+      child: MaterialApp(
+          title: "Pika Patrol",
+          home: HomeWithDrawer(),//TODO PartnersSplashScreensPager(),
+          debugShowCheckedModeBanner: false,
+          themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
+          theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
+          darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
+      ),
     );
   }
 }

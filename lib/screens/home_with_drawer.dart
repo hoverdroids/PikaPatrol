@@ -46,7 +46,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
     Size mediaQuery = MediaQuery.of(context).size;
     List<Widget> pages=[ObservationsPage(),ObservationsPage(),ObservationsPage()];
 
-    //TODO - final user = Provider.of<User>(context);
+    final user = Provider.of<User>(context);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -121,7 +121,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         child: Stack(
           alignment: Alignment.center,
           children: <Widget>[
-            if(showSignIn) ... [
+            if (user != null) ... [
+              ProfileScreen(
+                screenTitle: "Profile",
+              ),
+            ] else if(showSignIn) ... [
               LoginScreen(
                 showForgots: false,
                 showLabels: false,
@@ -140,10 +144,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                         textColor: Colors.white,
                         fontSize: 16.0
                     );
-                    setState((){
-                      loading = false;
-                    });
-                    //TODO - our previous setup says, "once the user is signed in, the home page is displayed via the stream"
                   } else {
                     Fluttertoast.showToast(
                         msg: "Successfully Logged In",
@@ -155,6 +155,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                         fontSize: 16.0
                     );
                   }
+                  setState((){ loading = false; });
                 },
                 onTapRegister: () => { setState(() => showSignIn = !showSignIn) },
               ),

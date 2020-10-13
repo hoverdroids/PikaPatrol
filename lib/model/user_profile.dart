@@ -3,6 +3,7 @@ class UserProfile {
   final String uid;
   final String firstName;
   final String lastName;
+  final String tagline;
   final String pronouns;
   final String organization;
   final String address;
@@ -18,6 +19,7 @@ class UserProfile {
       this.lastName,
       {
         this.uid,
+        this.tagline = "",
         this.pronouns = "",
         this.organization = "",
         this.address = "",

@@ -46,7 +46,7 @@ class FirebaeAuthService {
     UserProfile userProfile
   ) async {
     try {
-      AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: email);
+      AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
 
       await FirebaseDatabaseService(uid: user.uid).updateUserProfile(userProfile);

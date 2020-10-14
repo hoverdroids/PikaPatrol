@@ -11,6 +11,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:pika_joe/model/user.dart';
+import 'package:pika_joe/model/user_profile.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/firebase_auth_service.dart';
@@ -35,13 +36,29 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   PageController pageController = PageController(initialPage: initialPage);
 
   final FirebaeAuthService _auth = FirebaeAuthService();
+  bool showSignIn = true;
   bool loading = false;
+  bool isEditingProfile = false;
+
   String email = "";
   String password = "";
-  bool showSignIn = true;
+  String firstName = "";
+  String lastName = "";
+  String tagline = "";
+  String pronouns = "";
+  String organization = "";
+  String address = "";
+  String city = "";
+  String state = "";
+  String zip = "";
+  bool frppOptIn = false;
+  bool rmwOptIn = false;
+  bool dzOptIn = false;
 
   final Key _registerKey = new GlobalKey();
   final Key _loginKey = new GlobalKey();
+  final Key _editProfileKey = new GlobalKey();
+  final Key _profileKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -121,74 +138,129 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),
         showRightIcon: false,
-        child: Stack(
-          alignment: Alignment.center,
-          children: <Widget>[
-            if (user != null) ... [
-              ProfileScreen(
-                onTapLogout: () async {
-                  await _auth.signOut();
-                },
-              ),
-            ] else if(showSignIn) ... [
-              LoginRegisterScreen(
-                key: _loginKey,
-                isLogin: true,
-                showLabels: false,
-                onPasswordChangedCallback: (value) => { password = value, print("PW:" + password) },
-                onEmailChangedCallback: (value) => { email = value },
-                onTapLogin: () async {
-                  setState(() => loading = true);
-                  dynamic result = await _auth.signInWithEmailAndPassword(email, password);
-                  if(result == null) {
-                    Fluttertoast.showToast(
-                        msg: "Could not sign in with those credentials",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                        textColor: Colors.white,
-                        fontSize: 16.0
+        child: SafeArea(
+          child: Stack(
+            alignment: Alignment.center,
+            children: <Widget>[
+              if (user != null) ... [
+                ProfileScreen(
+                  key: isEditingProfile ? _editProfileKey : _profileKey,
+                  isEditMode: isEditingProfile,
+                  onTapLogout: () async {
+                    await _auth.signOut();
+                  },
+                  onTapEdit: () => setState(() => isEditingProfile = true),
+                  onTapSave: () async {
+                    setState(() => isEditingProfile = false);
+                  },
+                ),
+              ] else if(showSignIn) ... [
+                LoginRegisterScreen(
+                  key: _loginKey,
+                  isLogin: true,
+                  showLabels: false,
+                  onPasswordChangedCallback: (value) => { password = value, print("PW:" + password) },
+                  onEmailChangedCallback: (value) => { email = value },
+                  onTapLogin: () async {
+                    setState(() => loading = true);
+                    dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                    if(result == null) {
+                      Fluttertoast.showToast(
+                          msg: "Could not sign in with those credentials",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Successfully Logged In",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    }
+                    setState((){ loading = false; });
+                  },
+                  onTapRegister: () => {
+                    setState(() => showSignIn = false),
+                    print("1ShowSignIn: " + showSignIn.toString()),
+                    this.build(context)
+                  },
+                ),
+              ] else ... [
+                LoginRegisterScreen(
+                  key: _registerKey,
+                  isLogin: false,
+                  showLabels: false,
+                  onPasswordChangedCallback: (value) => { password = value, print("PW:" + password) },
+                  onEmailChangedCallback: (value) => { email = value },
+                  onFirstNameChangedCallback: (value) => { firstName = value },
+                  onLastNameChangedCallback: (value) => { lastName = value },
+                  onTaglineChangedCallback: (value) => { tagline = value },
+                  onPronounsChangedCallback: (value) => { pronouns = value },
+                  onOrganizationChangedCallback: (value) => { organization = value },
+                  onAddressChangedCallback: (value) => { address = value },
+                  onCityChangedCallback: (value) => { city = value },
+                  onStateChangedCallback: (value) => { state = value },
+                  onZipChangedCallback: (value) => { zip = value },
+                  onTapLogin: () => { setState(() => showSignIn = true) },
+                  onTapRegister: () async {
+                    setState(() => loading = true);
+                    var userProfile = UserProfile(firstName, lastName,
+                        tagline: tagline,
+                        pronouns: pronouns,
+                        organization: organization,
+                        address: address,
+                        city: city,
+                        state: state,
+                        zip: zip,
+                        frppOptIn: frppOptIn,
+                        rmwOptIn: rmwOptIn,
+                        dzOptIn: dzOptIn
                     );
-                  } else {
-                    Fluttertoast.showToast(
-                        msg: "Successfully Logged In",
-                        toastLength: Toast.LENGTH_SHORT,
-                        gravity: ToastGravity.CENTER,
-                        timeInSecForIosWeb: 1,
-                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                        textColor: Colors.white,
-                        fontSize: 16.0
-                    );
-                  }
-                  setState((){ loading = false; });
-                },
-                onTapRegister: () => {
-                  setState(() => showSignIn = false),
-                  print("1ShowSignIn: " + showSignIn.toString()),
-                  this.build(context)
-                },
-              ),
-            ] else ... [
-              LoginRegisterScreen(
-                key: _registerKey,
-                isLogin: false,
-                onTapLogin: () => {
-                  setState(() => showSignIn = true),
-                  print("2ShowSignIn: " + showSignIn.toString())
-                },
-                onTapRegister: () => print("Let's register"),
-              ),
+                    dynamic result = await _auth.registerWithEmailAndPassword(email, password, userProfile);
+                    if(result == null) {
+                      Fluttertoast.showToast(
+                          msg: "Could not register in with those credentials",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Successfully Registered",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.teal,
+                          //TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    }
+                    setState(() => loading = false);
+                  },
+                ),
+              ],
+              if(loading) ... [
+                Container(
+                  width: double.infinity,
+                  height: double.infinity,
+                  color: Colors.white.withOpacity(0.70),
+                  child: Loading(),
+                )
+              ]
             ],
-            if(loading) ... [
-              Container(
-                width: double.infinity,
-                height: double.infinity,
-                color: Colors.white.withOpacity(0.70),
-                child: Loading(),
-              )
-            ]
-          ],
+          )
         ),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,

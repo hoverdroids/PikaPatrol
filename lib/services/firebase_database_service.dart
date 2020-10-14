@@ -17,22 +17,22 @@ class FirebaseDatabaseService {
   Future updateUserProfile(
     String firstName,
     String lastName,
-    {
-      String pronouns = "",
-      String organization = "",
-      String address = "",
-      String city = "",
-      String state = "",
-      String zip = "",
-      bool frppOptIn = false,
-      bool rmwOptIn = false,
-      bool dzOptIn = false
-    }
+    String tagline,
+    String pronouns,
+    String organization,
+    String address,
+    String city,
+    String state,
+    String zip,
+    bool frppOptIn,
+    bool rmwOptIn,
+    bool dzOptIn
   ) async {
     return await userProfilesCollection.document(uid).setData(
         {
           'firstName': firstName,
           'lastName': lastName,
+          'tagline' : tagline,
           'pronouns': pronouns,
           'organization': organization,
           'address': address,
@@ -111,6 +111,8 @@ class FirebaseDatabaseService {
     return list;
   }
 
+  //TODO - should not need this! We should only need to get and evaluate the current user's
+  //profile
   Stream<List<UserProfile>> get userProfiles {
     return userProfilesCollection.snapshots().map(_userProfilesListFromSnapshot);
   }

@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'firebase_database_service.dart';
@@ -42,13 +43,39 @@ class FirebaseAuthService {
 
   Future registerWithEmailAndPassword(
     String email,
-    String password
+    String password,
+    String firstName,
+    String lastName,
+    String tagline,
+    String pronouns,
+    String organization,
+    String address,
+    String city,
+    String state,
+    String zip,
+    bool frppOptIn,
+    bool rmwOptIn,
+    bool dzOptIn
   ) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
 
-      await FirebaseDatabaseService(uid: user.uid).updateUserProfile("Chris1", "Sprague1");//userProfile.firstName, userProfile.lastName
+      await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
+        firstName,
+        lastName,
+        tagline,
+        pronouns,
+        organization,
+        address,
+        city,
+        state,
+        zip,
+        frppOptIn,
+        rmwOptIn,
+        dzOptIn
+      );
+
       return _userFromFirebaseUser(user);
     } catch (e) {
       print('Failed to create user:' + e.toString());

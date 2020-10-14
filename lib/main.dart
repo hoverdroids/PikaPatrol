@@ -340,7 +340,7 @@ class MyApp extends StatelessWidget {
     ));*/
 
     return StreamProvider<User>.value(
-      value: FirebaeAuthService().user,
+      value: FirebaseAuthService().user,
       child: MaterialApp(
           title: "Pika Patrol",
           home: HomeWithDrawer(),//TODO PartnersSplashScreensPager(),

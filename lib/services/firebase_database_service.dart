@@ -8,14 +8,45 @@ class FirebaseDatabaseService {
   FirebaseDatabaseService({ this.uid });
 
   //TODO - we should never get all users' preference! We should just get the one set for the one user
-  final CollectionReference userProfilesCollection = Firestore.instance
-      .collection("userProfiles");
+  final CollectionReference userProfilesCollection = Firestore.instance.collection("userProfiles");
 
   //TODO - we should try to get the most recent ten or apply and pass a filter
   final CollectionReference observationsCollection = Firestore.instance
       .collection("observations");
 
-  Future updateUserProfile(UserProfile data) async {
+  Future updateUserProfile(
+    String firstName,
+    String lastName,
+    {
+      String pronouns = "",
+      String organization = "",
+      String address = "",
+      String city = "",
+      String state = "",
+      String zip = "",
+      bool frppOptIn = false,
+      bool rmwOptIn = false,
+      bool dzOptIn = false
+    }
+  ) async {
+    return await userProfilesCollection.document(uid).setData(
+        {
+          'firstName': firstName,
+          'lastName': lastName,
+          'pronouns': pronouns,
+          'organization': organization,
+          'address': address,
+          'city': city,
+          'state': state,
+          'zip': zip,
+          'frppOptIn': frppOptIn,
+          'rmwOptIn': rmwOptIn,
+          'dzOptIn': dzOptIn,
+        }
+    );
+  }
+  
+  /*Future updateUserProfile(UserProfile data) async {
     return await userProfilesCollection.document(uid).setData(
         {
           'firstName': data.firstName,
@@ -31,7 +62,7 @@ class FirebaseDatabaseService {
           'dzOptIn': data.dzOptIn,
         }
     );
-  }
+  }*/
 
   UserProfile _userProfileFromSnapshot(DocumentSnapshot snapshot) {
     return UserProfile(

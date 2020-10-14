@@ -3,7 +3,7 @@ import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'firebase_database_service.dart';
 
-class FirebaeAuthService {
+class FirebaseAuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -18,7 +18,7 @@ class FirebaeAuthService {
     return _auth.onAuthStateChanged.map((FirebaseUser user) => _userFromFirebaseUser(user));
   }
 
-  Future signInAnonomously() async {
+  Future signInAnonymously() async {
     try {
       AuthResult result = await _auth.signInAnonymously();
       FirebaseUser user = result.user;
@@ -42,14 +42,14 @@ class FirebaeAuthService {
 
   Future registerWithEmailAndPassword(
     String email,
-    String password,
-    UserProfile userProfile
+    String password
   ) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
 
-      await FirebaseDatabaseService(uid: user.uid).updateUserProfile(userProfile);
+      await FirebaseDatabaseService(uid: user.uid).updateUserProfile("Chris1", "Sprague1");//userProfile.firstName, userProfile.lastName
+      return _userFromFirebaseUser(user);
     } catch (e) {
       print('Failed to create user:' + e.toString());
       return null;

@@ -14,7 +14,9 @@ import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
+import 'package:pika_joe/services/database.dart';
 import 'package:pika_joe/services/firebase_auth_service.dart';
+import 'package:pika_joe/services/firebase_database_service.dart';
 import 'package:pika_joe/styles/styles.dart';
 import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
@@ -35,7 +37,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   //TODO - replace the following with liquidController eventually
   PageController pageController = PageController(initialPage: initialPage);
 
-  final FirebaeAuthService _auth = FirebaeAuthService();
+  final FirebaseAuthService _auth = FirebaseAuthService();
   bool showSignIn = true;
   bool loading = false;
   bool isEditingProfile = false;
@@ -151,7 +153,14 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   },
                   onTapEdit: () => setState(() => isEditingProfile = true),
                   onTapSave: () async {
-                    setState(() => isEditingProfile = false);
+                    setState(() => loading = true);
+                    dynamic result = await FirebaseDatabaseService(uid: user.uid).updateUserProfile("Chris", "Sprague");
+                    if (result == null) {
+
+                    } else {
+                      setState(() => isEditingProfile = false);
+                    }
+                    setState(() => loading = false);
                   },
                 ),
               ] else if(showSignIn) ... [
@@ -212,19 +221,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   onTapLogin: () => { setState(() => showSignIn = true) },
                   onTapRegister: () async {
                     setState(() => loading = true);
-                    var userProfile = UserProfile(firstName, lastName,
-                        tagline: tagline,
-                        pronouns: pronouns,
-                        organization: organization,
-                        address: address,
-                        city: city,
-                        state: state,
-                        zip: zip,
-                        frppOptIn: frppOptIn,
-                        rmwOptIn: rmwOptIn,
-                        dzOptIn: dzOptIn
-                    );
-                    dynamic result = await _auth.registerWithEmailAndPassword(email, password, userProfile);
+                    print("Email:" + email + " Password:" + password);
+                    dynamic result = await _auth.registerWithEmailAndPassword(email, password);
                     if(result == null) {
                       Fluttertoast.showToast(
                           msg: "Could not register in with those credentials",

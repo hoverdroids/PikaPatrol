@@ -145,7 +145,10 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           endDrawer: SimpleClipPathDrawer(
               leftIconType: ThemeGroupType.MOP,
               leftIconClickedCallback: () => Navigator.pop(context),
-              showRightIcon: false,
+              showRightIcon: isEditingProfile ? true : false,
+              rightIconType: ThemeGroupType.MOP,
+              rightIcon: Icons.close,
+              rightIconClickedCallback: () => setState(() => isEditingProfile = false),
               child: SafeArea(
                   child: Stack(
                     alignment: Alignment.center,
@@ -183,13 +186,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                               rmwOptIn ?? userProfile.rmwOptIn,
                               dzOptIn ?? userProfile.dzOptIn
                             );
-                            if (result == null) {
-
-                            } else {
-                              setState(() => isEditingProfile = false);
-                            }
+                            setState(() => isEditingProfile = false);
                             setState(() => loading = false);
                           },
+                          showEmail: false, //TODO - need to wait until we allow the user to change their email
+                          showPassword: false, //TODO - need to wait until we allow the user to change their password
                           firstName: userProfile != null ? userProfile.firstName : "" ,
                           lastName: userProfile != null ? userProfile.lastName : "",
                           tagline: userProfile != null ? userProfile.tagline : "",

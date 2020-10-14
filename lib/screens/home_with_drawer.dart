@@ -63,12 +63,14 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _editProfileNullKey = new UniqueKey();
   final Key _profileKey = new UniqueKey();
   final Key _nullProfileKey = new UniqueKey();
+  final Key _leftDrawerKey = new UniqueKey();
+  final Key _nullLeftDrawerKey = new UniqueKey();
   
   @override
   Widget build(BuildContext context) {
 
     Size mediaQuery = MediaQuery.of(context).size;
-    List<Widget> pages=[ObservationsPage(),ObservationsPage(),ObservationsPage()];
+    List<Widget> pages=[ObservationsPage()];
 
     final user = Provider.of<User>(context);
 
@@ -87,7 +89,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           children: <Widget>[
             PageView.builder(
               controller: pageController,
-              itemCount: 3,
+              itemCount: pages.length,
               itemBuilder: (context, position) => pages[position],
             ),
             /*LiquidSwipe(
@@ -115,24 +117,32 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         leftIconClickedCallback: () => Navigator.pop(context),
         rightIconType: ThemeGroupType.MOP,
         rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
-        child: HeaderList(
-          [
-            ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "Training", itemClickedCallback: () => {
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) => TrainingScreensPager())
-              )
-            })
-          ],
-          imageUrl: "assets/pika3.jpg",
-          avatarImageUrl: "assets/pika4.jpg",
-          avatarTitle: "Chris Sprague",
-          avatarSubtitle: "Lead Developer",
-          cardElevationLevel: ElevationLevel.LOW,
-          usePolygonAvatar: true,
-          headerGradientType: BackgroundGradientType.PRIMARY,
+        child: StreamBuilder<UserProfile>(
+          stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
+          builder: (context, snapshot) {
+            UserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+            return HeaderList(
+              [
+                ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+                ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
+                ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
+                ListItemModel(title: "Training", itemClickedCallback: () => {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (BuildContext context) => TrainingScreensPager())
+                  )
+                })
+              ],
+              key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
+              imageUrl: "assets/pika3.jpg",
+              avatarImageUrl: "assets/pika4.jpg",
+              avatarTitle: userProfile == null ? "Login" : userProfile.firstName + " " + userProfile.lastName,
+              avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
+              avatarClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
+              cardElevationLevel: ElevationLevel.LOW,
+              usePolygonAvatar: true,
+              headerGradientType: BackgroundGradientType.PRIMARY,
+            );
+          },
         ),
         padding: 0.0,
         clipPathType: ClipPathType.NONE,
@@ -155,10 +165,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                         builder: (context, snapshot){
 
                           UserProfile userProfile = snapshot.hasData ? snapshot.data : null;
-                          print("UserProfile:" + (userProfile == null ? "null" : "not null"));
 
                           return ProfileScreen(
                             //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
+                            //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
+                            //pops up and then immediately pops back down when trying to type text
                             key: isEditingProfile ? (userProfile == null ? _editProfileNullKey : _editProfileKey) : (userProfile == null ? _nullProfileKey : _profileKey),
                             isEditMode: isEditingProfile,
                             onTapLogout: () async {
@@ -168,15 +179,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                             onTapEdit: () => setState(() => isEditingProfile = true),
                             onTapSave: () async {
                               setState(() => loading = true);
-                              print("First:" + firstName);
-                              print("Last:" + lastName);
-                              print("Tagline:" + tagline);
-                              print("Pronouns:" + pronouns);
-                              print("Organization:" + organization);
-                              print("Address:" + address);
-                              print("City:" + city);
-                              print("State:" + state);
-                              print("Zip:" + zip);
                               dynamic result = await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
                                   firstName ?? userProfile.firstName,
                                   lastName ?? userProfile.lastName,
@@ -224,7 +226,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                       key: _loginKey,
                       isLogin: true,
                       showLabels: false,
-                      onPasswordChangedCallback: (value) => { password = value, print("PW:" + password) },
+                      onPasswordChangedCallback: (value) => { password = value },
                       onEmailChangedCallback: (value) => { email = value },
                       onTapLogin: () async {
                         setState(() => loading = true);
@@ -253,9 +255,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                         setState((){ loading = false; });
                       },
                       onTapRegister: () => {
-                        setState(() => showSignIn = false),
-                        print("1ShowSignIn: " + showSignIn.toString()),
-                        this.build(context)
+                        setState(() => showSignIn = false)
                       },
                     ),
                   ] else ... [

@@ -69,6 +69,7 @@ class FirebaseDatabaseService {
       snapshot.data['firstName'] ?? '',
       snapshot.data['lastName'] ?? '',
       uid: uid,
+      tagline: snapshot.data['tagline'] ?? '',
       pronouns: snapshot.data['pronouns'] ?? '',
       organization: snapshot.data['organization'] ?? '',
       address: snapshot.data['address'] ?? '',
@@ -94,6 +95,7 @@ class FirebaseDatabaseService {
         doc.data['firstName'] ?? '',
         doc.data['lastName'] ?? '',
         pronouns: doc.data['pronouns'] ?? '',
+        tagline: doc.data['tagline'] ?? '',
         organization: doc.data['organization'] ?? '',
         address: doc.data['address'] ?? '',
         city: doc.data['city'] ?? '',
@@ -118,7 +120,7 @@ class FirebaseDatabaseService {
   }
 
   Stream<UserProfile> get userProfile {
-    return userProfilesCollection.document(uid).snapshots().map(_userProfileFromSnapshot);
+    return uid == null ? null : userProfilesCollection.document(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
 }

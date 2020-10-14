@@ -12,9 +12,9 @@ class StatsObservationsMapNavigationBar extends CurvedNavigationBar {
     buttonBackgroundColor: navbarButtonColor,
     height: navbarHeight,
     items: <Widget>[
-      Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
+      //Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
       Icon(Icons.loupe, size: navbarIconSize, color: navbarIconColor),
-      Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
+      //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
     ],
     onTap: (index) {
       pageController.animateToPage(
@@ -24,6 +24,6 @@ class StatsObservationsMapNavigationBar extends CurvedNavigationBar {
     },
     animationDuration: Duration(milliseconds: navbarAnimationDuration),
     animationCurve: Curves.easeInOut,
-    index: pageController.initialPage,
+    //index: pageController.initialPage,
   );
 }

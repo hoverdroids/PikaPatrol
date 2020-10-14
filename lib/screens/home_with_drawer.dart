@@ -8,7 +8,7 @@ import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
-import 'package:material_themes_widgets/screens/login_screen.dart';
+import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/screens/observations_page.dart';
@@ -39,6 +39,9 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   String email = "";
   String password = "";
   bool showSignIn = true;
+
+  final Key _registerKey = new GlobalKey();
+  final Key _loginKey = new GlobalKey();
 
   @override
   Widget build(BuildContext context) {
@@ -123,13 +126,16 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           children: <Widget>[
             if (user != null) ... [
               ProfileScreen(
-                screenTitle: "Profile",
+                onTapLogout: () async {
+                  await _auth.signOut();
+                },
               ),
             ] else if(showSignIn) ... [
-              LoginScreen(
-                showForgots: false,
+              LoginRegisterScreen(
+                key: _loginKey,
+                isLogin: true,
                 showLabels: false,
-                onPasswordChangedCallback: (value) => { password = value },
+                onPasswordChangedCallback: (value) => { password = value, print("PW:" + password) },
                 onEmailChangedCallback: (value) => { email = value },
                 onTapLogin: () async {
                   setState(() => loading = true);
@@ -157,11 +163,21 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   }
                   setState((){ loading = false; });
                 },
-                onTapRegister: () => { setState(() => showSignIn = !showSignIn) },
+                onTapRegister: () => {
+                  setState(() => showSignIn = false),
+                  print("1ShowSignIn: " + showSignIn.toString()),
+                  this.build(context)
+                },
               ),
             ] else ... [
-              ProfileScreen(
-                onTapLogin: () => { setState(() => showSignIn = !showSignIn) },
+              LoginRegisterScreen(
+                key: _registerKey,
+                isLogin: false,
+                onTapLogin: () => {
+                  setState(() => showSignIn = true),
+                  print("2ShowSignIn: " + showSignIn.toString())
+                },
+                onTapRegister: () => print("Let's register"),
               ),
             ],
             if(loading) ... [

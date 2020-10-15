@@ -1,61 +1,45 @@
 import 'package:flutter/material.dart';
-import 'package:pika_joe/mock/data.dart';
-import 'package:pika_joe/styles/colors.dart';
-import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/widget/break_me_apart.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:provider/provider.dart';
 
-//We are extending and returning the container because that's what the pager requires. Otherwise it would b
-//better to simpply return the ObservationsScrollView
-class ObservationsPage extends Container {
+class ObservationsPage extends StatefulWidget {
+  @override
+  _ObservationsPageState createState() => _ObservationsPageState();
+}
+
+class _ObservationsPageState extends State<ObservationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return MyApp2();
-    /*return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: observationsPageBgGradient,
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-          tileMode: TileMode.clamp,
-        ),
-      ),
-      child: ObservationsScrollView(),
-    );*/
-  }
-}
-
-class ObservationsScrollView extends StatefulWidget {
-  @override
-  _ObservationsScrollViewState createState() => _ObservationsScrollViewState();
-
-}
-
-class _ObservationsScrollViewState extends State<ObservationsScrollView> {
-
-  var currentPage = images.length - 1.0;
-
-  @override
-  Widget build(BuildContext context) {
-    PageController controller = PageController(initialPage: images.length - 1);
-    controller.addListener(() {
-      setState(() {
-        currentPage = controller.page;
-      });
-    });
-
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: Colors.red,
-        body: SingleChildScrollView(
-          child: Column(
-            children: <Widget>[
-              //CardScrollWidget(0)
-              Container()
-            ],
-          ),
-        ),
-      ),
+    //We are extending container because that's what the pager requires.
+    return Container(
+      width: double.infinity,
+      height: double.infinity,
+        child: Stack(
+          children: <Widget>[
+            context.watch<MaterialThemesManager>().getBackgroundGradient(BackgroundGradientType.PRIMARY),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                      Container(
+                        width: double.infinity,
+                        height: 2000,
+                        color: Colors.red,
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        )
     );
   }
+
 }

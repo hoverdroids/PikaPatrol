@@ -1,3 +1,4 @@
+import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
@@ -22,6 +23,9 @@ import 'package:pika_joe/utils/network_utils.dart';
 import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
+import 'package:pika_joe/styles/colors.dart';
+import 'package:pika_joe/widget/netflix/movie_model.dart';
+import 'package:pika_joe/widget/netflix/movie_screen.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -111,7 +115,33 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           ],
         ),
       ),
-      bottomNavigationBar: StatsObservationsMapNavigationBar(pageController),
+      bottomNavigationBar: CurvedNavigationBar (//TODO - migrate this into its own widget
+        color: navbarColor,
+        backgroundColor: navbarBgColor,
+        buttonBackgroundColor: navbarButtonColor,
+        height: navbarHeight,
+        items: <Widget>[
+        //Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
+        Icon(Icons.loupe, size: navbarIconSize, color: navbarIconColor),
+        //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
+        ],
+        onTap: (index) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => MovieScreen(movie: movies[0]),
+            ),
+          );
+        //TODO - combine these when we have more pages
+        /*pageController.animateToPage(
+          index,
+          duration: Duration(milliseconds: navbarAnimationDuration),
+          curve: Curves.easeInOut);*/
+      },
+      animationDuration: Duration(milliseconds: navbarAnimationDuration),
+      animationCurve: Curves.easeInOut,
+      //index: pageController.initialPage,
+    ),
       drawer: SimpleClipPathDrawer(
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),

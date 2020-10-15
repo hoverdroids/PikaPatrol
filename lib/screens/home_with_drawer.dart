@@ -11,6 +11,7 @@ import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
+import 'package:pika_joe/mock/observation_mock.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'package:pika_joe/screens/observations_page.dart';
@@ -26,6 +27,9 @@ import 'package:provider/provider.dart';
 import 'package:pika_joe/styles/colors.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:pika_joe/widget/netflix/movie_screen.dart';
+
+import 'observation_screen.dart';
+import 'observation_screen2.dart';
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -129,7 +133,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => MovieScreen(movie: movies[0]),
+              builder: (_) => ObservationScreen2(movie: movies[0]),
             ),
           );
         //TODO - combine these when we have more pages
@@ -307,7 +311,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                       onTapLogin: () => { setState(() => showSignIn = true) },
                       onTapRegister: () async {
                         setState(() => loading = true);
-                        print("Email:" + email + " Password:" + password);
                         dynamic result = await _auth.registerWithEmailAndPassword(
                             email,
                             password,

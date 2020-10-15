@@ -25,7 +25,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
             child: Column(
               children: <Widget>[
                 Text(
-                  widget.observation.title.toUpperCase(),
+                  widget.observation != null ? widget.observation.title.toUpperCase() : "Title",
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
@@ -34,7 +34,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
                 ),
                 SizedBox(height: 10.0),
                 Text(
-                  widget.observation.categories,
+                  widget.observation != null ? widget.observation.categories : "Categories",
                   style: TextStyle(
                     color: Colors.black54,
                     fontSize: 16.0,
@@ -60,7 +60,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
                         ),
                         SizedBox(height: 2.0),
                         Text(
-                          widget.observation.year.toString(),
+                          widget.observation != null ? widget.observation.year.toString() : "Year",
                           style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.w600,
@@ -79,7 +79,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
                         ),
                         SizedBox(height: 2.0),
                         Text(
-                          widget.observation.country.toUpperCase(),
+                          widget.observation != null ? widget.observation.country.toUpperCase() : "Country",
                           style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.w600,
@@ -98,7 +98,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
                         ),
                         SizedBox(height: 2.0),
                         Text(
-                          '${widget.observation.length} min',
+                          '${widget.observation != null ? widget.observation.length : "0"} min',
                           style: TextStyle(
                             fontSize: 20.0,
                             fontWeight: FontWeight.w600,
@@ -113,7 +113,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
                   height: 120.0,
                   child: SingleChildScrollView(
                     child: Text(
-                      widget.observation.description,
+                      widget.observation != null ? widget.observation.description : "description",
                       style: TextStyle(
                         color: Colors.black54,
                       ),
@@ -124,7 +124,7 @@ class _ObservationsScreenState extends State<ObservationScreen> {
             ),
           ),
           ContentScroll(
-            images: widget.observation.screenshots,
+            images: widget.observation != null ? widget.observation.screenshots : [],
             title: 'Screenshots',
             imageHeight: 200.0,
             imageWidth: 250.0,

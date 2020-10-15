@@ -47,7 +47,7 @@ dependencies:
   liquid_swipe: ^1.5.0
   curved_navigation_bar: ^0.3.3
   flutter_audio_recorder: ^0.5.5
-  material_themes_widgets: ^0.0.23
+  material_themes_widgets: ^0.0.24
   url_launcher: ^5.7.2
   fluttertoast: ^7.1.1
 
@@ -77,6 +77,7 @@ flutter:
     - assets/images/rocky_mountain_wild_logo.png
     - assets/img/social/
     - assets/custom_icons.ttf
+    - assets/audio/
 
 
   #  - assets/img/firstImage.png

@@ -317,10 +317,11 @@ class MyApp extends StatelessWidget {
 
     //First things first...set our theme to fit our brand!
     ColorPalette colorPalette = ColorPalette(
-        primary: Colors.teal,
-        primaryAccent: Colors.tealAccent,
-        secondary: Color.fromARGB(255, 139, 69, 19),
-        secondaryAccent: Color.fromARGB(255, 111, 55, 15)
+      primary: Colors.teal,
+      primaryAccent: Colors.tealAccent,
+      secondary: Color.fromARGB(255, 139, 69, 19),
+      secondaryAccent: Color.fromARGB(255, 111, 55, 15),
+      lightPrimaryContrast: Colors.white
     );
     context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 

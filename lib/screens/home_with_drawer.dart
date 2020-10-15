@@ -168,7 +168,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
               ],
               key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
               imageUrl: "assets/pika3.jpg",
-              avatarImageUrl: "assets/pika4.jpg",
+              avatarImageUrl: "assets/images/pika4.jpg",
               avatarTitle: userProfile == null ? "Login" : userProfile.firstName + " " + userProfile.lastName,
               avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
               avatarClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),

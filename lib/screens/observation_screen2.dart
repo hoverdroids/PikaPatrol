@@ -27,9 +27,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //appBar: _buildAppbar(),
-      /*extendBodyBehindAppBar: true,
-      extendBody: true,*/
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
       body: Stack(
         children: <Widget>[
@@ -64,33 +61,36 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
   }
 
   Widget _buildHeaderImage() {
-    return Stack(
-      children: <Widget>[
-        Container(
-          //color: Colors.red,
-          //transform: Matrix4.translationValues(0.0, -50.0, 0.0),
-          child: Hero(
-            tag: widget.movie.imageUrl,
-            child: ClipShadowPath(
-              clipper: SimpleClipPath(
-                type: ClipPathType.ROUNDED_DOWN,
-                bottomLeftPercentOfHeight: 75,
-                bottomRightPercentOfHeight: 75
-              ),
-              shadow: Shadow(blurRadius: 20.0),
-              child: Image(
-                height: 300.0,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                image: AssetImage(widget.movie.imageUrl),
+    return Container(
+      height: 330,
+      child: Stack(
+        children: <Widget>[
+          Container(
+            //color: Colors.red,
+            //transform: Matrix4.translationValues(0.0, -50.0, 0.0),
+            //height: 350,
+            child: Hero(
+              tag: widget.movie.imageUrl,
+              child: ClipShadowPath(
+                clipper: SimpleClipPath(
+                    type: ClipPathType.ROUNDED_DOWN,
+                    bottomLeftPercentOfHeight: 80,
+                    bottomRightPercentOfHeight: 80
+                ),
+                shadow: Shadow(blurRadius: 20.0),
+                child: Image(
+                  height: 300.0,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  image: AssetImage(widget.movie.imageUrl),
+                ),
               ),
             ),
           ),
-        ),
-        Positioned.fill(
-          top: 0.0,
+          Positioned.fill(
+          //bottom: -30.0,
           child: Align(
-            //alignment: Alignment.bottomCenter,
+            alignment: Alignment.bottomCenter,
             child: RawMaterialButton(
               padding: EdgeInsets.all(10.0),
               elevation: 12.0,
@@ -105,24 +105,33 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
             ),
           ),
         ),
-        Positioned(
-            bottom: 0.0,
-            left: 00.0,
-            child: ThemedIconButton(
-              Icons.add_location,
-              iconSize: IconSize.MEDIUM,
-              onPressedCallback: () => print('Allow user to manually select a geo point'),
-            )
-        ),
-        Positioned(
-          bottom: 0.0,
-          right: 0.0,
-          child: ThemedIconButton(
-            Icons.help,
-            iconSize: IconSize.MEDIUM,
-            onPressedCallback: () => print('Share'),
+          Positioned(
+              bottom: 10.0,
+              left: 10.0,
+              child: ThemedIconButton(
+                Icons.add_location,
+                iconSize: IconSize.MEDIUM,
+                onPressedCallback: () => print('Allow user to manually select a geo point'),
+              )
           ),
-        ),
+          Positioned(
+            bottom: 10.0,
+            right: 10.0,
+            child: ThemedIconButton(
+              Icons.help,
+              iconSize: IconSize.MEDIUM,
+              onPressedCallback: () => print('Share'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeaderButtons() {
+    return Row(
+      children: [
+
       ],
     );
   }

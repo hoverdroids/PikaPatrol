@@ -4,6 +4,7 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:provider/provider.dart';
+import 'dart:io' show File;
 
 class ContentScroll extends StatelessWidget {
 
@@ -100,10 +101,9 @@ class ContentScroll extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
-              child: Image(
-                image: AssetImage(images[index]),
-                fit: BoxFit.cover,
-              ),
+              child: Image.file(
+                  File(images[index]),
+                  fit: BoxFit.cover),//AssetImage(images[index]
             ),
           );
         },

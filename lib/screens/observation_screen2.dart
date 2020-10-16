@@ -7,12 +7,15 @@ import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:pika_joe/screens/tools/file_picker_screen.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
 import 'package:chips_choice/chips_choice.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -207,32 +210,82 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
     );
   }
 
+  List<String> imageUrls = [];
   Widget _buildImages() {
     return ContentScroll(
-      images: widget.movie.screenshots,
+      images: imageUrls,
       title: 'Images',
       emptyListMessage: "No Images",
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons:  [
-        ThemedIconButton(Icons.image),
-        ThemedIconButton(Icons.camera_alt)
+        ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer()),
+        ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
+
+        })
       ],
     );
   }
 
+  List<String> audioUrls = [];
   Widget _buildAudioRecordings() {
     return ContentScroll(
-      images: widget.movie.screenshots,
+      images: audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons:  [
-        ThemedIconButton(Icons.audiotrack),
-        ThemedIconButton(Icons.mic)
+        ThemedIconButton(Icons.audiotrack, onPressedCallback: () => {
+
+        }),
+        ThemedIconButton(Icons.mic, onPressedCallback: () => {
+
+        })
       ],
     );
+  }
+
+  bool _loadingPath = false;
+  bool _multiPick = true;
+  String _path;
+  Map<String, String> _paths;
+  FileType _pickingType = FileType.image;
+  String _extension;
+  String _fileName;
+  void _openFileExplorer() async {
+    setState(() => _loadingPath = true);
+    try {
+      if (_multiPick) {
+        _path = null;
+        _paths = await FilePicker.getMultiFilePath(
+          type: _pickingType,
+          allowedExtensions: (_extension?.isNotEmpty ?? false)
+              ? _extension?.replaceAll(' ', '')?.split(',')
+              : null,
+        );
+        _paths.forEach((key, value) {
+          imageUrls.add(value);
+        });
+      } else {
+        _paths = null;
+        _path = await FilePicker.getFilePath(
+          type: _pickingType,
+          allowedExtensions: (_extension?.isNotEmpty ?? false)
+              ? _extension?.replaceAll(' ', '')?.split(',')
+              : null,
+        );
+      }
+    } on PlatformException catch (e) {
+      print("Unsupported operation" + e.toString());
+    }
+    if (!mounted) return;
+    setState(() {
+      _loadingPath = false;
+      _fileName = _path != null
+          ? _path.split('/').last
+          : _paths != null ? _paths.keys.toString() : '...';
+    });
   }
 
   List<String> signs = [];

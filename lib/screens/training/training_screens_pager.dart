@@ -7,8 +7,14 @@ import 'package:material_themes_widgets/screens/onboarding_screen.dart';
 import '../home_with_drawer.dart';
 
 class TrainingScreensPager extends StatefulWidget {
+
+  final Function backClickedCallback;
+
+  TrainingScreensPager({this.backClickedCallback});
+
   @override
   _TrainingScreensPagerState createState() => _TrainingScreensPagerState();
+
 }
 
 class _TrainingScreensPagerState extends State<TrainingScreensPager> {
@@ -18,11 +24,6 @@ class _TrainingScreensPagerState extends State<TrainingScreensPager> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      /*appBar: MenuTitleProfileAppBar(
-      //title: 'Pika Patrol',
-      //openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
-      //openProfileCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
-    ),*/
       extendBodyBehindAppBar: true,
       extendBody: true,
       body: Stack(
@@ -107,11 +108,7 @@ class _TrainingScreensPagerState extends State<TrainingScreensPager> {
                 Icons.arrow_back,
                 emphasis: Emphasis.HIGH,
                 type: ThemeGroupType.MOP,
-                onPressedCallback: () => {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
-                  )
-                },
+                onPressedCallback: widget.backClickedCallback,
               ),
             )
           ],

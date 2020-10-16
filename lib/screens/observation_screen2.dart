@@ -5,10 +5,13 @@ import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
+
+import 'home_with_drawer.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -66,9 +69,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
       child: Stack(
         children: <Widget>[
           Container(
-            //color: Colors.red,
-            //transform: Matrix4.translationValues(0.0, -50.0, 0.0),
-            //height: 350,
             child: Hero(
               tag: widget.movie.imageUrl,
               child: ClipShadowPath(
@@ -88,7 +88,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
             ),
           ),
           Positioned.fill(
-          //bottom: -30.0,
           child: Align(
             alignment: Alignment.bottomCenter,
             child: RawMaterialButton(
@@ -120,19 +119,22 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
             child: ThemedIconButton(
               Icons.help,
               iconSize: IconSize.MEDIUM,
-              onPressedCallback: () => print('Share'),
+              onPressedCallback: () => {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (BuildContext context) =>
+                      TrainingScreensPager(
+                          backClickedCallback: () =>
+                              Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (BuildContext context) => ObservationScreen2(movie: movies[0]))//TODO - ensure the previous state isn't override when a user gets help
+                              )
+                      )
+                  )
+                )
+              }
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildHeaderButtons() {
-    return Row(
-      children: [
-
-      ],
     );
   }
 

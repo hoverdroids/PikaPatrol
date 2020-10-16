@@ -88,8 +88,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       extendBody: true,
       appBar: IconTitleIconAppBar(
         title: 'Pika Patrol',
+        titleType: ThemeGroupType.MOP,
         leftIconClickedCallback: (){ _scaffoldKey.currentState.openDrawer(); },
+        leftIconType: ThemeGroupType.MOP,
         rightIconClickedCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
+        rightIconType: ThemeGroupType.MOP,
       ),
       body: Container(
         width: mediaQuery.width,
@@ -162,7 +165,9 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
                 ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
                   Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (BuildContext context) => TrainingScreensPager())
+                    MaterialPageRoute(builder: (BuildContext context) =>
+                      TrainingScreensPager(backClickedCallback: () => { Navigator.pop(context) } )
+                    )
                   )
                 })
               ],

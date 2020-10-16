@@ -10,8 +10,7 @@ import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
-
-import 'home_with_drawer.dart';
+import 'package:chips_choice/chips_choice.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -25,6 +24,7 @@ class ObservationScreen2 extends StatefulWidget {
 
 class _ObservationScreen2State extends State<ObservationScreen2> {
 
+  EdgeInsets _horzPadding = EdgeInsets.symmetric(horizontal: 20.0);
   bool isEditMode = true;
 
   @override
@@ -140,15 +140,16 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+      padding: _horzPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
+          smallTransparentDivider,
           ThemedH5("OBSERVATION NAME", type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           miniTransparentDivider,
           ThemedSubTitle("Location Name", type: ThemeGroupType.MOM),
-          //smallTransparentDivider,
-          //ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
+          smallTransparentDivider,
+          ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -218,24 +219,30 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
   }
 
   Widget _buildFields() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        mediumTransparentDivider,
-        ThemedSubTitle("Habitat Description", type: ThemeGroupType.POM),
-        miniTransparentDivider,
-        Container(
-          height: 120.0,
-          child: SingleChildScrollView(
-            child: Text(
-              widget.movie.description,
-              style: TextStyle(
-                color: Colors.black54,
+    return Padding(
+      padding: _horzPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          smallTransparentDivider,
+          ThemedSubTitle("Habitat Description", type: ThemeGroupType.POM),
+          miniTransparentDivider,
+          Container(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.movie.description,
+                type: ThemeGroupType.MOM,
               ),
             ),
           ),
-        ),
-      ],
+          smallTransparentDivider,
+          ThemedSubTitle("Detectable Signs", type: ThemeGroupType.POM),
+          _buildDetectableSigns(),
+          smallTransparentDivider,
+          ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
+        ],
+      ),
     );
   }
 
@@ -254,6 +261,91 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
       title: 'Audio Recordings',
       imageHeight: 200.0,
       imageWidth: 250.0,
+    );
+  }
+
+  // single choice value
+  int tag = 1;
+
+  // multiple choice value
+  List<String> tags = [];
+
+  // list of string options
+  List<String> options = [
+    'News', 'Entertainment', 'Politics',
+    'Automotive', 'Sports', 'Education',
+    'Fashion', 'Travel', 'Food', 'Tech',
+    'Science',
+  ];
+
+  Widget _buildDetectableSigns() {
+    return // available configuration for single choice
+      Content(
+        title: 'Scrollable List Single Choice',
+        child: ChipsChoice<int>.single(
+          value: tag,
+          onChanged: (val) => setState(() => tag = val),
+          choiceItems: C2Choice.listFrom<int, String>(
+            source: options,
+            value: (i, v) => i,
+            label: (i, v) => v,
+            tooltip: (i, v) => v,
+          ),
+        ),
+      );
+  }
+}
+
+
+class Content extends StatefulWidget {
+
+  final String title;
+  final Widget child;
+
+  Content({
+    Key key,
+    @required this.title,
+    @required this.child,
+  }) : super(key: key);
+
+  @override
+  _ContentState createState() => _ContentState();
+}
+
+class _ContentState extends State<Content> with AutomaticKeepAliveClientMixin<Content>  {
+
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.all(5),
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(15),
+            color: Colors.blueGrey[50],
+            child: Text(
+              widget.title,
+              style: const TextStyle(
+                  color: Colors.blueGrey,
+                  fontWeight: FontWeight.w500
+              ),
+            ),
+          ),
+          Flexible(
+              fit: FlexFit.loose,
+              child: widget.child
+          ),
+        ],
+      ),
     );
   }
 }

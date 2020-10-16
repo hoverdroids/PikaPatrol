@@ -41,7 +41,9 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
                 _buildHeaderImage(),
                 _buildHeader(),
                 _buildFields(),
+                smallTransparentDivider,
                 _buildImages(),
+                smallTransparentDivider,
                 _buildAudioRecordings(),
               ],
             ),
@@ -209,8 +211,13 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
     return ContentScroll(
       images: widget.movie.screenshots,
       title: 'Images',
+      emptyListMessage: "No Images",
       imageHeight: 200.0,
       imageWidth: 250.0,
+      icons:  [
+        ThemedIconButton(Icons.image),
+        ThemedIconButton(Icons.camera_alt)
+      ],
     );
   }
 
@@ -218,8 +225,13 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
     return ContentScroll(
       images: widget.movie.screenshots,
       title: 'Audio Recordings',
+      emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
       imageWidth: 250.0,
+      icons:  [
+        ThemedIconButton(Icons.audiotrack),
+        ThemedIconButton(Icons.mic)
+      ],
     );
   }
 

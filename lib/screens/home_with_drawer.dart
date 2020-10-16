@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/appbars/menu_title_profile_appbar.dart';
+import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
@@ -86,10 +86,10 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       key: _scaffoldKey,
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: MenuTitleProfileAppBar(
+      appBar: IconTitleIconAppBar(
         title: 'Pika Patrol',
-        openMenuCallback: (){ _scaffoldKey.currentState.openDrawer(); },
-        openProfileCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
+        leftIconClickedCallback: (){ _scaffoldKey.currentState.openDrawer(); },
+        rightIconClickedCallback: (){ _scaffoldKey.currentState.openEndDrawer(); },
       ),
       body: Container(
         width: mediaQuery.width,
@@ -160,7 +160,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
                 ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
                 ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-                ListItemModel(title: "Training", itemClickedCallback: () => {
+                ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
                   Navigator.of(context).pushReplacement(
                       MaterialPageRoute(builder: (BuildContext context) => TrainingScreensPager())
                   )
@@ -178,7 +178,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             );
           },
         ),
-        padding: 0.0,
         clipPathType: ClipPathType.NONE,
         backgroundGradientType: BackgroundGradientType.MAIN_BG,
       ),
@@ -364,7 +363,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 ],
               )
           ),
-          padding: 0.0,
           clipPathType: ClipPathType.NONE,
           backgroundGradientType: BackgroundGradientType.PRIMARY
       ),

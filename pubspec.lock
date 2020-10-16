@@ -323,14 +323,14 @@ packages:
       name: material_themes_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.23"
+    version: "0.0.24"
   material_themes_widgets:
     dependency: "direct main"
     description:
       name: material_themes_widgets
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.24"
+    version: "0.0.27"
   meta:
     dependency: transitive
     description:

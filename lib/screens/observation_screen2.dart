@@ -1,3 +1,4 @@
+import 'package:charcode/charcode.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
@@ -5,6 +6,7 @@ import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
@@ -104,7 +106,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
             ),
           ),
         ),
-          Positioned(
+          /*Positioned( //TODO
               bottom: 10.0,
               left: 10.0,
               child: ThemedIconButton(
@@ -112,7 +114,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
                 iconSize: IconSize.MEDIUM,
                 onPressedCallback: () => print('Allow user to manually select a geo point'),
               )
-          ),
+          ),*/
           Positioned(
             bottom: 10.0,
             right: 10.0,
@@ -148,67 +150,31 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
           ThemedH5("OBSERVATION NAME", type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           miniTransparentDivider,
           ThemedSubTitle("Location Name", type: ThemeGroupType.MOM),
-          smallTransparentDivider,
-          ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
+          //TODO - smallTransparentDivider,
+          //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
               Column(
                 children: <Widget>[
-                  Text(
-                    'Year',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                  SizedBox(height: 2.0),
-                  Text(
-                    widget.movie.year.toString(),
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  ThemedSubTitle("Month", type: ThemeGroupType.MOM),
+                  tinyTransparentDivider,
+                  ThemedTitle("June", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
               Column(
                 children: <Widget>[
-                  Text(
-                    'Country',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                  SizedBox(height: 2.0),
-                  Text(
-                    widget.movie.country.toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  ThemedSubTitle("Day", type: ThemeGroupType.MOM),
+                  tinyTransparentDivider,
+                  ThemedTitle("6", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
               Column(
                 children: <Widget>[
-                  Text(
-                    'Length',
-                    style: TextStyle(
-                      color: Colors.black54,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                  SizedBox(height: 2.0),
-                  Text(
-                    '${widget.movie.length} min',
-                    style: TextStyle(
-                      fontSize: 20.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  ThemedSubTitle("Year", type: ThemeGroupType.MOM),
+                  tinyTransparentDivider,
+                  ThemedTitle("2020", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
             ],
@@ -224,23 +190,16 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          smallTransparentDivider,
-          ThemedSubTitle("Habitat Description", type: ThemeGroupType.POM),
-          miniTransparentDivider,
-          Container(
-            height: 120.0,
-            child: SingleChildScrollView(
-              child: ThemedBody(
-                widget.movie.description,
-                type: ThemeGroupType.MOM,
-              ),
-            ),
-          ),
-          smallTransparentDivider,
-          ThemedSubTitle("Detectable Signs", type: ThemeGroupType.POM),
-          _buildDetectableSigns(),
-          smallTransparentDivider,
-          ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
+          _buildSignsChoices(),
+          _buildCountChoices(),
+          _buildDistanceChoices(),
+          _buildSearchDurationChoices(),
+          _buildTalusAreaChoices(),
+          _buildTemperatureChoices(),
+          _buildSkiesChoices(),
+          _buildWindChoices(),
+          _buildSiteHistory(),
+          _buildComments()
         ],
       ),
     );
@@ -264,88 +223,241 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
     );
   }
 
-  // single choice value
-  int tag = 1;
-
-  // multiple choice value
-  List<String> tags = [];
-
-  // list of string options
-  List<String> options = [
-    'News', 'Entertainment', 'Politics',
-    'Automotive', 'Sports', 'Education',
-    'Fashion', 'Travel', 'Food', 'Tech',
-    'Science',
-  ];
-
-  Widget _buildDetectableSigns() {
-    return // available configuration for single choice
-      Content(
-        title: 'Scrollable List Single Choice',
-        child: ChipsChoice<int>.single(
-          value: tag,
-          onChanged: (val) => setState(() => tag = val),
-          choiceItems: C2Choice.listFrom<int, String>(
-            source: options,
-            value: (i, v) => i,
+  List<String> signs = [];
+  Widget _buildSignsChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Signs", type: ThemeGroupType.POM),
+        ChipsChoice<String>.multiple(
+          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: signs,
+          onChanged: (val) => {
+            if (isEditMode) {
+              setState(() => signs = val)
+            }
+          },
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other"],
+            value: (i, v) => v,
             label: (i, v) => v,
             tooltip: (i, v) => v,
           ),
-        ),
-      );
+        )
+      ],
+    );
   }
-}
 
+  int countOrdinal;
+  Widget _buildCountChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: countOrdinal,
+          onChanged: (val) => setState(() => countOrdinal = val),
+          choiceItems: C2Choice.listFrom<int, String>(
+            source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],
+            value: (i, v) => i,
+            label: (i, v) => v,
+            tooltip: (i, v) => v,
+          )
+        )
+      ],
+    );
+  }
 
-class Content extends StatefulWidget {
+  int distanceOrdinal;
+  Widget _buildDistanceChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Distance to Closest Pika", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: distanceOrdinal,
+            onChanged: (val) => setState(() => distanceOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            )
+        )
+      ],
+    );
+  }
 
-  final String title;
-  final Widget child;
+  int searchDurationOrdinal;
+  Widget _buildSearchDurationChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Search Duration", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: searchDurationOrdinal,
+            onChanged: (val) => setState(() => searchDurationOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            )
+        )
+      ],
+    );
+  }
 
-  Content({
-    Key key,
-    @required this.title,
-    @required this.child,
-  }) : super(key: key);
+  bool showTalusAreaHints = false;
+  int talusAreaOrdinal;
+  Widget _buildTalusAreaChoices() {
+    var hints = ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
+    var areas = ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        //smallTransparentDivider, //TODO - add this after fixing the ThemedIconButton styling in ThemesManager
+        Row(
+          children: [
+            ThemedSubTitle(showTalusAreaHints ? "Search Area" : "Talus Area", type: ThemeGroupType.POM),
+            Expanded(
+              flex: 1,
+              child: ThemedCaption("Show Hints", type: ThemeGroupType.MOM, textAlign: TextAlign.end),
+            ),
+            ThemedSwitch(
+              value: showTalusAreaHints,
+                onChanged: (boolVal) {
+                  setState(() => showTalusAreaHints = boolVal);
+                }
+            )
+          ],
+        ),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: talusAreaOrdinal,
+            onChanged: (val) => setState(() => talusAreaOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: showTalusAreaHints ? hints : areas,
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => showTalusAreaHints ? areas[i] : hints[i],
+            )
+        )
+      ],
+    );
+  }
 
-  @override
-  _ContentState createState() => _ContentState();
-}
+  int temperatureOrdinal;
+  Widget _buildTemperatureChoices() {
+    var degF = String.fromCharCode($deg) + "F";
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: temperatureOrdinal,
+            onChanged: (val) => setState(() => temperatureOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: ["Cold: <45" + degF , "Cool: 45 - 60" + degF, "Warm: 60 - 75" + degF, "Hot: >75" + degF],
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            )
+        )
+      ],
+    );
+  }
 
-class _ContentState extends State<Content> with AutomaticKeepAliveClientMixin<Content>  {
+  int skiesOrdinal;
+  Widget _buildSkiesChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Skies", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: skiesOrdinal,
+            onChanged: (val) => setState(() => skiesOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            )
+        )
+      ],
+    );
+  }
 
-  @override
-  bool get wantKeepAlive => true;
+  int windOrdinal;
+  Widget _buildWindChoices() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Wind", type: ThemeGroupType.POM),
+        ChipsChoice<int>.single(
+            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: windOrdinal,
+            onChanged: (val) => setState(() => windOrdinal = val),
+            choiceItems: C2Choice.listFrom<int, String>(
+              source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
+              value: (i, v) => i,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            )
+        )
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.all(5),
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(15),
-            color: Colors.blueGrey[50],
-            child: Text(
-              widget.title,
-              style: const TextStyle(
-                  color: Colors.blueGrey,
-                  fontWeight: FontWeight.w500
-              ),
+  Widget _buildSiteHistory() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Sity History", type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        Container(
+          height: 120.0,
+          child: SingleChildScrollView(
+            child: ThemedBody(
+              widget.movie.description,
+              type: ThemeGroupType.MOM,
             ),
           ),
-          Flexible(
-              fit: FlexFit.loose,
-              child: widget.child
+        )
+      ],
+    );
+  }
+
+  Widget _buildComments() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Comments", type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        Container(
+          height: 120.0,
+          child: SingleChildScrollView(
+            child: ThemedBody(
+              widget.movie.description,
+              type: ThemeGroupType.MOM,
+            ),
           ),
-        ],
-      ),
+        )
+      ],
     );
   }
 }

@@ -321,7 +321,8 @@ class MyApp extends StatelessWidget {
       primaryAccent: Colors.tealAccent,
       secondary: Color.fromARGB(255, 139, 69, 19),
       secondaryAccent: Color.fromARGB(255, 111, 55, 15),
-      lightPrimaryContrast: Colors.white
+      lightPrimaryContrast: Colors.white,
+      lightContrastImportant: Colors.grey
     );
     context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 

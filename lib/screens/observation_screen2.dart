@@ -255,7 +255,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons:  [
-        ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer()),
+        ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
         ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
 
         })
@@ -272,9 +272,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons:  [
-        ThemedIconButton(Icons.audiotrack, onPressedCallback: () => {
-
-        }),
+        ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
         ThemedIconButton(Icons.mic, onPressedCallback: () => {
 
         })
@@ -283,22 +281,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   bool _loadingPath = false;
-  bool _multiPick = true;
   String _path;
   Map<String, String> _paths;
-  FileType _pickingType = FileType.image;
-  String _extension;
   String _fileName;
-  void _openFileExplorer() async {
+  void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions) async {
     setState(() => _loadingPath = true);
     try {
-      if (_multiPick) {
+      if (isMultiPick) {
         _path = null;
         _paths = await FilePicker.getMultiFilePath(
-          type: _pickingType,
-          allowedExtensions: (_extension?.isNotEmpty ?? false)
-              ? _extension?.replaceAll(' ', '')?.split(',')
-              : null,
+          type: pickingType,
+          allowedExtensions: allowedExtensions
         );
         _paths.forEach((key, value) {
           imageUrls.add(value);
@@ -306,10 +299,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       } else {
         _paths = null;
         _path = await FilePicker.getFilePath(
-          type: _pickingType,
-          allowedExtensions: (_extension?.isNotEmpty ?? false)
-              ? _extension?.replaceAll(' ', '')?.split(',')
-              : null,
+          type: pickingType,
+          allowedExtensions: allowedExtensions
         );
       }
     } on PlatformException catch (e) {
@@ -547,7 +538,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   Widget _buildComments() {
     return NotificationListener<ScrollNotification>(
-      onNotification: (boolval) { return true; },
+      onNotification: (boolVal) { return true; },
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

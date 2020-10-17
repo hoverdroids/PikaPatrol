@@ -1,5 +1,9 @@
+
 import 'package:charcode/charcode.dart';
+import 'package:chips_choice/chips_choice.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
@@ -7,15 +11,11 @@ import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
-import 'package:pika_joe/screens/tools/file_picker_screen.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
-import 'package:chips_choice/chips_choice.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/services.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -27,46 +27,82 @@ class ObservationScreen2 extends StatefulWidget {
   _ObservationScreen2State createState() => _ObservationScreen2State();
 }
 
-class _ObservationScreen2State extends State<ObservationScreen2> {
+class _ObservationScreen2State extends State<ObservationScreen2> with TickerProviderStateMixin {
 
   EdgeInsets _horzPadding = EdgeInsets.symmetric(horizontal: 20.0);
   bool isEditMode = true;
 
+  ScrollController _scrollController;
+  AnimationController _colorAnimationController;
+  Animation _colorTween;
+
+  bool _scrollListener(ScrollNotification scrollInfo) {
+    if (scrollInfo.metrics.axis == Axis.vertical) {
+      _colorAnimationController.animateTo(scrollInfo.metrics.pixels / 350);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  @override
+  void initState() {
+    _scrollController = ScrollController();
+    _colorAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 0));
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+
+    _colorTween = ColorTween(
+        begin: Colors.transparent,
+        end: context.watch<MaterialThemesManager>().colorPalette().primary)
+        .animate(_colorAnimationController);
+
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
-      body: Stack(
-        children: <Widget>[
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                _buildHeaderImage(),
-                _buildHeader(),
-                _buildFields(),
-                smallTransparentDivider,
-                _buildImages(),
-                smallTransparentDivider,
-                _buildAudioRecordings(),
-              ],
+      body: NotificationListener<ScrollNotification>(
+        onNotification: _scrollListener,
+        child: Stack(
+          children: <Widget>[
+            SingleChildScrollView(
+              controller: _scrollController,
+              child: Column(
+                children: [
+                  _buildHeaderImage(),
+                  _buildHeader(),
+                  _buildFields(),
+                  smallTransparentDivider,
+                  _buildImages(),
+                  smallTransparentDivider,
+                  _buildAudioRecordings(),
+                ],
+              ),
             ),
-          ),
-          _buildAppbar(),
-        ],
+            _buildAppbar(),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildAppbar() {
-    return IconTitleIconFakeAppBar(
-      title: 'Make Observation',
-      titleType: ThemeGroupType.MOI,
-      leftIcon: Icons.arrow_back,
-      leftIconType: ThemeGroupType.MOI,
-      leftIconClickedCallback: () => Navigator.pop(context),
-      rightIcon: Icons.edit,
-      rightIconType: ThemeGroupType.MOI,
-      rightIconClickedCallback: () => print("TODO - toggle between edit/view mode when not a new observation"),
+    return AnimatedBuilder(
+      animation: _colorAnimationController,
+      builder: (context, child) =>
+        IconTitleIconFakeAppBar(
+          shape: StadiumBorder(),
+          backgroundColor: _colorTween.value,
+          title: 'Make Observation',
+          titleType: ThemeGroupType.MOI,
+          leftIcon: Icons.arrow_back,
+          leftIconType: ThemeGroupType.MOI,
+          leftIconClickedCallback: () => Navigator.pop(context),
+          rightIcon: Icons.edit,
+          rightIconType: ThemeGroupType.MOI,
+          rightIconClickedCallback: () => print("TODO - toggle between edit/view mode when not a new observation"),
+        )
     );
   }
 
@@ -487,42 +523,48 @@ class _ObservationScreen2State extends State<ObservationScreen2> {
   }
 
   Widget _buildSiteHistory() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Sity History", type: ThemeGroupType.POM),
-        miniTransparentDivider,
-        Container(
-          height: 120.0,
-          child: SingleChildScrollView(
-            child: ThemedBody(
-              widget.movie.description,
-              type: ThemeGroupType.MOM,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (boolVal) { return true; },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          smallTransparentDivider,
+          ThemedSubTitle("Site History", type: ThemeGroupType.POM),
+          miniTransparentDivider,
+          Container(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.movie.description,
+                type: ThemeGroupType.MOM,
+              ),
             ),
-          ),
-        )
-      ],
+          )
+        ],
+      ),
     );
   }
 
   Widget _buildComments() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Comments", type: ThemeGroupType.POM),
-        miniTransparentDivider,
-        Container(
-          height: 120.0,
-          child: SingleChildScrollView(
-            child: ThemedBody(
-              widget.movie.description,
-              type: ThemeGroupType.MOM,
+    return NotificationListener<ScrollNotification>(
+      onNotification: (boolval) { return true; },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          smallTransparentDivider,
+          ThemedSubTitle("Comments", type: ThemeGroupType.POM),
+          miniTransparentDivider,
+          Container(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.movie.description,
+                type: ThemeGroupType.MOM,
+              ),
             ),
-          ),
-        )
-      ],
+          )
+        ],
+      ),
     );
   }
 }

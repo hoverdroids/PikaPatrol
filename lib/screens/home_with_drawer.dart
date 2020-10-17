@@ -14,6 +14,7 @@ import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:pika_joe/mock/observation_mock.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
+import 'package:pika_joe/screens/home/home.dart';
 import 'package:pika_joe/screens/observations_page.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/database.dart';
@@ -166,7 +167,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(builder: (BuildContext context) =>
-                      TrainingScreensPager(backClickedCallback: () => { Navigator.pop(context) } )
+                      TrainingScreensPager(backClickedCallback: () => {
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                        )
+                      })
                     )
                   )
                 })

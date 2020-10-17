@@ -318,19 +318,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     });
   }
 
-  File _imageFile;
   Future<void> _pickImage(ImageSource source) async {
     File selected = await ImagePicker.pickImage(source: source);
-    
-    setState(() {
-      imageUrls.add(selected.path);
-      //_imageFile = selected;
-    });
+    _cropImage(selected);
   }
 
-  Future<void> _cropImage() async {
+  Future<void> _cropImage(File imageFile) async {
     File cropped = await ImageCropper.cropImage(
-      sourcePath: _imageFile.path,
+      sourcePath: imageFile.path,
+      /*androidUiSettings: AndroidUiSettings(
+        toolbarColor: context.watch<MaterialThemesManager>().colorPalette().primary
+      )*/
       // ratioX: 1.0,
       // ratioY: 1.0,
       // maxWidth: 512,
@@ -341,7 +339,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
 
     setState(() {
-      _imageFile = cropped ?? _imageFile;
+      imageUrls.add(cropped?.path ?? imageFile.path);
     });
   }
 

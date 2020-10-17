@@ -1,4 +1,5 @@
-
+import 'dart:async';
+import 'dart:io';
 import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:file_picker/file_picker.dart';
@@ -16,6 +17,8 @@ import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -257,7 +260,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       icons:  [
         ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
         ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
-
+          _pickImage(ImageSource.camera)
         })
       ],
     );
@@ -312,6 +315,33 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       _fileName = _path != null
           ? _path.split('/').last
           : _paths != null ? _paths.keys.toString() : '...';
+    });
+  }
+
+  File _imageFile;
+  Future<void> _pickImage(ImageSource source) async {
+    File selected = await ImagePicker.pickImage(source: source);
+    
+    setState(() {
+      imageUrls.add(selected.path);
+      //_imageFile = selected;
+    });
+  }
+
+  Future<void> _cropImage() async {
+    File cropped = await ImageCropper.cropImage(
+      sourcePath: _imageFile.path,
+      // ratioX: 1.0,
+      // ratioY: 1.0,
+      // maxWidth: 512,
+      // maxHeight: 512,
+      //toolbarColor: Colors.purple,
+      //toolbarWidgetColor: Colors.white,
+      //toolbarTitle: 'Crop It'
+    );
+
+    setState(() {
+      _imageFile = cropped ?? _imageFile;
     });
   }
 

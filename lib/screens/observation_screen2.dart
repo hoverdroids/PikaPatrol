@@ -77,7 +77,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   _buildHeader(),
                   _buildFields(),
                   smallTransparentDivider,
-                  _buildImages(),
+                  _buildImages(
+                      context.watch<MaterialThemesManager>().colorPalette().primary,
+                      context.watch<MaterialThemesManager>().colorPalette().primary
+                  ),
                   smallTransparentDivider,
                   _buildAudioRecordings(),
                 ],
@@ -250,7 +253,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   List<String> imageUrls = [];
-  Widget _buildImages() {
+  Widget _buildImages(Color color1, Color color2) {
     return ContentScroll(
       images: imageUrls,
       title: 'Images',
@@ -260,7 +263,19 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       icons:  [
         ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
         ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
-          _pickImage(ImageSource.camera)
+          _takePictureAndCrop(
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().getTheme(ThemeGroupType.MOP, emphasis: Emphasis.HIGH).iconTheme.color,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            context.read<MaterialThemesManager>().colorPalette().primary,
+            2,
+            6,
+            6
+          )
         })
       ],
     );
@@ -318,28 +333,43 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     });
   }
 
-  Future<void> _pickImage(ImageSource source) async {
-    File selected = await ImagePicker.pickImage(source: source);
-    _cropImage(selected);
-  }
+  Future<void> _takePictureAndCrop(
+    Color toolbarColor,
+    Color statusBarColor,
+    Color toolbarWidgetColor,
+    Color backgroundColor,
+    Color activeControlsWidgetColor,
+    Color dimmedLayerColor,
+    Color cropFrameColor,
+    Color cropGridColor,
+    int cropFrameStrokeWidth,
+    int cropGridRowCount,
+    int cropGridColumnCount
+  ) async {
 
-  Future<void> _cropImage(File imageFile) async {
+    //Take picture with camera ...
+    File selected = await ImagePicker.pickImage(source: ImageSource.camera);
+
+    //Crop Image ...
     File cropped = await ImageCropper.cropImage(
-      sourcePath: imageFile.path,
-      /*androidUiSettings: AndroidUiSettings(
-        toolbarColor: context.watch<MaterialThemesManager>().colorPalette().primary
-      )*/
-      // ratioX: 1.0,
-      // ratioY: 1.0,
-      // maxWidth: 512,
-      // maxHeight: 512,
-      //toolbarColor: Colors.purple,
-      //toolbarWidgetColor: Colors.white,
-      //toolbarTitle: 'Crop It'
+      sourcePath: selected.path,
+      androidUiSettings: AndroidUiSettings(
+        toolbarColor: toolbarColor,
+        statusBarColor: statusBarColor,
+        toolbarWidgetColor: toolbarWidgetColor,
+        backgroundColor: backgroundColor,
+        activeControlsWidgetColor: activeControlsWidgetColor,
+        dimmedLayerColor: dimmedLayerColor,
+        cropFrameColor: cropFrameColor,
+        cropGridColor: cropGridColor,
+        cropFrameStrokeWidth: 12,
+        cropGridRowCount: 10,
+        cropGridColumnCount: 6
+      ),
     );
 
     setState(() {
-      imageUrls.add(cropped?.path ?? imageFile.path);
+      imageUrls.add(cropped?.path ?? selected.path);
     });
   }
 

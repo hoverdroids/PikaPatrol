@@ -6,6 +6,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:provider/provider.dart';
 import 'dart:io' show File;
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class AudioContentScroll extends StatelessWidget {
 
@@ -17,6 +18,11 @@ class AudioContentScroll extends StatelessWidget {
   final List<Widget> icons;
   final List<Function> iconsClickedCallbacks;
   final String emptyListMessage;
+
+  final assetsAudioPlayer = AssetsAudioPlayer();
+  bool _isAudioLoaded = false;
+  bool _isAudioPlaying = false;
+  String _currentlyPlayingUrl;
 
   AudioContentScroll({
     this.urls,
@@ -104,7 +110,20 @@ class AudioContentScroll extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
               child: Center(
-                child:ThemedPlayButton(onPressed: () {  },)
+                child:ThemedPlayButton(onPressed: () {
+                  if (!_isAudioLoaded) {
+                    _isAudioPlaying = true;
+                    _isAudioLoaded = true;
+                    assetsAudioPlayer.open(Audio.file(urls[index]));
+                    assetsAudioPlayer.play();
+                  } else if (_isAudioPlaying) {
+                    _isAudioPlaying = false;
+                    assetsAudioPlayer.pause();
+                  } else {
+                    _isAudioPlaying = true;
+                    assetsAudioPlayer.play();
+                  }
+                },)
               )
             ),
           );

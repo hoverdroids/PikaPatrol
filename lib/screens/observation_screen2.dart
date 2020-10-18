@@ -13,12 +13,16 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
+import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
+
+import '../audio_recorder_dialog.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -281,10 +285,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  List<String> audioUrls = [];
+  List<String> audioUrls = ["hi"];
   Widget _buildAudioRecordings() {
-    return ContentScroll(
-      images: audioUrls,
+    return AudioContentScroll(
+      urls: audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
@@ -292,10 +296,40 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       icons:  [
         ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
         ThemedIconButton(Icons.mic, onPressedCallback: () => {
-
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AudioRecorderDialog();
+            }
+          ).then((value) => {
+            setState((){
+              audioUrls.add(value);
+            })
+          })
         })
       ],
     );
+  }
+
+  void _recordAudio() async {
+    /*//Always check for permission. It will ask for permission if not already granted
+    bool hasPermission = await FlutterAudioRecorder.hasPermissions;
+
+    var recorder = FlutterAudioRecorder("file_path", audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
+    await recorder.initialized;
+
+    //Start
+    await recorder.start();
+    var recording = await recorder.current(channel: 0);
+
+    await recorder.pause();
+
+    await recorder.resume();
+
+    var result = await recorder.stop();
+    File file = widget.localFileSystem.file(result.path);
+
+    //Stop*/
   }
 
   bool _loadingPath = false;

@@ -46,6 +46,6 @@
     <key>NSCameraUsageDescription</key>
     <string>Need to upload image</string>
     <key>NSMicrophoneUsageDescription</key>
-    <string>Need to upload image</string>
+    <string>Need to record audio</string>
 </dict>
 </plist>

@@ -20,9 +20,10 @@ import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 
 import '../audio_recorder_dialog.dart';
+import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -285,7 +286,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  List<String> audioUrls = ["hi"];
+  List<String> audioUrls = [];
   Widget _buildAudioRecordings() {
     return AudioContentScroll(
       urls: audioUrls,
@@ -295,41 +296,41 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       imageWidth: 250.0,
       icons:  [
         ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
-        ThemedIconButton(Icons.mic, onPressedCallback: () => {
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AudioRecorderDialog();
-            }
-          ).then((value) => {
-            setState((){
-              audioUrls.add(value);
-            })
-          })
-        })
+        ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
       ],
     );
   }
 
-  void _recordAudio() async {
-    /*//Always check for permission. It will ask for permission if not already granted
-    bool hasPermission = await FlutterAudioRecorder.hasPermissions;
-
-    var recorder = FlutterAudioRecorder("file_path", audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
-    await recorder.initialized;
-
-    //Start
-    await recorder.start();
-    var recording = await recorder.current(channel: 0);
-
-    await recorder.pause();
-
-    await recorder.resume();
-
-    var result = await recorder.stop();
-    File file = widget.localFileSystem.file(result.path);
-
-    //Stop*/
+  void _openAudioRecorder() async {
+    try {
+      //Always check for permission. It will ask for permission if not already granted
+      if (await FlutterAudioRecorder.hasPermissions) {
+        showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AudioRecorderDialog();
+            }
+        ).then((value) => {
+          setState((){
+            if (value != null && (value as String).isNotEmpty) {
+              audioUrls.add(value);
+            }
+          })
+        });
+      } else {
+        Fluttertoast.showToast(
+            msg: "Could not open recorder.\nYou must accept audio permissions.",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+            textColor: Colors.white,
+            fontSize: 16.0
+        );
+      }
+    } catch (e) {
+      print(e);
+    }
   }
 
   bool _loadingPath = false;

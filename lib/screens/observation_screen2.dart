@@ -250,6 +250,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           _buildTemperatureChoices(),
           _buildSkiesChoices(),
           _buildWindChoices(),
+          _buildOtherAnimalsPresent(),
           _buildSiteHistory(),
           _buildComments()
         ],
@@ -424,7 +425,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other"],
+            source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"],
             value: (i, v) => v,
             label: (i, v) => v,
             tooltip: (i, v) => v,
@@ -601,6 +602,32 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
+        )
+      ],
+    );
+  }
+
+  List<String> otherAnimalsPresent = [];
+  Widget _buildOtherAnimalsPresent() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
+        ChipsChoice<String>.multiple(
+          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: signs,
+          onChanged: (val) => {
+            if (isEditMode) {
+              setState(() => signs = val)
+            }
+          },
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"],
+            value: (i, v) => v,
+            label: (i, v) => v,
+            tooltip: (i, v) => v,
+          ),
         )
       ],
     );

@@ -9,6 +9,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
@@ -25,6 +26,7 @@ import 'package:image_picker/image_picker.dart';
 import '../audio_recorder_dialog.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -48,6 +50,12 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   bool needsUpdated = false;
 
   List<String> imageUrls = [];
+  List<String> audioUrls = [];
+
+  final assetsAudioPlayer = AssetsAudioPlayer();
+  bool _isAudioLoaded = false;
+  bool _isAudioPlaying = false;
+  String _currentlyPlayingUrl;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -147,15 +155,24 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               child: Align(
                 alignment: Alignment.bottomCenter,
                 child: RawMaterialButton(
-                  padding: EdgeInsets.all(10.0),
-                  elevation: 12.0,
+                  //padding: EdgeInsets.all(0.0),
+                  //elevation: 12.0,
                   onPressed: () => print('Play Video'),
                   shape: CircleBorder(),
                   fillColor: Colors.white,
-                  child: Icon(
-                    Icons.play_arrow,
-                    size: 60.0,
-                    color: Colors.brown,
+                  child:ThemedPlayButton(
+                    pauseIcon: Icon(
+                        Icons.pause,
+                        color: context.watch<MaterialThemesManager>().colorPalette().primary,
+                        size: 48),
+                    playIcon: Icon(Icons.mic,
+                        color: context.watch<MaterialThemesManager>().colorPalette().primary,
+                        size: 48),
+                    onPressed: () => {
+                      audioUrls.isNotEmpty
+                          ? _playAudio(audioUrls[0])
+                          : _openAudioRecorder()
+                    },
                   ),
                 ),
               ),
@@ -193,6 +210,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ),
       ),
     );
+  }
+  
+  void _playAudio(String audioUrl) {
+    if (!_isAudioLoaded) {
+      _isAudioPlaying = true;
+      _isAudioLoaded = true;
+      assetsAudioPlayer.open(Audio.file(audioUrl));
+      assetsAudioPlayer.play();
+      
+    } else if (_isAudioPlaying) {
+      _isAudioPlaying = false;
+      assetsAudioPlayer.pause();
+      
+    } else {
+      _isAudioPlaying = true;
+      assetsAudioPlayer.play();
+    }
   }
 
   Widget _buildImage() {
@@ -307,7 +341,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   Widget _buildAudioRecordings() {
     return AudioContentScroll(
-      urls: widget.observation.audioUrls,
+      urls: audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
@@ -331,7 +365,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ).then((value) => {
           setState((){
             if (value != null && (value as String).isNotEmpty) {
-              widget.observation.audioUrls.add(value);
+              audioUrls.add(value);
             }
           })
         });

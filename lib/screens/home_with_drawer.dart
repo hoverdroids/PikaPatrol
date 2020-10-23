@@ -12,6 +12,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:pika_joe/mock/observation_mock.dart';
+import 'package:pika_joe/model/Observation2.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'package:pika_joe/screens/home/home.dart';
@@ -137,7 +138,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ObservationScreen2(movie: movies[0]),
+              builder: (_) => ObservationScreen2(Observation2()),
             ),
           );
         //TODO - combine these when we have more pages

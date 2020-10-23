@@ -12,6 +12,7 @@ import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:pika_joe/model/Observation2.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
@@ -27,9 +28,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
-  final Movie movie;
+  final Observation2 observation;
 
-  ObservationScreen2({this.movie});
+  ObservationScreen2(this.observation);
 
   @override
   _ObservationScreen2State createState() => _ObservationScreen2State();
@@ -43,6 +44,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   ScrollController _scrollController;
   AnimationController _colorAnimationController;
   Animation _colorTween;
+
+  bool needsUpdated = false;
+
+  List<String> imageUrls = [];
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -62,7 +67,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   @override
   Widget build(BuildContext context) {
-
+    print("Rebuilt");
     _colorTween = ColorTween(
         begin: Colors.transparent,
         end: context.watch<MaterialThemesManager>().colorPalette().primary)
@@ -118,47 +123,44 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   Widget _buildHeaderImage() {
-    return Container(
-      height: 330,
-      child: Stack(
-        children: <Widget>[
-          Container(
-            child: Hero(
-              tag: widget.movie.imageUrl,
-              child: ClipShadowPath(
-                clipper: SimpleClipPath(
-                    type: ClipPathType.ROUNDED_DOWN,
-                    bottomLeftPercentOfHeight: 80,
-                    bottomRightPercentOfHeight: 80
-                ),
-                shadow: Shadow(blurRadius: 20.0),
-                child: Image(
-                  height: 300.0,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  image: AssetImage(widget.movie.imageUrl),
+    return GestureDetector(
+      onTap: () => _openFileExplorer(true, FileType.image, []),
+      child: Container(
+        height: 330,
+        child: Stack(
+          children: <Widget>[
+            Container(
+              child: Hero(
+                tag: "observationCoverImage",
+                child: ClipShadowPath(
+                  clipper: SimpleClipPath(
+                      type: ClipPathType.ROUNDED_DOWN,
+                      bottomLeftPercentOfHeight: 80,
+                      bottomRightPercentOfHeight: 80
+                  ),
+                  shadow: Shadow(blurRadius: 20.0),
+                  child: _buildImage(),
                 ),
               ),
             ),
-          ),
-          Positioned.fill(
-          child: Align(
-            alignment: Alignment.bottomCenter,
-            child: RawMaterialButton(
-              padding: EdgeInsets.all(10.0),
-              elevation: 12.0,
-              onPressed: () => print('Play Video'),
-              shape: CircleBorder(),
-              fillColor: Colors.white,
-              child: Icon(
-                Icons.play_arrow,
-                size: 60.0,
-                color: Colors.brown,
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RawMaterialButton(
+                  padding: EdgeInsets.all(10.0),
+                  elevation: 12.0,
+                  onPressed: () => print('Play Video'),
+                  shape: CircleBorder(),
+                  fillColor: Colors.white,
+                  child: Icon(
+                    Icons.play_arrow,
+                    size: 60.0,
+                    color: Colors.brown,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
-          /*Positioned( //TODO
+            /*Positioned( //TODO
               bottom: 10.0,
               left: 10.0,
               child: ThemedIconButton(
@@ -167,28 +169,45 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                 onPressedCallback: () => print('Allow user to manually select a geo point'),
               )
           ),*/
-          Positioned(
-            bottom: 10.0,
-            right: 10.0,
-            child: ThemedIconButton(
-              Icons.help,
-              iconSize: IconSize.MEDIUM,
-              onPressedCallback: () => {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) =>
-                      TrainingScreensPager(
-                          backClickedCallback: () =>
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (BuildContext context) => ObservationScreen2(movie: movies[0]))//TODO - ensure the previous state isn't override when a user gets help
-                              )
-                      )
-                  )
-                )
-              }
+            Positioned(
+              bottom: 10.0,
+              right: 10.0,
+              child: ThemedIconButton(
+                  Icons.help,
+                  iconSize: IconSize.MEDIUM,
+                  onPressedCallback: () => {
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (BuildContext context) =>
+                            TrainingScreensPager(
+                                backClickedCallback: () =>
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(builder: (BuildContext context) => ObservationScreen2(widget.observation))
+                                    )
+                            )
+                        )
+                    )
+                  }
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+  }
+
+  Widget _buildImage() {
+    return imageUrls.isNotEmpty
+      ? Image.file(
+        File(imageUrls[0]),
+          height: 300.0,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        )
+      : Image(
+          height: 300.0,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          image: AssetImage("assets/images/add_image.png"),
     );
   }
 
@@ -258,7 +277,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  List<String> imageUrls = [];
   Widget _buildImages(Color color1, Color color2) {
     return ContentScroll(
       images: imageUrls,
@@ -287,10 +305,9 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  List<String> audioUrls = [];
   Widget _buildAudioRecordings() {
     return AudioContentScroll(
-      urls: audioUrls,
+      urls: widget.observation.audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
@@ -314,7 +331,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ).then((value) => {
           setState((){
             if (value != null && (value as String).isNotEmpty) {
-              audioUrls.add(value);
+              widget.observation.audioUrls.add(value);
             }
           })
         });
@@ -347,15 +364,29 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           type: pickingType,
           allowedExtensions: allowedExtensions
         );
-        _paths.forEach((key, value) {
-          imageUrls.add(value);
-        });
+        //if (_paths.isNotEmpty) {
+
+          setState(() {
+            _paths.forEach((key, value) {
+              imageUrls.add(value);
+            });
+            needsUpdated = true;
+          });
+
+        //}
       } else {
         _paths = null;
         _path = await FilePicker.getFilePath(
           type: pickingType,
           allowedExtensions: allowedExtensions
         );
+        //if(_path.isNotEmpty) {
+
+          setState(() {
+            imageUrls.add(_path);
+            needsUpdated = true;
+          });
+        //}
       }
     } on PlatformException catch (e) {
       print("Unsupported operation" + e.toString());
@@ -646,7 +677,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             height: 120.0,
             child: SingleChildScrollView(
               child: ThemedBody(
-                widget.movie.description,
+                widget.observation.siteHistory,
                 type: ThemeGroupType.MOM,
               ),
             ),
@@ -669,7 +700,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             height: 120.0,
             child: SingleChildScrollView(
               child: ThemedBody(
-                widget.movie.description,
+                widget.observation.comments,
                 type: ThemeGroupType.MOM,
               ),
             ),

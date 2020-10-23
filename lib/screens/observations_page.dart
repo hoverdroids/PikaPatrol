@@ -30,7 +30,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                       Container(
                         width: double.infinity,
                         height: 2000,
-                        color: Colors.red,
+                        //color: Colors.red,
                       )
                     ],
                   ),

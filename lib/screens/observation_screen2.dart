@@ -9,6 +9,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
@@ -31,8 +32,13 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 class ObservationScreen2 extends StatefulWidget {
 
   final Observation2 observation;
+  bool isEditMode;
 
-  ObservationScreen2(this.observation);
+  ObservationScreen2(this.observation) {
+    //When opening after a user clicks a card, show a previously created observation in viewing mode.
+    //When opening after a user clicks the add observation button, show a new observation in edit mode.
+    isEditMode = observation.uid == null ? true : false;
+  }
 
   @override
   _ObservationScreen2State createState() => _ObservationScreen2State();
@@ -41,7 +47,6 @@ class ObservationScreen2 extends StatefulWidget {
 class _ObservationScreen2State extends State<ObservationScreen2> with TickerProviderStateMixin {
 
   EdgeInsets _horzPadding = EdgeInsets.symmetric(horizontal: 20.0);
-  bool isEditMode = true;
 
   ScrollController _scrollController;
   AnimationController _colorAnimationController;
@@ -123,9 +128,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           leftIcon: Icons.arrow_back,
           leftIconType: ThemeGroupType.MOI,
           leftIconClickedCallback: () => Navigator.pop(context),
-          rightIcon: Icons.edit,
+          rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
           rightIconType: ThemeGroupType.MOI,
-          rightIconClickedCallback: () => print("TODO - toggle between edit/view mode when not a new observation"),
+          rightIconClickedCallback: () => {
+            //If the observation ID is null, then it's a new observation and edit mode is always the state.
+            //This means the save button should be showing
+
+            //If the observation ID is not null, we can be in edit or view mode.
+            setState((){
+              widget.isEditMode = !widget.isEditMode;
+            })
+          },
         )
     );
   }
@@ -312,16 +325,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   Widget _buildImages(Color color1, Color color2) {
-    return ContentScroll(
-      images: imageUrls,
-      title: 'Images',
-      emptyListMessage: "No Images",
-      imageHeight: 200.0,
-      imageWidth: 250.0,
-      icons:  [
-        ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
-        ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
-          _takePictureAndCrop(
+
+    var icons = !widget.isEditMode ? <Widget>[] : [
+      ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
+      ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
+        _takePictureAndCrop(
             context.read<MaterialThemesManager>().colorPalette().primary,
             context.read<MaterialThemesManager>().colorPalette().primary,
             context.read<MaterialThemesManager>().getTheme(ThemeGroupType.MOP, emphasis: Emphasis.HIGH).iconTheme.color,
@@ -333,23 +341,34 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             2,
             6,
             6
-          )
-        })
-      ],
+        )
+      })
+    ];
+
+    return ContentScroll(
+      images: imageUrls,
+      title: 'Images',
+      emptyListMessage: "No Images",
+      imageHeight: 200.0,
+      imageWidth: 250.0,
+      icons: icons,
     );
   }
 
   Widget _buildAudioRecordings() {
+
+    var icons = !widget.isEditMode ? <Widget>[] : [
+      ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
+      ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
+    ];
+
     return AudioContentScroll(
       urls: audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
       imageWidth: 250.0,
-      icons:  [
-        ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
-        ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
-      ],
+      icons: icons,
     );
   }
 
@@ -485,7 +504,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: signs,
           onChanged: (val) => {
-            if (isEditMode) {
+            if (widget.isEditMode) {
               setState(() => signs = val)
             }
           },
@@ -510,7 +529,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: countOrdinal,
-          onChanged: (val) => setState(() => countOrdinal = val),
+          onChanged: (val) => {
+            if (widget.isEditMode) {
+              setState(() => countOrdinal = val)
+            }
+          },
           choiceItems: C2Choice.listFrom<int, String>(
             source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],
             value: (i, v) => i,
@@ -532,7 +555,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: distanceOrdinal,
-            onChanged: (val) => setState(() => distanceOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => distanceOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],
               value: (i, v) => i,
@@ -554,7 +581,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: searchDurationOrdinal,
-            onChanged: (val) => setState(() => searchDurationOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => searchDurationOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],
               value: (i, v) => i,
@@ -593,7 +624,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: talusAreaOrdinal,
-            onChanged: (val) => setState(() => talusAreaOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => talusAreaOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: showTalusAreaHints ? hints : areas,
               value: (i, v) => i,
@@ -616,7 +651,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: temperatureOrdinal,
-            onChanged: (val) => setState(() => temperatureOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => temperatureOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: ["Cold: <45" + degF , "Cool: 45 - 60" + degF, "Warm: 60 - 75" + degF, "Hot: >75" + degF],
               value: (i, v) => i,
@@ -638,7 +677,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: skiesOrdinal,
-            onChanged: (val) => setState(() => skiesOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => skiesOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
               value: (i, v) => i,
@@ -660,7 +703,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ChipsChoice<int>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: windOrdinal,
-            onChanged: (val) => setState(() => windOrdinal = val),
+            onChanged: (val) => {
+              if (widget.isEditMode) {
+                setState(() => windOrdinal = val)
+              }
+            },
             choiceItems: C2Choice.listFrom<int, String>(
               source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
               value: (i, v) => i,
@@ -683,7 +730,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: signs,
           onChanged: (val) => {
-            if (isEditMode) {
+            if (widget.isEditMode) {
               setState(() => signs = val)
             }
           },
@@ -707,15 +754,29 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           smallTransparentDivider,
           ThemedSubTitle("Site History", type: ThemeGroupType.POM),
           miniTransparentDivider,
-          Container(
-            height: 120.0,
-            child: SingleChildScrollView(
-              child: ThemedBody(
-                widget.observation.siteHistory,
-                type: ThemeGroupType.MOM,
+          if(widget.isEditMode) ... [
+            ThemedEditableLabelValue(
+              showLabel: false,
+              text: widget.observation.siteHistory,
+              textType: ThemeGroupType.POM,
+              hintText: "Note any history you've had with this site",
+              //hintTextType: hintTextType,
+              //hintTextEmphasis: hintTextEmphasis,
+              //backgroundType: textFieldBackgroundType,
+              onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
+              //validator: validator
+            )
+          ] else ... [
+            Container(
+              height: 120.0,
+              child: SingleChildScrollView(
+                child: ThemedBody(
+                  widget.observation.siteHistory,
+                  type: ThemeGroupType.MOM,
+                ),
               ),
-            ),
-          )
+            )
+          ]
         ],
       ),
     );
@@ -730,15 +791,30 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           smallTransparentDivider,
           ThemedSubTitle("Comments", type: ThemeGroupType.POM),
           miniTransparentDivider,
-          Container(
-            height: 120.0,
-            child: SingleChildScrollView(
-              child: ThemedBody(
-                widget.observation.comments,
-                type: ThemeGroupType.MOM,
+          if(widget.isEditMode) ... [
+            ThemedEditableLabelValue(
+              showLabel: false,
+              text: widget.observation.comments,
+              textType: ThemeGroupType.POM,
+              hintText: "Any additional observations",
+              //hintTextType: hintTextType,
+              //hintTextEmphasis: hintTextEmphasis,
+              //backgroundType: textFieldBackgroundType,
+              onStringChangedCallback: (value) => { widget.observation.comments = value },
+              //validator: validator
+            )
+          ] else ... [
+            Container(
+              height: 120.0,
+              child: SingleChildScrollView(
+                child: ThemedBody(
+                  widget.observation.comments,
+                  type: ThemeGroupType.MOM,
+                ),
               ),
-            ),
-          )
+            )
+          ]
+
         ],
       ),
     );

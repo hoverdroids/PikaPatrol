@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user_profile.dart';
 
 class FirebaseDatabaseService {
@@ -7,12 +8,9 @@ class FirebaseDatabaseService {
 
   FirebaseDatabaseService({ this.uid });
 
-  //TODO - we should never get all users' preference! We should just get the one set for the one user
   final CollectionReference userProfilesCollection = Firestore.instance.collection("userProfiles");
 
-  //TODO - we should try to get the most recent ten or apply and pass a filter
-  final CollectionReference observationsCollection = Firestore.instance
-      .collection("observations");
+  final CollectionReference observationsCollection = Firestore.instance.collection("observations");
 
   Future updateUserProfile(
     String firstName,
@@ -82,45 +80,81 @@ class FirebaseDatabaseService {
     );
   }
 
-  //TODO - this is a really bad way of getting a single user's perferences
-  List<UserProfile> _userProfilesListFromSnapshot(QuerySnapshot snapshot) {
-    print("UserProfilesListFromSnapShot:");
-    print(snapshot.documents[0].data);
-
-    var list = snapshot.documents.map((doc) {
-      print("Snapshot:");
-      print(doc.data['firstName']);
-
-      return UserProfile(
-        doc.data['firstName'] ?? '',
-        doc.data['lastName'] ?? '',
-        pronouns: doc.data['pronouns'] ?? '',
-        tagline: doc.data['tagline'] ?? '',
-        organization: doc.data['organization'] ?? '',
-        address: doc.data['address'] ?? '',
-        city: doc.data['city'] ?? '',
-        state: doc.data['state'] ?? '',
-        zip: doc.data['zip'] ?? '',
-        frppOptIn: doc.data['frppOptIn'] ?? false,
-        rmwOptIn: doc.data['rmwOptIn'] ?? false,
-        dzOptIn: doc.data['dzOptIn'] ?? false,
-      );
-    }).toList();
-
-    print("List:");
-    print(list);
-
-    return list;
-  }
-
-  //TODO - should not need this! We should only need to get and evaluate the current user's
-  //profile
-  Stream<List<UserProfile>> get userProfiles {
-    return userProfilesCollection.snapshots().map(_userProfilesListFromSnapshot);
-  }
-
   Stream<UserProfile> get userProfile {
     return uid == null ? null : userProfilesCollection.document(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
+  Future updateObservation(Observation2 observation) async {
+    return await observationsCollection.document().setData(//if no ID, the id and timestamp are auto gen; not sure it's what we want
+        {
+          'observerUid': observation.observerUid,
+          'date': observation.date,
+          //'geo' : null,
+          'signs': observation.signs,
+          'pikasDetected': observation.pikasDetected,
+          'distanceToClosestPika': observation.distanceToClosestPika,
+          'searchDuration': observation.searchDuration,
+          'skies': observation.skies,
+          'wind': observation.wind,
+          'siteHistory': observation.siteHistory,
+          'comments': observation.comments
+        }
+    );
+  }
+
+  /*Future updateObservation(
+      String observationUid,
+      String observerUid,
+      String date,
+      //TODO - geo data
+      List<String> signs,
+      String pikasDetected,
+      String distanceToClosestPika,
+      String searchDuration,
+      String skies,
+      String wind,
+      String siteHistory,
+      String comments,
+      List<String> imageUrls,
+      List<String> audioUrls,
+      List<String> otherAnimalsPresent
+      ) async {
+    return await userProfilesCollection.document().setData(//if no ID, the id and timestamp are auto gen; not sure it's what we want
+        {
+          'observerUid': observerUid,
+          'date': date,
+          'geo' : null,
+          'signs': signs,
+          'pikasDetected': pikasDetected,
+          'distanceToClosestPika': distanceToClosestPika,
+          'searchDuration': searchDuration,
+          'skies': skies,
+          'wind': wind,
+          'siteHistory': siteHistory,
+          'comments': comments
+        }
+    );
+  }*/
+
+  List<Observation2> _observationsFromSnapshot(QuerySnapshot snapshot) {
+    return snapshot.documents.map((doc) {
+      return Observation2(
+        uid: doc.documentID ?? '',
+        observerUid: doc.data['observerUid'] ?? '',
+        date: doc.data['date'] ?? '',
+        signs: doc.data['signs'] ?? '',
+        pikasDetected: doc.data['pikasDetected'] ?? '',
+        distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',
+        searchDuration: doc.data['searchDuration'] ?? '',
+        skies: doc.data['skies'] ?? '',
+        wind: doc.data['wind'] ?? '',
+        siteHistory: doc.data['siteHistory'] ?? '',
+        comments: doc.data['comments'] ?? ''
+      );
+    }).toList();
+  }
+
+  Stream<List<Observation2>> get observations {
+    return observationsCollection.snapshots().map(_observationsFromSnapshot);
+  }
 }

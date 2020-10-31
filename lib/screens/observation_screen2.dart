@@ -14,8 +14,9 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
-import 'package:pika_joe/model/Observation2.dart';
+import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
+import 'package:pika_joe/services/firebase_database_service.dart';
 import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
@@ -28,6 +29,8 @@ import '../audio_recorder_dialog.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
+
+import 'package:pika_joe/model/user.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -62,6 +65,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   bool _isAudioPlaying = false;
   String _currentlyPlayingUrl;
 
+  bool _loading = false;
+
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
       _colorAnimationController.animateTo(scrollInfo.metrics.pixels / 350);
@@ -80,7 +85,9 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   @override
   Widget build(BuildContext context) {
-    print("Rebuilt");
+
+    final user = Provider.of<User>(context);
+
     _colorTween = ColorTween(
         begin: Colors.transparent,
         end: context.watch<MaterialThemesManager>().colorPalette().primary)
@@ -109,14 +116,14 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                 ],
               ),
             ),
-            _buildAppbar(),
+            _buildAppbar(user),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildAppbar() {
+  Widget _buildAppbar(User user) {
     return AnimatedBuilder(
       animation: _colorAnimationController,
       builder: (context, child) =>
@@ -130,14 +137,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
           rightIconType: ThemeGroupType.MOI,
-          rightIconClickedCallback: () => {
+          rightIconClickedCallback: () async {
             //If the observation ID is null, then it's a new observation and edit mode is always the state.
             //This means the save button should be showing
 
             //If the observation ID is not null, we can be in edit or view mode.
             setState((){
+              _loading = true;
               widget.isEditMode = !widget.isEditMode;
-            })
+            });
+
+            dynamic result = await FirebaseDatabaseService(uid: user.uid).updateObservation(widget.observation);
           },
         )
     );

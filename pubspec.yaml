@@ -52,6 +52,7 @@ dependencies:
   fluttertoast: ^7.1.1
   chips_choice: ^2.0.1
   charcode: ^1.1.3
+  hive: ^1.4.4+1
 
 dev_dependencies:
   flutter_test:

@@ -148,6 +148,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             });
 
             dynamic result = await FirebaseDatabaseService(uid: user.uid).updateObservation(widget.observation);
+            print("Your id is" + widget.observation.uid);
           },
         )
     );
@@ -503,7 +504,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     });
   }
 
-  List<String> signs = [];
   Widget _buildSignsChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,10 +512,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ThemedSubTitle("Signs", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: signs,
+          value: widget.observation.signs,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => signs = val)
+              setState(() => widget.observation.signs = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
@@ -529,24 +529,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int countOrdinal;
   Widget _buildCountChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: countOrdinal,
+          value: widget.observation.pikasDetected,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => countOrdinal = val)
+              setState(() => widget.observation.pikasDetected = val)
             }
           },
-          choiceItems: C2Choice.listFrom<int, String>(
+          choiceItems: C2Choice.listFrom<String, String>(
             source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],
-            value: (i, v) => i,
+            value: (i, v) => v,
             label: (i, v) => v,
             tooltip: (i, v) => v,
           )
@@ -729,7 +728,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  List<String> otherAnimalsPresent = [];
   Widget _buildOtherAnimalsPresent() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -738,10 +736,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: signs,
+          value: widget.observation.otherAnimalsPresent,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => signs = val)
+              setState(() => widget.observation.otherAnimalsPresent = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(

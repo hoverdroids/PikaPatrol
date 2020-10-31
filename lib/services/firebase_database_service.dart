@@ -85,7 +85,10 @@ class FirebaseDatabaseService {
   }
 
   Future updateObservation(Observation2 observation) async {
-    return await observationsCollection.document().setData(//if no ID, the id and timestamp are auto gen; not sure it's what we want
+    //if no ID, the id and timestamp are auto gen; not sure it's what we want
+    var doc = observation.uid == null ? observationsCollection.document() : observationsCollection.document(observation.uid);
+    observation.uid = doc.documentID;
+    return await doc.setData(
         {
           'observerUid': observation.observerUid,
           'date': observation.date,

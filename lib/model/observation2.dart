@@ -1,9 +1,6 @@
 class Observation2 {
-  final String uid;//Unique ID in Firebase corresponding to a given observation
+  String uid;
   final String observerUid;
-  //final String observerFirstName;
-  //final String observerLastName;
-  //final String observerEmail;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
   final String date;
@@ -25,9 +22,6 @@ class Observation2 {
   Observation2({
     this.uid,
     this.observerUid,
-    //this.observerFirstName = "",
-    //this.observerLastName = "",
-    //this.observerEmail = "",
     this.date = "",
     this.signs = const [],
     this.pikasDetected = "",

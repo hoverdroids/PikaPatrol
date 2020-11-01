@@ -158,9 +158,11 @@ class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
     var recording = await _recorder.current(channel: 0);
     setState(() { _recordingStatus = recording?.status; });
 
-    String ext = path.extension(result.path);
+    String ext = path.extension(result.path).substring(1);//Need to string dot from .extension
     String dir = path.dirname(result.path);
     String newPath = path.join(dir, '$recordingName.$ext');
+
+    print("NewPath:" + newPath + " ext:" + ext + " dir:" + dir);
 
     File file = File(result.path);
     await file.rename(newPath);

@@ -138,7 +138,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ObservationScreen2(Observation2(observerUid: user.uid, date: new DateTime.now())),
+              builder: (_) => ObservationScreen2(Observation2(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
             ),
           );
         //TODO - combine these when we have more pages
@@ -205,7 +205,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 children: <Widget>[
                   if (user != null) ... [
                     StreamBuilder<UserProfile>(
-                        stream: FirebaseDatabaseService(uid:user.uid).userProfile,
+                        stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
                         builder: (context, snapshot){
 
                           UserProfile userProfile = snapshot.hasData ? snapshot.data : null;

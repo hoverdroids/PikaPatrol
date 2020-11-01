@@ -26,7 +26,7 @@ class _SettingsFormState extends State<SettingsForm> {
     final user = Provider.of<User>(context);
 
     return StreamBuilder<UserData>(
-      stream: DatabaseService(uid: user.uid).userData,
+      stream: DatabaseService(uid: user != null ? user.uid : null).userData,
       builder: (context, snapshot) {
         if(snapshot.hasData) {
           UserData userData = snapshot.data;

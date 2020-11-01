@@ -351,7 +351,7 @@ packages:
       name: material_themes_widgets
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.0.28"
+    version: "0.0.29"
   meta:
     dependency: transitive
     description:

@@ -21,6 +21,7 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
@@ -48,6 +49,8 @@ class ObservationScreen2 extends StatefulWidget {
 }
 
 class _ObservationScreen2State extends State<ObservationScreen2> with TickerProviderStateMixin {
+
+  final _formKey = GlobalKey<FormState>();
 
   EdgeInsets _horzPadding = EdgeInsets.symmetric(horizontal: 20.0);
 
@@ -101,19 +104,22 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           children: <Widget>[
             SingleChildScrollView(
               controller: _scrollController,
-              child: Column(
-                children: [
-                  _buildHeaderImage(),
-                  _buildHeader(),
-                  _buildFields(),
-                  smallTransparentDivider,
-                  _buildImages(
-                      context.watch<MaterialThemesManager>().colorPalette().primary,
-                      context.watch<MaterialThemesManager>().colorPalette().primary
-                  ),
-                  smallTransparentDivider,
-                  _buildAudioRecordings(),
-                ],
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    _buildHeaderImage(),
+                    _buildHeader(),
+                    _buildFields(),
+                    smallTransparentDivider,
+                    _buildImages(
+                        context.watch<MaterialThemesManager>().colorPalette().primary,
+                        context.watch<MaterialThemesManager>().colorPalette().primary
+                    ),
+                    smallTransparentDivider,
+                    _buildAudioRecordings(),
+                  ],
+                ),
               ),
             ),
             _buildAppbar(user),
@@ -138,17 +144,20 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
           rightIconType: ThemeGroupType.MOI,
           rightIconClickedCallback: () async {
-            //If the observation ID is null, then it's a new observation and edit mode is always the state.
-            //This means the save button should be showing
+            if (_formKey.currentState.validate()) {
+              _formKey.currentState.save();
 
-            //If the observation ID is not null, we can be in edit or view mode.
-            setState((){
-              _loading = true;
-              widget.isEditMode = !widget.isEditMode;
-            });
+              setState((){
+                _loading = true;
+                widget.isEditMode = !widget.isEditMode;
+              });
 
-            dynamic result = await FirebaseDatabaseService(uid: user.uid).updateObservation(widget.observation);
-            print("Your id is" + widget.observation.uid);
+              dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+
+
+            } else {
+
+            }
           },
         )
     );
@@ -184,20 +193,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   onPressed: () => print('Play Video'),
                   shape: CircleBorder(),
                   fillColor: Colors.white,
-                  child:ThemedPlayButton(
-                    pauseIcon: Icon(
-                        Icons.pause,
-                        color: context.watch<MaterialThemesManager>().colorPalette().primary,
-                        size: 48),
-                    playIcon: Icon(Icons.mic,
-                        color: context.watch<MaterialThemesManager>().colorPalette().primary,
-                        size: 48),
-                    onPressed: () => {
-                      audioUrls.isNotEmpty
-                          ? _playAudio(audioUrls[0])
-                          : _openAudioRecorder()
-                    },
-                  ),
+                  child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
                 ),
               ),
             ),
@@ -235,20 +231,61 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       ),
     );
   }
+
+  Widget _buildPlayButton() {
+    return ThemedPlayButton(
+      isPlaying: _isAudioPlaying,
+      pauseIcon: Icon(
+          Icons.pause,
+          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          size: 48),
+      playIcon: Icon(Icons.play_arrow,
+          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          size: 48),
+      onPressed: () => {
+        audioUrls.isNotEmpty
+            ? _playAudio(audioUrls[0])
+            : Fluttertoast.showToast(
+            msg: "No recordings to play",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.CENTER,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+            textColor: Colors.white,
+            fontSize: 16.0
+        )
+      },
+    );
+  }
+
+  Widget _buildRecordButton() {
+    return ThemedPlayButton(
+      playIcon: Icon(Icons.mic,
+          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          size: 48),
+      onPressed: () => { _openAudioRecorder() },
+    );
+  }
   
   void _playAudio(String audioUrl) {
     if (!_isAudioLoaded) {
-      _isAudioPlaying = true;
-      _isAudioLoaded = true;
+      setState(() {
+        _isAudioPlaying = true;
+        _isAudioLoaded = true;
+      });
       assetsAudioPlayer.open(Audio.file(audioUrl));
       assetsAudioPlayer.play();
       
     } else if (_isAudioPlaying) {
-      _isAudioPlaying = false;
+      setState(() {
+        _isAudioPlaying = false;
+      });
       assetsAudioPlayer.pause();
       
     } else {
-      _isAudioPlaying = true;
+      setState(() {
+        _isAudioPlaying = true;
+      });
       assetsAudioPlayer.play();
     }
   }
@@ -283,7 +320,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               textType: ThemeGroupType.POM,
               hintText: "Observation Name",
               onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
-              //validator: validator
+              validator: (value) => nonEmptyValidator(value, "Observation Name"),
             )
           ] else ... [
             ThemedH5(widget.observation.name.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
@@ -295,11 +332,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               text: widget.observation.location,
               textType: ThemeGroupType.POM,
               hintText: "Site Location Name",
-              //hintTextType: hintTextType,
-              //hintTextEmphasis: hintTextEmphasis,
-              //backgroundType: textFieldBackgroundType,
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              //validator: validator
+              validator: (value) => nonEmptyValidator(value, "Site Location Name"),
             )
           ] else ... [
             ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),

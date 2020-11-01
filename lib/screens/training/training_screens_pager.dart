@@ -29,7 +29,7 @@ class _TrainingScreensPagerState extends State<TrainingScreensPager> {
       body: Stack(
           children: <Widget>[
             LiquidSwipe(
-              pages: <Container>[
+              pages: [
                 OnboardingScreen(
                   title:"Identifying Pikas\n&\nTheir Sign",
                   backgroundGradientType: BackgroundGradientType.SECONDARY,

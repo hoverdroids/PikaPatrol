@@ -1,14 +1,14 @@
+
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/fundamental/buttons_media.dart';
-import 'package:material_themes_widgets/fundamental/icons.dart';
-import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/fundamental/buttons_media.dart';
+import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
-import 'dart:io' show File;
-import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:path/path.dart';
 
-class AudioContentScroll extends StatelessWidget {
+class AudioContentScroll extends StatefulWidget {
 
   final List<String> urls;
   final String title;
@@ -18,11 +18,6 @@ class AudioContentScroll extends StatelessWidget {
   final List<Widget> icons;
   final List<Function> iconsClickedCallbacks;
   final String emptyListMessage;
-
-  final assetsAudioPlayer = AssetsAudioPlayer();
-  bool _isAudioLoaded = false;
-  bool _isAudioPlaying = false;
-  String _currentlyPlayingUrl;
 
   AudioContentScroll({
     this.urls,
@@ -35,14 +30,25 @@ class AudioContentScroll extends StatelessWidget {
     this.emptyListMessage = ""
   });
 
+  _AudioContentScrollState createState() => _AudioContentScrollState();
+}
+
+class _AudioContentScrollState extends State<AudioContentScroll>{
+
+  final assetsAudioPlayer = AssetsAudioPlayer();
+  bool _isAudioLoaded = false;
+  bool _isAudioPlaying = false;
+  int _playingIndex = -1;
+  String _currentlyPlayingUrl;
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: padding,
+      padding: widget.padding,
       child: Column(
         children: <Widget>[
           _buildHeaderRow(),
-          if (urls == null || urls.isEmpty) ... [
+          if (widget.urls == null || widget.urls.isEmpty) ... [
             miniTransparentDivider,
             _buildEmptyRow(context),
           ] else ... [
@@ -56,13 +62,13 @@ class AudioContentScroll extends StatelessWidget {
   Widget _buildHeaderRow() {
     return Row(
       children: [
-        ThemedSubTitle(title, type: ThemeGroupType.POM),
-        if (icons != null) ... [
+        ThemedSubTitle(widget.title, type: ThemeGroupType.POM),
+        if (widget.icons != null) ... [
           Expanded(
             flex: 1,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: icons,
+              children: widget.icons,
             ),
           ),
         ]
@@ -75,9 +81,9 @@ class AudioContentScroll extends StatelessWidget {
       color: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).cardTheme.color,
       child: Container(
         width: double.infinity,
-        height: imageHeight,
+        height: widget.imageHeight,
         child: Center(
-          child: ThemedTitle(emptyListMessage, type:ThemeGroupType.MOM),
+          child: ThemedTitle(widget.emptyListMessage, type:ThemeGroupType.MOM),
         ),
       ),
     );
@@ -85,17 +91,17 @@ class AudioContentScroll extends StatelessWidget {
 
   Widget _buildGridView() {
     return Container(
-      height: imageHeight,
+      height: widget.imageHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: urls.length,
+        itemCount: widget.urls.length,
         itemBuilder: (BuildContext context, int index) {
           return Container(
             margin: EdgeInsets.symmetric(
               horizontal: 10.0,
               vertical: 15.0,
             ),
-            width: imageWidth,
+            width: widget.imageWidth,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10.0),
@@ -109,21 +115,49 @@ class AudioContentScroll extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
-              child: Center(
-                child:ThemedPlayButton(onPressed: () {
-                  if (!_isAudioLoaded) {
-                    _isAudioPlaying = true;
-                    _isAudioLoaded = true;
-                    assetsAudioPlayer.open(Audio.file(urls[index]));
-                    assetsAudioPlayer.play();
-                  } else if (_isAudioPlaying) {
-                    _isAudioPlaying = false;
-                    assetsAudioPlayer.pause();
-                  } else {
-                    _isAudioPlaying = true;
-                    assetsAudioPlayer.play();
-                  }
-                },)
+              child: Stack(
+                children: <Widget>[
+                  Center(
+                      child:ThemedPlayButton(
+                        isPlaying: _isAudioPlaying && _playingIndex == index,
+                        onPressed: () {
+                          if (!_isAudioLoaded) {
+                            setState(() {
+                              _playingIndex = index;
+                              _isAudioPlaying = true;
+                              _isAudioLoaded = true;
+                            });
+                            assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
+                              setState(() {
+                                _isAudioPlaying = false;
+                              });
+                            });
+                            assetsAudioPlayer.open(Audio.file(widget.urls[index]));
+                            assetsAudioPlayer.play();
+
+                          } else if (_isAudioPlaying) {
+                            setState(() {
+                              _isAudioPlaying = false;
+                            });
+                            assetsAudioPlayer.pause();
+
+                          } else {
+                            setState(() {
+                              _isAudioPlaying = true;
+                            });
+                            assetsAudioPlayer.play();
+                          }
+                        },
+                      )
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: EdgeInsets.all(paddingMini),
+                      child: ThemedTitle(basenameWithoutExtension(widget.urls[index]), type:ThemeGroupType.MOM),
+                    ),
+                  ),
+                ],
               )
             ),
           );

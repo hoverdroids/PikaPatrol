@@ -138,7 +138,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => ObservationScreen2(Observation2()),
+              builder: (_) => ObservationScreen2(Observation2(observerUid: user.uid, date: new DateTime.now())),
             ),
           );
         //TODO - combine these when we have more pages

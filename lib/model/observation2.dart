@@ -3,9 +3,9 @@ class Observation2 {
   final String observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
-  final String name;
-  final String location;
-  final String date;
+  String name;
+  String location;
+  DateTime date;
   List<String> signs;
   String pikasDetected;
   String distanceToClosestPika;
@@ -26,7 +26,7 @@ class Observation2 {
     this.observerUid,
     this.name = "",
     this.location = "",
-    this.date = "",
+    this.date,
     this.signs = const [],
     this.pikasDetected = "",
     this.distanceToClosestPika = "",

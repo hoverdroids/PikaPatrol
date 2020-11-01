@@ -31,6 +31,8 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:assets_audio_player/assets_audio_player.dart';
 
 import 'package:pika_joe/model/user.dart';
+import 'package:intl/intl.dart';  //for date format
+import 'package:intl/date_symbol_data_local.dart';  //for date locale
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -276,9 +278,34 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
           smallTransparentDivider,
-          ThemedH5("OBSERVATION NAME", type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+          if(widget.isEditMode) ... [
+            ThemedEditableLabelValue(
+              showLabel: false,
+              text: widget.observation.name.toUpperCase(),
+              textType: ThemeGroupType.POM,
+              hintText: "Observation Name",
+              onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
+              //validator: validator
+            )
+          ] else ... [
+            ThemedH5(widget.observation.name.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+          ],
           miniTransparentDivider,
-          ThemedSubTitle("Location Name", type: ThemeGroupType.MOM),
+          if(widget.isEditMode) ... [
+            ThemedEditableLabelValue(
+              showLabel: false,
+              text: widget.observation.location,
+              textType: ThemeGroupType.POM,
+              hintText: "Site Location Name",
+              //hintTextType: hintTextType,
+              //hintTextEmphasis: hintTextEmphasis,
+              //backgroundType: textFieldBackgroundType,
+              onStringChangedCallback: (value) => { widget.observation.location = value },
+              //validator: validator
+            )
+          ] else ... [
+            ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),
+          ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
@@ -289,21 +316,21 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                 children: <Widget>[
                   ThemedSubTitle("Month", type: ThemeGroupType.MOM),
                   tinyTransparentDivider,
-                  ThemedTitle("June", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                  ThemedTitle(new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0], type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
               Column(
                 children: <Widget>[
                   ThemedSubTitle("Day", type: ThemeGroupType.MOM),
                   tinyTransparentDivider,
-                  ThemedTitle("6", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                  ThemedTitle(widget.observation.date.day.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
               Column(
                 children: <Widget>[
                   ThemedSubTitle("Year", type: ThemeGroupType.MOM),
                   tinyTransparentDivider,
-                  ThemedTitle("2020", type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                  ThemedTitle(widget.observation.date.year.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
                 ],
               ),
             ],

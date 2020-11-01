@@ -35,8 +35,9 @@ class AudioContentScroll extends StatefulWidget {
 
 class _AudioContentScrollState extends State<AudioContentScroll>{
 
-  AssetsAudioPlayer assetsAudioPlayer;
-  bool _isAudioPlaying = false;
+  AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer();
+
+  PlayerState _playerState = PlayerState.stop;
   int _playingIndex = -1;
   String _currentlyPlayingUrl;
 
@@ -124,46 +125,46 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                 children: <Widget>[
                   Center(
                       child:ThemedPlayButton(
-                        isPlaying: _isAudioPlaying && _playingIndex == index,
+                        isPlaying: _playerState == PlayerState.play && _playingIndex == index,
                         onPressed: () {
-                          if (assetsAudioPlayer == null) {
-                            setState(() {
-                              _playingIndex = index;
-                              _isAudioPlaying = true;
-                            });
+                          print("State7:" + assetsAudioPlayer.playerState.value.toString());
 
-                            assetsAudioPlayer = AssetsAudioPlayer();//create a new player for next time
+                          if (_playerState == PlayerState.stop || _playingIndex != index) {
+
+                            if (_playerState != PlayerState.stop) {
+                              //Release the currently loaded file
+                              assetsAudioPlayer.stop();
+
+                            }
+
+                            assetsAudioPlayer = AssetsAudioPlayer();//create a new player after the current file has stopped
 
                             assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
                               setState(() {
-                                print("Balla");
-                                _isAudioPlaying = false;
-                                assetsAudioPlayer.stop();//release the player
-                                assetsAudioPlayer = null;
-
-
-                                //assetsAudioPlayer.open(Audio.file(widget.urls[index]));
-
-                                //assetsAudioPlayer.seek(Duration());//Go back to the beginning of the last played file once it has ended, but don't loop
+                                _playerState = PlayerState.stop;
+                                _playingIndex = -1;
                               });
                             });
-
 
                             assetsAudioPlayer.open(Audio.file(widget.urls[index]));
                             assetsAudioPlayer.play();
 
-                          } else if (_isAudioPlaying) {
                             setState(() {
-                              _isAudioPlaying = false;
+                              _playingIndex = index;
+                              _playerState = PlayerState.play;
                             });
+
+                          } else if (_playerState == PlayerState.play) {
                             assetsAudioPlayer.pause();
-                            print("State:" + assetsAudioPlayer.playerState.value.toString());
-                          } else {
                             setState(() {
-                              _isAudioPlaying = true;
+                              _playerState = PlayerState.pause;
                             });
+
+                          } else {
                             assetsAudioPlayer.play();
-                            print("State:" + assetsAudioPlayer.playerState.value.toString());
+                            setState(() {
+                              _playerState = PlayerState.play;
+                            });
                           }
                         },
                       )

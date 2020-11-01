@@ -63,10 +63,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   List<String> imageUrls = [];
   List<String> audioUrls = [];
 
-  final assetsAudioPlayer = AssetsAudioPlayer();
-  bool _isAudioLoaded = false;
-  bool _isAudioPlaying = false;
-  String _currentlyPlayingUrl;
+  var assetsAudioPlayer = AssetsAudioPlayer();
+  PlayerState _playerState = PlayerState.stop;
 
   bool _loading = false;
 
@@ -234,7 +232,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   Widget _buildPlayButton() {
     return ThemedPlayButton(
-      isPlaying: _isAudioPlaying,
+      isPlaying: _playerState == PlayerState.play,
       pauseIcon: Icon(
           Icons.pause,
           color: context.watch<MaterialThemesManager>().colorPalette().primary,
@@ -268,23 +266,28 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
   
   void _playAudio(String audioUrl) {
-    if (!_isAudioLoaded) {
+    if (_playerState == PlayerState.stop) {
       setState(() {
-        _isAudioPlaying = true;
-        _isAudioLoaded = true;
+        _playerState = PlayerState.play;
+      });
+      assetsAudioPlayer = AssetsAudioPlayer();//apparently the audio player needs to be re-instantiated once stopped
+      assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
+        setState(() {
+          _playerState = PlayerState.stop;
+        });
       });
       assetsAudioPlayer.open(Audio.file(audioUrl));
       assetsAudioPlayer.play();
       
-    } else if (_isAudioPlaying) {
+    } else if (_playerState == PlayerState.play) {
       setState(() {
-        _isAudioPlaying = false;
+        _playerState = PlayerState.pause;
       });
       assetsAudioPlayer.pause();
       
     } else {
       setState(() {
-        _isAudioPlaying = true;
+        _playerState = PlayerState.play;
       });
       assetsAudioPlayer.play();
     }

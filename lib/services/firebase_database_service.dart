@@ -91,12 +91,16 @@ class FirebaseDatabaseService {
     return await doc.setData(
         {
           'observerUid': observation.observerUid,
+          'name': observation.name,
+          'location': observation.location,
           'date': observation.date,
           //'geo' : null,
           'signs': observation.signs,
           'pikasDetected': observation.pikasDetected,
           'distanceToClosestPika': observation.distanceToClosestPika,
           'searchDuration': observation.searchDuration,
+          'talusArea': observation.talusArea,
+          'temperature': observation.temperature,
           'skies': observation.skies,
           'wind': observation.wind,
           'siteHistory': observation.siteHistory,

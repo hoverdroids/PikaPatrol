@@ -554,24 +554,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int distanceOrdinal;
   Widget _buildDistanceChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Distance to Closest Pika", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: distanceOrdinal,
+            value: widget.observation.distanceToClosestPika,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => distanceOrdinal = val)
+                setState(() => widget.observation.distanceToClosestPika = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
@@ -580,24 +579,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int searchDurationOrdinal;
   Widget _buildSearchDurationChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Search Duration", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: searchDurationOrdinal,
+            value: widget.observation.searchDuration,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => searchDurationOrdinal = val)
+                setState(() => widget.observation.searchDuration = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
@@ -607,7 +605,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   bool showTalusAreaHints = false;
-  int talusAreaOrdinal;
   Widget _buildTalusAreaChoices() {
     var hints = ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
     var areas = ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
@@ -630,17 +627,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             )
           ],
         ),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: talusAreaOrdinal,
+            value: widget.observation.talusArea,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => talusAreaOrdinal = val)
+                setState(() => widget.observation.talusArea = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: showTalusAreaHints ? hints : areas,
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => showTalusAreaHints ? areas[i] : hints[i],
             )
@@ -649,7 +646,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int temperatureOrdinal;
   Widget _buildTemperatureChoices() {
     var degF = String.fromCharCode($deg) + "F";
     return Column(
@@ -657,17 +653,17 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: temperatureOrdinal,
+            value: widget.observation.temperature,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => temperatureOrdinal = val)
+                setState(() => widget.observation.temperature = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: ["Cold: <45" + degF , "Cool: 45 - 60" + degF, "Warm: 60 - 75" + degF, "Hot: >75" + degF],
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
@@ -676,24 +672,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int skiesOrdinal;
   Widget _buildSkiesChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Skies", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: skiesOrdinal,
+            value: widget.observation.skies,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => skiesOrdinal = val)
+                setState(() => widget.observation.skies = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
@@ -702,24 +697,23 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
   }
 
-  int windOrdinal;
   Widget _buildWindChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Wind", type: ThemeGroupType.POM),
-        ChipsChoice<int>.single(
+        ChipsChoice<String>.single(
             padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: windOrdinal,
+            value: widget.observation.wind,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => windOrdinal = val)
+                setState(() => widget.observation.wind = val)
               }
             },
-            choiceItems: C2Choice.listFrom<int, String>(
+            choiceItems: C2Choice.listFrom<String, String>(
               source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
-              value: (i, v) => i,
+              value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
             )
@@ -822,7 +816,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               ),
             )
           ]
-
         ],
       ),
     );

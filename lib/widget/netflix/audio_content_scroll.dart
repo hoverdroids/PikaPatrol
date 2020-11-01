@@ -35,11 +35,16 @@ class AudioContentScroll extends StatefulWidget {
 
 class _AudioContentScrollState extends State<AudioContentScroll>{
 
-  final assetsAudioPlayer = AssetsAudioPlayer();
-  bool _isAudioLoaded = false;
+  AssetsAudioPlayer assetsAudioPlayer;
   bool _isAudioPlaying = false;
   int _playingIndex = -1;
   String _currentlyPlayingUrl;
+
+  @override
+  void dispose() {
+    assetsAudioPlayer.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,17 +126,29 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                       child:ThemedPlayButton(
                         isPlaying: _isAudioPlaying && _playingIndex == index,
                         onPressed: () {
-                          if (!_isAudioLoaded) {
+                          if (assetsAudioPlayer == null) {
                             setState(() {
                               _playingIndex = index;
                               _isAudioPlaying = true;
-                              _isAudioLoaded = true;
                             });
+
+                            assetsAudioPlayer = AssetsAudioPlayer();//create a new player for next time
+
                             assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
                               setState(() {
+                                print("Balla");
                                 _isAudioPlaying = false;
+                                assetsAudioPlayer.stop();//release the player
+                                assetsAudioPlayer = null;
+
+
+                                //assetsAudioPlayer.open(Audio.file(widget.urls[index]));
+
+                                //assetsAudioPlayer.seek(Duration());//Go back to the beginning of the last played file once it has ended, but don't loop
                               });
                             });
+
+
                             assetsAudioPlayer.open(Audio.file(widget.urls[index]));
                             assetsAudioPlayer.play();
 
@@ -140,12 +157,13 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                               _isAudioPlaying = false;
                             });
                             assetsAudioPlayer.pause();
-
+                            print("State:" + assetsAudioPlayer.playerState.value.toString());
                           } else {
                             setState(() {
                               _isAudioPlaying = true;
                             });
                             assetsAudioPlayer.play();
+                            print("State:" + assetsAudioPlayer.playerState.value.toString());
                           }
                         },
                       )

@@ -1,10 +1,17 @@
 import 'dart:async';
 import 'dart:io';
+
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
@@ -15,24 +22,15 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:pika_joe/model/observation2.dart';
+import 'package:pika_joe/model/user.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/firebase_database_service.dart';
 import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
-import 'package:pika_joe/widget/netflix/movie_model.dart';
 import 'package:provider/provider.dart';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../audio_recorder_dialog.dart';
-import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:assets_audio_player/assets_audio_player.dart';
-
-import 'package:pika_joe/model/user.dart';
-import 'package:intl/intl.dart';  //for date format
-import 'package:intl/date_symbol_data_local.dart';  //for date locale
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -310,29 +308,47 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
-              Column(
-                children: <Widget>[
-                  ThemedSubTitle("Month", type: ThemeGroupType.MOM),
-                  tinyTransparentDivider,
-                  ThemedTitle(new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0], type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
-                ],
+              Flexible(
+                flex: 1,
+                child: Container(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child:Column(
+                      children: <Widget>[
+                        ThemedSubTitle("Month", type: ThemeGroupType.MOM),
+                        tinyTransparentDivider,
+                        ThemedTitle(new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0], type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              Column(
-                children: <Widget>[
-                  ThemedSubTitle("Day", type: ThemeGroupType.MOM),
-                  tinyTransparentDivider,
-                  ThemedTitle(widget.observation.date.day.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
-                ],
+              Container(
+                  child: Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      children: <Widget>[
+                        ThemedSubTitle("Day", type: ThemeGroupType.MOM),
+                        tinyTransparentDivider,
+                        ThemedTitle(widget.observation.date.day.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                      ],
+                    ),
+                  )
               ),
-              Column(
-                children: <Widget>[
-                  ThemedSubTitle("Year", type: ThemeGroupType.MOM),
-                  tinyTransparentDivider,
-                  ThemedTitle(widget.observation.date.year.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
-                ],
-              ),
+              Flexible(
+                flex: 1,
+                child: Container(
+                  alignment: Alignment.centerLeft,
+                  child:Column(
+                    children: <Widget>[
+                      ThemedSubTitle("Year", type: ThemeGroupType.MOM),
+                      tinyTransparentDivider,
+                      ThemedTitle(widget.observation.date.year.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                    ],
+                  ),
+                )
+              )
             ],
           ),
         ],

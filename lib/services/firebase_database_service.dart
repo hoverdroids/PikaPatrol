@@ -1,6 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user_profile.dart';
+import 'dart:io';
+import 'package:path/path.dart';
 
 class FirebaseDatabaseService {
 
@@ -164,4 +167,32 @@ class FirebaseDatabaseService {
   Stream<List<Observation2>> get observations {
     return observationsCollection.snapshots().map(_observationsFromSnapshot);
   }
+
+  Future<List<String>> uploadImages(List<String> filepaths) async {
+    List<String> uploadUrls = [];
+
+    await Future.wait(filepaths.map((String filepath) async {
+      FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
+      StorageUploadTask uploadTask = storage.ref().child("images/${basename(filepath)}").putFile(File(filepath));
+      StorageTaskSnapshot storageTaskSnapshot;
+
+      StorageTaskSnapshot snapshot = await uploadTask.onComplete;
+      if (snapshot.error == null) {
+        storageTaskSnapshot = snapshot;
+        final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
+        uploadUrls.add(downloadUrl);
+
+        print('Upload success');
+      } else {
+        print('Error from image repo ${snapshot.error.toString()}');
+        throw ('This file is not an image');
+      }
+    }), eagerError: true, cleanUp: (_) {
+      print('eager cleaned up');
+    });
+
+    return uploadUrls;
+  }
+
+
 }

@@ -17,6 +17,7 @@ import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
+import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
@@ -24,6 +25,7 @@ import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user.dart';
+import 'package:pika_joe/screens/tools/firebase_file_uploader.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/firebase_database_service.dart';
 import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
@@ -69,7 +71,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   var assetsAudioPlayer = AssetsAudioPlayer();
   PlayerState _playerState = PlayerState.stop;
 
-  bool _loading = false;
+  bool _isUploading = false;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -124,6 +126,16 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               ),
             ),
             _buildAppbar(user),
+            if(_isUploading) ... [
+              /*Container(color: Colors.red, width: double.infinity, height: double.infinity, child: FirebaseFileUploader(
+                  widget.observation.imageUrls, () => print("Uppyloaded")))*/
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                color: Colors.white.withOpacity(0.70),
+                child: Loading(),
+              )
+            ]
           ],
         ),
       ),
@@ -148,22 +160,61 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             if (_formKey.currentState.validate()) {
               _formKey.currentState.save();
 
-              setState((){
-                _loading = true;
-                widget.isEditMode = !widget.isEditMode;
-              });
+              if (user != null) {
+                setState((){
+                  _isUploading = true;
+                  widget.isEditMode = !widget.isEditMode;
+                });
+
+                var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
+                var imageUrls = await databaseService.uploadImages(widget.observation.imageUrls);
+                print("ImageUrls: ${imageUrls.toString()}");
+
+                setState(() {
+                  _isUploading = false;
+                });
+              } else {
+                Fluttertoast.showToast(
+                    msg: "You must login to submit an observation",
+                    toastLength: Toast.LENGTH_SHORT,
+                    gravity: ToastGravity.CENTER,
+                    timeInSecForIosWeb: 1,
+                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                    textColor: Colors.white,
+                    fontSize: 16.0
+                );
+              }
+
+
+
 
               //Upload all local files to Firebase
-              final FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
+              /*final FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
               StorageUploadTask uploadTask;
               widget.observation.imageUrls.forEach((element) {
+                if (element.contains(""))
                 uploadTask = storage.ref().child("images/${Path.basename(element)}").putFile(File(element));
-              });
+
+                print("ImageUri:" + uploadTask.lastSnapshot.uploadSessionUri.path);
+                print("ImageUri... ${storage.ref().getDownloadURL()}");
+              });*/
+
+              /*StorageReference filepath = storage.child("folder").child(filename);
+              filepath.putFile(File).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+              @Override
+              public void onSuccess(UploadTask.TaskSnapshot taskSnapshot){
+              Uri downloadUrl = filepath.getDownloadUrl();  // here is Url for photo
+              Toast.makeText(MtActivity.this, "Upload Done", Toast.LENGTH_LONG).show();
+              }
+              });*/
+
+
+
               //Replace the local file urls with the Firebase urls
 
               //Update the observation
 
-              dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+              //dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
 
 
             } else {

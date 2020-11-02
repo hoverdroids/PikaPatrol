@@ -27,7 +27,7 @@ class Observation2 {
     this.name = "",
     this.location = "",
     this.date,
-    this.signs = const [],
+    this.signs,
     this.pikasDetected = "",
     this.distanceToClosestPika = "",
     this.searchDuration = "",
@@ -37,9 +37,14 @@ class Observation2 {
     this.wind = "",
     this.siteHistory = "",
     this.comments = "",
-    this.imageUrls = const [],
-    this.audioUrls = const [],
-    this.otherAnimalsPresent = const []
-  });
+    this.imageUrls,
+    this.audioUrls,
+    this.otherAnimalsPresent
+  }){
+    signs = signs == null ? <String>[] : signs;
+    otherAnimalsPresent = otherAnimalsPresent == null ? <String>[] : otherAnimalsPresent;
+    imageUrls = imageUrls == null ? <String>[] : imageUrls;
+    audioUrls = audioUrls == null ? <String>[] : audioUrls;
+  }
 
 }

@@ -30,8 +30,12 @@ import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
 import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart' as Path;
 
 import '../audio_recorder_dialog.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+
+
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -60,8 +64,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   bool needsUpdated = false;
 
-  List<String> imageUrls = [];
-  List<String> audioUrls = [];
+  bool justKeepToggling = true;
 
   var assetsAudioPlayer = AssetsAudioPlayer();
   PlayerState _playerState = PlayerState.stop;
@@ -150,6 +153,16 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                 widget.isEditMode = !widget.isEditMode;
               });
 
+              //Upload all local files to Firebase
+              final FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
+              StorageUploadTask uploadTask;
+              widget.observation.imageUrls.forEach((element) {
+                uploadTask = storage.ref().child("images/${Path.basename(element)}").putFile(File(element));
+              });
+              //Replace the local file urls with the Firebase urls
+
+              //Update the observation
+
               dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
 
 
@@ -163,7 +176,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   Widget _buildHeaderImage() {
     return GestureDetector(
-      onTap: () => _openFileExplorer(true, FileType.image, []),
+      onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : print(""),
       child: Container(
         height: 330,
         child: Stack(
@@ -241,8 +254,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           color: context.watch<MaterialThemesManager>().colorPalette().primary,
           size: 48),
       onPressed: () => {
-        audioUrls.isNotEmpty
-            ? _playAudio(audioUrls[0])
+        widget.observation.audioUrls.isNotEmpty
+            ? _playAudio(widget.observation.audioUrls[0])
             : Fluttertoast.showToast(
             msg: "No recordings to play",
             toastLength: Toast.LENGTH_SHORT,
@@ -294,9 +307,9 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   Widget _buildImage() {
-    return imageUrls.isNotEmpty
+    return widget.observation.imageUrls.isNotEmpty
       ? Image.file(
-        File(imageUrls[0]),
+        File(widget.observation.imageUrls[0]),
           height: 300.0,
           width: double.infinity,
           fit: BoxFit.cover,
@@ -418,7 +431,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   Widget _buildImages(Color color1, Color color2) {
 
     var icons = !widget.isEditMode ? <Widget>[] : [
-      ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [])),
+      ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [], true)),
       ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
         _takePictureAndCrop(
             context.read<MaterialThemesManager>().colorPalette().primary,
@@ -437,7 +450,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     ];
 
     return ContentScroll(
-      images: imageUrls,
+      images: widget.observation.imageUrls,
       title: 'Images',
       emptyListMessage: "No Images",
       imageHeight: 200.0,
@@ -449,12 +462,12 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   Widget _buildAudioRecordings() {
 
     var icons = !widget.isEditMode ? <Widget>[] : [
-      ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [])),//TODO - should be allowed to set ['mp3']
+      ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [], false)),//TODO - should be allowed to set ['mp3']
       ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
     ];
 
     return AudioContentScroll(
-      urls: audioUrls,
+      urls: widget.observation.audioUrls,
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
@@ -470,12 +483,16 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         showDialog(
             context: context,
             builder: (BuildContext context) {
+              print("AudioUrl...");
               return AudioRecorderDialog();
             }
         ).then((value) => {
           setState((){
             if (value != null && (value as String).isNotEmpty) {
-              audioUrls.add(value);
+              print("AudioUrls value: " + value);
+              widget.observation.audioUrls.add(value);
+              justKeepToggling = !justKeepToggling;
+              print("AudioUrls: " + widget.observation.audioUrls.toString());
             }
           })
         });
@@ -499,7 +516,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   String _path;
   Map<String, String> _paths;
   String _fileName;
-  void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions) async {
+  void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
     setState(() => _loadingPath = true);
     try {
       if (isMultiPick) {
@@ -512,7 +529,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
           setState(() {
             _paths.forEach((key, value) {
-              imageUrls.add(value);
+              if (addImages) {
+                widget.observation.imageUrls.add(value);
+              } else {
+                widget.observation.audioUrls.add(value);
+              }
             });
             needsUpdated = true;
           });
@@ -527,7 +548,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
         //if(_path.isNotEmpty) {
 
           setState(() {
-            imageUrls.add(_path);
+            widget.observation.imageUrls.add(_path);
             needsUpdated = true;
           });
         //}
@@ -580,7 +601,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     );
 
     setState(() {
-      imageUrls.add(cropped?.path ?? selected.path);
+      widget.observation.imageUrls.add(cropped?.path ?? selected.path);
     });
   }
 

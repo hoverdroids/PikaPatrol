@@ -172,20 +172,27 @@ class FirebaseDatabaseService {
     List<String> uploadUrls = [];
 
     await Future.wait(filepaths.map((String filepath) async {
-      FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
-      StorageUploadTask uploadTask = storage.ref().child("images/${basename(filepath)}").putFile(File(filepath));
-      StorageTaskSnapshot storageTaskSnapshot;
-
-      StorageTaskSnapshot snapshot = await uploadTask.onComplete;
-      if (snapshot.error == null) {
-        storageTaskSnapshot = snapshot;
-        final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
-        uploadUrls.add(downloadUrl);
-
-        print('Upload success');
+      if(filepath.contains('pikajoe-97c5c.appspot.com')) {
+        //Do not try to upload an image that has already been uploaded
+        uploadUrls.add(filepath);
+        print("Uploading:No file:${basename(filepath)}");
       } else {
-        print('Error from image repo ${snapshot.error.toString()}');
-        throw ('This file is not an image');
+        print("Uploading:Yes file:${basename(filepath)}");
+        FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
+        StorageUploadTask uploadTask = storage.ref().child("images/${basename(filepath)}").putFile(File(filepath));
+        StorageTaskSnapshot storageTaskSnapshot;
+
+        StorageTaskSnapshot snapshot = await uploadTask.onComplete;
+        if (snapshot.error == null) {
+          storageTaskSnapshot = snapshot;
+          final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
+          uploadUrls.add(downloadUrl);
+
+          print('Upload success');
+        } else {
+          print('Error from image repo ${snapshot.error.toString()}');
+          throw ('This file is not an image');
+        }
       }
     }), eagerError: true, cleanUp: (_) {
       print('eager cleaned up');
@@ -193,6 +200,4 @@ class FirebaseDatabaseService {
 
     return uploadUrls;
   }
-
-
 }

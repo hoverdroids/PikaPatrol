@@ -25,7 +25,6 @@ import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user.dart';
-import 'package:pika_joe/screens/tools/firebase_file_uploader.dart';
 import 'package:pika_joe/screens/training/training_screens_pager.dart';
 import 'package:pika_joe/services/firebase_database_service.dart';
 import 'package:pika_joe/widget/netflix/audio_content_scroll.dart';
@@ -127,8 +126,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
             ),
             _buildAppbar(user),
             if(_isUploading) ... [
-              /*Container(color: Colors.red, width: double.infinity, height: double.infinity, child: FirebaseFileUploader(
-                  widget.observation.imageUrls, () => print("Uppyloaded")))*/
               Container(
                 width: double.infinity,
                 height: double.infinity,
@@ -157,68 +154,46 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
           rightIconType: ThemeGroupType.MOI,
           rightIconClickedCallback: () async {
-            if (_formKey.currentState.validate()) {
-              _formKey.currentState.save();
-
-              if (user != null) {
-                setState((){
-                  _isUploading = true;
-                  widget.isEditMode = !widget.isEditMode;
-                });
-
-                var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
-                var imageUrls = await databaseService.uploadImages(widget.observation.imageUrls);
-                print("ImageUrls: ${imageUrls.toString()}");
-
-                setState(() {
-                  _isUploading = false;
-                });
-              } else {
-                Fluttertoast.showToast(
-                    msg: "You must login to submit an observation",
-                    toastLength: Toast.LENGTH_SHORT,
-                    gravity: ToastGravity.CENTER,
-                    timeInSecForIosWeb: 1,
-                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                    textColor: Colors.white,
-                    fontSize: 16.0
-                );
-              }
-
-
-
-
-              //Upload all local files to Firebase
-              /*final FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
-              StorageUploadTask uploadTask;
-              widget.observation.imageUrls.forEach((element) {
-                if (element.contains(""))
-                uploadTask = storage.ref().child("images/${Path.basename(element)}").putFile(File(element));
-
-                print("ImageUri:" + uploadTask.lastSnapshot.uploadSessionUri.path);
-                print("ImageUri... ${storage.ref().getDownloadURL()}");
-              });*/
-
-              /*StorageReference filepath = storage.child("folder").child(filename);
-              filepath.putFile(File).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-              @Override
-              public void onSuccess(UploadTask.TaskSnapshot taskSnapshot){
-              Uri downloadUrl = filepath.getDownloadUrl();  // here is Url for photo
-              Toast.makeText(MtActivity.this, "Upload Done", Toast.LENGTH_LONG).show();
-              }
-              });*/
-
-
-
-              //Replace the local file urls with the Firebase urls
-
-              //Update the observation
-
-              //dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
-
-
+            if(!widget.isEditMode) {
+              setState(() {
+                widget.isEditMode = true;
+              });
             } else {
+              if (_formKey.currentState.validate()) {
+                _formKey.currentState.save();
 
+                if (user != null) {
+                  setState((){
+                    _isUploading = true;
+                  });
+
+                  var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
+                  widget.observation.imageUrls = await databaseService.uploadImages(widget.observation.imageUrls);
+                  print("ImageUrls: ${widget.observation.imageUrls.toString()}");
+
+                  setState(() {
+                    _isUploading = false;
+                    widget.isEditMode = false;
+                  });
+                } else {
+                  Fluttertoast.showToast(
+                      msg: "You must login to submit an observation",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                      textColor: Colors.white,
+                      fontSize: 16.0
+                  );
+                }
+
+
+
+
+                //dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+
+
+              }
             }
           },
         )
@@ -358,19 +333,28 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   Widget _buildImage() {
-    return widget.observation.imageUrls.isNotEmpty
-      ? Image.file(
+    if(widget.observation.imageUrls.isEmpty) {
+      return Image(
+        height: 300.0,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        image: AssetImage("assets/images/add_image.png"),
+      );
+    } else if(widget.observation.imageUrls[0].contains("https://")) {
+      return Image.network(
+        widget.observation.imageUrls[0],
+        height: 300.0,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.file(
         File(widget.observation.imageUrls[0]),
-          height: 300.0,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        )
-      : Image(
-          height: 300.0,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          image: AssetImage("assets/images/add_image.png"),
-    );
+        height: 300.0,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
   }
 
   Widget _buildHeader() {

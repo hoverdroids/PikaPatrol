@@ -101,9 +101,14 @@ class ContentScroll extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(10.0),
-              child: Image.file(
+              child: images[index].contains("https://")
+                ? Image.network(
+                    images[index],
+                    fit: BoxFit.cover,
+                  )
+                : Image.file(
                   File(images[index]),
-                  fit: BoxFit.cover),//AssetImage(images[index]
+                  fit: BoxFit.cover),
             ),
           );
         },

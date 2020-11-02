@@ -175,9 +175,7 @@ class FirebaseDatabaseService {
       if(filepath.contains('pikajoe-97c5c.appspot.com')) {
         //Do not try to upload an image that has already been uploaded
         uploadUrls.add(filepath);
-        print("Uploading:No file:${basename(filepath)}");
       } else {
-        print("Uploading:Yes file:${basename(filepath)}");
         FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
         StorageUploadTask uploadTask = storage.ref().child("images/${basename(filepath)}").putFile(File(filepath));
         StorageTaskSnapshot storageTaskSnapshot;

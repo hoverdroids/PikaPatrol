@@ -108,44 +108,12 @@ class FirebaseDatabaseService {
           'skies': observation.skies,
           'wind': observation.wind,
           'siteHistory': observation.siteHistory,
-          'comments': observation.comments
+          'comments': observation.comments,
+          'imageUrls': observation.imageUrls,
+          'audioUrls': observation.audioUrls
         }
     );
   }
-
-  /*Future updateObservation(
-      String observationUid,
-      String observerUid,
-      String date,
-      //TODO - geo data
-      List<String> signs,
-      String pikasDetected,
-      String distanceToClosestPika,
-      String searchDuration,
-      String skies,
-      String wind,
-      String siteHistory,
-      String comments,
-      List<String> imageUrls,
-      List<String> audioUrls,
-      List<String> otherAnimalsPresent
-      ) async {
-    return await userProfilesCollection.document().setData(//if no ID, the id and timestamp are auto gen; not sure it's what we want
-        {
-          'observerUid': observerUid,
-          'date': date,
-          'geo' : null,
-          'signs': signs,
-          'pikasDetected': pikasDetected,
-          'distanceToClosestPika': distanceToClosestPika,
-          'searchDuration': searchDuration,
-          'skies': skies,
-          'wind': wind,
-          'siteHistory': siteHistory,
-          'comments': comments
-        }
-    );
-  }*/
 
   List<Observation2> _observationsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {

@@ -174,6 +174,8 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   widget.observation.audioUrls = await databaseService.uploadFiles(widget.observation.audioUrls, false);
                   print("AudioUrls: ${widget.observation.audioUrls.toString()}");
 
+                  dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+
                   setState(() {
                     _isUploading = false;
                     widget.isEditMode = false;
@@ -189,13 +191,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                       fontSize: 16.0
                   );
                 }
-
-
-
-
-                //dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
-
-
               }
             }
           },

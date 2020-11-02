@@ -4,6 +4,7 @@ import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user_profile.dart';
 import 'dart:io';
 import 'package:path/path.dart';
+import 'package:mime/mime.dart';
 
 class FirebaseDatabaseService {
 
@@ -168,16 +169,21 @@ class FirebaseDatabaseService {
     return observationsCollection.snapshots().map(_observationsFromSnapshot);
   }
 
-  Future<List<String>> uploadImages(List<String> filepaths) async {
+  Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {
     List<String> uploadUrls = [];
 
     await Future.wait(filepaths.map((String filepath) async {
+      //TODO - base on mime
+      /*String mimeStr = lookupMimeType(filepath);
+      var fileType = mimeStr.split('/');
+      print('file type ${fileType}');*/
+      var folder = areImages ? "images" : "audio";
       if(filepath.contains('pikajoe-97c5c.appspot.com')) {
         //Do not try to upload an image that has already been uploaded
         uploadUrls.add(filepath);
       } else {
         FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
-        StorageUploadTask uploadTask = storage.ref().child("images/${basename(filepath)}").putFile(File(filepath));
+        StorageUploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
         StorageTaskSnapshot storageTaskSnapshot;
 
         StorageTaskSnapshot snapshot = await uploadTask.onComplete;

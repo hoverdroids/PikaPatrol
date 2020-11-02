@@ -39,7 +39,6 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
 
   PlayerState _playerState = PlayerState.stop;
   int _playingIndex = -1;
-  String _currentlyPlayingUrl;
 
   @override
   void dispose() {
@@ -127,14 +126,11 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                       child:ThemedPlayButton(
                         isPlaying: _playerState == PlayerState.play && _playingIndex == index,
                         onPressed: () {
-                          print("State7:" + assetsAudioPlayer.playerState.value.toString());
-
                           if (_playerState == PlayerState.stop || _playingIndex != index) {
 
                             if (_playerState != PlayerState.stop) {
                               //Release the currently loaded file
                               assetsAudioPlayer.stop();
-
                             }
 
                             assetsAudioPlayer = AssetsAudioPlayer();//create a new player after the current file has stopped
@@ -146,7 +142,8 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                               });
                             });
 
-                            assetsAudioPlayer.open(Audio.file(widget.urls[index]));
+                            var url = widget.urls[index];
+                            assetsAudioPlayer.open(url.contains("http") ? Audio.network(url) : Audio.file(url));
                             assetsAudioPlayer.play();
 
                             setState(() {

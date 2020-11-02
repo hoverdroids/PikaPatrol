@@ -168,8 +168,11 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   });
 
                   var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
-                  widget.observation.imageUrls = await databaseService.uploadImages(widget.observation.imageUrls);
+                  widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);
                   print("ImageUrls: ${widget.observation.imageUrls.toString()}");
+
+                  widget.observation.audioUrls = await databaseService.uploadFiles(widget.observation.audioUrls, false);
+                  print("AudioUrls: ${widget.observation.audioUrls.toString()}");
 
                   setState(() {
                     _isUploading = false;
@@ -315,7 +318,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           _playerState = PlayerState.stop;
         });
       });
-      assetsAudioPlayer.open(Audio.file(audioUrl));
+      assetsAudioPlayer.open(audioUrl.contains("http") ? Audio.network(audioUrl) : Audio.file(audioUrl));
       assetsAudioPlayer.play();
       
     } else if (_playerState == PlayerState.play) {

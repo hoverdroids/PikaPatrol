@@ -4,6 +4,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:pika_joe/mock/data.dart';
 import 'package:pika_joe/widget/break_me_apart.dart';
 import 'package:provider/provider.dart';
+import 'package:pika_joe/model/observation2.dart';
 
 class ObservationsPage extends StatefulWidget {
   @override
@@ -24,6 +25,10 @@ class _ObservationsPageState extends State<ObservationsPage> {
         currentPage = controller.page;
       });
     });
+
+    final observations = Provider.of<List<Observation2>>(context) ?? [];
+
+    print("Observations:${observations.toString()}");
 
     return Container(
       width: double.infinity,

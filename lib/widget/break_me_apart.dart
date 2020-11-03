@@ -241,6 +241,7 @@ class _MyAppState2 extends State<MyApp2> {
 }
 
 class CardScrollWidget extends StatelessWidget {
+
   var currentPage;
   var padding = 20.0;
   var verticalInset = 20.0;
@@ -355,7 +356,7 @@ class CardScrollWidget extends StatelessWidget {
                                         builder: (_) => MovieScreen(movie: movies[2]),
                                       ),
                                     ),*/
-                                    child: Text("Read Later",
+                                    child: Text("View Observation",
                                         style: TextStyle(color: Colors.white)),
                                   ),
                                 ),

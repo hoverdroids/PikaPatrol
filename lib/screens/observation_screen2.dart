@@ -32,11 +32,8 @@ import 'package:pika_joe/widget/netflix/circular_clipper.dart';
 import 'package:pika_joe/widget/netflix/content_scroll.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart' as Path;
-
 import '../audio_recorder_dialog.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-
-
 
 class ObservationScreen2 extends StatefulWidget {
 

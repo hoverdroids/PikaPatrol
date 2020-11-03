@@ -117,9 +117,16 @@ class FirebaseDatabaseService {
 
   List<Observation2> _observationsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {
+
+      List<dynamic> urls = doc.data['imageUrls'];//.Cast<String>().ToList();
+      List<String> imageUrls = urls.cast<String>().toList();
+
+      print("ImageUrls: ${doc.data['imageUrls'][0]}");
+
       return Observation2(
         uid: doc.documentID ?? '',
         observerUid: doc.data['observerUid'] ?? '',
+        name: doc.data['name'] ?? '',
         location: doc.data['location'] ?? '',
         //date: doc.data['date'] ?? '',
         //signs: doc.data['signs'] ?? <String>[],
@@ -131,7 +138,8 @@ class FirebaseDatabaseService {
         skies: doc.data['skies'] ?? '',
         wind: doc.data['wind'] ?? '',
         siteHistory: doc.data['siteHistory'] ?? '',
-        comments: doc.data['comments'] ?? ''
+        comments: doc.data['comments'] ?? '',
+        imageUrls: imageUrls ?? <String>[]
       );
     }).toList();
   }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
-import 'package:pika_joe/mock/data.dart';
-import 'package:pika_joe/widget/break_me_apart.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/model/observation2.dart';
+import 'package:pika_joe/widget/card_scroll.dart';
 
 class ObservationsPage extends StatefulWidget {
   @override
@@ -13,12 +12,12 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
 
-  var currentPage = images.length - 1.0;
+  var currentPage = 0.0;
 
   @override
   Widget build(BuildContext context) {
 
-    PageController controller = PageController(initialPage: images.length - 1);
+    PageController controller = PageController(initialPage: 0);
 
     controller.addListener(() {
       setState(() {
@@ -26,7 +25,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
       });
     });
 
-    final observations = Provider.of<List<Observation2>>(context) ?? [];
+    final observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
 
     print("Observations:${observations.toString()}");
 
@@ -47,11 +46,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
                       Stack(
                         children: <Widget>[
                           /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                          CardScrollWidget(currentPage),
+                          CardScrollWidget(observations, currentPage: currentPage),
                           /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
                           Positioned.fill(
                             child: PageView.builder(
-                              itemCount: images.length,
+                              itemCount: observations.length,
                               controller: controller,
                               reverse: true,
                               scrollDirection: Axis.horizontal,

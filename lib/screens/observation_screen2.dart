@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';  //for date format
@@ -163,6 +164,12 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   setState((){
                     _isUploading = true;
                   });
+
+                  //Get the latitude and longitude from the device's GPS
+                  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
+                  widget.observation.altitude = position.altitude;
+                  widget.observation.latitude = position.latitude;
+                  widget.observation.longitude = position.longitude;
 
                   var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
                   widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);

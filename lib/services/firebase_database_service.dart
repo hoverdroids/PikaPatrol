@@ -1,10 +1,10 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path/path.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/model/user_profile.dart';
-import 'dart:io';
-import 'package:path/path.dart';
-import 'package:mime/mime.dart';
 
 class FirebaseDatabaseService {
 
@@ -98,7 +98,9 @@ class FirebaseDatabaseService {
           'name': observation.name,
           'location': observation.location,
           'date': observation.date,
-          //'geo' : null,
+          'altitude': observation.altitude,
+          'latitude': observation.latitude,
+          'longitude': observation.longitude,
           'signs': observation.signs,
           'pikasDetected': observation.pikasDetected,
           'distanceToClosestPika': observation.distanceToClosestPika,
@@ -118,18 +120,28 @@ class FirebaseDatabaseService {
   List<Observation2> _observationsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {
 
-      List<dynamic> urls = doc.data['imageUrls'];//.Cast<String>().ToList();
-      List<String> imageUrls = urls.cast<String>().toList();
+      List<dynamic> vals = doc.data['signs'];
+      List<String> signs = vals == null || vals.isEmpty ? <String>[] : vals.cast<String>().toList();
 
-      print("ImageUrls: ${doc.data['imageUrls'][0]}");
+      vals = doc.data['otherAnimalsPresent'];
+      List<String> otherAnimalsPresent = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
+
+      vals = doc.data['imageUrls'];
+      List<String> imageUrls = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
+
+      vals = doc.data['audioUrls'];
+      List<String> audioUrls = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
 
       return Observation2(
         uid: doc.documentID ?? '',
         observerUid: doc.data['observerUid'] ?? '',
         name: doc.data['name'] ?? '',
         location: doc.data['location'] ?? '',
-        //date: doc.data['date'] ?? '',
-        //signs: doc.data['signs'] ?? <String>[],
+        altitude: doc.data['altitude'],
+        latitude: doc.data['latitude'],
+        longitude: doc.data['longitude'],
+        date: DateTime.fromMicrosecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
+        signs: signs,
         pikasDetected: doc.data['pikasDetected'] ?? '',
         distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',
         searchDuration: doc.data['searchDuration'] ?? '',
@@ -138,8 +150,10 @@ class FirebaseDatabaseService {
         skies: doc.data['skies'] ?? '',
         wind: doc.data['wind'] ?? '',
         siteHistory: doc.data['siteHistory'] ?? '',
+        otherAnimalsPresent: otherAnimalsPresent,
         comments: doc.data['comments'] ?? '',
-        imageUrls: imageUrls ?? <String>[]
+        imageUrls: imageUrls,
+        audioUrls: audioUrls
       );
     }).toList();
   }

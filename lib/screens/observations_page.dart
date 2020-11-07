@@ -12,22 +12,25 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
 
-  var currentPage = 0.0;
+  int currentPage = 0;
+  List<Observation2> observations = <Observation2>[];
 
   @override
   Widget build(BuildContext context) {
+
+    if(observations == null || observations.isEmpty) {
+      observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
+      currentPage = observations.isEmpty ? 0 : observations.length - 1;
+      print("Observations:${observations.toString()}");
+    }
 
     PageController controller = PageController(initialPage: 0);
 
     controller.addListener(() {
       setState(() {
-        currentPage = controller.page;
+        currentPage = controller.page.toInt();
       });
     });
-
-    final observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
-
-    print("Observations:${observations.toString()}");
 
     return Container(
       width: double.infinity,

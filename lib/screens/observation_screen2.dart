@@ -165,25 +165,51 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                     _isUploading = true;
                   });
 
-                  //Get the latitude and longitude from the device's GPS
-                  Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
-                  widget.observation.altitude = position.altitude;
-                  widget.observation.latitude = position.latitude;
-                  widget.observation.longitude = position.longitude;
+                  if(widget.observation.altitude == null || widget.observation.latitude == null || widget.observation.longitude == null) {
+                    bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
+                    if(isLocationServiceEnabled) {
+                      //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
+                      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit:Duration(seconds: 20));
+                      if(position != null) {
+                        widget.observation.altitude = position.altitude;
+                        widget.observation.latitude = position.latitude;
+                        widget.observation.longitude = position.longitude;
 
-                  var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
-                  widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);
-                  print("ImageUrls: ${widget.observation.imageUrls.toString()}");
+                        await saveObservation(user);
+                      } else {
+                        Fluttertoast.showToast(
+                            msg: "Could not retrieve location.",
+                            toastLength: Toast.LENGTH_SHORT,
+                            gravity: ToastGravity.CENTER,
+                            timeInSecForIosWeb: 1,
+                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                            textColor: Colors.white,
+                            fontSize: 16.0
+                        );
 
-                  widget.observation.audioUrls = await databaseService.uploadFiles(widget.observation.audioUrls, false);
-                  print("AudioUrls: ${widget.observation.audioUrls.toString()}");
+                        setState(() {
+                          _isUploading = false;
+                        });
+                      }
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Could not retrieve location. Enable GPS and try to save again.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
 
-                  dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+                      setState(() {
+                        _isUploading = false;
+                      });
 
-                  setState(() {
-                    _isUploading = false;
-                    widget.isEditMode = false;
-                  });
+                      await Geolocator.openAppSettings();
+                      await Geolocator.openLocationSettings();
+                    }
+                  }
                 } else {
                   Fluttertoast.showToast(
                       msg: "You must login to submit an observation",
@@ -200,6 +226,22 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           },
         )
     );
+  }
+
+  Future saveObservation(User user) async {
+    var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
+    widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);
+    print("ImageUrls: ${widget.observation.imageUrls.toString()}");
+
+    widget.observation.audioUrls = await databaseService.uploadFiles(widget.observation.audioUrls, false);
+    print("AudioUrls: ${widget.observation.audioUrls.toString()}");
+
+    dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+
+    setState(() {
+      _isUploading = false;
+      widget.isEditMode = false;
+    });
   }
 
   Widget _buildHeaderImage() {

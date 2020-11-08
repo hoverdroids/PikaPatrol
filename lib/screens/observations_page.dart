@@ -4,6 +4,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/widget/card_scroll.dart';
+import 'dart:math' as math;
 
 class ObservationsPage extends StatefulWidget {
   @override
@@ -12,23 +13,22 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
 
-  int currentPage = 0;
-  List<Observation2> observations = <Observation2>[];
+  double currentPage = 0;
+  List<Observation2> observations;
 
   @override
   Widget build(BuildContext context) {
 
     if(observations == null || observations.isEmpty) {
       observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
-      currentPage = observations.isEmpty ? 0 : observations.length - 1;
-      print("Observations:${observations.toString()}");
+      currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
     }
 
     PageController controller = PageController(initialPage: 0);
 
     controller.addListener(() {
       setState(() {
-        currentPage = controller.page.toInt();
+        currentPage = controller.page;
       });
     });
 
@@ -70,7 +70,6 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                   child: Container(
                                     width: double.infinity,
                                     height: double.infinity,
-                                    color: Color.fromRGBO(255, 255, 255, 0.00),
                                   ),
                                 );
                               },

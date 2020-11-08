@@ -186,7 +186,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                             textColor: Colors.white,
                             fontSize: 16.0
                         );
-
                         setState(() {
                           _isUploading = false;
                         });

@@ -86,7 +86,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
 
     return StreamProvider<List<Observation2>>.value(
       value: FirebaseDatabaseService(uid: user != null ? user.uid : null).observations,
-      child: Scaffold(
+      child:
+      Scaffold(
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
         extendBody: true,

@@ -14,17 +14,23 @@ class ObservationsPage extends StatefulWidget {
 class _ObservationsPageState extends State<ObservationsPage> {
 
   double currentPage = 0;
-  List<Observation2> observations;
+  List<Observation2> observations = <Observation2>[];
+  int lastObservationsSize = 0;
 
   @override
   Widget build(BuildContext context) {
 
-    if(observations == null || observations.isEmpty) {
+    //if(observations == null || observations.isEmpty) {
       observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
-      currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
-    }
+      if(lastObservationsSize != observations.length) {
+        setState(() {
+          currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
+          lastObservationsSize = observations.length;
+        });
+      }
+    //}
 
-    PageController controller = PageController(initialPage: 0);
+    PageController controller = PageController(initialPage: currentPage.toInt());
 
     controller.addListener(() {
       setState(() {
@@ -70,6 +76,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                   child: Container(
                                     width: double.infinity,
                                     height: double.infinity,
+                                    color: Color.fromARGB(70, 255-index*25, 255-index*10, 255-index*50),
                                   ),
                                 );
                               },

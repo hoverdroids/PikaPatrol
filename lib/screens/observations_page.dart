@@ -7,34 +7,33 @@ import 'package:pika_joe/widget/card_scroll.dart';
 import 'dart:math' as math;
 
 class ObservationsPage extends StatefulWidget {
+
+  List<Observation2> observations;
+  double currentPage;
+
+  ObservationsPage(this.observations) {
+    observations = observations == null ? <Observation2>[] : observations;
+    currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
+    print("CurrentPage:$currentPage");
+  }
+
   @override
   _ObservationsPageState createState() => _ObservationsPageState();
 }
 
 class _ObservationsPageState extends State<ObservationsPage> {
 
-  double currentPage = 0;
-  List<Observation2> observations = <Observation2>[];
-  int lastObservationsSize = 0;
-
   @override
   Widget build(BuildContext context) {
-
-    //if(observations == null || observations.isEmpty) {
-      observations = Provider.of<List<Observation2>>(context) ?? <Observation2>[];
-      if(lastObservationsSize != observations.length) {
-        setState(() {
-          currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
-          lastObservationsSize = observations.length;
-        });
-      }
-    //}
-
-    PageController controller = PageController(initialPage: currentPage.toInt());
+    
+    //TODO - for some reason this page number is zero instead of the latest page nuber
+    print("Current Page ${widget.currentPage} init");
+    PageController controller = PageController(initialPage: widget.currentPage.toInt());
 
     controller.addListener(() {
+      print("Current Page ${controller.page} addList");
       setState(() {
-        currentPage = controller.page;
+        widget.currentPage = controller.page;
       });
     });
 
@@ -55,11 +54,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
                       Stack(
                         children: <Widget>[
                           /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                          CardScrollWidget(observations, currentPage: currentPage),
+                          CardScrollWidget(widget.observations, currentPage: widget.currentPage),
                           /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
                           Positioned.fill(
                             child: PageView.builder(
-                              itemCount: observations.length,
+                              itemCount: widget.observations.length,
                               controller: controller,
                               reverse: true,
                               scrollDirection: Axis.horizontal,

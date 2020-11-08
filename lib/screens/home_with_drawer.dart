@@ -80,7 +80,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   Widget build(BuildContext context) {
 
     Size mediaQuery = MediaQuery.of(context).size;
-    List<Widget> pages=[ObservationsPage()];
+    //List<Widget> pages=[ObservationsPage()];
 
     final user = Provider.of<User>(context);
 
@@ -104,8 +104,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             children: <Widget>[
               PageView.builder(
                 controller: pageController,
-                itemCount: pages.length,
-                itemBuilder: (context, position) => pages[position],
+                itemCount: 1,
+                itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation2>>(context) ?? <Observation2>[]),
               ),
               /*LiquidSwipe(
               pages: <Container>[

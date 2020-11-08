@@ -4,7 +4,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/widget/card_scroll.dart';
-import 'dart:math' as math;
+import 'package:pika_joe/screens/observation_screen2.dart';
 
 class ObservationsPage extends StatefulWidget {
 
@@ -25,7 +25,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
 
   @override
   Widget build(BuildContext context) {
-    
+
     //TODO - for some reason this page number is zero instead of the latest page nuber
     print("Current Page ${widget.currentPage} init");
     PageController controller = PageController(initialPage: widget.currentPage.toInt());
@@ -65,13 +65,13 @@ class _ObservationsPageState extends State<ObservationsPage> {
                               allowImplicitScrolling: true,
                               itemBuilder: (context, index) {
                                 return GestureDetector(
-                                  onTap: () => print(""),
-                                      /*Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) => MovieScreen(movie: movies[2]),
-                                    ),
-                                  )*/
+                                  onTap: () => {
+                                    Navigator.push(context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ObservationScreen2(widget.observations[index]),
+                                      ),
+                                    )
+                                  },
                                   child: Container(
                                     width: double.infinity,
                                     height: double.infinity,

@@ -7,11 +7,13 @@ import 'package:pika_joe/screens/home_with_drawer.dart';
 import 'package:pika_joe/services/firebase_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/screens/tools/image_capture.dart';
-
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'model/user.dart';
 
-void main(){
+void main() async {
   //debugPrintGestureArenaDiagnostics = true;
+  await Hive.initFlutter();
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
     MultiProvider(

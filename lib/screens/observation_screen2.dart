@@ -35,6 +35,9 @@ import 'package:provider/provider.dart';
 import 'package:path/path.dart' as Path;
 import '../audio_recorder_dialog.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -150,6 +153,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           leftIconType: ThemeGroupType.MOI,
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
+          showRightIcon: user != null && widget.observation.observerUid == user.uid,
           rightIconType: ThemeGroupType.MOI,
           rightIconClickedCallback: () async {
             if(!widget.isEditMode) {
@@ -243,6 +247,18 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
       _isUploading = false;
       widget.isEditMode = false;
     });
+  }
+
+  Box box;
+  Future openBox() async {
+    var dir = await getApplicationDocumentsDirectory();
+    Hive.init(dir.path);
+    box = await Hive.openBox('data');
+    return;
+  }
+
+  getAllData() async {
+    await openBox();
   }
 
   Widget _buildHeaderImage() {

@@ -75,7 +75,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                   child: Container(
                                     width: double.infinity,
                                     height: double.infinity,
-                                    color: Color.fromARGB(70, 255-index*25, 255-index*10, 255-index*50),
+                                    color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
                                   ),
                                 );
                               },

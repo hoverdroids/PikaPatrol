@@ -89,9 +89,17 @@ class FirebaseDatabaseService {
   }
 
   Future updateObservation(Observation2 observation) async {
+    print("observationId a:${observation.uid}");
     //if no ID, the id and timestamp are auto gen; not sure it's what we want
-    var doc = observation.uid == null ? observationsCollection.document() : observationsCollection.document(observation.uid);
-    observation.uid = doc.documentID;
+    DocumentReference doc;
+    if(observation.uid == null) {
+      doc = observationsCollection.document();
+      observation.uid = doc.documentID;
+    } else {
+      doc = observationsCollection.document(observation.uid);
+    }
+
+    print("observationId b:${observation.uid}");
     return await doc.setData(
         {
           'observerUid': observation.observerUid,

@@ -165,7 +165,9 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                     _isUploading = true;
                   });
 
-                  if(widget.observation.altitude == null || widget.observation.latitude == null || widget.observation.longitude == null) {
+                  await saveObservation(user);
+
+                  /*if(widget.observation.altitude == null || widget.observation.latitude == null || widget.observation.longitude == null) {
                     bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
                     if(isLocationServiceEnabled) {
                       //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
@@ -208,7 +210,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                       await Geolocator.openAppSettings();
                       await Geolocator.openLocationSettings();
                     }
-                  }
+                  }*/
                 } else {
                   Fluttertoast.showToast(
                       msg: "You must login to submit an observation",

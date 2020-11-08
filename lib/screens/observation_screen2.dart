@@ -38,6 +38,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_joe/model/local_observation.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -153,7 +156,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           leftIconType: ThemeGroupType.MOI,
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
-          showRightIcon: user != null && widget.observation.observerUid == user.uid,
+          showRightIcon: widget.isEditMode || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
           rightIconType: ThemeGroupType.MOI,
           rightIconClickedCallback: () async {
             if(!widget.isEditMode) {
@@ -217,7 +220,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   }*/
                 } else {
                   Fluttertoast.showToast(
-                      msg: "You must login to submit an observation",
+                      msg: "Observation saved locally.\nYou must login to upload an observation.",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.CENTER,
                       timeInSecForIosWeb: 1,
@@ -225,6 +228,33 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                       textColor: Colors.white,
                       fontSize: 16.0
                   );
+
+                  var box = Hive.box<LocalObservation>('observations');
+
+                  /*var localObservation = LocalObservation(
+                  uid: widget.observation.uid,
+                  observerUid: widget.observation.observerUid,
+                  altitude: widget.observation.altitude,
+                  longitude: widget.observation.longitude,
+                  latitude: widget.observation.latitude);*/
+
+                  var localObservation = LocalObservation(
+                      uid: "myId",
+                      observerUid: "obsId",
+                      altitude: 0.0,
+                      longitude: 0.0,
+                      latitude: 0.0);
+
+                  box.add(localObservation);
+                  //box.put(widget.observation.uid, localObservation);
+
+                  Map<dynamic, LocalObservation> raw = box.toMap();
+                  List list = raw.values?.toList();
+
+                  print("Adding observation:${list.toString()}");
+
+                  //TODO - need to check if the object is already in a box
+                  //localObservation.save();
                 }
               }
             }
@@ -234,6 +264,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
   }
 
   Future saveObservation(User user) async {
+
     var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
     widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);
     print("ImageUrls: ${widget.observation.imageUrls.toString()}");

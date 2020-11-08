@@ -9,11 +9,15 @@ import 'package:provider/provider.dart';
 import 'package:pika_joe/screens/tools/image_capture.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'model/local_observation.dart';
+import 'model/local_observation_adapter.dart';
 import 'model/user.dart';
 
 void main() async {
   //debugPrintGestureArenaDiagnostics = true;
   await Hive.initFlutter();
+  Hive.registerAdapter(LocalObservationAdapter());
+  await Hive.openBox<LocalObservation>('observations');
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
     MultiProvider(

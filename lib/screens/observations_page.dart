@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/model/observation2.dart';
 import 'package:pika_joe/widget/card_scroll.dart';
 import 'package:pika_joe/screens/observation_screen2.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 
 class ObservationsPage extends StatefulWidget {
 
@@ -50,7 +53,40 @@ class _ObservationsPageState extends State<ObservationsPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedIconButton(
+                            Icons.upload_file,
+                            type: ThemeGroupType.MOP,
+                            onPressedCallback: () async {
+                              var hasConnection = await DataConnectionChecker().hasConnection;
+                              if(hasConnection) {
+                                Fluttertoast.showToast(
+                                    msg: "Uploading observations",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                    textColor: Colors.white,
+                                    fontSize: 16.0
+                                );
+                              } else {
+                                Fluttertoast.showToast(
+                                    msg: "Could not upload observations. No data connection.",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                    textColor: Colors.white,
+                                    fontSize: 16.0
+                                );
+                              }
+                            }
+                          )
+                        ],
+                      ),
                       Stack(
                         children: <Widget>[
                           /*------------------ The visual cards overlapping one another -------------------------------------------------------*/

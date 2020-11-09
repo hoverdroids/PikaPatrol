@@ -161,7 +161,7 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildEmptyCards() {
     return Container(
-      color: Colors.blue,
+      color: Colors.transparent,
       width: 100,
       height: 100,
     );

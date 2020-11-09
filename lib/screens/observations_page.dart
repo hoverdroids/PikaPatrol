@@ -29,6 +29,9 @@ class ObservationsPage extends StatefulWidget {
 
 class _ObservationsPageState extends State<ObservationsPage> {
 
+  List<Observation2> localObservations = <Observation2>[];
+  double localObservationsCurrentPage = 0.0;
+
   @override
   Widget build(BuildContext context) {
 
@@ -37,9 +40,16 @@ class _ObservationsPageState extends State<ObservationsPage> {
     PageController controller = PageController(initialPage: widget.currentPage.toInt());
 
     controller.addListener(() {
-      print("Current Page ${controller.page} addList");
       setState(() {
         widget.currentPage = controller.page;
+      });
+    });
+
+    PageController localObservationsController = PageController(initialPage: localObservationsCurrentPage.toInt());
+
+    localObservationsController.addListener(() {
+      setState(() {
+        localObservationsCurrentPage = localObservationsController.page;
       });
     });
 
@@ -50,7 +60,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
         //Get all locally saved observations
         Map<dynamic, dynamic> raw = box.toMap();
         List list = raw.values.toList();
-        List observationsList = <Observation2>[];
+        localObservations = <Observation2>[];
         list.forEach((element) {
           LocalObservation localObservation = element;
           var observation = Observation2(
@@ -77,11 +87,8 @@ class _ObservationsPageState extends State<ObservationsPage> {
             imageUrls: localObservation.imageUrls,
             audioUrls: localObservation.audioUrls
           );
-          observationsList.add(observation);
-          print("Observation:${observation.toString()}");
+          localObservations.add(observation);
         });
-
-        print("LocalObservations:${observationsList.toString()}");
 
         return Container(
             width: double.infinity,
@@ -96,11 +103,44 @@ class _ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
+                          ThemedH4("Shared Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          Stack(
+                            children: <Widget>[
+                              /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
+                              CardScrollWidget(widget.observations, currentPage: widget.currentPage),
+                              /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
+                              Positioned.fill(
+                                child: PageView.builder(
+                                  itemCount: widget.observations.length,
+                                  controller: controller,
+                                  reverse: true,
+                                  scrollDirection: Axis.horizontal,
+                                  allowImplicitScrolling: true,
+                                  itemBuilder: (context, index) {
+                                    return GestureDetector(
+                                      onTap: () => {
+                                        Navigator.push(context,
+                                          MaterialPageRoute(
+                                            builder: (_) => ObservationScreen2(widget.observations[index]),
+                                          ),
+                                        )
+                                      },
+                                      child: Container(
+                                        width: double.infinity,
+                                        height: double.infinity,
+                                        color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                          ),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              if(observationsList.isNotEmpty) ... [
+                              ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              if(localObservations.isNotEmpty) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
@@ -135,12 +175,12 @@ class _ObservationsPageState extends State<ObservationsPage> {
                           Stack(
                             children: <Widget>[
                               /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(widget.observations, currentPage: widget.currentPage),
+                              CardScrollWidget(localObservations, currentPage: localObservationsCurrentPage),
                               /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
                               Positioned.fill(
                                 child: PageView.builder(
-                                  itemCount: widget.observations.length,
-                                  controller: controller,
+                                  itemCount: localObservations.length,
+                                  controller: localObservationsController,
                                   reverse: true,
                                   scrollDirection: Axis.horizontal,
                                   allowImplicitScrolling: true,
@@ -149,7 +189,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                       onTap: () => {
                                         Navigator.push(context,
                                           MaterialPageRoute(
-                                            builder: (_) => ObservationScreen2(widget.observations[index]),
+                                            builder: (_) => ObservationScreen2(localObservations[index]),
                                           ),
                                         )
                                       },

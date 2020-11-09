@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:pika_joe/screens/home_with_drawer.dart';
+import 'package:pika_joe/screens/splash/partners_splash_screens_pager.dart';
 import 'package:pika_joe/services/firebase_auth_service.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_joe/screens/tools/image_capture.dart';
@@ -63,7 +64,7 @@ class MyApp extends StatelessWidget {
       value: FirebaseAuthService().user,
       child: MaterialApp(
           title: "Pika Patrol",
-          home: HomeWithDrawer(),//TODO PartnersSplashScreensPager(),
+          home: PartnersSplashScreensPager(),
           debugShowCheckedModeBanner: false,
           themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
           theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),

@@ -38,9 +38,11 @@ class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager>
             _showNextSplashScreen().then((value) {
               liquidController.animateToPage(page: 4);
 
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
-              );
+              _showNextSplashScreen().then((value) {
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                );
+              });
             });
           });
         });

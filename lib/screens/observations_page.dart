@@ -58,9 +58,26 @@ class _ObservationsPageState extends State<ObservationsPage> {
             observerUid: localObservation.observerUid,
             altitude: localObservation.altitude,
             longitude: localObservation.longitude,
-            latitude: localObservation.latitude
+            latitude: localObservation.latitude,
+            name: localObservation.name,
+            location: localObservation.location,
+            date: DateTime.parse(localObservation.date),
+            signs: localObservation.signs,
+            pikasDetected: localObservation.pikasDetected,
+            distanceToClosestPika: localObservation.distanceToClosestPika,
+            searchDuration: localObservation.searchDuration,
+            talusArea: localObservation.talusArea,
+            temperature: localObservation.temperature,
+            skies: localObservation.skies,
+            wind: localObservation.wind,
+            otherAnimalsPresent: localObservation.otherAnimalsPresent,
+            siteHistory: localObservation.siteHistory,
+            comments: localObservation.comments,
+            imageUrls: localObservation.imageUrls,
+            audioUrls: localObservation.audioUrls
           );
           observationsList.add(observation);
+          print("Observation:${observation.toString()}");
         });
 
         print("LocalObservations:${observationsList.toString()}");

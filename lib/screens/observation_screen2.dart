@@ -168,6 +168,47 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
 
+              //Get GPS regardless of being connected or logged in, but don't override the observations initial GPS value.
+              if(widget.observation.altitude == null || widget.observation.altitude == 0.0
+                  || widget.observation.latitude == null || widget.observation.latitude == 0.0
+                  || widget.observation.longitude == null || widget.observation.longitude == 0.0) {
+
+                  bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
+                  if(isLocationServiceEnabled) {
+                    //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
+                    Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit:Duration(seconds: 10));
+                    if(position != null) {
+                      widget.observation.altitude = position.altitude;
+                      widget.observation.latitude = position.latitude;
+                      widget.observation.longitude = position.longitude;
+
+                    } else {
+                      Fluttertoast.showToast(
+                          msg: "Could not retrieve location from GPS.",
+                          toastLength: Toast.LENGTH_SHORT,
+                          gravity: ToastGravity.CENTER,
+                          timeInSecForIosWeb: 1,
+                          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+                          textColor: Colors.white,
+                          fontSize: 16.0
+                      );
+                    }
+                  } else {
+                    Fluttertoast.showToast(
+                        msg: "Could not retrieve location.\nEnable GPS and try to save again.",
+                        toastLength: Toast.LENGTH_SHORT,
+                        gravity: ToastGravity.CENTER,
+                        timeInSecForIosWeb: 1,
+                        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+                        textColor: Colors.white,
+                        fontSize: 16.0
+                    );
+
+                    await Geolocator.openAppSettings();
+                    await Geolocator.openLocationSettings();
+                  }
+                }
+
                 var hasConnection = await DataConnectionChecker().hasConnection;
                 if(!hasConnection) {
                   Fluttertoast.showToast(
@@ -196,50 +237,6 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
                   saveLocalObservation();
 
-                  /*if(widget.observation.altitude == null || widget.observation.latitude == null || widget.observation.longitude == null) {
-                    bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
-                    if(isLocationServiceEnabled) {
-                      //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
-                      Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit:Duration(seconds: 20));
-                      if(position != null) {
-                        widget.observation.altitude = position.altitude;
-                        widget.observation.latitude = position.latitude;
-                        widget.observation.longitude = position.longitude;
-
-                        await saveObservation(user);
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: "Could not retrieve location.",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                            textColor: Colors.white,
-                            fontSize: 16.0
-                        );
-                        setState(() {
-                          _isUploading = false;
-                        });
-                      }
-                    } else {
-                      Fluttertoast.showToast(
-                          msg: "Could not retrieve location. Enable GPS and try to save again.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
-
-                      setState(() {
-                        _isUploading = false;
-                      });
-
-                      await Geolocator.openAppSettings();
-                      await Geolocator.openLocationSettings();
-                    }
-                  }*/
                 } else {
                   Fluttertoast.showToast(
                       msg: "You must login to upload an observation.\nObservation saved locally.",

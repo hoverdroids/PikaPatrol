@@ -231,19 +231,29 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
                   var box = Hive.box<LocalObservation>('observations');
 
-                  /*var localObservation = LocalObservation(
-                  uid: widget.observation.uid,
-                  observerUid: widget.observation.observerUid,
-                  altitude: widget.observation.altitude,
-                  longitude: widget.observation.longitude,
-                  latitude: widget.observation.latitude);*/
-
                   var localObservation = LocalObservation(
-                      uid: "myId",
-                      observerUid: "obsId",
-                      altitude: 0.0,
-                      longitude: 0.0,
-                      latitude: 0.0);
+                    uid: widget.observation.uid ?? "",
+                    observerUid: widget.observation.observerUid ?? "",
+                    altitude: widget.observation.altitude ?? 0.0,
+                    longitude: widget.observation.longitude ?? 0.0,
+                    latitude: widget.observation.latitude ?? 0.0,
+                    name: widget.observation.name ?? "",
+                    location: widget.observation.location ?? "",
+                    date: widget.observation.date?.toString() ?? "",
+                    signs: widget.observation.signs ?? <String>[],
+                    pikasDetected: widget.observation.pikasDetected ?? "",
+                    distanceToClosestPika: widget.observation.distanceToClosestPika ?? "",
+                    searchDuration: widget.observation.searchDuration ?? "",
+                    talusArea: widget.observation.talusArea ?? "",
+                    temperature: widget.observation.temperature ?? "",
+                    skies: widget.observation.skies ?? "",
+                    wind: widget.observation.wind ?? "",
+                    otherAnimalsPresent: widget.observation.otherAnimalsPresent ?? <String>[],
+                    siteHistory: widget.observation.siteHistory ?? "",
+                    comments: widget.observation.comments ?? "",
+                    imageUrls: widget.observation.imageUrls ?? <String>[],
+                    audioUrls: widget.observation.audioUrls ?? <String>[]
+                  );
 
                   box.add(localObservation);
                   //box.put(widget.observation.uid, localObservation);

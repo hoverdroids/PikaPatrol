@@ -1,4 +1,5 @@
 class Observation2 {
+  int dbId;
   String uid;
   final String observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
@@ -25,6 +26,7 @@ class Observation2 {
 
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation2({
+    this.dbId,
     this.uid,
     this.observerUid,
     this.name = "",

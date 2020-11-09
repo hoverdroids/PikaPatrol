@@ -54,6 +54,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
         list.forEach((element) {
           LocalObservation localObservation = element;
           var observation = Observation2(
+            dbId: localObservation.key,
             uid: localObservation.uid,
             observerUid: localObservation.observerUid,
             altitude: localObservation.altitude,

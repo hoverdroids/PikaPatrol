@@ -224,7 +224,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.CENTER,
                       timeInSecForIosWeb: 1,
-                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                      backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
                       textColor: Colors.white,
                       fontSize: 16.0
                   );
@@ -255,16 +255,19 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                     audioUrls: widget.observation.audioUrls ?? <String>[]
                   );
 
-                  box.add(localObservation);
-                  //box.put(widget.observation.uid, localObservation);
+                  if(widget.observation.dbId == null) {
+                    box.add(localObservation);
 
-                  Map<dynamic, LocalObservation> raw = box.toMap();
-                  List list = raw.values?.toList();
+                    //If the user remains on the observation page, they can edit/save again. In that case, they need
+                    //to use the same database ID instead of adding a new entry each time
+                    widget.observation.dbId = localObservation.key;
+                  } else {
+                    box.put(widget.observation.dbId, localObservation);
+                  }
 
-                  print("Adding observation:${list.toString()}");
-
-                  //TODO - need to check if the object is already in a box
-                  //localObservation.save();
+                  setState(() {
+                    widget.isEditMode = false;
+                  });
                 }
               }
             }

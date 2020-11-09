@@ -140,7 +140,8 @@ class _ObservationsPageState extends State<ObservationsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              if(localObservations.isNotEmpty) ... [
+                              //TODO - upload all local observations at once
+                              /*if(localObservations.isNotEmpty) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
@@ -169,7 +170,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                       }
                                     }
                                 )
-                              ]
+                              ]*/
                             ],
                           ),
                           Stack(

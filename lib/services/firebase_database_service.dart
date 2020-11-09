@@ -91,12 +91,14 @@ class FirebaseDatabaseService {
   Future updateObservation(Observation2 observation) async {
 
     DocumentReference doc;
-    if(observation.uid == null) {
+    if(observation.uid == null || observation.uid.isEmpty) {
       doc = observationsCollection.document();
       observation.uid = doc.documentID;
     } else {
       doc = observationsCollection.document(observation.uid);
     }
+
+    print("Update Observation id:${observation.uid}");
 
     return await doc.setData(
         {

@@ -172,6 +172,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                     _isUploading = true;
                   });
 
+                  //If the observation was made when the user was not logged in, then edited after loggin in, the user
+                  //id can be null. So update it now. This allows local observations to be uploaded when online.
+                  widget.observation.observerUid = user.uid;
+
                   //Share with others
                   await saveObservation(user);
 
@@ -260,6 +264,18 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
 
   void saveLocalObservation() {
     var box = Hive.box<LocalObservation>('observations');
+
+    //The observation screen can be opened from an online observation, which means that the dbId can be null.
+    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
+    Map<dynamic, dynamic> raw = box.toMap();
+    List list = raw.values.toList();
+    var localObservations = <Observation2>[];
+    list.forEach((element) {
+      LocalObservation localObservation = element;
+      if(localObservation.uid == widget.observation.uid) {
+        widget.observation.dbId = localObservation.key;
+      }
+    });
 
     var localObservation = LocalObservation(
         uid: widget.observation.uid ?? "",

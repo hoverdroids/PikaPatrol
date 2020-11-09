@@ -41,6 +41,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_joe/model/local_observation.dart';
+import 'package:data_connection_checker/data_connection_checker.dart';
 
 class ObservationScreen2 extends StatefulWidget {
 
@@ -167,7 +168,21 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
               if (_formKey.currentState.validate()) {
                 _formKey.currentState.save();
 
-                if (user != null) {
+                var hasConnection = await DataConnectionChecker().hasConnection;
+                if(!hasConnection) {
+                  Fluttertoast.showToast(
+                      msg: "No connection found.\nObservation saved locally.",
+                      toastLength: Toast.LENGTH_SHORT,
+                      gravity: ToastGravity.CENTER,
+                      timeInSecForIosWeb: 1,
+                      backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+                      textColor: Colors.white,
+                      fontSize: 16.0
+                  );
+
+                  saveLocalObservation();
+
+                } else if (user != null) {
                   setState((){
                     _isUploading = true;
                   });
@@ -227,7 +242,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                   }*/
                 } else {
                   Fluttertoast.showToast(
-                      msg: "Observation saved locally.\nYou must login to upload an observation.",
+                      msg: "You must login to upload an observation.\nObservation saved locally.",
                       toastLength: Toast.LENGTH_SHORT,
                       gravity: ToastGravity.CENTER,
                       timeInSecForIosWeb: 1,

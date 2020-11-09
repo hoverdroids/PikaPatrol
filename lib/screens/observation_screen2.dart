@@ -172,7 +172,10 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                     _isUploading = true;
                   });
 
+                  //Share with others
                   await saveObservation(user);
+
+                  saveLocalObservation();
 
                   /*if(widget.observation.altitude == null || widget.observation.latitude == null || widget.observation.longitude == null) {
                     bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
@@ -229,45 +232,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
                       fontSize: 16.0
                   );
 
-                  var box = Hive.box<LocalObservation>('observations');
-
-                  var localObservation = LocalObservation(
-                    uid: widget.observation.uid ?? "",
-                    observerUid: widget.observation.observerUid ?? "",
-                    altitude: widget.observation.altitude ?? 0.0,
-                    longitude: widget.observation.longitude ?? 0.0,
-                    latitude: widget.observation.latitude ?? 0.0,
-                    name: widget.observation.name ?? "",
-                    location: widget.observation.location ?? "",
-                    date: widget.observation.date?.toString() ?? "",
-                    signs: widget.observation.signs ?? <String>[],
-                    pikasDetected: widget.observation.pikasDetected ?? "",
-                    distanceToClosestPika: widget.observation.distanceToClosestPika ?? "",
-                    searchDuration: widget.observation.searchDuration ?? "",
-                    talusArea: widget.observation.talusArea ?? "",
-                    temperature: widget.observation.temperature ?? "",
-                    skies: widget.observation.skies ?? "",
-                    wind: widget.observation.wind ?? "",
-                    otherAnimalsPresent: widget.observation.otherAnimalsPresent ?? <String>[],
-                    siteHistory: widget.observation.siteHistory ?? "",
-                    comments: widget.observation.comments ?? "",
-                    imageUrls: widget.observation.imageUrls ?? <String>[],
-                    audioUrls: widget.observation.audioUrls ?? <String>[]
-                  );
-
-                  if(widget.observation.dbId == null) {
-                    box.add(localObservation);
-
-                    //If the user remains on the observation page, they can edit/save again. In that case, they need
-                    //to use the same database ID instead of adding a new entry each time
-                    widget.observation.dbId = localObservation.key;
-                  } else {
-                    box.put(widget.observation.dbId, localObservation);
-                  }
-
-                  setState(() {
-                    widget.isEditMode = false;
-                  });
+                  saveLocalObservation();
                 }
               }
             }
@@ -286,6 +251,49 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
     print("AudioUrls: ${widget.observation.audioUrls.toString()}");
 
     dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
+
+    setState(() {
+      _isUploading = false;
+      widget.isEditMode = false;
+    });
+  }
+
+  void saveLocalObservation() {
+    var box = Hive.box<LocalObservation>('observations');
+
+    var localObservation = LocalObservation(
+        uid: widget.observation.uid ?? "",
+        observerUid: widget.observation.observerUid ?? "",
+        altitude: widget.observation.altitude ?? 0.0,
+        longitude: widget.observation.longitude ?? 0.0,
+        latitude: widget.observation.latitude ?? 0.0,
+        name: widget.observation.name ?? "",
+        location: widget.observation.location ?? "",
+        date: widget.observation.date?.toString() ?? "",
+        signs: widget.observation.signs ?? <String>[],
+        pikasDetected: widget.observation.pikasDetected ?? "",
+        distanceToClosestPika: widget.observation.distanceToClosestPika ?? "",
+        searchDuration: widget.observation.searchDuration ?? "",
+        talusArea: widget.observation.talusArea ?? "",
+        temperature: widget.observation.temperature ?? "",
+        skies: widget.observation.skies ?? "",
+        wind: widget.observation.wind ?? "",
+        otherAnimalsPresent: widget.observation.otherAnimalsPresent ?? <String>[],
+        siteHistory: widget.observation.siteHistory ?? "",
+        comments: widget.observation.comments ?? "",
+        imageUrls: widget.observation.imageUrls ?? <String>[],
+        audioUrls: widget.observation.audioUrls ?? <String>[]
+    );
+
+    if(widget.observation.dbId == null) {
+      box.add(localObservation);
+
+      //If the user remains on the observation page, they can edit/save again. In that case, they need
+      //to use the same database ID instead of adding a new entry each time
+      widget.observation.dbId = localObservation.key;
+    } else {
+      box.put(widget.observation.dbId, localObservation);
+    }
 
     setState(() {
       _isUploading = false;

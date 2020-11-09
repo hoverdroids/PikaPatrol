@@ -89,8 +89,7 @@ class FirebaseDatabaseService {
   }
 
   Future updateObservation(Observation2 observation) async {
-    print("observationId a:${observation.uid}");
-    //if no ID, the id and timestamp are auto gen; not sure it's what we want
+
     DocumentReference doc;
     if(observation.uid == null) {
       doc = observationsCollection.document();
@@ -99,7 +98,6 @@ class FirebaseDatabaseService {
       doc = observationsCollection.document(observation.uid);
     }
 
-    print("observationId b:${observation.uid}");
     return await doc.setData(
         {
           'observerUid': observation.observerUid,

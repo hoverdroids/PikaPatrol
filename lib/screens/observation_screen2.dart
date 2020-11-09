@@ -156,7 +156,7 @@ class _ObservationScreen2State extends State<ObservationScreen2> with TickerProv
           leftIconType: ThemeGroupType.MOI,
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
-          showRightIcon: widget.isEditMode || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
+          showRightIcon: widget.observation.observerUid == null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
           rightIconType: ThemeGroupType.MOI,
           rightIconClickedCallback: () async {
             if(!widget.isEditMode) {

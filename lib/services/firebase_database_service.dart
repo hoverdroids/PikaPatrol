@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
-import 'package:pika_joe/model/observation2.dart';
-import 'package:pika_joe/model/user_profile.dart';
+import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/model/app_user_profile.dart';
 
 class FirebaseDatabaseService {
 
@@ -17,19 +17,19 @@ class FirebaseDatabaseService {
   final CollectionReference observationsCollection = Firestore.instance.collection("observations");
 
   Future updateUserProfile(
-    String firstName,
-    String lastName,
-    String tagline,
-    String pronouns,
-    String organization,
-    String address,
-    String city,
-    String state,
-    String zip,
-    bool frppOptIn,
-    bool rmwOptIn,
-    bool dzOptIn
-  ) async {
+      String firstName,
+      String lastName,
+      String tagline,
+      String pronouns,
+      String organization,
+      String address,
+      String city,
+      String state,
+      String zip,
+      bool frppOptIn,
+      bool rmwOptIn,
+      bool dzOptIn
+      ) async {
     return await userProfilesCollection.document(uid).setData(
         {
           'firstName': firstName,
@@ -48,26 +48,8 @@ class FirebaseDatabaseService {
     );
   }
   
-  /*Future updateUserProfile(UserProfile data) async {
-    return await userProfilesCollection.document(uid).setData(
-        {
-          'firstName': data.firstName,
-          'lastName': data.lastName,
-          'pronouns': data.pronouns,
-          'organization': data.organization,
-          'address': data.address,
-          'city': data.city,
-          'state': data.state,
-          'zip': data.zip,
-          'frppOptIn': data.frppOptIn,
-          'rmwOptIn': data.rmwOptIn,
-          'dzOptIn': data.dzOptIn,
-        }
-    );
-  }*/
-
-  UserProfile _userProfileFromSnapshot(DocumentSnapshot snapshot) {
-    return UserProfile(
+  AppUserProfile _userProfileFromSnapshot(DocumentSnapshot snapshot) {
+    return AppUserProfile(
       snapshot.data['firstName'] ?? '',
       snapshot.data['lastName'] ?? '',
       uid: uid,
@@ -84,11 +66,11 @@ class FirebaseDatabaseService {
     );
   }
 
-  Stream<UserProfile> get userProfile {
+  Stream<AppUserProfile> get userProfile {
     return uid == null ? null : userProfilesCollection.document(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
-  Future updateObservation(Observation2 observation) async {
+  Future updateObservation(Observation observation) async {
 
     DocumentReference doc;
     if(observation.uid == null || observation.uid.isEmpty) {
@@ -125,7 +107,7 @@ class FirebaseDatabaseService {
     );
   }
 
-  List<Observation2> _observationsFromSnapshot(QuerySnapshot snapshot) {
+  List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.documents.map((doc) {
 
       List<dynamic> vals = doc.data['signs'];
@@ -140,33 +122,33 @@ class FirebaseDatabaseService {
       vals = doc.data['audioUrls'];
       List<String> audioUrls = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
 
-      return Observation2(
-        uid: doc.documentID ?? '',
-        observerUid: doc.data['observerUid'] ?? '',
-        name: doc.data['name'] ?? '',
-        location: doc.data['location'] ?? '',
-        altitude: doc.data['altitude'],
-        latitude: doc.data['latitude'],
-        longitude: doc.data['longitude'],
-        date: DateTime.fromMicrosecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
-        signs: signs,
-        pikasDetected: doc.data['pikasDetected'] ?? '',
-        distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',
-        searchDuration: doc.data['searchDuration'] ?? '',
-        talusArea: doc.data['talusArea'] ?? '',
-        temperature: doc.data['temperature'] ?? '',
-        skies: doc.data['skies'] ?? '',
-        wind: doc.data['wind'] ?? '',
-        siteHistory: doc.data['siteHistory'] ?? '',
-        otherAnimalsPresent: otherAnimalsPresent,
-        comments: doc.data['comments'] ?? '',
-        imageUrls: imageUrls,
-        audioUrls: audioUrls
+      return Observation(
+          uid: doc.documentID ?? '',
+          observerUid: doc.data['observerUid'] ?? '',
+          name: doc.data['name'] ?? '',
+          location: doc.data['location'] ?? '',
+          altitude: doc.data['altitude'],
+          latitude: doc.data['latitude'],
+          longitude: doc.data['longitude'],
+          date: DateTime.fromMicrosecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
+          signs: signs,
+          pikasDetected: doc.data['pikasDetected'] ?? '',
+          distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',
+          searchDuration: doc.data['searchDuration'] ?? '',
+          talusArea: doc.data['talusArea'] ?? '',
+          temperature: doc.data['temperature'] ?? '',
+          skies: doc.data['skies'] ?? '',
+          wind: doc.data['wind'] ?? '',
+          siteHistory: doc.data['siteHistory'] ?? '',
+          otherAnimalsPresent: otherAnimalsPresent,
+          comments: doc.data['comments'] ?? '',
+          imageUrls: imageUrls,
+          audioUrls: audioUrls
       );
     }).toList();
   }
 
-  Stream<List<Observation2>> get observations {
+  Stream<List<Observation>> get observations {
     return observationsCollection.snapshots().map(_observationsFromSnapshot);
   }
 

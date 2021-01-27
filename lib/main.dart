@@ -1,24 +1,22 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:pika_joe/screens/home_with_drawer.dart';
-import 'package:pika_joe/screens/splash/partners_splash_screens_pager.dart';
-import 'package:pika_joe/services/firebase_auth_service.dart';
-import 'package:provider/provider.dart';
-import 'package:pika_joe/screens/tools/image_capture.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_patrol/screens/splash/partners_splash_screens_pager.dart';
+import 'package:pika_patrol/services/firebase_auth_service.dart';
+import 'package:provider/provider.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
-import 'model/user.dart';
+import 'model/app_user.dart';
 
 void main() async {
   //debugPrintGestureArenaDiagnostics = true;
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
   await Hive.openBox<LocalObservation>('observations');
+
+
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
     MultiProvider(
@@ -31,17 +29,17 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
-
     //First things first...set our theme to fit our brand!
     ColorPalette colorPalette = ColorPalette(
-      primary: Colors.teal,
-      primaryAccent: Colors.tealAccent,
-      secondary: Color.fromARGB(255, 139, 69, 19),
-      secondaryAccent: Color.fromARGB(255, 111, 55, 15),
-      lightPrimaryContrast: Colors.white,
-      lightContrastImportant: Colors.grey
+        primary: Colors.teal,
+        primaryAccent: Colors.tealAccent,
+        secondary: Color.fromARGB(255, 139, 69, 19),
+        secondaryAccent: Color.fromARGB(255, 111, 55, 15),
+        lightPrimaryContrast: Colors.white,
+        lightContrastImportant: Colors.grey
     );
     context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 
@@ -60,7 +58,7 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark
     ));*/
 
-    return StreamProvider<User>.value(
+    return StreamProvider<AppUser>.value(
       value: FirebaseAuthService().user,
       child: MaterialApp(
           title: "Pika Patrol",

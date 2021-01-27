@@ -1,21 +1,19 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:pika_joe/model/user.dart';
-import 'package:pika_joe/model/user_profile.dart';
 import 'firebase_database_service.dart';
+import 'package:pika_patrol/model/app_user.dart';
 
 class FirebaseAuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  //TODO - use the User's info from the provider 
+  //TODO - use the User's info from the provider
   UserInfo userInfo;
 
-  User _userFromFirebaseUser(FirebaseUser user) {
-    return user != null ? User(uid: user.uid) : null;
+  AppUser _userFromFirebaseUser(FirebaseUser user) {
+    return user != null ? AppUser(uid: user.uid) : null;
   }
 
-  Stream<User> get user {
+  Stream<AppUser> get user {
     return _auth.onAuthStateChanged.map((FirebaseUser user) => _userFromFirebaseUser(user));
   }
 
@@ -42,38 +40,38 @@ class FirebaseAuthService {
   }
 
   Future registerWithEmailAndPassword(
-    String email,
-    String password,
-    String firstName,
-    String lastName,
-    String tagline,
-    String pronouns,
-    String organization,
-    String address,
-    String city,
-    String state,
-    String zip,
-    bool frppOptIn,
-    bool rmwOptIn,
-    bool dzOptIn
-  ) async {
+      String email,
+      String password,
+      String firstName,
+      String lastName,
+      String tagline,
+      String pronouns,
+      String organization,
+      String address,
+      String city,
+      String state,
+      String zip,
+      bool frppOptIn,
+      bool rmwOptIn,
+      bool dzOptIn
+      ) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
       FirebaseUser user = result.user;
 
       await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
-        firstName,
-        lastName,
-        tagline,
-        pronouns,
-        organization,
-        address,
-        city,
-        state,
-        zip,
-        frppOptIn,
-        rmwOptIn,
-        dzOptIn
+          firstName,
+          lastName,
+          tagline,
+          pronouns,
+          organization,
+          address,
+          city,
+          state,
+          zip,
+          frppOptIn,
+          rmwOptIn,
+          dzOptIn
       );
 
       return _userFromFirebaseUser(user);

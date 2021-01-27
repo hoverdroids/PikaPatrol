@@ -1,6 +1,7 @@
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
@@ -11,27 +12,26 @@ import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
-import 'package:pika_joe/mock/observation_mock.dart';
-import 'package:pika_joe/model/observation2.dart';
-import 'package:pika_joe/model/user.dart';
-import 'package:pika_joe/model/user_profile.dart';
-import 'package:pika_joe/screens/home/home.dart';
-import 'package:pika_joe/screens/observations_page.dart';
-import 'package:pika_joe/screens/training/training_screens_pager.dart';
-import 'package:pika_joe/services/database.dart';
-import 'package:pika_joe/services/firebase_auth_service.dart';
-import 'package:pika_joe/services/firebase_database_service.dart';
-import 'package:pika_joe/styles/styles.dart';
-import 'package:pika_joe/utils/network_utils.dart';
-import 'package:pika_joe/widget/navigation/stats_observations_map_navigationbar.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+import 'package:pika_patrol/model/app_user.dart';
+import 'package:pika_patrol/model/app_user_profile.dart';
+import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/screens/observations_screen.dart';
+import 'package:pika_patrol/screens/training_screens_pager.dart';
+import 'package:pika_patrol/services/firebase_auth_service.dart';
+import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:pika_joe/styles/colors.dart';
-import 'package:pika_joe/widget/netflix/movie_model.dart';
-import 'package:pika_joe/widget/netflix/movie_screen.dart';
-
 import 'observation_screen.dart';
-import 'observation_screen2.dart';
+
+var navbarColor = Colors.white;
+var navbarBgColor = Colors.transparent;
+var navbarButtonColor = Colors.white;
+var navbarIconColor = Colors.black45;
+
+var navbarHeight = 50.0;
+var navbarIconSize = 30.0;
+var navbarAnimationDuration = 500;
+var initialPage = 2;
 
 //Derived from https://github.com/iamSahdeep/liquid_swipe_flutter/blob/master/example/lib/main.dart
 class HomeWithDrawer extends StatefulWidget {
@@ -75,16 +75,16 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _nullProfileKey = new UniqueKey();
   final Key _leftDrawerKey = new UniqueKey();
   final Key _nullLeftDrawerKey = new UniqueKey();
-  
+
   @override
   Widget build(BuildContext context) {
 
     Size mediaQuery = MediaQuery.of(context).size;
     //List<Widget> pages=[ObservationsPage()];
 
-    final user = Provider.of<User>(context);
+    final user = Provider.of<AppUser>(context);
 
-    return StreamProvider<List<Observation2>>.value(
+    return StreamProvider<List<Observation>>.value(
       value: FirebaseDatabaseService(uid: user != null ? user.uid : null).observations,
       child: Scaffold(
         key: _scaffoldKey,
@@ -105,7 +105,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
               PageView.builder(
                 controller: pageController,
                 itemCount: 1,
-                itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation2>>(context) ?? <Observation2>[]),
+                itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>>(context) ?? <Observation>[]),
               ),
               /*LiquidSwipe(
               pages: <Container>[
@@ -140,7 +140,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (_) => ObservationScreen2(Observation2(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
+                builder: (_) => ObservationScreen(Observation(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
               ),
             );
             //TODO - combine these when we have more pages
@@ -158,10 +158,10 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIconType: ThemeGroupType.MOP,
           rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
-          child: StreamBuilder<UserProfile>(
+          child: StreamBuilder<AppUserProfile>(
             stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
             builder: (context, snapshot) {
-              UserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+              AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
               return HeaderList(
                 [
                   ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
@@ -180,7 +180,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   })
                 ],
                 key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
-                imageUrl: "assets/pika3.jpg",
+                imageUrl: "assets/images/pika3.jpg",
                 avatarImageUrl: "assets/images/pika4.jpg",
                 avatarTitle: userProfile == null ? "Login" : userProfile.firstName + " " + userProfile.lastName,
                 avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
@@ -206,11 +206,11 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   alignment: Alignment.center,
                   children: <Widget>[
                     if (user != null) ... [
-                      StreamBuilder<UserProfile>(
+                      StreamBuilder<AppUserProfile>(
                           stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
                           builder: (context, snapshot){
 
-                            UserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+                            AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
 
                             return ProfileScreen(
                               //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
@@ -384,8 +384,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  List<Observation2> showErr(String e) {
-      print("ErrorSon" + e);
-      return <Observation2>[];
+  List<Observation> showErr(String e) {
+    print("ErrorSon" + e);
+    return <Observation>[];
   }
 }

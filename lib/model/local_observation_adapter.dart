@@ -1,5 +1,6 @@
+
 import 'package:hive/hive.dart';
-import 'package:pika_joe/model/local_observation.dart';
+import 'local_observation.dart';
 
 class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
 
@@ -7,29 +8,29 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
   int get typeId => 0;
 
   @override
-  LocalObservation read(BinaryReader reader) {
+  read(BinaryReader reader) {
     return LocalObservation(
-      uid: reader.readString(),
-      observerUid: reader.readString(),
-      altitude: reader.readDouble(),
-      longitude: reader.readDouble(),
-      latitude: reader.readDouble(),
-      name: reader.readString(),
-      location: reader.readString(),
-      date: reader.readString(),
-      signs: reader.readStringList(),
-      pikasDetected: reader.readString(),
-      distanceToClosestPika: reader.readString(),
-      searchDuration: reader.readString(),
-      talusArea: reader.readString(),
-      temperature: reader.readString(),
-      skies: reader.readString(),
-      wind: reader.readString(),
-      otherAnimalsPresent: reader.readStringList(),
-      siteHistory: reader.readString(),
-      comments: reader.readString(),
-      imageUrls: reader.readStringList(),
-      audioUrls: reader.readStringList()
+        uid: reader.readString(),
+        observerUid: reader.readString(),
+        altitude: reader.readDouble(),
+        longitude: reader.readDouble(),
+        latitude: reader.readDouble(),
+        name: reader.readString(),
+        location: reader.readString(),
+        date: reader.readString(),
+        signs: reader.readStringList(),
+        pikasDetected: reader.readString(),
+        distanceToClosestPika: reader.readString(),
+        searchDuration: reader.readString(),
+        talusArea: reader.readString(),
+        temperature: reader.readString(),
+        skies: reader.readString(),
+        wind: reader.readString(),
+        otherAnimalsPresent: reader.readStringList(),
+        siteHistory: reader.readString(),
+        comments: reader.readString(),
+        imageUrls: reader.readStringList(),
+        audioUrls: reader.readStringList()
     );
   }
 
@@ -57,4 +58,5 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
     writer.writeStringList(observation.imageUrls);
     writer.writeStringList(observation.audioUrls);
   }
+
 }

@@ -12,8 +12,8 @@ class PartneringWithSplashScreen extends Container {
       height: double.infinity,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-          child: Shimmer.fromColors(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+            child: Shimmer.fromColors(
               period: Duration(milliseconds: 1500),
               baseColor: Colors.white,
               highlightColor: Colors.brown,

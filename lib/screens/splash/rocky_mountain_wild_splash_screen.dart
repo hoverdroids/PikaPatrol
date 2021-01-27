@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:pika_joe/styles/styles.dart';
 
 class RockyMountainWildSplashScreen extends Container {
   @override

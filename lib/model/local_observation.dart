@@ -1,7 +1,5 @@
 import 'package:hive/hive.dart';
 
-//part 'local_observation.g.dart';
-
 @HiveType(typeId: 0)
 class LocalObservation extends HiveObject {
   @HiveField(0)

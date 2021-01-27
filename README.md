@@ -1,6 +1,6 @@
-# pika_joe
+# pika_patrol
 
-A new Flutter application.
+Pokemon Go for Pikas
 
 ## Getting Started
 

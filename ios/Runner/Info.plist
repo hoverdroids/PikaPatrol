@@ -11,7 +11,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>pika_joe</string>
+	<string>pika_patrol</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
@@ -42,11 +42,11 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSPhotoLibraryUsageDescription</key>
-    <string>Need to upload image</string>
-    <key>NSCameraUsageDescription</key>
-    <string>Need to upload image</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>Need to record audio</string>
+        <string>Need to upload image</string>
+        <key>NSCameraUsageDescription</key>
+        <string>Need to upload image</string>
+        <key>NSMicrophoneUsageDescription</key>
+        <string>Need to record audio</string>
 </dict>
 <key>NSAppTransportSecurity</key>
 <dict>

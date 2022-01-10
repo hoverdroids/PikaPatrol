@@ -55,6 +55,7 @@ dependencies:
   mime: ^0.9.7
   geolocator: ^6.1.14
   data_connection_checker: ^0.3.4
+  assets_audio_player: ^2.0.15
 
 
 dev_dependencies:

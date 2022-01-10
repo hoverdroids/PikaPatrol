@@ -30,7 +30,7 @@ packages:
     source: hosted
     version: "1.6.0"
   assets_audio_player:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: assets_audio_player
       url: "https://pub.dartlang.org"

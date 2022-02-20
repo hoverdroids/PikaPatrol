@@ -189,6 +189,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 cardElevationLevel: ElevationLevel.LOW,
                 usePolygonAvatar: true,
                 headerGradientType: BackgroundGradientType.PRIMARY,
+                isHeaderSticky: false
               );
             },
           ),

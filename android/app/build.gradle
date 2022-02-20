@@ -43,7 +43,6 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId "com.tcubedstudios.pika_patrol"
         minSdkVersion 21
         targetSdkVersion 28
@@ -63,9 +62,12 @@ android {
 
     buildTypes {
         release {
+            shrinkResources false
+            minifyEnabled false
             signingConfig signingConfigs.release
         }
     }
+
 }
 
 flutter {

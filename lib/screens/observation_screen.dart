@@ -755,7 +755,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     File selected = await ImagePicker.pickImage(source: ImageSource.camera);
 
     //Crop Image ...
-    File cropped = await ImageCropper.cropImage(
+    File cropped = await ImageCropper().cropImage(
       sourcePath: selected.path,
       androidUiSettings: AndroidUiSettings(
           toolbarColor: toolbarColor,

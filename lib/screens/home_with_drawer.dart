@@ -164,7 +164,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
               AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
               return HeaderList(
                 [
-                  ListItemModel(title: "Front Range Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+                  ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
                   ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
                   ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
                   ListItemModel(title: "Carbon", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),

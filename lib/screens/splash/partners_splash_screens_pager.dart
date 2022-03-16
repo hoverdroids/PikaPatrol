@@ -5,6 +5,7 @@ import 'package:pika_patrol/screens/splash/front_range_pika_project_splash_scree
 import 'package:pika_patrol/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/rocky_mountain_wild_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/partnering_with_splash_screen.dart';
+import 'package:pika_patrol/screens/splash/if_then_splash_screen.dart';
 
 import '../home_with_drawer.dart';
 
@@ -39,9 +40,13 @@ class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager>
             liquidController.animateToPage(page: 4);
 
             _showNextSplashScreen().then((value) {
-              Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
-              );
+              liquidController.animateToPage(page: 5);
+
+              _showNextSplashScreen().then((value) {
+                Navigator.of(context).pushReplacement(
+                    MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                );
+              });
             });
           });
         });
@@ -59,6 +64,7 @@ class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager>
           PartneringWithSplashScreen(),
           RockyMountainWildSplashScreen(),
           FrontRangePikaProjectSplashScreen(),
+          IfThenSplashScreen(),
           DenverZooSplashScreen()
         ],
         enableLoop: false,

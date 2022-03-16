@@ -167,6 +167,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                   ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
                   ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
                   ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
+                  ListItemModel(title: "If/Then", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
                   ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
                   ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
                     Navigator.of(context).pushReplacement(

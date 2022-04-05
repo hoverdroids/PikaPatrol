@@ -22,6 +22,7 @@ import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
 import 'observation_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 var navbarColor = Colors.white;
 var navbarBgColor = Colors.transparent;
@@ -75,6 +76,22 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _nullProfileKey = new UniqueKey();
   final Key _leftDrawerKey = new UniqueKey();
   final Key _nullLeftDrawerKey = new UniqueKey();
+
+  bool userAckedGeoTracking = false;
+
+  Future<void> _getUserAckedFromPreferences() async {
+    final preferences = await SharedPreferences.getInstance();
+    final pref = preferences.getBool('userAckGeo');
+    if (pref != null) {
+      setState(() => userAckedGeoTracking = pref);
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getUserAckedFromPreferences();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -137,12 +154,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
           ],
           onTap: (index) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ObservationScreen(Observation(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
-              ),
-            );
+            showGeoTrackingDialog(context, user);
             //TODO - combine these when we have more pages
             /*pageController.animateToPage(
           index,
@@ -390,5 +402,48 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   List<Observation> showErr(String e) {
     print("ErrorSon" + e);
     return <Observation>[];
+  }
+
+  showObservationScreen(BuildContext contxt, AppUser user) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ObservationScreen(Observation(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
+      ),
+    );
+  }
+
+  showGeoTrackingDialog(BuildContext context, AppUser user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userAcked = prefs.getBool('userAckGeo');
+
+    if (userAcked != null && userAcked == true) {
+      showObservationScreen(context, user);
+    } else {
+      Widget launchButton = FlatButton(
+        child: Text("OK"),
+        onPressed:  () async {
+          Navigator.pop(context, true);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('userAckGeo', true);
+          showObservationScreen(context, user);
+        },
+      );
+      // set up the AlertDialog
+      AlertDialog alert = AlertDialog(
+        title: Text("Geo Tracking"),
+        content: Text("Pika Patrol tracks geo when making an observation in order to determine where the observation took place."),
+        actions: [
+          launchButton,
+        ],
+      );
+      // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
   }
 }

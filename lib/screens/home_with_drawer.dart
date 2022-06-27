@@ -431,8 +431,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       );
       // set up the AlertDialog
       AlertDialog alert = AlertDialog(
-        title: Text("Geo Tracking"),
-        content: Text("Pika Patrol tracks geo when making an observation in order to determine where the observation took place."),
+        title: Text("Location Tracking"),
+        content: Text("Pika Patrol records the current location when an observation is recorded in order to determine where the observation occurred. The observation, including the saved location, is sent in the background to our servers when WiFi is available."),
         actions: [
           launchButton,
         ],

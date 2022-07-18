@@ -206,6 +206,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     }
 
                     var hasConnection = await DataConnectionChecker().hasConnection;
+                    saveLocalObservation();
                     if(!hasConnection) {
                       Fluttertoast.showToast(
                           msg: "No connection found.\nObservation saved locally.",
@@ -216,9 +217,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                           textColor: Colors.white,
                           fontSize: 16.0
                       );
-
-                      saveLocalObservation();
-
                     } else if (user != null) {
                       setState((){
                         _isUploading = true;
@@ -230,9 +228,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
 
                       //Share with others
                       await saveObservation(user);
-
-                      saveLocalObservation();
-
                     } else {
                       Fluttertoast.showToast(
                           msg: "You must login to upload an observation.\nObservation saved locally.",
@@ -243,8 +238,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                           textColor: Colors.white,
                           fontSize: 16.0
                       );
-
-                      saveLocalObservation();
                     }
                   }
                 }

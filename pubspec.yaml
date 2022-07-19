@@ -53,7 +53,7 @@ dependencies:
   hive: ^1.4.4+1
   hive_flutter: ^0.3.1
   mime: ^0.9.7
-  geolocator: ^6.1.14
+  geolocator: ^6.2.1
   data_connection_checker: ^0.3.4
   assets_audio_player: ^2.0.15
   shared_preferences: ^0.5.2

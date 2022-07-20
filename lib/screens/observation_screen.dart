@@ -487,12 +487,99 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     }
   }
 
+  Widget _buildLatLonAltitude() {
+    String latitude = widget.observation.latitude == null ? "" : widget.observation.latitude.toStringAsFixed(2);
+    String longitude = widget.observation.longitude == null ? "" : widget.observation.longitude.toStringAsFixed(2);
+    String altitude = widget.observation.altitude == null ? "" : widget.observation.altitude.toStringAsFixed(2);
+    return Row(
+      children: <Widget>[
+        Flexible(
+          flex: 1,
+          child: Container(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child:Column(
+                children: <Widget>[
+                  ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
+                  tinyTransparentDivider,
+                  if (widget.isEditMode) ...[
+                    ThemedEditableLabelValue(
+                      showLabel: false,
+                      text: latitude,
+                      textType: ThemeGroupType.POM,
+                      hintText: "Latitude",
+                      onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
+                      validator: (value) => isDoubleValidator(value, "Latitude"),
+                    ),
+                  ] else ... [
+                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ]
+                ],
+              ),
+            ),
+          ),
+        ),
+        Flexible(
+          flex: 1,
+          child: Container(
+              child: Align(
+                alignment: Alignment.center,
+                child: Column(
+                  children: <Widget>[
+                    ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
+                    tinyTransparentDivider,
+                    if (widget.isEditMode) ...[
+                      ThemedEditableLabelValue(
+                        showLabel: false,
+                        text: longitude,
+                        textType: ThemeGroupType.POM,
+                        hintText: "Longitude",
+                        onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
+                        validator: (value) => isDoubleValidator(value, "Longitude"),
+                      ),
+                    ] else ... [
+                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                    ]
+                  ],
+                ),
+              )
+          ),
+        ),
+        Flexible(
+          flex: 1,
+          child: Container(
+            alignment: Alignment.centerLeft,
+            child:Column(
+              children: <Widget>[
+                ThemedSubTitle("Altitude", type: ThemeGroupType.POM),
+                tinyTransparentDivider,
+                if (widget.isEditMode) ...[
+                  ThemedEditableLabelValue(
+                    showLabel: false,
+                    text: altitude,
+                    textType: ThemeGroupType.POM,
+                    hintText: "Altitude",
+                    onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
+                    validator: (value) => isDoubleValidator(value, "Altitude"),
+                  )
+                ] else ...[
+                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+              ],
+            ),
+          )
+        )
+      ],
+    );
+  }
+
   Widget _buildHeader() {
     return Padding(
       padding: _horzPadding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
+          _buildLatLonAltitude(),
           smallTransparentDivider,
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(

@@ -172,7 +172,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                       bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
                       if(isLocationServiceEnabled) {
                         //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
-                        Position position = await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high, timeLimit:Duration(seconds: 10));
+                        Position position = await Geolocator.getCurrentPosition();
                         if(position != null) {
                           widget.observation.altitude = position.altitude;
                           widget.observation.latitude = position.latitude;
@@ -375,6 +375,26 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           ),*/
             Positioned(
               bottom: 10.0,
+              left: 10.0,
+              child: ThemedIconButton(
+                  Icons.my_location,
+                  iconSize: IconSize.MEDIUM,
+                  onPressedCallback: () => {
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (BuildContext context) =>
+                            TrainingScreensPager(
+                                backClickedCallback: () =>
+                                    Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
+                                    )
+                            )
+                        )
+                    )
+                  }
+              ),
+            ),
+            Positioned(
+              bottom: 10.0,
               right: 10.0,
               child: ThemedIconButton(
                   Icons.help,
@@ -507,7 +527,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                       showLabel: false,
                       text: latitude,
                       textType: ThemeGroupType.POM,
-                      hintText: "Latitude",
+                      hintText: "0.0",
                       onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
                       validator: (value) => isDoubleValidator(value, "Latitude"),
                     ),
@@ -533,7 +553,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                         showLabel: false,
                         text: longitude,
                         textType: ThemeGroupType.POM,
-                        hintText: "Longitude",
+                        hintText: "0.0",
                         onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
                         validator: (value) => isDoubleValidator(value, "Longitude"),
                       ),
@@ -558,7 +578,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     showLabel: false,
                     text: altitude,
                     textType: ThemeGroupType.POM,
-                    hintText: "Altitude",
+                    hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
                     validator: (value) => isDoubleValidator(value, "Altitude"),
                   )

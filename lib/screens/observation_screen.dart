@@ -36,6 +36,7 @@ import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
+import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:provider/provider.dart';
 
 // ignore: must_be_immutable
@@ -72,6 +73,8 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   PlayerState _playerState = PlayerState.stop;
 
   bool _isUploading = false;
+
+  bool _hideGeoFields = false;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -379,18 +382,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               child: ThemedIconButton(
                   Icons.my_location,
                   iconSize: IconSize.MEDIUM,
-                  onPressedCallback: () => {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (BuildContext context) =>
-                            TrainingScreensPager(
-                                backClickedCallback: () =>
-                                    Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
-                                    )
-                            )
-                        )
-                    )
-                  }
+                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi() }
               ),
             ),
             Positioned(
@@ -508,9 +500,18 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildLatLonAltitude() {
-    String latitude = widget.observation.latitude == null ? "" : widget.observation.latitude.toStringAsFixed(2);
-    String longitude = widget.observation.longitude == null ? "" : widget.observation.longitude.toStringAsFixed(2);
-    String altitude = widget.observation.altitude == null ? "" : widget.observation.altitude.toStringAsFixed(2);
+    String latitude = widget.observation.latitude.toStringAsFixed(2);
+    String longitude = widget.observation.longitude.toStringAsFixed(2);
+    String altitude = widget.observation.altitude.toStringAsFixed(2);
+    Fluttertoast.showToast(
+        msg: "Build lat:$latitude lon:$longitude alt:$altitude",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
     return Row(
       children: <Widget>[
         Flexible(
@@ -522,7 +523,11 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 children: <Widget>[
                   ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
                   tinyTransparentDivider,
-                  if (widget.isEditMode) ...[
+                  Text("$latitude"),
+                  if (_hideGeoFields) ... [
+                    //A hack state because geo fields not updating from self location button
+                  ]
+                  else if (widget.isEditMode) ...[
                     ThemedEditableLabelValue(
                       showLabel: false,
                       text: latitude,
@@ -548,6 +553,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                   children: <Widget>[
                     ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
                     tinyTransparentDivider,
+                    Text("$longitude"),
                     if (widget.isEditMode) ...[
                       ThemedEditableLabelValue(
                         showLabel: false,
@@ -573,6 +579,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               children: <Widget>[
                 ThemedSubTitle("Altitude", type: ThemeGroupType.POM),
                 tinyTransparentDivider,
+                Text("$altitude"),
                 if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
@@ -591,6 +598,69 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         )
       ],
     );
+  }
+
+  _getCurrentPositionAndUpdateUi() async {
+    Fluttertoast.showToast(
+        msg: "Fetching location ...",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+
+    await checkPermissionsAndGetCurrentPosition()
+        .then((Position position) {
+          String lat = position.latitude.toStringAsFixed(2);
+          String lon = position.longitude.toStringAsFixed(2);
+          String alt = position.altitude.toStringAsFixed(2);
+            Fluttertoast.showToast(
+                msg: "Fetched location:\n$lat $lon $alt",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.CENTER,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+                textColor: Colors.white,
+                fontSize: 16.0
+            );
+          setState(() {
+            widget.observation.latitude = position.latitude;
+            widget.observation.longitude = position.longitude;
+            widget.observation.altitude = position.altitude;
+            //_formKey.currentState.save();
+            //_isUploading = true;
+            //_hideGeoFields = true;
+
+
+            // widget.isEditMode = false;
+
+            // widget.isEditMode = true;
+            _hideGeoFields = true;
+            resetHideGeoFields();
+          });
+        })
+        .catchError((e) {
+          Fluttertoast.showToast(
+              msg: "$e",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.CENTER,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+              textColor: Colors.white,
+              fontSize: 16.0
+          );
+        });
+  }
+
+  resetHideGeoFields() async {
+    await Future.delayed(const Duration(milliseconds: 10), () {
+      setState(() {
+        _hideGeoFields = false;
+        //widget.isEditMode = true;
+      });
+    });
   }
 
   Widget _buildHeader() {

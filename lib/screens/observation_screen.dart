@@ -500,9 +500,14 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildLatLonAltitude() {
-    String latitude = widget.observation.latitude.toStringAsFixed(2);
-    String longitude = widget.observation.longitude.toStringAsFixed(2);
-    String altitude = widget.observation.altitude.toStringAsFixed(2);
+    double lat = widget.observation.latitude;
+    double lon = widget.observation.longitude;
+    double alt = widget.observation.altitude;
+
+    String latitude = lat == null ? "" : widget.observation.latitude.toStringAsFixed(2);
+    String longitude = lon == null ? "" : widget.observation.longitude.toStringAsFixed(2);
+    String altitude = alt == null ? "" : widget.observation.altitude.toStringAsFixed(2);
+
     Fluttertoast.showToast(
         msg: "Build lat:$latitude lon:$longitude alt:$altitude",
         toastLength: Toast.LENGTH_SHORT,
@@ -523,9 +528,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 children: <Widget>[
                   ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
                   tinyTransparentDivider,
-                  Text("$latitude"),
                   if (_hideGeoFields) ... [
                     //A hack state because geo fields not updating from self location button
+                    //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ]
                   else if (widget.isEditMode) ...[
                     ThemedEditableLabelValue(
@@ -553,8 +558,10 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                   children: <Widget>[
                     ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
                     tinyTransparentDivider,
-                    Text("$longitude"),
-                    if (widget.isEditMode) ...[
+                    if (_hideGeoFields) ... [
+                      //A hack state because geo fields not updating from self location button
+                      //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                    ] else if (widget.isEditMode) ...[
                       ThemedEditableLabelValue(
                         showLabel: false,
                         text: longitude,
@@ -579,8 +586,10 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               children: <Widget>[
                 ThemedSubTitle("Altitude", type: ThemeGroupType.POM),
                 tinyTransparentDivider,
-                Text("$altitude"),
-                if (widget.isEditMode) ...[
+                if (_hideGeoFields) ... [
+                  //A hack state because geo fields not updating from self location button
+                  //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: altitude,
@@ -617,7 +626,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           String lon = position.longitude.toStringAsFixed(2);
           String alt = position.altitude.toStringAsFixed(2);
             Fluttertoast.showToast(
-                msg: "Fetched location:\n$lat $lon $alt",
+                msg: "Location:\n$lat $lon $alt",
                 toastLength: Toast.LENGTH_SHORT,
                 gravity: ToastGravity.CENTER,
                 timeInSecForIosWeb: 1,
@@ -629,14 +638,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
             widget.observation.latitude = position.latitude;
             widget.observation.longitude = position.longitude;
             widget.observation.altitude = position.altitude;
-            //_formKey.currentState.save();
-            //_isUploading = true;
-            //_hideGeoFields = true;
 
-
-            // widget.isEditMode = false;
-
-            // widget.isEditMode = true;
             _hideGeoFields = true;
             resetHideGeoFields();
           });
@@ -658,7 +660,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     await Future.delayed(const Duration(milliseconds: 10), () {
       setState(() {
         _hideGeoFields = false;
-        //widget.isEditMode = true;
       });
     });
   }

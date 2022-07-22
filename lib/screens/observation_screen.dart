@@ -167,47 +167,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
 
-                    //Get GPS regardless of being connected or logged in, but don't override the observations initial GPS value.
-                    if(widget.observation.altitude == null || widget.observation.altitude == 0.0
-                        || widget.observation.latitude == null || widget.observation.latitude == 0.0
-                        || widget.observation.longitude == null || widget.observation.longitude == 0.0) {
-
-                      bool isLocationServiceEnabled  = await Geolocator.isLocationServiceEnabled();
-                      if(isLocationServiceEnabled) {
-                        //Get the latitude and longitude from the device's GPS, but only when the observation is first recorded
-                        Position position = await Geolocator.getCurrentPosition();
-                        if(position != null) {
-                          widget.observation.altitude = position.altitude;
-                          widget.observation.latitude = position.latitude;
-                          widget.observation.longitude = position.longitude;
-
-                        } else {
-                          Fluttertoast.showToast(
-                              msg: "Could not retrieve location from GPS.",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                              textColor: Colors.white,
-                              fontSize: 16.0
-                          );
-                        }
-                      } else {
-                        Fluttertoast.showToast(
-                            msg: "Could not retrieve location.\nEnable GPS and try to save again.",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.CENTER,
-                            timeInSecForIosWeb: 1,
-                            backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                            textColor: Colors.white,
-                            fontSize: 16.0
-                        );
-
-                        await Geolocator.openAppSettings();
-                        await Geolocator.openLocationSettings();
-                      }
-                    }
-
                     var hasConnection = await DataConnectionChecker().hasConnection;
                     saveLocalObservation();
                     if(!hasConnection) {
@@ -539,7 +498,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                       textType: ThemeGroupType.POM,
                       hintText: "0.0",
                       onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
-                      validator: (value) => isDoubleValidator(value, "Latitude"),
+                      validator: (value) => isValidGeo(value, "Latitude"),
                     ),
                   ] else ... [
                     ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -568,7 +527,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                         textType: ThemeGroupType.POM,
                         hintText: "0.0",
                         onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
-                        validator: (value) => isDoubleValidator(value, "Longitude"),
+                        validator: (value) => isValidGeo(value, "Longitude"),
                       ),
                     ] else ... [
                       ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -596,7 +555,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
-                    validator: (value) => isDoubleValidator(value, "Altitude"),
+                    validator: (value) => isValidGeo(value, "Altitude"),
                   )
                 ] else ...[
                   ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),

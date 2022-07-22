@@ -80,3 +80,8 @@ Future<Position> checkPermissionsAndGetCurrentPosition() async {
 
   return position;
 }
+
+String isValidGeo(String value, String name) {
+  bool isDouble = double.tryParse(value) != null;
+  return isDouble ? null : 'Invalid';
+}

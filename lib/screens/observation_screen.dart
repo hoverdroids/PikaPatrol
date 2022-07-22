@@ -344,7 +344,8 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 child: ThemedIconButton(
                     Icons.my_location,
                     iconSize: IconSize.MEDIUM,
-                    onPressedCallback: () => { _getCurrentPositionAndUpdateUi() }
+                    onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
+                    type: ThemeGroupType.SOM,
                 ),
               ),
             ],
@@ -354,6 +355,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               child: ThemedIconButton(
                   Icons.help,
                   iconSize: IconSize.MEDIUM,
+                  type: ThemeGroupType.SOM,
                   onPressedCallback: () => {
                     Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (BuildContext context) =>
@@ -379,10 +381,10 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
       isPlaying: _playerState == PlayerState.play,
       pauseIcon: Icon(
           Icons.pause,
-          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
           size: 48),
       playIcon: Icon(Icons.play_arrow,
-          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
           size: 48),
       onPressed: () => {
         widget.observation.audioUrls.isNotEmpty
@@ -403,7 +405,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   Widget _buildRecordButton() {
     return ThemedPlayButton(
       playIcon: Icon(Icons.mic,
-          color: context.watch<MaterialThemesManager>().colorPalette().primary,
+          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
           size: 48),
       onPressed: () => { _openAudioRecorder() },
     );
@@ -662,6 +664,14 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           smallTransparentDivider,
           Row(
             children: <Widget>[
+              if(widget.isEditMode) ... [
+                ThemedIconButton(
+                    Icons.date_range,
+                    iconSize: IconSize.MEDIUM,
+                    onPressedCallback: () => {  },
+                    type: ThemeGroupType.SOM,
+                ),
+              ],
               Flexible(
                 flex: 1,
                 child: Container(
@@ -669,20 +679,11 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     alignment: Alignment.centerRight,
                     child:Column(
                       children: <Widget>[
-                        ThemedSubTitle("Month", type: ThemeGroupType.MOM),
+                        ThemedSubTitle("Month", type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
-                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                        ] else if(widget.isEditMode) ... [
-                          ThemedEditableLabelValue(
-                            showLabel: false,
-                            text: month,
-                            textType: ThemeGroupType.POM,
-                            hintText: "Month",
-                            onStringChangedCallback: (value) => { },
-                            validator: (value) => nonEmptyValidator(value, "Month"),
-                          ),
+                          //Don't add another ThemedTitle here; it'll just create the same issue of not updating
                         ] else ... [
                           ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                         ],
@@ -692,24 +693,16 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 ),
               ),
               Flexible(
+                  flex: 1,
                   child: Align(
                     alignment: Alignment.center,
                     child: Column(
                       children: <Widget>[
-                        ThemedSubTitle("Day", type: ThemeGroupType.MOM),
+                        ThemedSubTitle("Day", type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
-                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                        ] else if(widget.isEditMode) ... [
-                          ThemedEditableLabelValue(
-                            showLabel: false,
-                            text: day,
-                            textType: ThemeGroupType.POM,
-                            hintText: "Day",
-                            onStringChangedCallback: (value) => { },
-                            validator: (value) => nonEmptyValidator(value, "Day"),
-                          ),
+                          //Don't add another ThemedTitle here; it'll just create the same issue of not updating
                         ] else ... [
                           ThemedTitle(day, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                         ],
@@ -723,20 +716,11 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     alignment: Alignment.centerLeft,
                     child:Column(
                       children: <Widget>[
-                        ThemedSubTitle("Year", type: ThemeGroupType.MOM),
+                        ThemedSubTitle("Year", type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
-                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                        ] else if(widget.isEditMode) ... [
-                          ThemedEditableLabelValue(
-                            showLabel: false,
-                            text: year,
-                            textType: ThemeGroupType.POM,
-                            hintText: "Year",
-                            onStringChangedCallback: (value) => {  },
-                            validator: (value) => nonEmptyValidator(value, "Year"),
-                          ),
+                          //Don't add another ThemedTitle here; it'll just create the same issue of not updating
                         ] else ... [
                           ThemedTitle(year, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                         ],
@@ -744,6 +728,13 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     ),
                   ),
               ),
+              if(widget.isEditMode) ... [
+                ThemedIconButton(
+                    null,
+                    iconSize: IconSize.MEDIUM,
+                    onPressedCallback: () => { }
+                ),
+              ],
             ],
           ),
         ],

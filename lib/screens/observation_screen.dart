@@ -75,6 +75,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   bool _isUploading = false;
 
   bool _hideGeoFields = false;
+  bool _hideDateFields = false;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -167,8 +168,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                   if (_formKey.currentState.validate()) {
                     _formKey.currentState.save();
 
-                    var hasConnection = await DataConnectionChecker().hasConnection;
                     saveLocalObservation();
+
+                    var hasConnection = await DataConnectionChecker().hasConnection;
                     if(!hasConnection) {
                       Fluttertoast.showToast(
                           msg: "No connection found.\nObservation saved locally.",
@@ -335,15 +337,17 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 onPressedCallback: () => print('Allow user to manually select a geo point'),
               )
           ),*/
-            Positioned(
-              bottom: 10.0,
-              left: 10.0,
-              child: ThemedIconButton(
-                  Icons.my_location,
-                  iconSize: IconSize.MEDIUM,
-                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi() }
+            if(widget.isEditMode) ... [
+              Positioned(
+                bottom: 10.0,
+                left: 10.0,
+                child: ThemedIconButton(
+                    Icons.my_location,
+                    iconSize: IconSize.MEDIUM,
+                    onPressedCallback: () => { _getCurrentPositionAndUpdateUi() }
+                ),
               ),
-            ),
+            ],
             Positioned(
               bottom: 10.0,
               right: 10.0,
@@ -467,15 +471,6 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     String longitude = lon == null ? "" : widget.observation.longitude.toStringAsFixed(2);
     String altitude = alt == null ? "" : widget.observation.altitude.toStringAsFixed(2);
 
-    Fluttertoast.showToast(
-        msg: "Build lat:$latitude lon:$longitude alt:$altitude",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
     return Row(
       children: <Widget>[
         Flexible(
@@ -490,6 +485,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                   if (_hideGeoFields) ... [
                     //A hack state because geo fields not updating from self location button
                     //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                   ]
                   else if (widget.isEditMode) ...[
                     ThemedEditableLabelValue(
@@ -520,6 +516,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                     if (_hideGeoFields) ... [
                       //A hack state because geo fields not updating from self location button
                       //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                     ] else if (widget.isEditMode) ...[
                       ThemedEditableLabelValue(
                         showLabel: false,
@@ -548,6 +545,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
@@ -616,7 +614,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   resetHideGeoFields() async {
-    await Future.delayed(const Duration(milliseconds: 10), () {
+    await Future.delayed(const Duration(milliseconds: 500), () {
       setState(() {
         _hideGeoFields = false;
       });
@@ -624,6 +622,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildHeader() {
+    String month = new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0];
+    String day = widget.observation.date.day.toString();
+    String year = widget.observation.date.year.toString();
     return Padding(
       padding: _horzPadding,
       child: Column(
@@ -670,23 +671,51 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                       children: <Widget>[
                         ThemedSubTitle("Month", type: ThemeGroupType.MOM),
                         tinyTransparentDivider,
-                        ThemedTitle(new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0], type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                        if (_hideDateFields) ... [
+                          //A hack state because geo fields not updating from self location button
+                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                        ] else if(widget.isEditMode) ... [
+                          ThemedEditableLabelValue(
+                            showLabel: false,
+                            text: month,
+                            textType: ThemeGroupType.POM,
+                            hintText: "Month",
+                            onStringChangedCallback: (value) => { },
+                            validator: (value) => nonEmptyValidator(value, "Month"),
+                          ),
+                        ] else ... [
+                          ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                        ],
                       ],
                     ),
                   ),
                 ),
               ),
-              Container(
+              Flexible(
                   child: Align(
                     alignment: Alignment.center,
                     child: Column(
                       children: <Widget>[
                         ThemedSubTitle("Day", type: ThemeGroupType.MOM),
                         tinyTransparentDivider,
-                        ThemedTitle(widget.observation.date.day.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                        if (_hideDateFields) ... [
+                          //A hack state because geo fields not updating from self location button
+                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                        ] else if(widget.isEditMode) ... [
+                          ThemedEditableLabelValue(
+                            showLabel: false,
+                            text: day,
+                            textType: ThemeGroupType.POM,
+                            hintText: "Day",
+                            onStringChangedCallback: (value) => { },
+                            validator: (value) => nonEmptyValidator(value, "Day"),
+                          ),
+                        ] else ... [
+                          ThemedTitle(day, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                        ],
                       ],
                     ),
-                  )
+                  ),
               ),
               Flexible(
                   flex: 1,
@@ -696,11 +725,25 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                       children: <Widget>[
                         ThemedSubTitle("Year", type: ThemeGroupType.MOM),
                         tinyTransparentDivider,
-                        ThemedTitle(widget.observation.date.year.toString(), type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH)
+                        if (_hideDateFields) ... [
+                          //A hack state because geo fields not updating from self location button
+                          //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                        ] else if(widget.isEditMode) ... [
+                          ThemedEditableLabelValue(
+                            showLabel: false,
+                            text: year,
+                            textType: ThemeGroupType.POM,
+                            hintText: "Year",
+                            onStringChangedCallback: (value) => {  },
+                            validator: (value) => nonEmptyValidator(value, "Year"),
+                          ),
+                        ] else ... [
+                          ThemedTitle(year, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                        ],
                       ],
                     ),
-                  )
-              )
+                  ),
+              ),
             ],
           ),
         ],

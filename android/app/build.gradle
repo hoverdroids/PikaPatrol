@@ -62,15 +62,33 @@ android {
     }
 
     buildTypes {
+        def date = new Date();
+        def formattedDate = date.format('yyyyMMddHHmmss')
+//        def releasesDir = "$flutterRoot/releases"
         release {
             shrinkResources false
             minifyEnabled false
             signingConfig signingConfigs.release
+            archivesBaseName = "Pika Patrol - v$flutterVersionCode ($flutterVersionName) $formattedDate"
         }
     }
-
 }
-
+/*applicationVariants.all { variant ->
+    variant.outputs.all {
+        outputFileName = "${applicationName}_${flutterVersionName}_${flutterVersionCode}.apk"
+    }
+}
+applicationVariants.all { variant ->
+    variant.outputs.each { output ->
+        def date = new Date();
+        def formattedDate = date.format('yyyyMMddHHmmss')
+        output.outputFile = new File(output.outputFile.parent,
+                output.outputFile.name.replace("app-release", "Pika Patrol " + flutterVersionName+ "_" + flutterVersionCode + "_"+ formattedDate)
+                //for Debug use output.outputFile = new File(output.outputFile.parent,
+                //                             output.outputFile.name.replace("-debug", "-" + formattedDate)
+        )
+    }
+}*/
 flutter {
     source '../..'
 }

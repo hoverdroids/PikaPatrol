@@ -668,7 +668,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 ThemedIconButton(
                     Icons.date_range,
                     iconSize: IconSize.MEDIUM,
-                    onPressedCallback: () => {  },
+                    onPressedCallback: () => { _selectDate(context) },
                     type: ThemeGroupType.SOM,
                 ),
               ],
@@ -1256,5 +1256,19 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         ],
       ),
     );
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime picked = await showDatePicker(
+      context: context,
+      initialDate: widget.observation.date,
+      firstDate: DateTime.fromMicrosecondsSinceEpoch(0),
+      lastDate: DateTime.now()
+    );
+    if (picked != null && picked != widget.observation.date) {
+      setState((){
+        widget.observation.date = picked;
+      });
+    }
   }
 }

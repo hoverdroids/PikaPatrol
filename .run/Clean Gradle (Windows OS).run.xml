@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build, Rename, Move, Open" type="ShConfigurationType" folderName="CocoaPods">
-    <option name="SCRIPT_TEXT" value="flutter --no-color build apk &amp;&amp; explorer &quot;I:\Google Drive (spragucm)\Projects\Pika Patrol\PikaPatrol2\build\app\outputs&quot;" />
+  <configuration default="false" name="Clean Gradle (Windows OS)" type="ShConfigurationType" folderName="Android">
+    <option name="SCRIPT_TEXT" value="gradlew.bat clean" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />

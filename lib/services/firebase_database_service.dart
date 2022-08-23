@@ -149,7 +149,7 @@ class FirebaseDatabaseService {
   }
 
   Stream<List<Observation>> get observations {
-    return observationsCollection.snapshots().map(_observationsFromSnapshot);
+    return observationsCollection.orderBy('date', descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
   }
 
   Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {

@@ -121,7 +121,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             children: <Widget>[
               PageView.builder(
                 controller: pageController,
-                itemCount: 1,
+                itemCount: 10,
                 itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>>(context) ?? <Observation>[]),
               ),
               /*LiquidSwipe(
@@ -210,239 +210,235 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           clipPathType: ClipPathType.NONE,
           backgroundGradientType: BackgroundGradientType.MAIN_BG,
         ),
-        endDrawer: Container(
-            alignment: Alignment.topRight,
-            height: mediaQuery.height,
+        endDrawer: SimpleClipPathDrawer(
             padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
-          child: SimpleClipPathDrawer(
-              widthPercent: 0.9,
-              leftIconType: ThemeGroupType.MOP,
-              leftIconClickedCallback: () => Navigator.pop(context),
-              showRightIcon: isEditingProfile ? true : false,
-              rightIconType: ThemeGroupType.MOP,
-              rightIcon: Icons.close,
-              rightIconClickedCallback: () => setState(() => isEditingProfile = false),
-              child: SafeArea(
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: <Widget>[
-                      if (user != null) ... [
-                        StreamBuilder<AppUserProfile>(
-                            stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
-                            builder: (context, snapshot){
+            widthPercent: 0.9,
+            leftIconType: ThemeGroupType.MOP,
+            leftIconClickedCallback: () => Navigator.pop(context),
+            showRightIcon: isEditingProfile ? true : false,
+            rightIconType: ThemeGroupType.MOP,
+            rightIcon: Icons.close,
+            rightIconClickedCallback: () => setState(() => isEditingProfile = false),
+            child: SafeArea(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: <Widget>[
+                    if (user != null) ... [
+                      StreamBuilder<AppUserProfile>(
+                          stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
+                          builder: (context, snapshot){
 
-                              AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+                            AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
 
-                              return ProfileScreen(
-                                //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
-                                //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
-                                //pops up and then immediately pops back down when trying to type text
-                                key: isEditingProfile ? (userProfile == null ? _editProfileNullKey : _editProfileKey) : (userProfile == null ? _nullProfileKey : _profileKey),
-                                isEditMode: isEditingProfile,
-                                onTapLogout: () async {
-                                  setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
-                                  await _auth.signOut();
-                                },
-                                onTapEdit: () => setState(() => isEditingProfile = true),
-                                onTapSave: () async {
-                                  setState(() => loading = true);
-                                  dynamic result = await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
-                                      firstName ?? userProfile.firstName,
-                                      lastName ?? userProfile.lastName,
-                                      tagline ?? userProfile.tagline,
-                                      pronouns ?? userProfile.pronouns,
-                                      organization ?? userProfile.organization,
-                                      address ?? userProfile.address,
-                                      city ?? userProfile.city,
-                                      state ?? userProfile.state,
-                                      zip ?? userProfile.zip,
-                                      frppOptIn ?? userProfile.frppOptIn,
-                                      rmwOptIn ?? userProfile.rmwOptIn,
-                                      dzOptIn ?? userProfile.dzOptIn
-                                  );
-                                  setState(() => isEditingProfile = false);
-                                  setState(() => loading = false);
-                                },
-                                onTapDelete: () async {
-                                  Widget okButton = FlatButton(
-                                    child: Text("OK"),
-                                    onPressed:  () async {
-                                      //Hide the alert
-                                      Navigator.pop(context, true);
+                            return ProfileScreen(
+                              //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
+                              //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
+                              //pops up and then immediately pops back down when trying to type text
+                              key: isEditingProfile ? (userProfile == null ? _editProfileNullKey : _editProfileKey) : (userProfile == null ? _nullProfileKey : _profileKey),
+                              isEditMode: isEditingProfile,
+                              onTapLogout: () async {
+                                setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
+                                await _auth.signOut();
+                              },
+                              onTapEdit: () => setState(() => isEditingProfile = true),
+                              onTapSave: () async {
+                                setState(() => loading = true);
+                                dynamic result = await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
+                                    firstName ?? userProfile.firstName,
+                                    lastName ?? userProfile.lastName,
+                                    tagline ?? userProfile.tagline,
+                                    pronouns ?? userProfile.pronouns,
+                                    organization ?? userProfile.organization,
+                                    address ?? userProfile.address,
+                                    city ?? userProfile.city,
+                                    state ?? userProfile.state,
+                                    zip ?? userProfile.zip,
+                                    frppOptIn ?? userProfile.frppOptIn,
+                                    rmwOptIn ?? userProfile.rmwOptIn,
+                                    dzOptIn ?? userProfile.dzOptIn
+                                );
+                                setState(() => isEditingProfile = false);
+                                setState(() => loading = false);
+                              },
+                              onTapDelete: () async {
+                                Widget okButton = FlatButton(
+                                  child: Text("OK"),
+                                  onPressed:  () async {
+                                    //Hide the alert
+                                    Navigator.pop(context, true);
 
-                                      setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
+                                    setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-                                      await _auth.deleteUser();
+                                    await _auth.deleteUser();
 
-                                      // Don't sign out before deleting user because the user must be signed into to delete themselves
-                                      await _auth.signOut();
+                                    // Don't sign out before deleting user because the user must be signed into to delete themselves
+                                    await _auth.signOut();
 
-                                      Fluttertoast.showToast(
-                                          msg: "Account Deleted",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                          gravity: ToastGravity.CENTER,
-                                          timeInSecForIosWeb: 1,
-                                          backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                          textColor: Colors.white,
-                                          fontSize: 16.0
-                                      );
+                                    Fluttertoast.showToast(
+                                        msg: "Account Deleted",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.CENTER,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                        textColor: Colors.white,
+                                        fontSize: 16.0
+                                    );
 
-                                    },
-                                  );
+                                  },
+                                );
 
-                                  AlertDialog alert = AlertDialog(
-                                    title: Text("Delete Account"),
-                                    content: Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
-                                    actions: [
-                                      okButton,
-                                    ],
-                                  );
+                                AlertDialog alert = AlertDialog(
+                                  title: Text("Delete Account"),
+                                  content: Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
+                                  actions: [
+                                    okButton,
+                                  ],
+                                );
 
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return alert;
-                                    },
-                                  );
-                                },
-                                showEmail: false, //TODO - need to wait until we allow the user to change their email
-                                showPassword: false, //TODO - need to wait until we allow the user to change their password
-                                firstName: userProfile != null ? userProfile.firstName : "" ,
-                                lastName: userProfile != null ? userProfile.lastName : "",
-                                tagline: userProfile != null ? userProfile.tagline : "",
-                                pronouns: userProfile != null ? userProfile.pronouns : "",
-                                organization: userProfile != null ? userProfile.organization : "",
-                                address: userProfile != null ? userProfile.address : "",
-                                city: userProfile != null ? userProfile.city : "",
-                                state: userProfile != null ? userProfile.state : "",
-                                zip: userProfile != null ? userProfile.zip : "",
-                                onEmailChangedCallback: (value) => { email = value },
-                                onPasswordChangedCallback: (value) => { password = value },
-                                onFirstNameChangedCallback: (value) => { firstName = value },
-                                onLastNameChangedCallback: (value) => { lastName = value },
-                                onTaglineChangedCallback: (value) => { tagline = value },
-                                onPronounsChangedCallback: (value) => { pronouns = value },
-                                onOrganizationChangedCallback: (value) => { organization = value },
-                                onAddressChangedCallback: (value) => { address = value },
-                                onCityChangedCallback: (value) => { city = value },
-                                onStateChangedCallback: (value) => { state = value },
-                                onZipChangedCallback: (value) => { zip = value },
-                              );
-                            }
-                        )
-                      ] else if(showSignIn) ... [
-                        LoginRegisterScreen(
-                          key: _loginKey,
-                          isLogin: true,
-                          showLabels: false,
-                          onPasswordChangedCallback: (value) => { password = value },
-                          onEmailChangedCallback: (value) => { email = value },
-                          onTapLogin: () async {
-                            setState(() => loading = true);
-                            dynamic result = await _auth.signInWithEmailAndPassword(email, password);
-                            if(result == null) {
-                              Fluttertoast.showToast(
-                                  msg: "Could not sign in with those credentials",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
-                            } else {
-                              Fluttertoast.showToast(
-                                  msg: "Successfully Logged In",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
-                            }
-                            setState((){ loading = false; });
-                          },
-                          onTapRegister: () => {
-                            setState(() => showSignIn = false)
-                          },
-                        ),
-                      ] else ... [
-                        LoginRegisterScreen(
-                          key: _registerKey,
-                          isLogin: false,
-                          showLabels: false,
-                          onPasswordChangedCallback: (value) => { password = value },
-                          onEmailChangedCallback: (value) => { email = value },
-                          onFirstNameChangedCallback: (value) => { firstName = value },
-                          onLastNameChangedCallback: (value) => { lastName = value },
-                          onTaglineChangedCallback: (value) => { tagline = value },
-                          onPronounsChangedCallback: (value) => { pronouns = value },
-                          onOrganizationChangedCallback: (value) => { organization = value },
-                          onAddressChangedCallback: (value) => { address = value },
-                          onCityChangedCallback: (value) => { city = value },
-                          onStateChangedCallback: (value) => { state = value },
-                          onZipChangedCallback: (value) => { zip = value },
-                          onTapLogin: () => { setState(() => showSignIn = true) },
-                          onTapRegister: () async {
-                            setState(() => loading = true);
-                            dynamic result = await _auth.registerWithEmailAndPassword(
-                                email,
-                                password,
-                                firstName,
-                                lastName,
-                                tagline,
-                                pronouns,
-                                organization,
-                                address,
-                                city,
-                                state,
-                                zip,
-                                frppOptIn,
-                                rmwOptIn,
-                                dzOptIn
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return alert;
+                                  },
+                                );
+                              },
+                              showEmail: false, //TODO - need to wait until we allow the user to change their email
+                              showPassword: false, //TODO - need to wait until we allow the user to change their password
+                              firstName: userProfile != null ? userProfile.firstName : "" ,
+                              lastName: userProfile != null ? userProfile.lastName : "",
+                              tagline: userProfile != null ? userProfile.tagline : "",
+                              pronouns: userProfile != null ? userProfile.pronouns : "",
+                              organization: userProfile != null ? userProfile.organization : "",
+                              address: userProfile != null ? userProfile.address : "",
+                              city: userProfile != null ? userProfile.city : "",
+                              state: userProfile != null ? userProfile.state : "",
+                              zip: userProfile != null ? userProfile.zip : "",
+                              onEmailChangedCallback: (value) => { email = value },
+                              onPasswordChangedCallback: (value) => { password = value },
+                              onFirstNameChangedCallback: (value) => { firstName = value },
+                              onLastNameChangedCallback: (value) => { lastName = value },
+                              onTaglineChangedCallback: (value) => { tagline = value },
+                              onPronounsChangedCallback: (value) => { pronouns = value },
+                              onOrganizationChangedCallback: (value) => { organization = value },
+                              onAddressChangedCallback: (value) => { address = value },
+                              onCityChangedCallback: (value) => { city = value },
+                              onStateChangedCallback: (value) => { state = value },
+                              onZipChangedCallback: (value) => { zip = value },
                             );
-                            if(result == null) {
-                              Fluttertoast.showToast(
-                                  msg: "Could not register in with those credentials",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
-                            } else {
-                              Fluttertoast.showToast(
-                                  msg: "Successfully Registered",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,
-                                  //TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
-                            }
-                            setState(() => loading = false);
-                          },
-                        ),
-                      ],
-                      if(loading) ... [
-                        Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          color: Colors.white.withOpacity(0.70),
-                          child: Loading(),
-                        )
-                      ]
+                          }
+                      )
+                    ] else if(showSignIn) ... [
+                      LoginRegisterScreen(
+                        key: _loginKey,
+                        isLogin: true,
+                        showLabels: false,
+                        onPasswordChangedCallback: (value) => { password = value },
+                        onEmailChangedCallback: (value) => { email = value },
+                        onTapLogin: () async {
+                          setState(() => loading = true);
+                          dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                          if(result == null) {
+                            Fluttertoast.showToast(
+                                msg: "Could not sign in with those credentials",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                textColor: Colors.white,
+                                fontSize: 16.0
+                            );
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: "Successfully Logged In",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                textColor: Colors.white,
+                                fontSize: 16.0
+                            );
+                          }
+                          setState((){ loading = false; });
+                        },
+                        onTapRegister: () => {
+                          setState(() => showSignIn = false)
+                        },
+                      ),
+                    ] else ... [
+                      LoginRegisterScreen(
+                        key: _registerKey,
+                        isLogin: false,
+                        showLabels: false,
+                        onPasswordChangedCallback: (value) => { password = value },
+                        onEmailChangedCallback: (value) => { email = value },
+                        onFirstNameChangedCallback: (value) => { firstName = value },
+                        onLastNameChangedCallback: (value) => { lastName = value },
+                        onTaglineChangedCallback: (value) => { tagline = value },
+                        onPronounsChangedCallback: (value) => { pronouns = value },
+                        onOrganizationChangedCallback: (value) => { organization = value },
+                        onAddressChangedCallback: (value) => { address = value },
+                        onCityChangedCallback: (value) => { city = value },
+                        onStateChangedCallback: (value) => { state = value },
+                        onZipChangedCallback: (value) => { zip = value },
+                        onTapLogin: () => { setState(() => showSignIn = true) },
+                        onTapRegister: () async {
+                          setState(() => loading = true);
+                          dynamic result = await _auth.registerWithEmailAndPassword(
+                              email,
+                              password,
+                              firstName,
+                              lastName,
+                              tagline,
+                              pronouns,
+                              organization,
+                              address,
+                              city,
+                              state,
+                              zip,
+                              frppOptIn,
+                              rmwOptIn,
+                              dzOptIn
+                          );
+                          if(result == null) {
+                            Fluttertoast.showToast(
+                                msg: "Could not register in with those credentials",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                textColor: Colors.white,
+                                fontSize: 16.0
+                            );
+                          } else {
+                            Fluttertoast.showToast(
+                                msg: "Successfully Registered",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.teal,
+                                //TODO - need to use Toast with context to link to the primary color
+                                textColor: Colors.white,
+                                fontSize: 16.0
+                            );
+                          }
+                          setState(() => loading = false);
+                        },
+                      ),
                     ],
-                  )
-              ),
-              clipPathType: ClipPathType.NONE,
-              backgroundGradientType: BackgroundGradientType.PRIMARY
-          )
-        ),
+                    if(loading) ... [
+                      Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Colors.white.withOpacity(0.70),
+                        child: Loading(),
+                      )
+                    ]
+                  ],
+                )
+            ),
+            clipPathType: ClipPathType.NONE,
+            backgroundGradientType: BackgroundGradientType.PRIMARY
+        )
       ),
       catchError: (_, e) => showErr(e.toString()),
     );

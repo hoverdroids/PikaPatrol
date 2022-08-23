@@ -469,9 +469,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     double lon = widget.observation.longitude;
     double alt = widget.observation.altitude;
 
-    String latitude = lat == null ? "" : widget.observation.latitude.toStringAsFixed(2);
-    String longitude = lon == null ? "" : widget.observation.longitude.toStringAsFixed(2);
-    String altitude = alt == null ? "" : widget.observation.altitude.toStringAsFixed(2);
+    String latitude = lat == null ? "" : widget.observation.latitude.toString();//.toStringAsFixed(2);
+    String longitude = lon == null ? "" : widget.observation.longitude.toString();//.toStringAsFixed(2);
+    String altitude = alt == null ? "" : widget.observation.altitude.toString();//.toStringAsFixed(2);
 
     return Row(
       children: <Widget>[

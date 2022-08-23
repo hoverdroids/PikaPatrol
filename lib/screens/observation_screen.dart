@@ -222,6 +222,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
 
     setState(() {
+      // Update local observation after successful upload because the uid will be non empty now
+      saveLocalObservation();
+
       _isUploading = false;
       widget.isEditMode = false;
     });

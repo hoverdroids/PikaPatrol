@@ -1,9 +1,11 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'custom_pan_gesture_recognizer.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
@@ -92,6 +94,17 @@ class CardScrollWidget extends StatelessWidget {
                       fit: StackFit.expand,
                       children: <Widget>[
                         UniversalImage(observations[i].imageUrls.isNotEmpty ? observations[i].imageUrls[0] : null),
+                        if (observations[i].uid.isNotEmpty) ... [
+                          Align(
+                              alignment: Alignment.topLeft,
+                              child: ThemedIconButton(Icons.cloud_upload, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+                          ),
+                        ] else ... [
+                          Align(
+                              alignment: Alignment.topLeft,
+                              child: ThemedIconButton(Icons.access_time_filled, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+                          ),
+                        ],
                         Align(
                           alignment: Alignment.bottomLeft,
                           child: Column(

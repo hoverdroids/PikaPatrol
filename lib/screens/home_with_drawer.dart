@@ -211,6 +211,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           backgroundGradientType: BackgroundGradientType.MAIN_BG,
         ),
         endDrawer: SimpleClipPathDrawer(
+            widthPercent: 0.9,
             leftIconType: ThemeGroupType.MOP,
             leftIconClickedCallback: () => Navigator.pop(context),
             showRightIcon: isEditingProfile ? true : false,
@@ -257,6 +258,48 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                                 );
                                 setState(() => isEditingProfile = false);
                                 setState(() => loading = false);
+                              },
+                              onTapDelete: () async {
+                                Widget okButton = FlatButton(
+                                  child: Text("OK"),
+                                  onPressed:  () async {
+                                    //Hide the alert
+                                    Navigator.pop(context, true);
+
+                                    setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
+
+                                    await _auth.deleteUser();
+
+                                    // Don't sign out before deleting user because the user must be signed into to delete themselves
+                                    await _auth.signOut();
+
+                                    Fluttertoast.showToast(
+                                        msg: "Account Deleted",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.CENTER,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                        textColor: Colors.white,
+                                        fontSize: 16.0
+                                    );
+
+                                  },
+                                );
+
+                                AlertDialog alert = AlertDialog(
+                                  title: Text("Delete Account"),
+                                  content: Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
+                                  actions: [
+                                    okButton,
+                                  ],
+                                );
+
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return alert;
+                                  },
+                                );
                               },
                               showEmail: false, //TODO - need to wait until we allow the user to change their email
                               showPassword: false, //TODO - need to wait until we allow the user to change their password

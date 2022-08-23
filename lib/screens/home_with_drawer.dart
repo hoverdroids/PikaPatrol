@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -339,15 +341,31 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                           setState(() => loading = true);
                           dynamic result = await _auth.signInWithEmailAndPassword(email, password);
                           if(result == null) {
-                            Fluttertoast.showToast(
-                                msg: "Could not sign in with those credentials",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                textColor: Colors.white,
-                                fontSize: 16.0
-                            );
+                            // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
+                            try {
+                              final result = await InternetAddress.lookup('google.com');
+                              if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                                Fluttertoast.showToast(
+                                    msg: "Could not sign in with those credentials",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                    textColor: Colors.white,
+                                    fontSize: 16.0
+                                );
+                              }
+                            } on SocketException catch (_) {
+                              Fluttertoast.showToast(
+                                  msg: "Can not sign in. Not connected to internet.",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.CENTER,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                  textColor: Colors.white,
+                                  fontSize: 16.0
+                              );
+                            }
                           } else {
                             Fluttertoast.showToast(
                                 msg: "Successfully Logged In",
@@ -401,15 +419,31 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                               dzOptIn
                           );
                           if(result == null) {
-                            Fluttertoast.showToast(
-                                msg: "Could not register in with those credentials",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                textColor: Colors.white,
-                                fontSize: 16.0
-                            );
+                            // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
+                            try {
+                              final result = await InternetAddress.lookup('google.com');
+                              if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+                                Fluttertoast.showToast(
+                                    msg: "Could not register with those credentials",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                    textColor: Colors.white,
+                                    fontSize: 16.0
+                                );
+                              }
+                            } on SocketException catch (_) {
+                              Fluttertoast.showToast(
+                                  msg: "Can not register. Not connected to internet.",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.CENTER,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+                                  textColor: Colors.white,
+                                  fontSize: 16.0
+                              );
+                            }
                           } else {
                             Fluttertoast.showToast(
                                 msg: "Successfully Registered",

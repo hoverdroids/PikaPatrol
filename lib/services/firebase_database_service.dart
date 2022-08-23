@@ -130,7 +130,7 @@ class FirebaseDatabaseService {
           altitude: doc.data['altitude'],
           latitude: doc.data['latitude'],
           longitude: doc.data['longitude'],
-          date: DateTime.fromMicrosecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
+          date: DateTime.fromMillisecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
           signs: signs,
           pikasDetected: doc.data['pikasDetected'] ?? '',
           distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',

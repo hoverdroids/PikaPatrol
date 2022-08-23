@@ -17,7 +17,7 @@ class ObservationsPage extends StatefulWidget {
   double currentPage;
 
   ObservationsPage(this.observations) {
-    observations = observations == null ? <Observation>[] : observations;
+    observations = observations == null ? <Observation>[] : List.from(observations.reversed);
     currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
     print("CurrentPage:$currentPage");
   }

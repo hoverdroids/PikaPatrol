@@ -3,6 +3,7 @@ import 'dart:io' show File;
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 
@@ -16,6 +17,7 @@ class ContentScroll extends StatelessWidget {
   final List<Widget> icons;
   final List<Function> iconsClickedCallbacks;
   final String emptyListMessage;
+  final Function onDeleteClickedCallback;
 
   ContentScroll({
     this.images,
@@ -25,7 +27,8 @@ class ContentScroll extends StatelessWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 20.0),
     this.icons,
     this.iconsClickedCallbacks,
-    this.emptyListMessage = ""
+    this.emptyListMessage = "",
+    this.onDeleteClickedCallback
   });
 
   @override
@@ -99,17 +102,22 @@ class ContentScroll extends StatelessWidget {
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(10.0),
-              child: images[index].contains("https://")
-                  ? Image.network(
-                images[index],
-                fit: BoxFit.cover,
-              )
-                  : Image.file(
-                  File(images[index]),
-                  fit: BoxFit.cover),
-            ),
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10.0),
+                  child: images[index].contains("https://")
+                      ? Image.network(
+                    images[index],
+                    fit: BoxFit.cover,
+                  )
+                      : Image.file(
+                      File(images[index]),
+                      fit: BoxFit.cover),
+                ),
+                ThemedIconButton(Icons.delete, type: ThemeGroupType.MOI, onPressedCallback: () => { onDeleteClickedCallback(images[index]) })
+              ],
+            )
           );
         },
       ),

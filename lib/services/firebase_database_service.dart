@@ -71,7 +71,7 @@ class FirebaseDatabaseService {
   }
 
   Future updateObservation(Observation observation) async {
-
+    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
     DocumentReference doc;
     if(observation.uid == null || observation.uid.isEmpty) {
       doc = observationsCollection.document();

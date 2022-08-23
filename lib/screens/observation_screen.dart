@@ -792,6 +792,25 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
+      onDeleteClickedCallback: (value) => { _removeImage(value) }
+    );
+  }
+
+  _removeImage(path) {
+    setState(() {
+      //remove image from the observation
+      widget.observation.imageUrls.remove(path);
+      needsUpdated = true;
+    });
+
+    Fluttertoast.showToast(
+      msg: "Delete $path",
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.CENTER,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
+      textColor: Colors.white,
+      fontSize: 16.0
     );
   }
 

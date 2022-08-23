@@ -121,7 +121,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
             children: <Widget>[
               PageView.builder(
                 controller: pageController,
-                itemCount: 10,
+                itemCount: 1,
                 itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>>(context) ?? <Observation>[]),
               ),
               /*LiquidSwipe(
@@ -166,6 +166,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           //index: pageController.initialPage,
         ),
         drawer: SimpleClipPathDrawer(
+          padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
           leftIconType: ThemeGroupType.MOP,
           leftIconClickedCallback: () => Navigator.pop(context),
           rightIconType: ThemeGroupType.MOP,

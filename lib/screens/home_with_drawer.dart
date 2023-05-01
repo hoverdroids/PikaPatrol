@@ -25,6 +25,7 @@ import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
 import 'observation_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 var navbarColor = Colors.white;
 var navbarBgColor = Colors.transparent;
@@ -504,6 +505,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         child: Text("OK"),
         onPressed:  () async {
           Navigator.pop(context, true);
+
+          Permission.location.request();
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('userAckGeo', true);
           showObservationScreen(context, user);

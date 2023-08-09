@@ -1,5 +1,5 @@
 name: pika_patrol
-description: A new Flutter project.
+description: Pokemon Go for Pikas
 
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -19,6 +19,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ">=2.17.6 <3.0.0"
+  flutter: ">=1.17.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions

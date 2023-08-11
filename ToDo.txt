@@ -1,0 +1,13 @@
+flutter_audio_recorder3
+-use hasPermission api to ask user for permission when needed (NSMicrophoneUsageDescription)
+
+fluttertoast
+-android 30+ -> no custom toast
+
+data_connection_checker_nulls
+- Note: Remember to dispose of any listeners, when they're not needed to prevent memory leaks, e.g. in a StatefulWidget's dispose() method:
+    @override
+    void dispose() {
+      listener.cancel();
+      super.dispose();
+    }

@@ -4,8 +4,14 @@
         android:label="pika_patrol"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+
+       <activity
+           android:name="com.yalantis.ucrop.UCropActivity"
+           android:screenOrientation="portrait"
+           android:theme="@style/NoTitleBarTheme"/>
+
         <activity
-            android:name=".MainActivity"
+            android:name="io.flutter.embedding.android.FlutterActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/LaunchTheme"

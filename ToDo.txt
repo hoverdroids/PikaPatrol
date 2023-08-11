@@ -11,3 +11,13 @@ data_connection_checker_nulls
       listener.cancel();
       super.dispose();
     }
+
+old plist items I don't think matter
+<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+            <true/>
+    </dict>
+
+<key>com.apple.security.network.client</key>
+        <true/>

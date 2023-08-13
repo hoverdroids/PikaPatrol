@@ -1,12 +1,12 @@
 class Observation {
-  int dbId;
-  String uid;
+  int? dbId;
+  String? uid;
   String observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
-  double altitude;
-  double longitude;
-  double latitude;
+  double? altitude;
+  double? longitude;
+  double? latitude;
   String name;
   String location;
   DateTime date;
@@ -26,15 +26,15 @@ class Observation {
 
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
-    required this.dbId,
-    required this.uid,
+    this.dbId,
+    this.uid,
     required this.observerUid,
     this.name = "",
     this.location = "",
     required this.date,
-    required this.altitude,
-    required this.latitude,
-    required this.longitude,
+    this.altitude,
+    this.latitude,
+    this.longitude,
     signs,
     this.pikasDetected = "",
     this.distanceToClosestPika = "",

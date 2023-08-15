@@ -7,7 +7,7 @@ class IfThenSplashScreen extends Container {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0xFFF3F3F3),
+      color: const Color(0xFFF3F3F3),
       width: double.infinity,
       height: double.infinity,
       child: SafeArea(

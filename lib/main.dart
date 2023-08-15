@@ -65,8 +65,9 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark
     ));*/
 
-    return StreamProvider<AppUser>.value(
+    return StreamProvider<AppUser?>.value(
       value: FirebaseAuthService().user,
+      initialData: null,
       child: MaterialApp(
           title: "Pika Patrol",
           home: PartnersSplashScreensPager(),

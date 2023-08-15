@@ -1,6 +1,6 @@
 class Observation {
   int dbId;
-  String uid;
+  String? uid;
   String observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?

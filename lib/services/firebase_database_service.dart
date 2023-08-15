@@ -8,13 +8,13 @@ import 'package:pika_patrol/model/app_user_profile.dart';
 
 class FirebaseDatabaseService {
 
-  final String uid;
+  final String? uid;
 
   FirebaseDatabaseService({ this.uid });
 
-  final CollectionReference userProfilesCollection = Firestore.instance.collection("userProfiles");
+  final CollectionReference userProfilesCollection = FirebaseFirestore.instance.collection("userProfiles");
 
-  final CollectionReference observationsCollection = Firestore.instance.collection("observations");
+  final CollectionReference observationsCollection = FirebaseFirestore.instance.collection("observations");
 
   Future updateUserProfile(
       String firstName,
@@ -30,7 +30,7 @@ class FirebaseDatabaseService {
       bool rmwOptIn,
       bool dzOptIn
       ) async {
-    return await userProfilesCollection.document(uid).setData(
+    return await userProfilesCollection.doc(uid).setData(
         {
           'firstName': firstName,
           'lastName': lastName,
@@ -50,39 +50,39 @@ class FirebaseDatabaseService {
   
   AppUserProfile _userProfileFromSnapshot(DocumentSnapshot snapshot) {
     return AppUserProfile(
-      snapshot.data['firstName'] ?? '',
-      snapshot.data['lastName'] ?? '',
+      snapshot.get('firstName') ?? '',
+      snapshot.get('lastName') ?? '',
       uid: uid,
-      tagline: snapshot.data['tagline'] ?? '',
-      pronouns: snapshot.data['pronouns'] ?? '',
-      organization: snapshot.data['organization'] ?? '',
-      address: snapshot.data['address'] ?? '',
-      city: snapshot.data['city'] ?? '',
-      state: snapshot.data['state'] ?? '',
-      zip: snapshot.data['zip'] ?? '',
-      frppOptIn: snapshot.data['frppOptIn'] ?? false,
-      rmwOptIn: snapshot.data['rmwOptIn'] ?? false,
-      dzOptIn: snapshot.data['dzOptIn'] ?? false,
+      tagline: snapshot.get('tagline') ?? '',
+      pronouns: snapshot.get('pronouns') ?? '',
+      organization: snapshot.get('organization') ?? '',
+      address: snapshot.get('address') ?? '',
+      city: snapshot.get('city') ?? '',
+      state: snapshot.get('state') ?? '',
+      zip: snapshot.get('zip') ?? '',
+      frppOptIn: snapshot.get('frppOptIn') ?? false,
+      rmwOptIn: snapshot.get('rmwOptIn') ?? false,
+      dzOptIn: snapshot.get('dzOptIn') ?? false,
     );
   }
 
-  Stream<AppUserProfile> get userProfile {
-    return uid == null ? null : userProfilesCollection.document(uid).snapshots().map(_userProfileFromSnapshot);
+  Stream<AppUserProfile>? get userProfile {
+    return uid == null ? null : userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
   Future updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
     DocumentReference doc;
-    if(observation.uid == null || observation.uid.isEmpty) {
-      doc = observationsCollection.document();
-      observation.uid = doc.documentID;
+    if(observation.uid == null || observation.uid?.isEmpty == true) {
+      doc = observationsCollection.doc();
+      observation.uid = doc.id;
     } else {
-      doc = observationsCollection.document(observation.uid);
+      doc = observationsCollection.doc(observation.uid);
     }
 
     print("Update Observation id:${observation.uid}");
 
-    return await doc.setData(
+    return await doc.update(
         {
           'observerUid': observation.observerUid,
           'name': observation.name,
@@ -108,40 +108,42 @@ class FirebaseDatabaseService {
   }
 
   List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {
-    return snapshot.documents.map((doc) {
+    return snapshot.docs.map((doc) {
 
-      List<dynamic> vals = doc.data['signs'];
-      List<String> signs = vals == null || vals.isEmpty ? <String>[] : vals.cast<String>().toList();
+      final dataMap = doc.data() as Map<String, dynamic>;
 
-      vals = doc.data['otherAnimalsPresent'];
-      List<String> otherAnimalsPresent = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
+      List<dynamic>? data = dataMap['signs'];
+      List<String> signs = data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
 
-      vals = doc.data['imageUrls'];
-      List<String> imageUrls = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
+      data = dataMap['otherAnimalsPresent'];
+      List<String> otherAnimalsPresent = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
-      vals = doc.data['audioUrls'];
-      List<String> audioUrls = vals == null || vals.isEmpty ? <String>[] :  vals.cast<String>().toList();
+      data = dataMap['imageUrls'];
+      List<String> imageUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
+
+      data = dataMap['audioUrls'];
+      List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
       return Observation(
-          uid: doc.documentID ?? '',
-          observerUid: doc.data['observerUid'] ?? '',
-          name: doc.data['name'] ?? '',
-          location: doc.data['location'] ?? '',
-          altitude: doc.data['altitude'],
-          latitude: doc.data['latitude'],
-          longitude: doc.data['longitude'],
-          date: DateTime.fromMillisecondsSinceEpoch(doc.data['date'].millisecondsSinceEpoch),
+          uid: doc.id,
+          observerUid: dataMap['observerUid'] ?? '',
+          name: dataMap['name'] ?? '',
+          location: dataMap['location'] ?? '',
+          altitude: dataMap['altitude'],
+          latitude: dataMap['latitude'],
+          longitude: dataMap['longitude'],
+          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),
           signs: signs,
-          pikasDetected: doc.data['pikasDetected'] ?? '',
-          distanceToClosestPika: doc.data['distanceToClosestPika'] ?? '',
-          searchDuration: doc.data['searchDuration'] ?? '',
-          talusArea: doc.data['talusArea'] ?? '',
-          temperature: doc.data['temperature'] ?? '',
-          skies: doc.data['skies'] ?? '',
-          wind: doc.data['wind'] ?? '',
-          siteHistory: doc.data['siteHistory'] ?? '',
+          pikasDetected: dataMap['pikasDetected'] ?? '',
+          distanceToClosestPika: dataMap['distanceToClosestPika'] ?? '',
+          searchDuration: dataMap['searchDuration'] ?? '',
+          talusArea: dataMap['talusArea'] ?? '',
+          temperature: dataMap['temperature'] ?? '',
+          skies: dataMap['skies'] ?? '',
+          wind: dataMap['wind'] ?? '',
+          siteHistory: dataMap['siteHistory'] ?? '',
           otherAnimalsPresent: otherAnimalsPresent,
-          comments: doc.data['comments'] ?? '',
+          comments: dataMap['comments'] ?? '',
           imageUrls: imageUrls,
           audioUrls: audioUrls
       );
@@ -165,11 +167,11 @@ class FirebaseDatabaseService {
         //Do not try to upload an image that has already been uploaded
         uploadUrls.add(filepath);
       } else {
-        FirebaseStorage storage = FirebaseStorage(storageBucket: 'gs://pikajoe-97c5c.appspot.com');
-        StorageUploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
-        StorageTaskSnapshot storageTaskSnapshot;
+        FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: 'gs://pikajoe-97c5c.appspot.com');
+        UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
+        var storageTaskSnapshot;
 
-        StorageTaskSnapshot snapshot = await uploadTask.onComplete;
+        var snapshot = await uploadTask.onComplete;
         if (snapshot.error == null) {
           storageTaskSnapshot = snapshot;
           final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();

@@ -7,20 +7,20 @@ class FirebaseAuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //TODO - use the User's info from the provider
-  UserInfo userInfo;
+  //UserInfo userInfo;
 
-  AppUser _userFromFirebaseUser(FirebaseUser user) {
+  AppUser? _userFromFirebaseUser(User? user) {
     return user != null ? AppUser(uid: user.uid) : null;
   }
 
   Stream<AppUser> get user {
-    return _auth.onAuthStateChanged.map((FirebaseUser user) => _userFromFirebaseUser(user));
+    return _auth.authStateChanges.map((User user) => _userFromFirebaseUser(user));
   }
 
   Future signInAnonymously() async {
     try {
-      AuthResult result = await _auth.signInAnonymously();
-      FirebaseUser user = result.user;
+      UserCredential result = await _auth.signInAnonymously();
+      User? user = result.user;
       return _userFromFirebaseUser(user);
     } catch(e) {
       print(e.toString());
@@ -30,11 +30,11 @@ class FirebaseAuthService {
 
   Future signInWithEmailAndPassword(String email, String password) async {
     try {
-      AuthResult result = await _auth.signInWithEmailAndPassword(email: email, password: password);
-      FirebaseUser user = result.user;
+      UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      User? user = result.user;
       return _userFromFirebaseUser(user);
     } catch(e) {
-      print("Failed to sign in user:" + e.toString());
+      print("Failed to sign in user:$e");
       return null;
     }
   }
@@ -56,10 +56,10 @@ class FirebaseAuthService {
       bool dzOptIn
       ) async {
     try {
-      AuthResult result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      FirebaseUser user = result.user;
+      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      User? user = result.user;
 
-      await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
+      await FirebaseDatabaseService(uid: user?.uid).updateUserProfile(
           firstName,
           lastName,
           tagline,
@@ -76,7 +76,7 @@ class FirebaseAuthService {
 
       return _userFromFirebaseUser(user);
     } catch (e) {
-      print('Failed to create user:' + e.toString());
+      print('Failed to create user:$e');
       return null;
     }
   }
@@ -92,8 +92,8 @@ class FirebaseAuthService {
 
   Future deleteUser() async {
       try {
-        var user = await _auth.currentUser();
-        user.delete();
+        User? user = await _auth.currentUser!();
+        user?.delete();
       } catch(e) {
         print(e.toString());
       }

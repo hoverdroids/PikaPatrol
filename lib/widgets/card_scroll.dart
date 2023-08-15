@@ -94,7 +94,7 @@ class CardScrollWidget extends StatelessWidget {
                           //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
                           UniversalImage(observations[i].imageUrls[0]),
                         ],
-                        if (observations[i].uid.isNotEmpty) ... [
+                        if (observations[i].uid?.isNotEmpty == true) ... [
                           Align(
                               alignment: Alignment.topLeft,
                               child: ThemedIconButton(Icons.cloud_upload, type: ThemeGroupType.MOI, onPressedCallback: () => {}),

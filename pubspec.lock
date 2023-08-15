@@ -50,7 +50,7 @@ packages:
     source: hosted
     version: "2.4.2"
   assets_audio_player:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: assets_audio_player
       sha256: ddcef722bd569797273dbb6d505b837250b4437651ecfbfdad74d4f0b64a1379

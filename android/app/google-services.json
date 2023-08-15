@@ -38,6 +38,13 @@
             {
               "client_id": "954700599379-ufpa7kr9jvqfvk5ael476cp6dbffmc8b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "954700599379-3f8fe97t6hboaqjgdtej6lg6jn8d4v7a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.joisawesome.pikaPatrolTroubleshooting"
+              }
             }
           ]
         }
@@ -67,6 +74,13 @@
             {
               "client_id": "954700599379-ufpa7kr9jvqfvk5ael476cp6dbffmc8b.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "954700599379-3f8fe97t6hboaqjgdtej6lg6jn8d4v7a.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.joisawesome.pikaPatrolTroubleshooting"
+              }
             }
           ]
         }

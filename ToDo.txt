@@ -21,3 +21,26 @@ old plist items I don't think matter
 
 <key>com.apple.security.network.client</key>
         <true/>
+
+
+
+
+training_screens_pager
+LiquidSwipe
+// enableSlideIcon: true <- no longer a property
+
+
+partners_spash_screens_pager
+LiquidSwipe
+// enableSlideIcon: false <- no longer a property
+
+
+
+Geo Utils
+Position position = await Geolocator.getCurrentPosition();
+if (position == null) <- can't be null; so something non null is returned that let's us know it's a bad geo
+
+
+
+validator: (value) => isValidGeo(value, "Latitude"),
+isValidGeo returns null or invalid; doesn't make sense

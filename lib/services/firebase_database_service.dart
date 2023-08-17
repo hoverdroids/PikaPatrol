@@ -30,7 +30,7 @@ class FirebaseDatabaseService {
       bool rmwOptIn,
       bool dzOptIn
       ) async {
-    return await userProfilesCollection.doc(uid).setData(
+    return await userProfilesCollection.doc(uid).set(
         {
           'firstName': firstName,
           'lastName': lastName,
@@ -169,17 +169,17 @@ class FirebaseDatabaseService {
       } else {
         FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: 'gs://pikajoe-97c5c.appspot.com');
         UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
-        var storageTaskSnapshot;
 
-        var snapshot = await uploadTask.onComplete;
-        if (snapshot.error == null) {
-          storageTaskSnapshot = snapshot;
+        try {
+          var snapshot = await uploadTask;
+
+          var storageTaskSnapshot = snapshot;
           final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
           uploadUrls.add(downloadUrl);
 
           print('Upload success');
-        } else {
-          print('Error from image repo ${snapshot.error.toString()}');
+        } on FirebaseException catch (e) {
+          print('Error from image repo ${e.message}');
           throw ('This file is not an image');
         }
       }

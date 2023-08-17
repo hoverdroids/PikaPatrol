@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
@@ -13,8 +15,8 @@ class FirebaseAuthService {
     return user != null ? AppUser(uid: user.uid) : null;
   }
 
-  Stream<AppUser> get user {
-    return _auth.authStateChanges.map((User user) => _userFromFirebaseUser(user));
+  Stream<AppUser?> get user {
+    return _auth.authStateChanges().map((User? user) => _userFromFirebaseUser(user));
   }
 
   Future signInAnonymously() async {
@@ -92,7 +94,7 @@ class FirebaseAuthService {
 
   Future deleteUser() async {
       try {
-        User? user = await _auth.currentUser!();
+        User? user = _auth.currentUser;
         user?.delete();
       } catch(e) {
         print(e.toString());

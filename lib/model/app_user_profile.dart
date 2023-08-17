@@ -1,6 +1,6 @@
 class AppUserProfile {
 
-  final String uid;
+  final String? uid;
   final String firstName;
   final String lastName;
   final String tagline;
@@ -18,7 +18,7 @@ class AppUserProfile {
     this.firstName,
     this.lastName,
     {
-      required this.uid,
+      this.uid,
       this.tagline = "",
       this.pronouns = "",
       this.organization = "",

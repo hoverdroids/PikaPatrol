@@ -1,7 +1,7 @@
 class Observation {
-  int dbId;
+  int? dbId;
   String? uid;
-  String observerUid;
+  String? observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
   double altitude;
@@ -26,9 +26,9 @@ class Observation {
 
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
-    required this.dbId,
-    required this.uid,
-    required this.observerUid,
+    this.dbId,
+    this.uid,
+    this.observerUid,
     this.name = "",
     this.location = "",
     required this.date,

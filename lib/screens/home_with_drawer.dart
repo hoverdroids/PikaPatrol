@@ -25,6 +25,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 
+import 'observations_screen.dart';
+
 var navbarColor = Colors.white;
 var navbarBgColor = Colors.transparent;
 var navbarButtonColor = Colors.white;
@@ -52,6 +54,9 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _leftDrawerKey = UniqueKey();
   final Key _nullLeftDrawerKey = UniqueKey();
 
+  //TODO - replace the following with liquidController eventually
+  PageController pageController = PageController(initialPage: initialPage);
+
   LiquidController liquidController = LiquidController();
 
   @override
@@ -76,13 +81,13 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       ),
       body: Container(
       width: mediaQuery.width,
-      child: const Stack(
+      child: Stack(
         children: <Widget>[
-          /*PageView.builder(
+          PageView.builder(
             controller: pageController,
             itemCount: 1,
-            itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>>(context) ?? <Observation>[]),
-          ),*/
+            itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>?>(context) ?? <Observation>[]),
+          ),
                 /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),

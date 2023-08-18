@@ -23,6 +23,7 @@ import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pika_patrol/screens/training_screens_pager.dart';
 
 class HomeWithDrawer extends StatefulWidget {
   @override
@@ -32,6 +33,15 @@ class HomeWithDrawer extends StatefulWidget {
 class _HomeWithDrawerState extends State<HomeWithDrawer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final Key _registerKey = UniqueKey();
+  final Key _loginKey = UniqueKey();
+  final Key _editProfileKey = UniqueKey();
+  final Key _editProfileNullKey = UniqueKey();
+  final Key _profileKey = UniqueKey();
+  final Key _nullProfileKey = UniqueKey();
+  final Key _leftDrawerKey = UniqueKey();
+  final Key _nullLeftDrawerKey = UniqueKey();
+
   LiquidController liquidController = LiquidController();
 
   @override
@@ -39,6 +49,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
 
     Size mediaQuery = MediaQuery.of(context).size;
     //List<Widget> pages=[ObservationsPage()];
+
+    AppUser? user = Provider.of<AppUser?>(context);
 
     return Scaffold(
       key: _scaffoldKey,
@@ -107,19 +119,18 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         //index: pageController.initialPage,
       ),
 */
-/*
       drawer: SimpleClipPathDrawer(
         padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),
         rightIconType: ThemeGroupType.MOP,
-        rightIconClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
+        rightIconClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
         clipPathType: ClipPathType.NONE,
         backgroundGradientType: BackgroundGradientType.MAIN_BG,
         child: StreamBuilder<AppUserProfile>(
-          stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
+          stream: FirebaseDatabaseService(uid: user?.uid).userProfile,
           builder: (context, snapshot) {
-            AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+            AppUserProfile? userProfile = snapshot.hasData ? snapshot.data : null;
             return HeaderList(
                 [
                   ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
@@ -145,7 +156,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 avatarImageUrl: "assets/images/pika4.jpg",
                 avatarTitle: userProfile == null ? "Login" : userProfile.firstName + " " + userProfile.lastName,
                 avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
-                avatarClickedCallback: () => _scaffoldKey.currentState.openEndDrawer(),
+                avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
                 cardElevationLevel: ElevationLevel.LOW,
                 usePolygonAvatar: true,
                 headerGradientType: BackgroundGradientType.PRIMARY,
@@ -154,7 +165,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           },
         ),
       ),
-*/
 /*
       endDrawer: SimpleClipPathDrawer(
           padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),

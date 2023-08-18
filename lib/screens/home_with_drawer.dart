@@ -25,6 +25,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 
+var navbarColor = Colors.white;
+var navbarBgColor = Colors.transparent;
+var navbarButtonColor = Colors.white;
+var navbarIconColor = Colors.black45;
+
+var navbarHeight = 50.0;
+var navbarIconSize = 30.0;
+var navbarAnimationDuration = 500;
+var initialPage = 2;
+
 class HomeWithDrawer extends StatefulWidget {
   @override
   _HomeWithDrawerState createState() => _HomeWithDrawerState();
@@ -92,7 +102,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           ],
         ),
       ),
-/*
       bottomNavigationBar: CurvedNavigationBar (//TODO - migrate this into its own widget
         color: navbarColor,
         backgroundColor: navbarBgColor,
@@ -118,7 +127,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
         animationCurve: Curves.easeInOut,
         //index: pageController.initialPage,
       ),
-*/
       drawer: SimpleClipPathDrawer(
         padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
         leftIconType: ThemeGroupType.MOP,
@@ -429,5 +437,50 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
       )
 */
     );
+  }
+
+  showObservationScreen(BuildContext contxt, AppUser? user) {
+    /*Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ObservationScreen(Observation(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
+      ),
+    );*/
+  }
+
+  showGeoTrackingDialog(BuildContext context, AppUser? user) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userAcked = prefs.getBool('userAckGeo');
+
+    if (userAcked != null && userAcked == true) {
+      showObservationScreen(context, user);
+    } else {
+      Widget launchButton = TextButton(
+        child: const Text("OK"),
+        onPressed:  () async {
+          Navigator.pop(context, true);
+
+          Permission.location.request();
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('userAckGeo', true);
+          showObservationScreen(context, user);
+        },
+      );
+      // set up the AlertDialog
+      AlertDialog alert = AlertDialog(
+        title: const Text("Location Tracking"),
+        content: const Text("Pika Patrol records the current location when an observation is recorded in order to determine where the observation occurred. The observation, including the saved location, is sent in the background to our servers when WiFi is available."),
+        actions: [
+          launchButton,
+        ],
+      );
+      // show the dialog
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
   }
 }

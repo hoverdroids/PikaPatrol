@@ -1,5 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/model/observation.dart';

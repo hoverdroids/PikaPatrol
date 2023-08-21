@@ -1,5 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
-
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';

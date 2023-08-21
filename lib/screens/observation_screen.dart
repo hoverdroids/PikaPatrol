@@ -1,6 +1,6 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
-
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
@@ -13,7 +13,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
@@ -24,7 +23,6 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/local_observation.dart';
@@ -38,6 +36,8 @@ import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
 import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:path_provider/path_provider.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {

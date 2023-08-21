@@ -1,5 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
-
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -24,7 +24,6 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
-
 import 'observation_screen.dart';
 import 'observations_screen.dart';
 

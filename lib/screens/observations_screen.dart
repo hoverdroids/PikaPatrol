@@ -1,5 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';

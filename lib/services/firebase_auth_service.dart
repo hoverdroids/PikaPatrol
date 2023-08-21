@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';

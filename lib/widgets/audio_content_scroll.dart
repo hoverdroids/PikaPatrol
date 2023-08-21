@@ -1,4 +1,4 @@
-
+// ignore_for_file: depend_on_referenced_packages
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';

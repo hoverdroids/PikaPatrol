@@ -4,25 +4,25 @@ class Observation {
   String? observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
-  double altitude;
-  double longitude;
-  double latitude;
-  String name;
-  String location;
-  DateTime date;
-  late List<String> signs;
-  String pikasDetected;
-  String distanceToClosestPika;
-  String searchDuration;
-  String talusArea;
-  String temperature;
-  String skies;
-  String wind;
-  late List<String> otherAnimalsPresent;
-  String siteHistory;
-  String comments;
-  late List<String> imageUrls;
-  late List<String> audioUrls;
+  double? altitude;
+  double? longitude;
+  double? latitude;
+  String? name;
+  String? location;
+  DateTime? date;
+  List<String>? signs;
+  String? pikasDetected;
+  String? distanceToClosestPika;
+  String? searchDuration;
+  String? talusArea;
+  String? temperature;
+  String? skies;
+  String? wind;
+  List<String>? otherAnimalsPresent;
+  String? siteHistory;
+  String? comments;
+  List<String>? imageUrls;
+  List<String>? audioUrls;
 
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({

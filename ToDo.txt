@@ -44,3 +44,20 @@ if (position == null) <- can't be null; so something non null is returned that l
 
 validator: (value) => isValidGeo(value, "Latitude"),
 isValidGeo returns null or invalid; doesn't make sense
+
+
+
+The following position is never null. So how do we determine valid geo?
+Position position = await Geolocator.getCurrentPosition();
+
+  if (position == null) {
+    Fluttertoast.showToast(
+        msg: "Could not retrieve location from GPS.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }

@@ -949,6 +949,63 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     }
   }
 
+  void _displayImageCropErrorToUser(String error) {
+    Fluttertoast.showToast(
+        msg: error,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }
+  
+  Future<void> _cropImage(
+    String sourcePath,
+    Color toolbarColor,
+    Color statusBarColor,
+    Color toolbarWidgetColor,
+    Color backgroundColor,
+    Color activeControlsWidgetColor,
+    Color dimmedLayerColor,
+    Color cropFrameColor,
+    Color cropGridColor,
+    int cropFrameStrokeWidth,
+    int cropGridRowCount,
+    int cropGridColumnCount
+  ) async {
+    
+    CroppedFile? cropped = await ImageCropper().cropImage(
+      sourcePath: sourcePath,
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarColor: toolbarColor,
+            statusBarColor: statusBarColor,
+            toolbarWidgetColor: toolbarWidgetColor,
+            backgroundColor: backgroundColor,
+            activeControlsWidgetColor: activeControlsWidgetColor,
+            dimmedLayerColor: dimmedLayerColor,
+            cropFrameColor: cropFrameColor,
+            cropGridColor: cropGridColor,
+            cropFrameStrokeWidth: 12,
+            cropGridRowCount: 10,
+            cropGridColumnCount: 6
+        ),
+      ]
+    );
+    
+    var croppedPath = cropped?.path;
+    
+    if (croppedPath == null) {
+      _displayImageCropErrorToUser("Error when trying to crop image");
+    }
+
+    setState(() {
+      widget.observation.imageUrls?.add(croppedPath ?? sourcePath);
+    });
+  }
+  
   Future<void> _takePictureAndCrop(
       Color toolbarColor,
       Color statusBarColor,
@@ -961,32 +1018,32 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
       int cropFrameStrokeWidth,
       int cropGridRowCount,
       int cropGridColumnCount
-      ) async {
+  ) async {
 
     //Take picture with camera ...
-    File selected = await ImagePicker.pickImage(source: ImageSource.camera);
+    var imagePicker = ImagePicker();
+    XFile? selected = await imagePicker.pickImage(source: ImageSource.camera);
 
-    //Crop Image ...
-    File cropped = await ImageCropper().cropImage(
-      sourcePath: selected.path,
-      androidUiSettings: AndroidUiSettings(
-          toolbarColor: toolbarColor,
-          statusBarColor: statusBarColor,
-          toolbarWidgetColor: toolbarWidgetColor,
-          backgroundColor: backgroundColor,
-          activeControlsWidgetColor: activeControlsWidgetColor,
-          dimmedLayerColor: dimmedLayerColor,
-          cropFrameColor: cropFrameColor,
-          cropGridColor: cropGridColor,
-          cropFrameStrokeWidth: 12,
-          cropGridRowCount: 10,
-          cropGridColumnCount: 6
-      ),
-    );
-
-    setState(() {
-      widget.observation.imageUrls?.add(cropped?.path ?? selected.path);
-    });
+    var selectedPath = selected?.path;
+    
+    if (selectedPath == null) {
+      _displayImageCropErrorToUser("Error when trying to take picture");
+    } else {
+      _cropImage(
+          selectedPath,
+          toolbarColor,
+          statusBarColor,
+          toolbarWidgetColor,
+          backgroundColor,
+          activeControlsWidgetColor,
+          dimmedLayerColor,
+          cropFrameColor,
+          cropGridColor,
+          cropFrameStrokeWidth,
+          cropGridRowCount,
+          cropGridColumnCount
+      ); 
+    }
   }
 
   Widget _buildSignsChoices() {
@@ -997,7 +1054,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         ThemedSubTitle("Signs", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.signs,
+          value: widget.observation.signs ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
               setState(() => widget.observation.signs = val)

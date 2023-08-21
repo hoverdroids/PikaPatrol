@@ -55,10 +55,31 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _leftDrawerKey = UniqueKey();
   final Key _nullLeftDrawerKey = UniqueKey();
 
+  final FirebaseAuthService _auth = FirebaseAuthService();
+
   //TODO - replace the following with liquidController eventually
   PageController pageController = PageController(initialPage: initialPage);
-
   LiquidController liquidController = LiquidController();
+
+  bool showSignIn = true;
+  bool loading = false;
+  bool isEditingProfile = false;
+  bool userAckedGeoTracking = false;
+
+  String? email;
+  String? password;
+  String? firstName;
+  String? lastName;
+  String? tagline;
+  String? pronouns;
+  String? organization;
+  String? address;
+  String? city;
+  String? state;
+  String? zip;
+  bool? frppOptIn;
+  bool? rmwOptIn;
+  bool? dzOptIn;
 
   @override
   Widget build(BuildContext context) {
@@ -168,7 +189,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
                 imageUrl: "assets/images/pika3.jpg",
                 avatarImageUrl: "assets/images/pika4.jpg",
-                avatarTitle: userProfile == null ? "Login" : userProfile.firstName + " " + userProfile.lastName,
+                avatarTitle: userProfile == null ? "Login" : "${userProfile.firstName} ${userProfile.lastName}",
                 avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
                 avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
                 cardElevationLevel: ElevationLevel.LOW,
@@ -179,7 +200,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
           },
         ),
       ),
-/*
       endDrawer: SimpleClipPathDrawer(
           padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
           widthPercent: 0.9,
@@ -197,16 +217,20 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                 children: <Widget>[
                   if (user != null) ... [
                     StreamBuilder<AppUserProfile>(
-                        stream: FirebaseDatabaseService(uid: user != null ? user.uid : null).userProfile,
+                        stream: FirebaseDatabaseService(uid: user.uid).userProfile,
                         builder: (context, snapshot){
 
-                          AppUserProfile userProfile = snapshot.hasData ? snapshot.data : null;
+                          var snapshotData = snapshot.data;
+                          AppUserProfile userProfile = snapshot.hasData && snapshotData != null ? snapshotData : AppUserProfile("NO USER PROFILE", "NO USER PROFILE");
+
+                          var editProfileKey = userProfile == null ? _editProfileNullKey : _editProfileKey;
+                          var viewProfileKey = userProfile == null ? _nullProfileKey : _profileKey;
 
                           return ProfileScreen(
                             //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
                             //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
                             //pops up and then immediately pops back down when trying to type text
-                            key: isEditingProfile ? (userProfile == null ? _editProfileNullKey : _editProfileKey) : (userProfile == null ? _nullProfileKey : _profileKey),
+                            key: isEditingProfile ? editProfileKey : viewProfileKey,
                             isEditMode: isEditingProfile,
                             onTapLogout: () async {
                               setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
@@ -215,7 +239,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                             onTapEdit: () => setState(() => isEditingProfile = true),
                             onTapSave: () async {
                               setState(() => loading = true);
-                              dynamic result = await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
+                              await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
                                   firstName ?? userProfile.firstName,
                                   lastName ?? userProfile.lastName,
                                   tagline ?? userProfile.tagline,
@@ -233,8 +257,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                               setState(() => loading = false);
                             },
                             onTapDelete: () async {
-                              Widget okButton = FlatButton(
-                                child: Text("OK"),
+                              Widget okButton = TextButton(
+                                child: const Text("OK"),
                                 onPressed:  () async {
                                   //Hide the alert
                                   Navigator.pop(context, true);
@@ -260,8 +284,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                               );
 
                               AlertDialog alert = AlertDialog(
-                                title: Text("Delete Account"),
-                                content: Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
+                                title: const Text("Delete Account"),
+                                content: const Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
                                 actions: [
                                   okButton,
                                 ],
@@ -308,7 +332,7 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                       onEmailChangedCallback: (value) => { email = value },
                       onTapLogin: () async {
                         setState(() => loading = true);
-                        dynamic result = await _auth.signInWithEmailAndPassword(email, password);
+                        dynamic result = await _auth.signInWithEmailAndPassword(email ?? "", password ?? "");//TODO - CHRIS - handle null email and pw better
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
                           try {
@@ -371,7 +395,9 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                       onTapLogin: () => { setState(() => showSignIn = true) },
                       onTapRegister: () async {
                         setState(() => loading = true);
-                        dynamic result = await _auth.registerWithEmailAndPassword(
+                        //TODO - CHRIS - fix registration
+
+                        /*dynamic result = await _auth.registerWithEmailAndPassword(
                             email,
                             password,
                             firstName,
@@ -386,7 +412,8 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
                             frppOptIn,
                             rmwOptIn,
                             dzOptIn
-                        );
+                        );*/
+                        dynamic result = null;
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
                           try {
@@ -441,7 +468,6 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
               )
           )
       )
-*/
     );
   }
 

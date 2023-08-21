@@ -91,18 +91,18 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     _scrollController = ScrollController();
     _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
 
-    _colorTween = ColorTween(
-        begin: Colors.transparent,
-        end: context.watch<MaterialThemesManager>().colorPalette().primary)
-        .animate(_colorAnimationController);
-
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    final user = Provider.of<AppUser>(context);
+    final user = Provider.of<AppUser?>(context);
+
+    _colorTween = ColorTween(
+        begin: Colors.transparent,
+        end: context.watch<MaterialThemesManager>().colorPalette().primary)
+        .animate(_colorAnimationController);
 
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,

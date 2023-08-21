@@ -1272,7 +1272,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.otherAnimalsPresent,
+          value: widget.observation.otherAnimalsPresent ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
               setState(() => widget.observation.otherAnimalsPresent = val)
@@ -1301,7 +1301,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.siteHistory,
+              text: widget.observation.siteHistory ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Note any history you've had with this site",
               //hintTextType: hintTextType,
@@ -1338,7 +1338,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.comments,
+              text: widget.observation.comments ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Any additional observations",
               //hintTextType: hintTextType,
@@ -1364,9 +1364,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.observation.date,
+      initialDate: widget.observation.date ?? DateTime.now(),
       firstDate: DateTime.fromMicrosecondsSinceEpoch(0),
       lastDate: DateTime.now()
     );

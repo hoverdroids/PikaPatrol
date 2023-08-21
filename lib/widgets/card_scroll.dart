@@ -90,9 +90,9 @@ class CardScrollWidget extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: <Widget>[
-                        if (observations[i].imageUrls.isNotEmpty) ... [
+                        if (observations[i].imageUrls?.isNotEmpty == true) ... [
                           //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-                          UniversalImage(observations[i].imageUrls[0]),
+                          UniversalImage(observations[i].imageUrls?.elementAt(0) ?? ""),
                         ],
                         if (observations[i].uid?.isNotEmpty == true) ... [
                           Align(
@@ -115,7 +115,7 @@ class CardScrollWidget extends StatelessWidget {
                                 padding: const EdgeInsets.symmetric(
                                     horizontal: 16.0,
                                     vertical: 8.0),
-                                child: Text(observations[i].name,//
+                                child: Text(observations[i].name ?? "BAD NAME",//
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 25.0,

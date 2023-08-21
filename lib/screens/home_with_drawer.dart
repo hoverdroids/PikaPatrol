@@ -25,6 +25,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 
+import 'observation_screen.dart';
 import 'observations_screen.dart';
 
 var navbarColor = Colors.white;
@@ -445,12 +446,12 @@ class _HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   showObservationScreen(BuildContext contxt, AppUser? user) {
-    /*Navigator.push(
+    Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ObservationScreen(Observation(observerUid: user != null ? user.uid : null, date: new DateTime.now())),
+        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now())),
       ),
-    );*/
+    );
   }
 
   showGeoTrackingDialog(BuildContext context, AppUser? user) async {

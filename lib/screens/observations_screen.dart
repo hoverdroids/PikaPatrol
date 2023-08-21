@@ -7,8 +7,7 @@ import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/card_scroll.dart';
 import 'package:provider/provider.dart';
-
-/*import 'observation_screen.dart';*/
+import 'observation_screen.dart';
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
@@ -118,11 +117,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () => {
-                                        /*Navigator.push(context,
+                                        Navigator.push(context,
                                           MaterialPageRoute(
                                             builder: (_) => ObservationScreen(widget.observations[index]),
                                           ),
-                                        )*/
+                                        )
                                       },
                                       child: Container(
                                         width: double.infinity,

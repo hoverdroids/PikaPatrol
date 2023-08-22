@@ -106,7 +106,7 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
               Icons.arrow_back,
               emphasis: Emphasis.HIGH,
               type: ThemeGroupType.MOP,
-              onPressedCallback: widget?.backClickedCallback,
+              onPressedCallback: widget.backClickedCallback,
             ),
           )
         ],

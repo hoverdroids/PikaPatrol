@@ -6,6 +6,7 @@ import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'custom_pan_gesture_recognizer.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
@@ -47,15 +48,15 @@ class CardScrollWidget extends StatelessWidget {
         List<Widget> cardList = <Widget>[];
 
         onPanDown(DragUpdateDetails details) {
-          // print('Pan Down');
+          developer.log('Pan Down');
         }
 
         onPanUpdate(DragUpdateDetails details) {
-          // print('Pan Update');
+          developer.log('Pan Update');
         }
 
         onPanEnd(_) {
-          // print('Pan End');
+          developer.log('Pan End');
           return true;
         }
 
@@ -86,7 +87,7 @@ class CardScrollWidget extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: cardAspectRatio,
                   child: GestureDetector(
-                    onTap: () => print('Bummer'),
+                    onTap: () => developer.log('Bummer'),
                     child: Stack(
                       fit: StackFit.expand,
                       children: <Widget>[

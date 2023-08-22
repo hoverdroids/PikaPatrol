@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
+import 'dart:developer' as developer;
 
 class FirebaseAuthService {
 
@@ -24,7 +25,7 @@ class FirebaseAuthService {
       User? user = result.user;
       return _userFromFirebaseUser(user);
     } catch(e) {
-      print(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }
@@ -35,7 +36,7 @@ class FirebaseAuthService {
       User? user = result.user;
       return _userFromFirebaseUser(user);
     } catch(e) {
-      print("Failed to sign in user:$e");
+      developer.log("Failed to sign in user:$e");
       return null;
     }
   }
@@ -77,7 +78,7 @@ class FirebaseAuthService {
 
       return _userFromFirebaseUser(user);
     } catch (e) {
-      print('Failed to create user:$e');
+      developer.log('Failed to create user:$e');
       return null;
     }
   }
@@ -86,7 +87,7 @@ class FirebaseAuthService {
     try {
       return await _auth.signOut();
     } catch(e) {
-      print(e.toString());
+      developer.log(e.toString());
       return null;
     }
   }
@@ -96,7 +97,7 @@ class FirebaseAuthService {
         User? user = _auth.currentUser;
         user?.delete();
       } catch(e) {
-        print(e.toString());
+        developer.log(e.toString());
       }
   }
 }

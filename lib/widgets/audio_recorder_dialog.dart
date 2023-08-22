@@ -11,6 +11,7 @@ import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'dart:developer' as developer;
 
 class AudioRecorderDialog extends StatefulWidget {
   final LocalFileSystem localFileSystem;
@@ -123,7 +124,9 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
       try {
         final file = File(tempPath);
         await file.delete();
-      } catch (e) {}
+      } catch (e) {
+        developer.log(e.toString());
+      }
 
       _recorder = FlutterAudioRecorder3(tempPath, audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
       await _recorder.initialized;
@@ -170,7 +173,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
       String dir = path.dirname(resultPath);
       String newPath = path.join(dir, '$recordingName.$ext');
 
-      print("NewPath:$newPath ext:$ext dir:$dir");
+      developer.log("NewPath:$newPath ext:$ext dir:$dir");
 
       File file = File(resultPath);
       await file.rename(newPath);

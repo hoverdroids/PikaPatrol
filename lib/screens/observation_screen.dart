@@ -38,6 +38,7 @@ import 'package:intl/intl.dart';  //for date format
 import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
@@ -219,15 +220,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     if (imageUrls != null && imageUrls.isNotEmpty) {
       widget.observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
     }
-    // print("ImageUrls: ${widget.observation.imageUrls.toString()}");
+    developer.log("ImageUrls: ${widget.observation.imageUrls.toString()}");
 
     var audioUrls = widget.observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
       widget.observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
     }
-    // print("AudioUrls: ${widget.observation.audioUrls.toString()}");
+    developer.log("AudioUrls: ${widget.observation.audioUrls.toString()}");
 
-    dynamic result = await FirebaseDatabaseService(uid: user?.uid).updateObservation(widget.observation);
+    await FirebaseDatabaseService(uid: user?.uid).updateObservation(widget.observation);
 
     setState(() {
       // Update local observation after successful upload because the uid will be non empty now
@@ -245,7 +246,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
     Map<dynamic, dynamic> raw = box.toMap();
     List list = raw.values.toList();
-    var localObservations = <Observation>[];
+
     for (var element in list) {
       LocalObservation localObservation = element;
       if(localObservation.uid == widget.observation.uid) {
@@ -330,7 +331,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 child: RawMaterialButton(
                   //padding: EdgeInsets.all(0.0),
                   //elevation: 12.0,
-                  onPressed: () => print('Play Video'),
+                  onPressed: () => developer.log('Play Video'),
                   shape: const CircleBorder(),
                   fillColor: Colors.white,
                   child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
@@ -343,7 +344,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               child: ThemedIconButton(
                 Icons.add_location,
                 iconSize: IconSize.MEDIUM,
-                onPressedCallback: () => print('Allow user to manually select a geo point'),
+                onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
               )
           ),*/
             if(widget.isEditMode) ... [
@@ -846,16 +847,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        print("AudioUrl...");
+        developer.log("AudioUrl...");
         return const AudioRecorderDialog();
       }
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          //print("AudioUrls value: $value");
+          developer.log("AudioUrls value: $value");
           widget.observation.audioUrls?.add(value);
           justKeepToggling = !justKeepToggling;
-          //print("AudioUrls: ${widget.observation.audioUrls}");
+          developer.log("AudioUrls: ${widget.observation.audioUrls}");
         }
       })
     });
@@ -878,7 +879,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         );
       }
     } catch (e) {
-      print(e);
+      developer.log(e.toString());
     }
   }
 
@@ -909,7 +910,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //List<File> files = filePaths.map((path) => File(path)).toList();
 
     /*if (mounted && filePaths.isNotEmpty) {
-      print("File paths:$filePaths");
+      developer.log("File paths:$filePaths");
     }*/
 
     _addMediaUrlsToObservations(filePaths, addImages);
@@ -927,7 +928,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //File file = File(filePath);
 
     /*if (mounted && filePath.isNotEmpty) {
-      print("File path:$filePath name:${ filePath.split('/').last }");
+      developer.log("File path:$filePath name:${ filePath.split('/').last }");
     }*/
 
     if (filePath.isNotEmpty) {
@@ -943,7 +944,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         await _pickSingleFile(pickingType, allowedExtensions, addImages);
       }
     } on PlatformException catch (e) {
-      //print("Unsupported operation$e");
+      developer.log("Unsupported operation$e");
     }
   }
 

@@ -5,6 +5,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:path/path.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
+import 'dart:developer' as developer;
 
 class FirebaseDatabaseService {
 
@@ -80,7 +81,7 @@ class FirebaseDatabaseService {
       doc = observationsCollection.doc(observation.uid);
     }
 
-    print("Update Observation id:${observation.uid}");
+    developer.log("Update Observation id:${observation.uid}");
 
     return await doc.update(
         {
@@ -161,7 +162,7 @@ class FirebaseDatabaseService {
       //TODO - base on mime
       /*String mimeStr = lookupMimeType(filepath);
       var fileType = mimeStr.split('/');
-      print('file type ${fileType}');*/
+      developer.log('file type ${fileType}');*/
       var folder = areImages ? "images" : "audio";
       if(filepath.contains('pikajoe-97c5c.appspot.com')) {
         //Do not try to upload an image that has already been uploaded
@@ -177,14 +178,14 @@ class FirebaseDatabaseService {
           final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
           uploadUrls.add(downloadUrl);
 
-          print('Upload success');
+          developer.log('Upload success');
         } on FirebaseException catch (e) {
-          print('Error from image repo ${e.message}');
+          developer.log('Error from image repo ${e.message}');
           throw ('This file is not an image');
         }
       }
     }), eagerError: true, cleanUp: (_) {
-      print('eager cleaned up');
+      developer.log('eager cleaned up');
     });
 
     return uploadUrls;

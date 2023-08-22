@@ -224,7 +224,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                         builder: (context, snapshot){
 
                           var snapshotData = snapshot.data;
-                          AppUserProfile userProfile = snapshot.hasData && snapshotData != null ? snapshotData : AppUserProfile("NO USER PROFILE", "NO USER PROFILE");
+                          AppUserProfile? userProfile = snapshot.hasData && snapshotData != null ? snapshotData : null;
 
                           var editProfileKey = userProfile == null ? _editProfileNullKey : _editProfileKey;
                           var viewProfileKey = userProfile == null ? _nullProfileKey : _profileKey;
@@ -243,18 +243,18 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                             onTapSave: () async {
                               setState(() => loading = true);
                               await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
-                                  firstName ?? userProfile.firstName,
-                                  lastName ?? userProfile.lastName,
-                                  tagline ?? userProfile.tagline,
-                                  pronouns ?? userProfile.pronouns,
-                                  organization ?? userProfile.organization,
-                                  address ?? userProfile.address,
-                                  city ?? userProfile.city,
-                                  state ?? userProfile.state,
-                                  zip ?? userProfile.zip,
-                                  frppOptIn ?? userProfile.frppOptIn,
-                                  rmwOptIn ?? userProfile.rmwOptIn,
-                                  dzOptIn ?? userProfile.dzOptIn
+                                  firstName ?? userProfile?.firstName ?? "NO USER PROFILE",
+                                  lastName ?? userProfile?.lastName ?? "",
+                                  tagline ?? userProfile?.tagline ?? "",
+                                  pronouns ?? userProfile?.pronouns ?? "",
+                                  organization ?? userProfile?.organization ?? "",
+                                  address ?? userProfile?.address ?? "",
+                                  city ?? userProfile?.city ?? "",
+                                  state ?? userProfile?.state ?? "",
+                                  zip ?? userProfile?.zip ?? "",
+                                  frppOptIn ?? userProfile?.frppOptIn ?? false,
+                                  rmwOptIn ?? userProfile?.rmwOptIn ?? false,
+                                  dzOptIn ?? userProfile?.dzOptIn ?? false
                               );
                               setState(() => isEditingProfile = false);
                               setState(() => loading = false);

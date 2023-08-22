@@ -27,6 +27,7 @@ import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
 
+//TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
 var navbarBgColor = Colors.transparent;
 var navbarButtonColor = Colors.white;
@@ -42,10 +43,10 @@ class HomeWithDrawer extends StatefulWidget {
   const HomeWithDrawer({super.key});
 
   @override
-  _HomeWithDrawerState createState() => _HomeWithDrawerState();
+  HomeWithDrawerState createState() => HomeWithDrawerState();
 }
 
-class _HomeWithDrawerState extends State<HomeWithDrawer> {
+class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   final Key _registerKey = UniqueKey();

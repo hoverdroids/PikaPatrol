@@ -52,10 +52,10 @@ class ObservationScreen extends StatefulWidget {
   }
 
   @override
-  _ObservationScreenState createState() => _ObservationScreenState();
+  ObservationScreenState createState() => ObservationScreenState();
 }
 
-class _ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
+class ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
 
   final _formKey = GlobalKey<FormState>();
 

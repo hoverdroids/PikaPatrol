@@ -13,10 +13,10 @@ class PartnersSplashScreensPager extends StatefulWidget {
   const PartnersSplashScreensPager({super.key});
 
   @override
-  _PartnersSplashScreensPagerState createState() => _PartnersSplashScreensPagerState();
+  PartnersSplashScreensPagerState createState() => PartnersSplashScreensPagerState();
 }
 
-class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> {
+class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> {
 
   LiquidController liquidController = LiquidController();
 

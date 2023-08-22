@@ -16,10 +16,12 @@ class AudioRecorderDialog extends StatefulWidget {
   final LocalFileSystem localFileSystem;
 
   const AudioRecorderDialog({super.key, localFileSystem}) : localFileSystem = localFileSystem ?? const LocalFileSystem();
-  _AudioRecorderDialogState createState() => _AudioRecorderDialogState();
+
+  @override
+  AudioRecorderDialogState createState() => AudioRecorderDialogState();
 }
 
-class _AudioRecorderDialogState extends State<AudioRecorderDialog> {
+class AudioRecorderDialogState extends State<AudioRecorderDialog> {
 
   final _formKey = GlobalKey<FormState>();
   late FlutterAudioRecorder3 _recorder;

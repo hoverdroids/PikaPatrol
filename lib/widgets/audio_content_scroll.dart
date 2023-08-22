@@ -31,10 +31,11 @@ class AudioContentScroll extends StatefulWidget {
     this.emptyListMessage = ""
   });
 
-  _AudioContentScrollState createState() => _AudioContentScrollState();
+  @override
+  AudioContentScrollState createState() => AudioContentScrollState();
 }
 
-class _AudioContentScrollState extends State<AudioContentScroll>{
+class AudioContentScrollState extends State<AudioContentScroll>{
 
   AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer();
 

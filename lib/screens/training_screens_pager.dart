@@ -12,11 +12,10 @@ class TrainingScreensPager extends StatefulWidget {
   const TrainingScreensPager({super.key, this.backClickedCallback});
 
   @override
-  _TrainingScreensPagerState createState() => _TrainingScreensPagerState();
-
+  TrainingScreensPagerState createState() => TrainingScreensPagerState();
 }
 
-class _TrainingScreensPagerState extends State<TrainingScreensPager> {
+class TrainingScreensPagerState extends State<TrainingScreensPager> {
 
   LiquidController liquidController = LiquidController();
 

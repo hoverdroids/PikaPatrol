@@ -22,10 +22,10 @@ class ObservationsPage extends StatefulWidget {
   }
 
   @override
-  _ObservationsPageState createState() => _ObservationsPageState();
+  ObservationsPageState createState() => ObservationsPageState();
 }
 
-class _ObservationsPageState extends State<ObservationsPage> {
+class ObservationsPageState extends State<ObservationsPage> {
 
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;

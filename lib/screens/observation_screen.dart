@@ -312,18 +312,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         height: 330,
         child: Stack(
           children: <Widget>[
-            Container(
-              child: Hero(
-                tag: "observationCoverImage",
-                child: ClipShadowPath(
-                  clipper: SimpleClipPath(
-                      type: ClipPathType.ROUNDED_DOWN,
-                      bottomLeftPercentOfHeight: 80,
-                      bottomRightPercentOfHeight: 80
-                  ),
-                  shadow: const Shadow(blurRadius: 20.0),
-                  child: _buildImage(),
+            Hero(
+              tag: "observationCoverImage",
+              child: ClipShadowPath(
+                clipper: SimpleClipPath(
+                    type: ClipPathType.ROUNDED_DOWN,
+                    bottomLeftPercentOfHeight: 80,
+                    bottomRightPercentOfHeight: 80
                 ),
+                shadow: const Shadow(blurRadius: 20.0),
+                child: _buildImage(),
               ),
             ),
             Positioned.fill(
@@ -492,63 +490,59 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       children: <Widget>[
         Flexible(
           flex: 1,
-          child: Container(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child:Column(
-                children: <Widget>[
-                  ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
-                  tinyTransparentDivider,
-                  if (_hideGeoFields) ... [
-                    //A hack state because geo fields not updating from self location button
-                    //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                  ]
-                  else if (widget.isEditMode) ...[
-                    ThemedEditableLabelValue(
-                      showLabel: false,
-                      text: latitude,
-                      textType: ThemeGroupType.POM,
-                      hintText: "0.0",
-                      onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
-                      validator: (value) => isValidGeo(value, "Latitude"),
-                    ),
-                  ] else ... [
-                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                  ]
-                ],
-              ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child:Column(
+              children: <Widget>[
+                ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
+                tinyTransparentDivider,
+                if (_hideGeoFields) ... [
+                  //A hack state because geo fields not updating from self location button
+                  //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                  ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+                else if (widget.isEditMode) ...[
+                  ThemedEditableLabelValue(
+                    showLabel: false,
+                    text: latitude,
+                    textType: ThemeGroupType.POM,
+                    hintText: "0.0",
+                    onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
+                    validator: (value) => isValidGeo(value, "Latitude"),
+                  ),
+                ] else ... [
+                  ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+              ],
             ),
           ),
         ),
         Flexible(
           flex: 1,
-          child: Container(
-              child: Align(
-                alignment: Alignment.center,
-                child: Column(
-                  children: <Widget>[
-                    ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
-                    tinyTransparentDivider,
-                    if (_hideGeoFields) ... [
-                      //A hack state because geo fields not updating from self location button
-                      //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                    ] else if (widget.isEditMode) ...[
-                      ThemedEditableLabelValue(
-                        showLabel: false,
-                        text: longitude,
-                        textType: ThemeGroupType.POM,
-                        hintText: "0.0",
-                        onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
-                        validator: (value) => isValidGeo(value, "Longitude"),
-                      ),
-                    ] else ... [
-                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                    ]
-                  ],
-                ),
-              )
+          child: Align(
+            alignment: Alignment.center,
+            child: Column(
+              children: <Widget>[
+                ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
+                tinyTransparentDivider,
+                if (_hideGeoFields) ... [
+                  //A hack state because geo fields not updating from self location button
+                  //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                  ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ] else if (widget.isEditMode) ...[
+                  ThemedEditableLabelValue(
+                    showLabel: false,
+                    text: longitude,
+                    textType: ThemeGroupType.POM,
+                    hintText: "0.0",
+                    onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
+                    validator: (value) => isValidGeo(value, "Longitude"),
+                  ),
+                ] else ... [
+                  ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+              ],
+            ),
           ),
         ),
         Flexible(
@@ -691,21 +685,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               ],
               Flexible(
                 flex: 1,
-                child: Container(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child:Column(
-                      children: <Widget>[
-                        ThemedSubTitle("Month", type: ThemeGroupType.POM),
-                        tinyTransparentDivider,
-                        if (_hideDateFields) ... [
-                          //A hack state because geo fields not updating from self location button
-                          //Don't add another ThemedTitle here; it'll just create the same issue of not updating
-                        ] else ... [
-                          ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                        ],
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child:Column(
+                    children: <Widget>[
+                      ThemedSubTitle("Month", type: ThemeGroupType.POM),
+                      tinyTransparentDivider,
+                      if (_hideDateFields) ... [
+                        //A hack state because geo fields not updating from self location button
+                        //Don't add another ThemedTitle here; it'll just create the same issue of not updating
+                      ] else ... [
+                        ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),

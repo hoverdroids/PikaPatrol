@@ -553,7 +553,7 @@ packages:
     source: sdk
     version: "0.0.0"
   fluttertoast:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: fluttertoast
       sha256: "474f7d506230897a3cd28c965ec21c5328ae5605fc9c400cd330e9e9d6ac175c"
@@ -860,10 +860,10 @@ packages:
     dependency: "direct main"
     description:
       name: material_themes_widgets
-      sha256: "8a2fa1dea971a570556998a80cbffca545de4d01974ece4c905cb1e4da0b7fb3"
+      sha256: "2efd39b63bb2927214bade65c8955003fe9a09db34dcfc7654a999d39d6d5d0d"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.1.0"
   meta:
     dependency: transitive
     description:

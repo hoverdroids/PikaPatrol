@@ -78,7 +78,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                 ThemedEditableLabelValue(
                   showLabel: false,
                   hintText: "Recording Name",
-                  validator:  (value) => nonEmptyValidator(value, "Name"),
+                  validator:  (value) => nonEmptyValidator(value, "Name", true),
                   onStringChangedCallback: (value) => setState(() => recordingName = value ),
                 ),
                 if (_recordingStatus != RecordingStatus.Initialized) ... [

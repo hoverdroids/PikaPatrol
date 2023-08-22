@@ -653,7 +653,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               textType: ThemeGroupType.POM,
               hintText: "Observation Name",
               onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
-              validator: (value) => nonEmptyValidator(value, "Observation Name"),
+              validator: (value) => nonEmptyValidator(value, "Observation Name", true),
             )
           ] else ... [
             ThemedH5(widget.observation.name?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
@@ -666,7 +666,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               textType: ThemeGroupType.POM,
               hintText: "Site Location Name",
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, "Site Location Name"),
+              validator: (value) => nonEmptyValidator(value, "Site Location Name", true),
             )
           ] else ... [
             ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),

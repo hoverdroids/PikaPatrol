@@ -2,7 +2,6 @@
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -14,6 +13,7 @@ import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
@@ -335,7 +335,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       onEmailChangedCallback: (value) => { email = value },
                       onTapLogin: () async {
                         setState(() => loading = true);
+
                         dynamic result = await _auth.signInWithEmailAndPassword(email ?? "", password ?? "");//TODO - CHRIS - handle null email and pw better
+
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
                           try {
@@ -397,26 +399,41 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       onZipChangedCallback: (value) => { zip = value },
                       onTapLogin: () => { setState(() => showSignIn = true) },
                       onTapRegister: () async {
-                        setState(() => loading = true);
-                        //TODO - CHRIS - fix registration
 
-                        /*dynamic result = await _auth.registerWithEmailAndPassword(
-                            email,
-                            password,
-                            firstName,
-                            lastName,
-                            tagline,
-                            pronouns,
-                            organization,
-                            address,
-                            city,
-                            state,
-                            zip,
-                            frppOptIn,
-                            rmwOptIn,
-                            dzOptIn
-                        );*/
-                        dynamic result = null;
+                        var validatedEmail = email ?? "";
+                        var validatedPassword = password ?? "";
+                        var validatedFirstName = firstName ?? "";
+                        var validatedLastName = lastName ?? "";
+                        var validatedZip = zip ?? "";
+
+                        if (validatedEmail.isEmpty ||
+                            validatedPassword.isEmpty ||
+                            validatedFirstName.isEmpty ||
+                            validatedLastName.isEmpty ||
+                            validatedZip.isEmpty
+                        ) {
+                          return;
+                        }
+
+                        setState(() => loading = true);
+
+                        dynamic result = await _auth.registerWithEmailAndPassword(
+                            validatedEmail,
+                            validatedPassword,
+                            validatedFirstName,
+                            validatedLastName,
+                            tagline ?? "",
+                            pronouns ?? "",
+                            organization ?? "",
+                            address ?? "",
+                            city ?? "",
+                            state ?? "",
+                            zip ?? "",
+                            frppOptIn ?? false,
+                            rmwOptIn ?? false,
+                            dzOptIn ?? false
+                        );
+
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
                           try {

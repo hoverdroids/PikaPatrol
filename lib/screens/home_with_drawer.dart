@@ -182,7 +182,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                         MaterialPageRoute(builder: (BuildContext context) =>
                             TrainingScreensPager(backClickedCallback: () => {
                               Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                                  MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                               )
                             })
                         )

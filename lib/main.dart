@@ -31,7 +31,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(create: (_) => MaterialThemesManager()),
       ],
-      child: MyApp(),
+      child: const MyApp(),
     ),
   );
 }
@@ -73,7 +73,7 @@ class MyApp extends StatelessWidget {
       initialData: null,
       child: MaterialApp(
           title: "Pika Patrol",
-          home: PartnersSplashScreensPager(),
+          home: const PartnersSplashScreensPager(),
           debugShowCheckedModeBanner: false,
           themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
           theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),

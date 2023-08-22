@@ -46,7 +46,7 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
 
               _showNextSplashScreen().then((value) {
                 Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                    MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                 );
               });
             });

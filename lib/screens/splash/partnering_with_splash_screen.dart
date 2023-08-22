@@ -43,7 +43,7 @@ class PartneringWithSplashScreen extends Container {
                     iconSize: IconSize.MEDIUM,
                     onPressedCallback: () => {
                       Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                          MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                       )
                     }
                 )

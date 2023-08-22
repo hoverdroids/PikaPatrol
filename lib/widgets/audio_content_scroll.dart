@@ -86,7 +86,7 @@ class AudioContentScrollState extends State<AudioContentScroll>{
   Widget _buildEmptyRow(BuildContext context) {
     return Card(
       color: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).cardTheme.color,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: widget.imageHeight,
         child: Center(
@@ -97,7 +97,7 @@ class AudioContentScrollState extends State<AudioContentScroll>{
   }
 
   Widget _buildGridView() {
-    return Container(
+    return SizedBox(
       height: widget.imageHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,

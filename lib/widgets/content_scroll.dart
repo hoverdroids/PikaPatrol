@@ -70,7 +70,7 @@ class ContentScroll extends StatelessWidget {
   Widget _buildEmptyRow(BuildContext context) {
     return Card(
       color: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).cardTheme.color,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: imageHeight,
         child: Center(
@@ -81,7 +81,7 @@ class ContentScroll extends StatelessWidget {
   }
 
   Widget _buildGridView() {
-    return Container(
+    return SizedBox(
       height: imageHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,

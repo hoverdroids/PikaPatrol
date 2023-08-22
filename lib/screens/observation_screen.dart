@@ -308,7 +308,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildHeaderImage() {
     return GestureDetector(
       onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
-      child: Container(
+      child: SizedBox(
         height: 330,
         child: Stack(
           children: <Widget>[
@@ -1303,7 +1303,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               //validator: validator
             )
           ] else ... [
-            Container(
+            SizedBox(
               height: 120.0,
               child: SingleChildScrollView(
                 child: ThemedBody(
@@ -1340,7 +1340,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               //validator: validator
             )
           ] else ... [
-            Container(
+            SizedBox(
               height: 120.0,
               child: SingleChildScrollView(
                 child: ThemedBody(

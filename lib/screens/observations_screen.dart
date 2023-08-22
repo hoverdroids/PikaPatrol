@@ -88,7 +88,7 @@ class ObservationsPageState extends State<ObservationsPage> {
           localObservations.add(observation);
         }
 
-        return Container(
+        return SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(

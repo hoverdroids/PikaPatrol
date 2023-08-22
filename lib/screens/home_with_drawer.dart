@@ -104,7 +104,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         rightIconClickedCallback: (){ _scaffoldKey.currentState?.openEndDrawer(); },
         rightIconType: ThemeGroupType.MOP,
       ),
-      body: Container(
+      body: SizedBox(
       width: mediaQuery.width,
       child: Stack(
         children: <Widget>[

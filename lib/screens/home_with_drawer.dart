@@ -488,7 +488,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     final userAcked = prefs.getBool('userAckGeo');
 
     if (userAcked != null && userAcked == true) {
-      showObservationScreen(context, user);
+      if (mounted) showObservationScreen(context, user);
     } else {
       Widget launchButton = TextButton(
         child: const Text("OK"),
@@ -498,7 +498,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           Permission.location.request();
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('userAckGeo', true);
-          showObservationScreen(context, user);
+
+          if (mounted) showObservationScreen(context, user);
         },
       );
       // set up the AlertDialog
@@ -510,12 +511,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         ],
       );
       // show the dialog
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return alert;
-        },
-      );
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return alert;
+          },
+        );
+      }
     }
   }
 }

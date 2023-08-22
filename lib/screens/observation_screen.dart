@@ -840,26 +840,32 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
+  void showAudioPickerDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        print("AudioUrl...");
+        return const AudioRecorderDialog();
+      }
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          //print("AudioUrls value: $value");
+          widget.observation.audioUrls?.add(value);
+          justKeepToggling = !justKeepToggling;
+          //print("AudioUrls: ${widget.observation.audioUrls}");
+        }
+      })
+    });
+  }
+
   void _openAudioRecorder() async {
     try {
       //Always check for permission. It will ask for permission if not already granted
       if (await FlutterAudioRecorder3.hasPermissions == true) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              print("AudioUrl...");
-                return const AudioRecorderDialog();
-            }
-        ).then((value) => {
-          setState((){
-            if (value != null && (value as String).isNotEmpty) {
-              //print("AudioUrls value: $value");
-              widget.observation.audioUrls?.add(value);
-              justKeepToggling = !justKeepToggling;
-              //print("AudioUrls: ${widget.observation.audioUrls}");
-            }
-          })
-        });
+        showAudioPickerDialog();
       } else {
         Fluttertoast.showToast(
             msg: "Could not open recorder.\nYou must accept audio permissions.",

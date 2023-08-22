@@ -156,7 +156,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     var recording = await _recorder.current(channel: 0);
     setRecordingStatus(recording);
 
-    Navigator.pop(context, "");
+    if (mounted) Navigator.pop(context, "");
   }
 
   void _save() async {
@@ -175,9 +175,9 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
       File file = File(resultPath);
       await file.rename(newPath);
 
-      Navigator.pop(context, newPath);
+      if (mounted) Navigator.pop(context, newPath);
     } else {
-      Navigator.pop(context);
+      if (mounted) Navigator.pop(context);
     }
   }
 

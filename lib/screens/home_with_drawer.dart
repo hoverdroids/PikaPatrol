@@ -38,6 +38,9 @@ var navbarAnimationDuration = 500;
 var initialPage = 2;
 
 class HomeWithDrawer extends StatefulWidget {
+
+  const HomeWithDrawer({super.key});
+
   @override
   _HomeWithDrawerState createState() => _HomeWithDrawerState();
 }

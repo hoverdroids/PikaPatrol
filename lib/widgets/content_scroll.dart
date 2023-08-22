@@ -19,7 +19,8 @@ class ContentScroll extends StatelessWidget {
   final String emptyListMessage;
   final Function? onDeleteClickedCallback;
 
-  ContentScroll({
+  const ContentScroll({
+    super.key,
     this.images = const <String>[],
     this.title = "",
     this.imageHeight,

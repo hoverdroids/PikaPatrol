@@ -45,7 +45,7 @@ class ObservationScreen extends StatefulWidget {
   final Observation observation;
   late bool isEditMode;
 
-  ObservationScreen(this.observation) {
+  ObservationScreen(this.observation, {super.key}) {
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
     isEditMode = observation.uid == null ? true : false;

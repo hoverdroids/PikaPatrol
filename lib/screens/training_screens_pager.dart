@@ -9,7 +9,7 @@ class TrainingScreensPager extends StatefulWidget {
 
   final VoidCallback? backClickedCallback;
 
-  TrainingScreensPager({this.backClickedCallback});
+  const TrainingScreensPager({super.key, this.backClickedCallback});
 
   @override
   _TrainingScreensPagerState createState() => _TrainingScreensPagerState();

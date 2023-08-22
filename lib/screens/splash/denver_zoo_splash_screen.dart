@@ -5,6 +5,9 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 
 class DenverZooSplashScreen extends Container {
+
+  DenverZooSplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(

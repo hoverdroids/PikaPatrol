@@ -6,7 +6,7 @@ class UniversalImage extends StatelessWidget {
   final String path;
   final String emptyAssetPath;
 
-  UniversalImage(this.path, { this.emptyAssetPath = "assets/images/add_image.png" });
+  const UniversalImage(this.path, {super.key,  this.emptyAssetPath = "assets/images/add_image.png" });
 
   @override
   Widget build(BuildContext context) {

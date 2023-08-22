@@ -19,7 +19,8 @@ class AudioContentScroll extends StatefulWidget {
   final List<VoidCallback> iconsClickedCallbacks;
   final String emptyListMessage;
 
-  AudioContentScroll({
+  const AudioContentScroll({
+    super.key,
     this.urls = const <String>[],
     this.title = "",
     this.imageHeight,

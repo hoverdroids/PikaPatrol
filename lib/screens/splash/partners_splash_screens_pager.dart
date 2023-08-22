@@ -9,6 +9,9 @@ import 'package:pika_patrol/screens/splash/if_then_splash_screen.dart';
 import '../home_with_drawer.dart';
 
 class PartnersSplashScreensPager extends StatefulWidget {
+
+  const PartnersSplashScreensPager({super.key});
+
   @override
   _PartnersSplashScreensPagerState createState() => _PartnersSplashScreensPagerState();
 }

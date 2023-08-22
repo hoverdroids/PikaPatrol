@@ -15,7 +15,7 @@ import 'package:provider/provider.dart';
 class AudioRecorderDialog extends StatefulWidget {
   final LocalFileSystem localFileSystem;
 
-  AudioRecorderDialog({localFileSystem}) : this.localFileSystem = localFileSystem ?? const LocalFileSystem();
+  const AudioRecorderDialog({super.key, localFileSystem}) : localFileSystem = localFileSystem ?? const LocalFileSystem();
   _AudioRecorderDialogState createState() => _AudioRecorderDialogState();
 }
 

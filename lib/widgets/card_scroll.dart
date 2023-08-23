@@ -94,6 +94,8 @@ class CardScrollWidget extends StatelessWidget {
                         if (observations[i].imageUrls?.isNotEmpty == true) ... [
                           //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
                           UniversalImage(observations[i].imageUrls?.elementAt(0) ?? ""),
+                        ] else ... [
+                          const UniversalImage("")
                         ],
                         if (observations[i].uid?.isNotEmpty == true) ... [
                           Align(

@@ -324,9 +324,21 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       onPasswordChangedCallback: (value) => { password = value },
                       onEmailChangedCallback: (value) => { email = value },
                       onTapLogin: () async {
+
+                        var trimmedEmail = email?.trim() ?? "";
+                        var trimmedPassword = password?.trim() ?? "";
+
+                        if (trimmedEmail.isEmpty) {
+                          showToast("Email cannot be empty");
+                          return;
+                        } else if (trimmedPassword.isEmpty) {
+                          showToast("Password cannot be empty");
+                          return;
+                        }
+
                         setState(() => loading = true);
 
-                        dynamic result = await _auth.signInWithEmailAndPassword(email ?? "", password ?? "");//TODO - CHRIS - handle null email and pw better
+                        dynamic result = await _auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
 
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
@@ -367,17 +379,17 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       onTapLogin: () => { setState(() => showSignIn = true) },
                       onTapRegister: () async {
 
-                        var validatedEmail = email ?? "";
-                        var validatedPassword = password ?? "";
-                        var validatedFirstName = firstName ?? "";
-                        var validatedLastName = lastName ?? "";
-                        var validatedZip = zip ?? "";
+                        var trimmedEmail = email?.trim() ?? "";
+                        var trimmedPassword = password?.trim() ?? "";
+                        var trimmedFirstName = firstName?.trim() ?? "";
+                        var trimmedLastName = lastName?.trim() ?? "";
+                        var trimmedZip = zip?.trim() ?? "";
 
-                        if (validatedEmail.isEmpty ||
-                            validatedPassword.isEmpty ||
-                            validatedFirstName.isEmpty ||
-                            validatedLastName.isEmpty ||
-                            validatedZip.isEmpty
+                        if (trimmedEmail.isEmpty ||
+                            trimmedPassword.isEmpty ||
+                            trimmedFirstName.isEmpty ||
+                            trimmedLastName.isEmpty ||
+                            trimmedZip.isEmpty
                         ) {
                           return;
                         }
@@ -385,10 +397,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                         setState(() => loading = true);
 
                         dynamic result = await _auth.registerWithEmailAndPassword(
-                            validatedEmail,
-                            validatedPassword,
-                            validatedFirstName,
-                            validatedLastName,
+                            trimmedEmail,
+                            trimmedPassword,
+                            trimmedFirstName,
+                            trimmedLastName,
                             tagline ?? "",
                             pronouns ?? "",
                             organization ?? "",

@@ -111,8 +111,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           PageView.builder(
             controller: pageController,
             itemCount: 1,
-            itemBuilder: (context, position) => ObservationsPage(Provider.of<List<Observation>?>(context) ?? <Observation>[]),
-          ),
+            itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
+              stream: FirebaseDatabaseService(uid: user?.uid).observations,
+              builder: (context, snapshot) {
+                List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
+                return ObservationsPage(observations ?? <Observation>[]);
+              })
+          )
                 /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),

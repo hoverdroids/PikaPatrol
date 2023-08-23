@@ -272,17 +272,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
                                   // Don't sign out before deleting user because the user must be signed into to delete themselves
                                   await _auth.signOut();
-
-                                  Fluttertoast.showToast(
-                                      msg: "Account Deleted",
-                                      toastLength: Toast.LENGTH_SHORT,
-                                      gravity: ToastGravity.CENTER,
-                                      timeInSecForIosWeb: 1,
-                                      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                      textColor: Colors.white,
-                                      fontSize: 16.0
-                                  );
-
+                                  showToast("Account Deleted");
                                 },
                               );
 
@@ -343,38 +333,15 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                           try {
                             final result = await InternetAddress.lookup('google.com');
                             if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: "Could not sign in with those credentials",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
+                              showToast("Could not sign in with those credentials");
                             }
                           } on SocketException catch (_) {
-                            Fluttertoast.showToast(
-                                msg: "Can not sign in. Not connected to internet.",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                textColor: Colors.white,
-                                fontSize: 16.0
-                            );
+                            showToast("Can not sign in. Not connected to internet.");
                           }
                         } else {
-                          Fluttertoast.showToast(
-                              msg: "Successfully Logged In",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                              textColor: Colors.white,
-                              fontSize: 16.0
-                          );
+                          showToast("Successfully Logged In");
                         }
+
                         setState((){ loading = false; });
                       },
                       onTapRegister: () => {
@@ -439,38 +406,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                           try {
                             final result = await InternetAddress.lookup('google.com');
                             if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-                              Fluttertoast.showToast(
-                                  msg: "Could not register with those credentials",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                  textColor: Colors.white,
-                                  fontSize: 16.0
-                              );
+                              showToast("Could not register with those credentials");
                             }
                           } on SocketException catch (_) {
-                            Fluttertoast.showToast(
-                                msg: "Can not register. Not connected to internet.",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                textColor: Colors.white,
-                                fontSize: 16.0
-                            );
+                            showToast("Can not register. Not connected to internet.");
                           }
                         } else {
-                          Fluttertoast.showToast(
-                              msg: "Successfully Registered",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.teal,
-                              //TODO - need to use Toast with context to link to the primary color
-                              textColor: Colors.white,
-                              fontSize: 16.0
-                          );
+                          showToast("Successfully Registered");
                         }
                         setState(() => loading = false);
                       },

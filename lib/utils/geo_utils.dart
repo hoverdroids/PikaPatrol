@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 
 Future<Position> checkPermissionsAndGetCurrentPosition() async {
   bool isServiceEnabled;
@@ -11,15 +12,7 @@ Future<Position> checkPermissionsAndGetCurrentPosition() async {
     // Location services are not enabled don't continue
     // accessing the position and request users of the
     // App to enable the location services.
-    Fluttertoast.showToast(
-        msg: "Could not retrieve location.\nEnable GPS and try to save again.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+    showToast("Could not retrieve location.\nEnable GPS and try to save again.");
     await Geolocator.openLocationSettings();
     return Future.error("Location services are disabled.");
   }
@@ -33,49 +26,22 @@ Future<Position> checkPermissionsAndGetCurrentPosition() async {
       // Android's shouldShowRequestPermissionRationale
       // returned true. According to Android guidelines
       // your App should show an explanatory UI now.
-
-      Fluttertoast.showToast(
-          msg: "You must grant location permissions.",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-          textColor: Colors.white,
-          fontSize: 16.0
-      );
+      showToast("You must grant location permissions.");
       await Geolocator.openAppSettings();
       return Future.error("Location permissions are denied");
     }
   } else if (permission == LocationPermission.deniedForever) {
     // Permissions are denied forever, handle appropriately.
-
-    Fluttertoast.showToast(
-        msg: "You must grant location permissions.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+    showToast("You must grant location permissions.");
     await Geolocator.openAppSettings();
-    return Future.error(
-        'Location permissions are permanently denied, we cannot request permissions.');
+    return Future.error('Location permissions are permanently denied, we cannot request permissions.');
   }
 
   // When we reach here, permissions are granted and we can continue accessing the device position
   Position position = await Geolocator.getCurrentPosition();
 
   if (position == null) {
-    Fluttertoast.showToast(
-        msg: "Could not retrieve location from GPS.",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+    showToast("Could not retrieve location from GPS.");
   }
 
   return position;

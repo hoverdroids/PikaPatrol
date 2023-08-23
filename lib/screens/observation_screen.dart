@@ -22,6 +22,7 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
@@ -174,15 +175,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
                     var hasConnection = await DataConnectionChecker().hasConnection;
                     if(!hasConnection) {
-                      Fluttertoast.showToast(
-                          msg: "No connection found.\nObservation saved locally.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
+                      showToast("No connection found.\nObservation saved locally.");
                     } else if (user != null) {
                       setState((){
                         _isUploading = true;
@@ -195,15 +188,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                       //Share with others
                       await saveObservation(user);
                     } else {
-                      Fluttertoast.showToast(
-                          msg: "You must login to upload an observation.\nObservation saved locally.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
+                      showToast("You must login to upload an observation.\nObservation saved locally.");
                     }
                   }
                 }
@@ -401,15 +386,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if (audioUrls != null && audioUrls.isNotEmpty) {
           _playAudio(audioUrls[0]);
         } else {
-          Fluttertoast.showToast(
-              msg: "No recordings to play",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-              textColor: Colors.white,
-              fontSize: 16.0
-          );
+          showToast("No recordings to play");
         }
       },
     );
@@ -579,50 +556,27 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   _getCurrentPositionAndUpdateUi() async {
-    Fluttertoast.showToast(
-        msg: "Fetching location ...",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+    showToast("Fetching location ...");
 
     await checkPermissionsAndGetCurrentPosition()
-        .then((Position position) {
-          String lat = position.latitude.toStringAsFixed(2);
-          String lon = position.longitude.toStringAsFixed(2);
-          String alt = position.altitude.toStringAsFixed(2);
-            Fluttertoast.showToast(
-                msg: "Location:\n$lat $lon $alt",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.CENTER,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                textColor: Colors.white,
-                fontSize: 16.0
-            );
-          setState(() {
-            widget.observation.latitude = position.latitude;
-            widget.observation.longitude = position.longitude;
-            widget.observation.altitude = position.altitude;
+      .then((Position position) {
+        String lat = position.latitude.toStringAsFixed(2);
+        String lon = position.longitude.toStringAsFixed(2);
+        String alt = position.altitude.toStringAsFixed(2);
+        showToast("Location:\n$lat $lon $alt");
 
-            _hideGeoFields = true;
-            resetHideGeoFields();
-          });
-        })
-        .catchError((e) {
-          Fluttertoast.showToast(
-              msg: "$e",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-              textColor: Colors.white,
-              fontSize: 16.0
-          );
+        setState(() {
+          widget.observation.latitude = position.latitude;
+          widget.observation.longitude = position.longitude;
+          widget.observation.altitude = position.altitude;
+
+          _hideGeoFields = true;
+          resetHideGeoFields();
         });
+      })
+      .catchError((e) {
+        showToast("$e");
+      });
   }
 
   resetHideGeoFields() async {
@@ -813,15 +767,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       needsUpdated = true;
     });
 
-    Fluttertoast.showToast(
-      msg: "Delete $path",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.CENTER,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-      textColor: Colors.white,
-      fontSize: 16.0
-    );
+    showToast("Delete $path");
   }
 
   Widget _buildAudioRecordings() {
@@ -868,15 +814,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (await FlutterAudioRecorder3.hasPermissions == true) {
         showAudioPickerDialog();
       } else {
-        Fluttertoast.showToast(
-            msg: "Could not open recorder.\nYou must accept audio permissions.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-            textColor: Colors.white,
-            fontSize: 16.0
-        );
+        showToast("Could not open recorder.\nYou must accept audio permissions.");
       }
     } catch (e) {
       developer.log(e.toString());
@@ -948,18 +886,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
-  void _displayImageCropErrorToUser(String error) {
-    Fluttertoast.showToast(
-        msg: error,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
-  }
-  
   Future<void> _cropImage(
     String sourcePath,
     Color toolbarColor,
@@ -997,7 +923,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var croppedPath = cropped?.path;
     
     if (croppedPath == null) {
-      _displayImageCropErrorToUser("Error when trying to crop image");
+      showToast("Error when trying to crop image");
     }
 
     setState(() {
@@ -1026,7 +952,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var selectedPath = selected?.path;
     
     if (selectedPath == null) {
-      _displayImageCropErrorToUser("Error when trying to take picture");
+      showToast("Error when trying to take picture");
     } else {
       _cropImage(
           selectedPath,

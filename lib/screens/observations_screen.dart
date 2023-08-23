@@ -147,25 +147,9 @@ class ObservationsPageState extends State<ObservationsPage> {
                                     onPressedCallback: () async {
                                       var hasConnection = await DataConnectionChecker().hasConnection;
                                       if(hasConnection) {
-                                        Fluttertoast.showToast(
-                                            msg: "Uploading observations",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.CENTER,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                            textColor: Colors.white,
-                                            fontSize: 16.0
-                                        );
+                                        showToast("Uploading observations");
                                       } else {
-                                        Fluttertoast.showToast(
-                                            msg: "Could not upload observations. No data connection.",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.CENTER,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                            textColor: Colors.white,
-                                            fontSize: 16.0
-                                        );
+                                        showToast("Could not upload observations. No data connection.");
                                       }
                                     }
                                 )

@@ -830,7 +830,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     setState(() {
       for (var filePath in filePaths) {
         if (addImages) {
-          widget.observation.imageUrls?.add(filePath);
+          if (widget.observation.imageUrls?.contains(filePath) == true) {
+            showToast("Did not add image. It is already in list.");
+          } else {
+            widget.observation.imageUrls?.add(filePath);
+          }
+        } else if (widget.observation.audioUrls?.contains(filePath) == true) {
+          showToast("Did not add audio. It is already in list.");
         } else {
           widget.observation.audioUrls?.add(filePath);
         }

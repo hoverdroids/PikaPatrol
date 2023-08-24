@@ -143,7 +143,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                             children: [
                               ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               //TODO - upload all local observations at once
-                              if(localObservations.isNotEmpty) ... [
+                              /*if(localObservations.isNotEmpty) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
@@ -156,7 +156,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                       }
                                     }
                                 )
-                              ]
+                              ]*/
                             ],
                           ),
                           Stack(

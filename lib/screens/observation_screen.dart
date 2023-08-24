@@ -956,6 +956,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       int cropGridColumnCount
   ) async {
 
+    var isPermissionGranted = await Permission.camera.request().isGranted;
+    if (!isPermissionGranted) {
+      showToast("Could not open camera.\nYou must accept camera permissions.");
+      return;
+    }
+
     //Take picture with camera ...
     var imagePicker = ImagePicker();
     XFile? selected = await imagePicker.pickImage(source: ImageSource.camera);

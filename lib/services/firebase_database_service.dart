@@ -73,39 +73,40 @@ class FirebaseDatabaseService {
 
   Future updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
+
+    var observationObject = {
+      'observerUid': observation.observerUid,
+      'name': observation.name,
+      'location': observation.location,
+      'date': observation.date,
+      'altitude': observation.altitude,
+      'latitude': observation.latitude,
+      'longitude': observation.longitude,
+      'signs': observation.signs,
+      'pikasDetected': observation.pikasDetected,
+      'distanceToClosestPika': observation.distanceToClosestPika,
+      'searchDuration': observation.searchDuration,
+      'talusArea': observation.talusArea,
+      'temperature': observation.temperature,
+      'skies': observation.skies,
+      'wind': observation.wind,
+      'siteHistory': observation.siteHistory,
+      'comments': observation.comments,
+      'imageUrls': observation.imageUrls,
+      'audioUrls': observation.audioUrls
+    };
+
     DocumentReference doc;
     if(observation.uid == null || observation.uid?.isEmpty == true) {
       doc = observationsCollection.doc();
       observation.uid = doc.id;
+      await doc.set(observationObject);
     } else {
       doc = observationsCollection.doc(observation.uid);
+      await doc.update(observationObject);
     }
 
     developer.log("Update Observation id:${observation.uid}");
-
-    return await doc.update(
-        {
-          'observerUid': observation.observerUid,
-          'name': observation.name,
-          'location': observation.location,
-          'date': observation.date,
-          'altitude': observation.altitude,
-          'latitude': observation.latitude,
-          'longitude': observation.longitude,
-          'signs': observation.signs,
-          'pikasDetected': observation.pikasDetected,
-          'distanceToClosestPika': observation.distanceToClosestPika,
-          'searchDuration': observation.searchDuration,
-          'talusArea': observation.talusArea,
-          'temperature': observation.temperature,
-          'skies': observation.skies,
-          'wind': observation.wind,
-          'siteHistory': observation.siteHistory,
-          'comments': observation.comments,
-          'imageUrls': observation.imageUrls,
-          'audioUrls': observation.audioUrls
-        }
-    );
   }
 
   List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {

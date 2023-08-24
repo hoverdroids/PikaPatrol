@@ -35,7 +35,7 @@
     </queries>
 
    <application
-        android:label="pika_patrol"
+        android:label="Pika Patrol"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 

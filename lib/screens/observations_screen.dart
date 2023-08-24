@@ -1,8 +1,11 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/card_scroll.dart';
@@ -140,7 +143,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                             children: [
                               ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               //TODO - upload all local observations at once
-                              /*if(localObservations.isNotEmpty) ... [
+                              if(localObservations.isNotEmpty) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
@@ -153,7 +156,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                       }
                                     }
                                 )
-                              ]*/
+                              ]
                             ],
                           ),
                           Stack(
@@ -171,11 +174,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                                   itemBuilder: (context, index) {
                                     return GestureDetector(
                                       onTap: () => {
-                                        /*Navigator.push(context,
+                                        Navigator.push(context,
                                           MaterialPageRoute(
                                             builder: (_) => ObservationScreen(localObservations[index]),
                                           ),
-                                        )*/
+                                        )
                                       },
                                       child: Container(
                                         width: double.infinity,

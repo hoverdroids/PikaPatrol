@@ -51,7 +51,7 @@
            android:label="Pika Patrol"
            android:screenOrientation="portrait"
            android:exported="true"
-           android:theme="@style/NoTitleBarTheme"/>
+           android:theme="@style/Theme.AppCompat.Light.NoActionBar"/>
 
         <activity
             android:name="io.flutter.embedding.android.FlutterActivity"

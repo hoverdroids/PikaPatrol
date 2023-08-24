@@ -24,6 +24,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/local_observation.dart';
@@ -787,7 +788,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  void showAudioPickerDialog() {
+  void showAudioRecorderDialog() {
     if (!mounted) return;
 
     showDialog(
@@ -811,8 +812,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   void _openAudioRecorder() async {
     try {
       //Always check for permission. It will ask for permission if not already granted
-      if (await FlutterAudioRecorder3.hasPermissions == true) {
-        showAudioPickerDialog();
+      //NOTE: FlutterAudioRecorder3.hasPermissions requests the permission by showing the dialog to the user,
+      //but hasPermissions is always false. So, don't use it. Keeping this here as a reminder.
+      //bool hasPermission = await FlutterAudioRecorder3.hasPermissions ?? false;
+
+      if (await Permission.microphone.request().isGranted) {
+        showAudioRecorderDialog();
       } else {
         showToast("Could not open recorder.\nYou must accept audio permissions.");
       }

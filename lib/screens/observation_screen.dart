@@ -103,8 +103,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     final user = Provider.of<AppUser?>(context);
 
     _colorTween = ColorTween(
-        begin: Colors.transparent,
-        end: context.watch<MaterialThemesManager>().colorPalette().primary)
+        begin: context.watch<MaterialThemesManager>().colorPalette().secondary, //Colors.transparent,
+        end: context.watch<MaterialThemesManager>().colorPalette().secondary)
         .animate(_colorAnimationController);
 
     return Scaffold(
@@ -156,13 +156,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               shape: const StadiumBorder(),
               backgroundColor: _colorTween.value,
               title: 'Make Observation',
-              titleType: ThemeGroupType.MOI,
+              titleType: ThemeGroupType.MOS,
               leftIcon: Icons.arrow_back,
-              leftIconType: ThemeGroupType.MOI,
+              leftIconType: ThemeGroupType.MOS,
               leftIconClickedCallback: () => Navigator.pop(context),
-              rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
+              rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
               showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
-              rightIconType: ThemeGroupType.MOI,
+              rightIconType: ThemeGroupType.MOS,
               rightIconClickedCallback: () async {
                 if(!widget.isEditMode) {
                   setState(() {
@@ -457,13 +457,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildLatLonAltitude() {
-    double? lat = widget.observation.latitude;
-    double? lon = widget.observation.longitude;
-    double? alt = widget.observation.altitude;
-
-    String latitude = lat == null ? "" : widget.observation.latitude.toString();//.toStringAsFixed(2);
-    String longitude = lon == null ? "" : widget.observation.longitude.toString();//.toStringAsFixed(2);
-    String altitude = alt == null ? "" : widget.observation.altitude.toString();//.toStringAsFixed(2);
+    String latitude = widget.observation.latitude?.toStringAsFixed(3) ?? "";
+    String editLatitude = widget.observation.latitude?.toString() ?? "";
+    String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
+    String editLongitude = widget.observation.longitude?.toString() ?? "";
+    String altitude = widget.observation.altitude?.toStringAsFixed(2) ?? "";
+    String editAltitude = widget.observation.altitude?.toString() ?? "";
 
     return Row(
       children: <Widget>[
@@ -483,7 +482,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: latitude,
+                    text: editLatitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
@@ -511,7 +510,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: longitude,
+                    text: editLongitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
@@ -539,7 +538,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: altitude,
+                    text: editAltitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },

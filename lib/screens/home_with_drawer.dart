@@ -126,7 +126,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               ],
               enableLoop: true,
               fullTransitionValue: 300,
-              enableSlideIcon: true,
+              slideIconWidget: const Icon(Icons.arrow_back_ios),
               waveType: WaveType.liquidReveal,
               positionSlideIcon: 0.5,
               liquidController: liquidController,

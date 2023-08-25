@@ -93,9 +93,20 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
             ],
             enableLoop: false,
             fullTransitionValue: 300,
-            /*enableSlideIcon: true,*/
+            slideIconWidget: Container(
+              margin: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(
+                  color: Colors.white,//TODO - CHRIS - use theme manager
+                  shape: BoxShape.circle
+              ),
+              child: ThemedIconButton(
+                  Icons.arrow_back_ios,
+                  emphasis: Emphasis.HIGH,
+                  type: ThemeGroupType.POM
+              ),
+            ),
             waveType: WaveType.liquidReveal,
-            positionSlideIcon: 0.5,
+            positionSlideIcon: 0.99,
             liquidController: liquidController,
             ignoreUserGestureWhileAnimating: false,
             disableUserGesture: false,

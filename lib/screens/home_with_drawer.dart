@@ -309,15 +309,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                             zip: userProfile != null ? userProfile.zip : "",
                             onEmailChangedCallback: (value) => { email = value },
                             onPasswordChangedCallback: (value) => { password = value },
-                            onFirstNameChangedCallback: (value) => { firstName = value },
-                            onLastNameChangedCallback: (value) => { lastName = value },
-                            onTaglineChangedCallback: (value) => { tagline = value },
-                            onPronounsChangedCallback: (value) => { pronouns = value },
-                            onOrganizationChangedCallback: (value) => { organization = value },
-                            onAddressChangedCallback: (value) => { address = value },
-                            onCityChangedCallback: (value) => { city = value },
-                            onStateChangedCallback: (value) => { state = value },
-                            onZipChangedCallback: (value) => { zip = value },
                           );
                         }
                     )
@@ -373,15 +364,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       showLabels: false,
                       onPasswordChangedCallback: (value) => { password = value },
                       onEmailChangedCallback: (value) => { email = value },
-                      onFirstNameChangedCallback: (value) => { firstName = value },
-                      onLastNameChangedCallback: (value) => { lastName = value },
-                      onTaglineChangedCallback: (value) => { tagline = value },
-                      onPronounsChangedCallback: (value) => { pronouns = value },
-                      onOrganizationChangedCallback: (value) => { organization = value },
-                      onAddressChangedCallback: (value) => { address = value },
-                      onCityChangedCallback: (value) => { city = value },
-                      onStateChangedCallback: (value) => { state = value },
-                      onZipChangedCallback: (value) => { zip = value },
                       onTapLogin: () => { setState(() => showSignIn = true) },
                       onTapRegister: () async {
 

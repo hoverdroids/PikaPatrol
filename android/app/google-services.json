@@ -59,6 +59,22 @@
       },
       "oauth_client": [
         {
+          "client_id": "954700599379-ijj6m2nn1k8soirvk2e9vpa46md5iabv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tcubedstudios.pika_patrol",
+            "certificate_hash": "b13ad7cd2fb1c1d7cb4f74dfa79f9bd27a736081"
+          }
+        },
+        {
+          "client_id": "954700599379-rj6ujktoco34fl64f07l2vof17k17p44.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.tcubedstudios.pika_patrol",
+            "certificate_hash": "b40f783fd02e0b10ed6e2b5ee03cd1df01f47755"
+          }
+        },
+        {
           "client_id": "954700599379-ufpa7kr9jvqfvk5ael476cp6dbffmc8b.apps.googleusercontent.com",
           "client_type": 3
         }

@@ -341,9 +341,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                           return;
                         }
 
-                        setState(() => loading = true);
+                        // setState(() => loading = true);
 
-                        dynamic result = await _auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+                        //dynamic result = await _auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+                        dynamic result = await _auth.signInWithGoogle();
 
                         if(result == null) {
                           // Need to determine if this was because there is no internet or if the sign in really wasn't accepted

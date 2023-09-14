@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/screens/splash/partners_splash_screens_pager.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
+import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'model/app_user_profile.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
 import 'model/app_user.dart';
@@ -29,7 +31,13 @@ Future<void> main() async {
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => MaterialThemesManager()),
+        ChangeNotifierProvider(
+            create: (_) => MaterialThemesManager()
+        ),
+        StreamProvider<AppUser?>.value(
+          value: FirebaseAuthService().user,
+          initialData: null
+        ),
       ],
       child: const MyApp(),
     ),
@@ -68,17 +76,13 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark
     ));*/
 
-    return StreamProvider<AppUser?>.value(
-      value: FirebaseAuthService().user,
-      initialData: null,
-      child: MaterialApp(
-          title: "Pika Patrol",
-          home: const PartnersSplashScreensPager(),
-          debugShowCheckedModeBanner: false,
-          themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
-          theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
-          darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
-      ),
+    return MaterialApp(
+        title: "Pika Patrol",
+        home: const PartnersSplashScreensPager(),
+        debugShowCheckedModeBanner: false,
+        themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
+        theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
+        darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
     );
   }
 }

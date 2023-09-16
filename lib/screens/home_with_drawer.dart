@@ -112,7 +112,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             controller: pageController,
             itemCount: 1,
             itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-              stream: FirebaseDatabaseService(uid: user?.uid).observations,
+              stream: Provider.of<FirebaseDatabaseService>(context).observations,
               builder: (context, snapshot) {
                 List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
                 return ObservationsPage(observations ?? <Observation>[]);
@@ -247,7 +247,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                             onTapEdit: () => setState(() => isEditingProfile = true),
                             onTapSave: () async {
                               setState(() => loading = true);
-                              await FirebaseDatabaseService(uid: user.uid).updateUserProfile(
+                              await Provider.of<FirebaseDatabaseService>(context).updateUserProfile(
                                   firstName ?? userProfile?.firstName ?? "NO USER PROFILE",
                                   lastName ?? userProfile?.lastName ?? "",
                                   tagline ?? userProfile?.tagline ?? "",

@@ -199,30 +199,32 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Future saveObservation(AppUser? user) async {
+    if (context.mounted) {
 
-    var databaseService = FirebaseDatabaseService(uid: user?.uid);
+      var databaseService = Provider.of<FirebaseDatabaseService>(context);
 
-    var imageUrls = widget.observation.imageUrls;
-    if (imageUrls != null && imageUrls.isNotEmpty) {
-      widget.observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
+      var imageUrls = widget.observation.imageUrls;
+      if (imageUrls != null && imageUrls.isNotEmpty) {
+        widget.observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
+      }
+      developer.log("ImageUrls: ${widget.observation.imageUrls.toString()}");
+
+      var audioUrls = widget.observation.audioUrls;
+      if (audioUrls != null && audioUrls.isNotEmpty) {
+        widget.observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
+      }
+      developer.log("AudioUrls: ${widget.observation.audioUrls.toString()}");
+
+      await databaseService.updateObservation(widget.observation);
+
+      setState(() {
+        // Update local observation after successful upload because the uid will be non empty now
+        saveLocalObservation();
+
+        _isUploading = false;
+        widget.isEditMode = false;
+      });
     }
-    developer.log("ImageUrls: ${widget.observation.imageUrls.toString()}");
-
-    var audioUrls = widget.observation.audioUrls;
-    if (audioUrls != null && audioUrls.isNotEmpty) {
-      widget.observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
-    }
-    developer.log("AudioUrls: ${widget.observation.audioUrls.toString()}");
-
-    await FirebaseDatabaseService(uid: user?.uid).updateObservation(widget.observation);
-
-    setState(() {
-      // Update local observation after successful upload because the uid will be non empty now
-      saveLocalObservation();
-
-      _isUploading = false;
-      widget.isEditMode = false;
-    });
   }
 
   void saveLocalObservation() {

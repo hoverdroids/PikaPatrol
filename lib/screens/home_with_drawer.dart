@@ -85,7 +85,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   @override
   Widget build(BuildContext context) {
 
-    Size mediaQuery = MediaQuery.of(context).size;
+    MediaQueryData mediaQuery = MediaQuery.of(context);
+    Size size = mediaQuery.size;
+    double width = size.width;
+    double bottom = mediaQuery.viewInsets.bottom;
+
     //List<Widget> pages=[ObservationsPage()];
 
     AppUser? user = Provider.of<AppUser?>(context);
@@ -96,10 +100,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: buildAppBar(),
-        body: buildBody(mediaQuery),
+        body: buildBody(width),
         bottomNavigationBar: buildBottomNavigationBar(user),
-        drawer: buildDrawer(user, userProfile),
-        endDrawer: buildEndDrawer(user, userProfile)
+        drawer: buildDrawer(user, userProfile, bottom),
+        endDrawer: buildEndDrawer(user, userProfile, bottom)
     );
   }
 
@@ -114,9 +118,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildBody(Size mediaQuery) {
+  Widget buildBody(double width) {
     return SizedBox(
-      width: mediaQuery.width,
+      width: width,
       child: Stack(
         children: <Widget>[
           PageView.builder(
@@ -178,9 +182,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildDrawer(AppUser? user, AppUserProfile? userProfile) {
+  Widget buildDrawer(AppUser? user, AppUserProfile? userProfile, double bottom) {
     return SimpleClipPathDrawer(
-      padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
+      padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
       leftIconType: ThemeGroupType.MOP,
       leftIconClickedCallback: () => Navigator.pop(context),
       rightIconType: ThemeGroupType.MOP,
@@ -227,12 +231,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildEndDrawer(AppUser? user, AppUserProfile? userProfile) {
+  Widget buildEndDrawer(AppUser? user, AppUserProfile? userProfile, double bottom) {
 
     final FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context);
 
     return SimpleClipPathDrawer(
-        padding: EdgeInsets.fromLTRB(0, 0, 0, MediaQuery.of(context).viewInsets.bottom),
+        padding: EdgeInsets.fromLTRB(0, 0, 0,bottom),
         widthPercent: 0.9,
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),

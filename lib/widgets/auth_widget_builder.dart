@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../model/app_user.dart';
+import '../model/app_user_profile.dart';
 import '../services/firebase_auth_service.dart';
 import '../services/firebase_database_service.dart';
 
@@ -29,12 +30,27 @@ class AuthWidgetBuilder extends StatelessWidget {
           // Globally useful providers that depend on context, app user, or other global providers (from main.dart)
           providers: [
             Provider<AppUser?>.value(value: appUser),
-            //TODO - need to add AppUserProfile
             Provider<FirebaseDatabaseService>(
               create: (_) => FirebaseDatabaseService(uid: appUser?.uid)//Only one service to avoid multiple connections to firebase
             )
           ],
-          child: builder(context, appUserSnapshot)
+          child: StreamProvider<AppUserProfile?>.value(
+              value: Provider.of<FirebaseDatabaseService>(context).userProfile,
+              initialData: null,
+              child: builder(context, appUserSnapshot)
+          )
+
+          // builder: (context, child) {
+          //   return ;
+          //
+          //   //FirebaseDatabaseService(uid: user?.uid).userProfile,
+          //
+          //
+          //
+          //   return builder(context, appUserSnapshot);
+          // }
+
+            //child: builder(context, appUserSnapshot)
         );
       }
     );

@@ -58,8 +58,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _leftDrawerKey = UniqueKey();
   final Key _nullLeftDrawerKey = UniqueKey();
 
-  final FirebaseAuthService _auth = FirebaseAuthService();
-
   //TODO - replace the following with liquidController eventually
   PageController pageController = PageController(initialPage: initialPage);
   LiquidController liquidController = LiquidController();
@@ -86,6 +84,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   @override
   Widget build(BuildContext context) {
+
+    final FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context);
 
     Size mediaQuery = MediaQuery.of(context).size;
     //List<Widget> pages=[ObservationsPage()];
@@ -242,7 +242,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                             isEditMode: isEditingProfile,
                             onTapLogout: () async {
                               setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
-                              await _auth.signOut();
+                              await firebaseAuthService.signOut();
                             },
                             onTapEdit: () => setState(() => isEditingProfile = true),
                             onTapSave: () async {
@@ -273,10 +273,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
                                   setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-                                  await _auth.deleteUser();
+                                  await firebaseAuthService.deleteUser();
 
                                   // Don't sign out before deleting user because the user must be signed into to delete themselves
-                                  await _auth.signOut();
+                                  await firebaseAuthService.signOut();
                                   showToast("Account Deleted");
                                 },
                               );
@@ -334,7 +334,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
                         setState(() => loading = true);
 
-                        dynamic result = await _auth.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+                        dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
                         //dynamic result = await _auth.signInWithGoogle();
 
                         if(result == null) {
@@ -384,7 +384,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
                         setState(() => loading = true);
 
-                        dynamic result = await _auth.registerWithEmailAndPassword(
+                        dynamic result = await firebaseAuthService.registerWithEmailAndPassword(
                             trimmedEmail,
                             trimmedPassword,
                             trimmedFirstName,

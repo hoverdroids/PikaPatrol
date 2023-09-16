@@ -5,6 +5,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/screens/splash/partners_splash_screens_pager.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/widgets/auth_widget_builder.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'model/app_user_profile.dart';
@@ -30,26 +31,18 @@ Future<void> main() async {
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
     MultiProvider(
-      //Order matters here since MultiProvider is simply a widget that nests other providers as children.
-      //Each provider is a child of the previous provider. So, child needs an ancestor of the type it requires when
-      //an dependency exists in - e.g. AuthService before AppUser
+      // Globally useful providers that don't depend on other provider values or build context
       providers: [
         ChangeNotifierProvider(
             create: (_) => MaterialThemesManager()
         ),
         Provider<FirebaseAuthService>(
-            create: (_) => FirebaseAuthService()//Only one auth service to avoid multiple connections to firebase
-        ),
+            create: (_) => FirebaseAuthService()//Only one service to avoid multiple connections to firebase
+        )
       ],
-      builder: (context, child) {//materialThemesManager is the child arg because it's the first in the providers list
-        //Using StreamProvider here instead of including in providers array because the value depends on context,
-        //which I'm not seeing how to obtain there outside of create (which isn't the right place either)
-        return StreamProvider<AppUser?>.value(
-            value: Provider.of<FirebaseAuthService>(context).user,//subscribe to AuthService and create stream of AppUser? data the emits when user changes
-            initialData: null,
-            child: const MyApp()
-        );
-      },
+      child: AuthWidgetBuilder(builder: (context, appUserSnapshot) {
+        return const MyApp();
+      }),
     ),
   );
 }

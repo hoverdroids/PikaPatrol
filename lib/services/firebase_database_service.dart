@@ -11,7 +11,7 @@ class FirebaseDatabaseService {
 
   final String? uid;
 
-  FirebaseDatabaseService({ this.uid });
+  FirebaseDatabaseService({ required this.uid });
 
   final CollectionReference userProfilesCollection = FirebaseFirestore.instance.collection("userProfiles");
 

@@ -191,42 +191,36 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       rightIconClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
       clipPathType: ClipPathType.NONE,
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
-      child: StreamBuilder<AppUserProfile>(
-        stream: FirebaseDatabaseService(uid: user?.uid).userProfile,
-        builder: (context, snapshot) {
-          //AppUserProfile? userProfile = snapshot.hasData ? snapshot.data : null;
-          return HeaderList(
-              [
-                ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-                ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-                ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-                ListItemModel(title: "If/Then", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
-                ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
-                ListItemModel(title: "App Help and Info", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pika-patrol-tutorials/")),
-                ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
-                  Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (BuildContext context) =>
-                          TrainingScreensPager(backClickedCallback: () => {
-                            Navigator.of(context).pushReplacement(
-                                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                            )
-                          })
-                      )
+      child: HeaderList(
+          [
+            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
+            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
+            ListItemModel(title: "If/Then", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
+            ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
+            ListItemModel(title: "App Help and Info", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pika-patrol-tutorials/")),
+            ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (BuildContext context) =>
+                      TrainingScreensPager(backClickedCallback: () => {
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+                        )
+                      })
                   )
-                })
-              ],
-              key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
-              imageUrl: "assets/images/pika3.jpg",
-              avatarImageUrl: "assets/images/pika4.jpg",
-              avatarTitle: userProfile == null ? "Login" : "${userProfile.firstName} ${userProfile.lastName}",
-              avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
-              avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
-              cardElevationLevel: ElevationLevel.LOW,
-              usePolygonAvatar: true,
-              headerGradientType: BackgroundGradientType.PRIMARY,
-              isHeaderSticky: false
-          );
-        },
+              )
+            })
+          ],
+          key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
+          imageUrl: "assets/images/pika3.jpg",
+          avatarImageUrl: "assets/images/pika4.jpg",
+          avatarTitle: userProfile == null ? "Login" : "${userProfile.firstName} ${userProfile.lastName}",
+          avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
+          avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
+          cardElevationLevel: ElevationLevel.LOW,
+          usePolygonAvatar: true,
+          headerGradientType: BackgroundGradientType.PRIMARY,
+          isHeaderSticky: false
       ),
     );
   }

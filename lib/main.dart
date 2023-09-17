@@ -36,30 +36,34 @@ Future<void> main() async {
         ),
         Provider<FirebaseAuthService>(
             create: (_) => FirebaseAuthService()//Only one service to avoid multiple connections to firebase
+        ),
+        Provider<FirebaseDatabaseService>(
+            create: (_) => FirebaseDatabaseService()
         )
       ],
       builder: (context, child) {
-
-        final firebaseAuthService = Provider.of<FirebaseAuthService>(context);//, listen: false TODO - CHRIS - in order to avoid rebuilding the entire view tree
-
+        //Using StreamBuilder here in order so that appUserSnapshot is the desired type
+        //since it's used when building the other providers
         return StreamBuilder<AppUser?>(
-          stream: firebaseAuthService.user,
+          stream: Provider.of<FirebaseAuthService>(context).user,
           initialData: null,
           builder: (context, appUserSnapshot) {
 
             final AppUser? appUser = appUserSnapshot.data;
 
             return MultiProvider(
-              // Globally useful providers that don't depend on app user
               providers: [
-                Provider<AppUser?>.value(value: appUser),//TODO - CHRIS - does this need to be a stream?
-                Provider<FirebaseDatabaseService>(
-                  create: (_) => FirebaseDatabaseService(uid: appUser?.uid)
-                )
+                Provider<AppUser?>.value(
+                  value: appUser
+                ),
               ],
               builder: (context, child) {
+
+                var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
+                firebaseDatabaseService.uid = appUser?.uid;
+
                 return StreamProvider<AppUserProfile?>.value(
-                    value: Provider.of<FirebaseDatabaseService>(context).userProfile,
+                    value: firebaseDatabaseService.userProfile,
                     initialData: null,
                     child: const MyApp()
                 );

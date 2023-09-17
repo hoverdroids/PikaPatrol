@@ -9,9 +9,9 @@ import 'dart:developer' as developer;
 
 class FirebaseDatabaseService {
 
-  final String? uid;
+  String? uid;
 
-  FirebaseDatabaseService({ required this.uid });
+  FirebaseDatabaseService({ this.uid });
 
   final CollectionReference userProfilesCollection = FirebaseFirestore.instance.collection("userProfiles");
 

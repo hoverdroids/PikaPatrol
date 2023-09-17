@@ -66,20 +66,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool isEditingProfile = false;
   bool userAckedGeoTracking = false;
 
-  String? email;
-  String? password;
-  String? firstName;
-  String? lastName;
-  String? tagline;
-  String? pronouns;
-  String? organization;
-  String? address;
-  String? city;
-  String? state;
-  String? zip;
-  bool? frppOptIn;
-  bool? rmwOptIn;
-  bool? dzOptIn;
+  String? editedEmail;
+  String? editedPassword;
+  String? editedFirstName;
+  String? editedLastName;
+  String? editedTagline;
+  String? editedPronouns;
+  String? editedOrganization;
+  String? editedAddress;
+  String? editedCity;
+  String? editedState;
+  String? editedZip;
+  bool? editedFrppOptIn;
+  bool? editedRmwOptIn;
+  bool? editedDzOptIn;
 
   @override
   Widget build(BuildContext context) {
@@ -281,24 +281,28 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
         await firebaseAuthService.signOut();
       },
-      onTapEdit: () => setState(() => isEditingProfile = true),
+      onTapEdit: () {
+        resetEditedUserProfileFields();
+        setState(() => isEditingProfile = true);
+      },
       onTapSave: () async {
         setState(() => loading = true);
 
         await firebaseDatabaseService.updateUserProfile(
-            firstName ?? userProfile?.firstName ?? "NO USER PROFILE",
-            lastName ?? userProfile?.lastName ?? "",
-            tagline ?? userProfile?.tagline ?? "",
-            pronouns ?? userProfile?.pronouns ?? "",
-            organization ?? userProfile?.organization ?? "",
-            address ?? userProfile?.address ?? "",
-            city ?? userProfile?.city ?? "",
-            state ?? userProfile?.state ?? "",
-            zip ?? userProfile?.zip ?? "",
-            frppOptIn ?? userProfile?.frppOptIn ?? false,
-            rmwOptIn ?? userProfile?.rmwOptIn ?? false,
-            dzOptIn ?? userProfile?.dzOptIn ?? false
+            editedFirstName ?? userProfile?.firstName ?? "NO USER PROFILE",
+            editedLastName ?? userProfile?.lastName ?? "",
+            editedTagline ?? userProfile?.tagline ?? "",
+            editedPronouns ?? userProfile?.pronouns ?? "",
+            editedOrganization ?? userProfile?.organization ?? "",
+            editedAddress ?? userProfile?.address ?? "",
+            editedCity ?? userProfile?.city ?? "",
+            editedState ?? userProfile?.state ?? "",
+            editedZip ?? userProfile?.zip ?? "",
+            editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
+            editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
+            editedDzOptIn ?? userProfile?.dzOptIn ?? false
         );
+        resetEditedUserProfileFields();
         setState(() => isEditingProfile = false);
         setState(() => loading = false);
       },
@@ -345,8 +349,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       city: userProfile?.city ?? "",
       state: userProfile?.state ?? "",
       zip: userProfile?.zip ?? "",
-      onEmailChangedCallback: (value) => { email = value },
-      onPasswordChangedCallback: (value) => { password = value },
+      onEmailChangedCallback: (value) => { editedEmail = value },
+      onPasswordChangedCallback: (value) => { editedPassword = value },
+      onFirstNameChangedCallback: (value) => { editedFirstName = value },
+      onLastNameChangedCallback: (value) => { editedLastName = value },
+      onTaglineChangedCallback: (value) => { editedTagline = value },
+      onPronounsChangedCallback: (value) => { editedPronouns = value },
+      onOrganizationChangedCallback: (value) => { editedOrganization = value },
+      onAddressChangedCallback: (value) => { editedAddress = value },
+      onCityChangedCallback: (value) => { editedCity = value },
+      onStateChangedCallback: (value) => { editedState = value },
+      onZipChangedCallback: (value) => { editedZip = value },
+      // onFrppOptInChangedCallback: (value) => { editedFrppOptIn = value },//TODO - CHRIS
+      // onRmwOptInChangedCallback: (value) => { editedRmwOptIn = value },
+      // onDzOptInChangedCallback: (value) => { editedDzOptIn = value },
     );
   }
 
@@ -355,12 +371,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       key: _loginKey,
       isLogin: true,
       showLabels: false,
-      onPasswordChangedCallback: (value) => { password = value },
-      onEmailChangedCallback: (value) => { email = value },
+      onPasswordChangedCallback: (value) => { editedPassword = value },
+      onEmailChangedCallback: (value) => { editedEmail = value },
       onTapLogin: () async {
 
-        var trimmedEmail = email?.trim() ?? "";
-        var trimmedPassword = password?.trim() ?? "";
+        var trimmedEmail = editedEmail?.trim() ?? "";
+        var trimmedPassword = editedPassword?.trim() ?? "";
 
         if (trimmedEmail.isEmpty) {
           showToast("Email cannot be empty");
@@ -402,43 +418,46 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       key: _registerKey,
       isLogin: false,
       showLabels: false,
-      onPasswordChangedCallback: (value) => { password = value },
-      onEmailChangedCallback: (value) => { email = value },
+      onPasswordChangedCallback: (value) => { editedPassword = value },
+      onEmailChangedCallback: (value) => { editedEmail = value },
       onTapLogin: () => { setState(() => showSignIn = true) },
       onTapRegister: () async {
 
-        var trimmedEmail = email?.trim() ?? "";
-        var trimmedPassword = password?.trim() ?? "";
-        var trimmedFirstName = firstName?.trim() ?? "";
-        var trimmedLastName = lastName?.trim() ?? "";
-        var trimmedZip = zip?.trim() ?? "";
+        var trimmedEmail = editedEmail?.trim() ?? "";
+        var trimmedPassword = editedPassword?.trim() ?? "";
 
-        if (trimmedEmail.isEmpty ||
-            trimmedPassword.isEmpty ||
-            trimmedFirstName.isEmpty ||
-            trimmedLastName.isEmpty ||
-            trimmedZip.isEmpty
-        ) {
-          return;
-        }
+        //TODO - CHRIS - is this check useful anymore?
+        // var trimmedFirstName = editedFirstName?.trim() ?? "";
+        // var trimmedLastName = editedLastName?.trim() ?? "";
+        // var trimmedZip = editedZip?.trim() ?? "";
+
+        //TODO - CHRIS - is this check useful anymore?
+        // if (trimmedEmail.isEmpty ||
+        //     trimmedPassword.isEmpty ||
+        //     trimmedFirstName.isEmpty ||
+        //     trimmedLastName.isEmpty ||
+        //     trimmedZip.isEmpty
+        // ) {
+        //   return;
+        // }
 
         setState(() => loading = true);
 
         dynamic result = await firebaseAuthService.registerWithEmailAndPassword(
             trimmedEmail,
             trimmedPassword,
-            trimmedFirstName,
-            trimmedLastName,
-            tagline ?? "",
-            pronouns ?? "",
-            organization ?? "",
-            address ?? "",
-            city ?? "",
-            state ?? "",
-            zip ?? "",
-            frppOptIn ?? false,
-            rmwOptIn ?? false,
-            dzOptIn ?? false
+            editedFirstName ?? "",
+            editedLastName ?? "",
+            editedTagline ?? "",
+            editedPronouns ?? "",
+            editedOrganization ?? "",
+            editedAddress ?? "",
+            editedCity ?? "",
+            editedState ?? "",
+            editedZip ?? "",
+            editedFrppOptIn ?? false,
+            editedRmwOptIn ?? false,
+            editedDzOptIn ?? false
         );
 
         if(result == null) {
@@ -514,5 +533,22 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
       }
     }
+  }
+
+  resetEditedUserProfileFields() {
+    editedEmail = null;
+    editedPassword = null;
+    editedFirstName = null;
+    editedLastName = null;
+    editedTagline = null;
+    editedPronouns = null;
+    editedOrganization = null;
+    editedAddress = null;
+    editedCity = null;
+    editedState = null;
+    editedZip = null;
+    editedFrppOptIn = null;
+    editedRmwOptIn = null;
+    editedDzOptIn = null;
   }
 }

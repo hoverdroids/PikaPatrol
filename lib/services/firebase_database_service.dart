@@ -49,7 +49,10 @@ class FirebaseDatabaseService {
     );
   }
   
-  AppUserProfile _userProfileFromSnapshot(DocumentSnapshot snapshot) {
+  AppUserProfile? _userProfileFromSnapshot(DocumentSnapshot snapshot) {
+    if (uid == null) {
+      return null;
+    }
     return AppUserProfile(
       snapshot.get('firstName') ?? '',
       snapshot.get('lastName') ?? '',
@@ -67,8 +70,8 @@ class FirebaseDatabaseService {
     );
   }
 
-  Stream<AppUserProfile>? get userProfile {
-    return uid == null ? null : userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
+  Stream<AppUserProfile?> get userProfile {
+    return userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
   Future updateObservation(Observation observation) async {

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -83,4 +85,21 @@ Future<void> makePhoneCall(String url) async {
   } else {
     throw 'Could not launch $url';
   }
+}
+
+Future<bool> isConnectedToNetwork() async {
+  try {
+    var result = await InternetAddress.lookup('google.com');
+    if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+      return true;
+    } else {
+      //If google.com is down let's doulbe check another popular site.
+      //If both are down, it's likely the network is down too.
+      result = await InternetAddress.lookup('netflix.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        return true;
+      }
+    }
+  } on SocketException catch (_) {}
+  return false;
 }

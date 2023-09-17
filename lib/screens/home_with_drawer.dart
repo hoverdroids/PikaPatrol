@@ -23,6 +23,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
+import '../model/firebase_registration_result.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
 
@@ -443,7 +444,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
         setState(() => loading = true);
 
-        dynamic result = await firebaseAuthService.registerWithEmailAndPassword(
+        FirebaseRegistrationResult result = await firebaseAuthService.registerWithEmailAndPassword(
             trimmedEmail,
             trimmedPassword,
             editedFirstName ?? "",
@@ -460,22 +461,24 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             editedDzOptIn ?? false
         );
 
-        if(result == null) {
-          // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
-          try {
-            final result = await InternetAddress.lookup('google.com');
-            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              showToast("Could not register with those credentials");
-            }
-          } on SocketException catch (_) {
-            showToast("Can not register. Not connected to internet.");
-          }
+        if (result.appUser != null) {
+          onRegistrationSuccess(result);
         } else {
-          showToast("Successfully Registered");
+          await onRegistrationFailed(result);
         }
+
         setState(() => loading = false);
       },
     );
+  }
+
+  onRegistrationSuccess(FirebaseRegistrationResult result) {
+    showToast("Registered ${result.email} as a new user");
+  }
+
+  onRegistrationFailed(FirebaseRegistrationResult result) async {
+    //TODO - CHRIS - In cases where we can do something smart, let's do it!
+    showToast("${result.exception?.message}");
   }
 
   Widget buildLoadingOverlay(BuildContext context) {

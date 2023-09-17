@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../model/firebase_registration_result.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -42,7 +43,7 @@ class FirebaseAuthService {
     }
   }
 
-  Future registerWithEmailAndPassword(
+  Future<FirebaseRegistrationResult> registerWithEmailAndPassword(
       String email,
       String password,
       String firstName,
@@ -57,31 +58,36 @@ class FirebaseAuthService {
       bool frppOptIn,
       bool rmwOptIn,
       bool dzOptIn
-      ) async {
-    try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-      User? user = result.user;
+    ) async {
 
-      await FirebaseDatabaseService(uid: user?.uid).updateUserProfile(
-          firstName,
-          lastName,
-          tagline,
-          pronouns,
-          organization,
-          address,
-          city,
-          state,
-          zip,
-          frppOptIn,
-          rmwOptIn,
-          dzOptIn
-      );
+      final registrationResult = FirebaseRegistrationResult(email: email);
 
-      return _userFromFirebaseUser(user);
-    } catch (e) {
-      developer.log('Failed to create user:$e');
-      return null;
-    }
+      try {
+        UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+        User? user = result.user;
+
+        //TODO - CHRIS - do not updateUserProfile after registration
+        await FirebaseDatabaseService(uid: user?.uid).updateUserProfile(
+            firstName,
+            lastName,
+            tagline,
+            pronouns,
+            organization,
+            address,
+            city,
+            state,
+            zip,
+            frppOptIn,
+            rmwOptIn,
+            dzOptIn
+        );
+
+        registrationResult.appUser = _userFromFirebaseUser(user);
+
+      } on FirebaseAuthException catch(exception) {
+        registrationResult.exception = exception;
+      }
+      return registrationResult;
   }
 
   Future<UserCredential?> signInWithGoogle() async {

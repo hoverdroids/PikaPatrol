@@ -283,7 +283,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       onTapEdit: () => setState(() => isEditingProfile = true),
       onTapSave: () async {
-        //setState(() => loading = true);
+        setState(() => loading = true);
 
         await firebaseDatabaseService.updateUserProfile(
             firstName ?? userProfile?.firstName ?? "NO USER PROFILE",

@@ -99,15 +99,15 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
         extendBody: true,
-        appBar: buildAppBar(),
-        body: buildBody(width),
-        bottomNavigationBar: buildBottomNavigationBar(user),
-        drawer: buildDrawer(user, userProfile, bottom),
-        endDrawer: buildEndDrawer(user, userProfile, bottom)
+        appBar: buildAppBar(context),
+        body: buildBody(context, width),
+        bottomNavigationBar: buildBottomNavigationBar(context, user),
+        drawer: buildDrawer(context, user, userProfile, bottom),
+        endDrawer: buildEndDrawer(context, user, userProfile, bottom)
     );
   }
 
-  PreferredSizeWidget buildAppBar() {
+  PreferredSizeWidget buildAppBar(BuildContext context) {
     return IconTitleIconAppBar(
       title: 'Pika Patrol',
       titleType: ThemeGroupType.MOP,
@@ -118,7 +118,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildBody(double width) {
+  Widget buildBody(BuildContext context, double width) {
     return SizedBox(
       width: width,
       child: Stack(
@@ -154,7 +154,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildBottomNavigationBar(AppUser? user) {
+  Widget buildBottomNavigationBar(BuildContext context, AppUser? user) {
     return CurvedNavigationBar (//TODO - migrate this into its own widget
       color: navbarColor,
       backgroundColor: navbarBgColor,
@@ -182,7 +182,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildDrawer(AppUser? user, AppUserProfile? userProfile, double bottom) {
+  Widget buildDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
       leftIconType: ThemeGroupType.MOP,
@@ -225,9 +225,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildEndDrawer(AppUser? user, AppUserProfile? userProfile, double bottom) {
+  Widget buildEndDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
 
     final FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context);
+    final FirebaseDatabaseService firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
 
     return SimpleClipPathDrawer(
         padding: EdgeInsets.fromLTRB(0, 0, 0,bottom),
@@ -245,14 +246,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               alignment: Alignment.center,
               children: <Widget>[
                 if (user != null) ... [
-                  buildProfileScreen(firebaseAuthService, userProfile),
+                  buildProfileScreen(context, firebaseAuthService, firebaseDatabaseService, user, userProfile),
                 ] else if(showSignIn) ... [
-                  buildLoginScreen(firebaseAuthService),
+                  buildLoginScreen(context, firebaseAuthService),
                 ] else ... [
-                  buildRegisterScreen(firebaseAuthService),
+                  buildRegisterScreen(context, firebaseAuthService),
                 ],
                 if(loading) ... [
-                  buildLoadingOverlay()
+                  buildLoadingOverlay(context)
                 ]
               ],
             )
@@ -260,7 +261,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildProfileScreen(FirebaseAuthService firebaseAuthService, AppUserProfile? userProfile) {
+  Widget buildProfileScreen(
+      BuildContext context,
+      FirebaseAuthService firebaseAuthService,
+      FirebaseDatabaseService firebaseDatabaseService,
+      AppUser? user,
+      AppUserProfile? userProfile
+  ) {
 
     var editProfileKey = userProfile == null ? _editProfileNullKey : _editProfileKey;
     var viewProfileKey = userProfile == null ? _nullProfileKey : _profileKey;
@@ -277,8 +284,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       onTapEdit: () => setState(() => isEditingProfile = true),
       onTapSave: () async {
-        setState(() => loading = true);
-        await Provider.of<FirebaseDatabaseService>(context).updateUserProfile(
+        //setState(() => loading = true);
+
+        await firebaseDatabaseService.updateUserProfile(
             firstName ?? userProfile?.firstName ?? "NO USER PROFILE",
             lastName ?? userProfile?.lastName ?? "",
             tagline ?? userProfile?.tagline ?? "",
@@ -343,7 +351,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildLoginScreen(FirebaseAuthService firebaseAuthService) {
+  Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
     return LoginRegisterScreen(
       key: _loginKey,
       isLogin: true,
@@ -390,7 +398,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildRegisterScreen(FirebaseAuthService firebaseAuthService) {
+  Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
     return LoginRegisterScreen(
       key: _registerKey,
       isLogin: false,
@@ -452,7 +460,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildLoadingOverlay() {
+  Widget buildLoadingOverlay(BuildContext context) {
     return Container(
       width: double.infinity,
       height: double.infinity,

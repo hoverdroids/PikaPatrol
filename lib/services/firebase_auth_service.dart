@@ -64,25 +64,7 @@ class FirebaseAuthService {
 
       try {
         UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-        User? user = result.user;
-
-        //TODO - CHRIS - do not updateUserProfile after registration
-        await FirebaseDatabaseService(uid: user?.uid).updateUserProfile(
-            firstName,
-            lastName,
-            tagline,
-            pronouns,
-            organization,
-            address,
-            city,
-            state,
-            zip,
-            frppOptIn,
-            rmwOptIn,
-            dzOptIn
-        );
-
-        registrationResult.appUser = _userFromFirebaseUser(user);
+        registrationResult.appUser = _userFromFirebaseUser(result.user);
 
       } on FirebaseAuthException catch(exception) {
         registrationResult.exception = exception;

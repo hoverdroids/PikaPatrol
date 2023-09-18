@@ -24,34 +24,21 @@ class FirebaseDatabaseService {
     return _userProfileFromSnapshot(userProfileSnapshot);
   }
 
-  Future<bool> isCachedUserProfileDifferent(
-      String firstName,
-      String lastName,
-      String tagline,
-      String pronouns,
-      String organization,
-      String address,
-      String city,
-      String state,
-      String zip,
-      bool frppOptIn,
-      bool rmwOptIn,
-      bool dzOptIn
-  ) async {
-    var cachedUserProfile = await getCurrentUserProfileFromCache();
-    return cachedUserProfile == null ||
-      cachedUserProfile.firstName != firstName ||
-      cachedUserProfile.lastName != lastName ||
-      cachedUserProfile.tagline != tagline ||
-      cachedUserProfile.pronouns != pronouns ||
-      cachedUserProfile.organization != organization ||
-      cachedUserProfile.address != address ||
-      cachedUserProfile.city != city ||
-      cachedUserProfile.state != state ||
-      cachedUserProfile.zip != zip ||
-      cachedUserProfile.frppOptIn != frppOptIn ||
-      cachedUserProfile.rmwOptIn != rmwOptIn ||
-      cachedUserProfile.dzOptIn != dzOptIn;
+  bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) {
+    return profile1 == null && profile2 != null ||
+           profile1 != null && profile2 == null ||
+           profile1?.firstName != profile2?.firstName ||
+           profile1?.lastName != profile2?.lastName ||
+           profile1?.tagline != profile2?.tagline ||
+           profile1?.pronouns != profile2?.pronouns ||
+           profile1?.organization != profile2?.organization ||
+           profile1?.address != profile2?.address ||
+           profile1?.city != profile2?.city ||
+           profile1?.state != profile2?.state ||
+           profile1?.zip != profile2?.zip ||
+           profile1?.frppOptIn != profile2?.frppOptIn ||
+           profile1?.rmwOptIn != profile2?.rmwOptIn ||
+           profile1?.dzOptIn != profile2?.dzOptIn;
   }
 
   Future addOrUpdateUserProfile(
@@ -68,112 +55,34 @@ class FirebaseDatabaseService {
       bool rmwOptIn,
       bool dzOptIn
   ) async {
-      var cachedUserProfile = await getCurrentUserProfileFromCache();
 
-      final trimmedFirstName = firstName.trim();
-      final trimmedLastName = lastName.trim();
-      final trimmedTagline = tagline.trim();
-      final trimmedPronouns = pronouns.trim();
-      final trimmedOrganization = organization.trim();
-      final trimmedAddress = address.trim();
-      final trimmedCity = city.trim();
-      final trimmedState = state.trim();
-      final trimmedZip = zip.trim();
+    final trimmedFirstName = firstName.trim();
+    final trimmedLastName = lastName.trim();
+    final trimmedTagline = tagline.trim();
+    final trimmedPronouns = pronouns.trim();
+    final trimmedOrganization = organization.trim();
+    final trimmedAddress = address.trim();
+    final trimmedCity = city.trim();
+    final trimmedState = state.trim();
+    final trimmedZip = zip.trim();
 
-      if (cachedUserProfile == null) {
-        return addUserProfile(
-            trimmedFirstName,
-            trimmedLastName,
-            trimmedTagline,
-            trimmedPronouns,
-            trimmedOrganization,
-            trimmedAddress,
-            trimmedCity,
-            trimmedState,
-            trimmedZip,
-            frppOptIn,
-            rmwOptIn,
-            dzOptIn
-        );
-      } else {
-        return updateUserProfile(
-            trimmedFirstName,
-            trimmedLastName,
-            trimmedTagline,
-            trimmedPronouns,
-            trimmedOrganization,
-            trimmedAddress,
-            trimmedCity,
-            trimmedState,
-            trimmedZip,
-            frppOptIn,
-            rmwOptIn,
-            dzOptIn
-        );
-      }
-  }
-
-  Future addUserProfile(
-      String firstName,
-      String lastName,
-      String tagline,
-      String pronouns,
-      String organization,
-      String address,
-      String city,
-      String state,
-      String zip,
-      bool frppOptIn,
-      bool rmwOptIn,
-      bool dzOptIn
-  ) async {
-      await userProfilesCollection.doc(uid).set(
-          {
-            'firstName': "Brownie",
-            'lastName': "Booo",
-            'tagline' : "",
-            'pronouns': "",
-            'organization': "",
-            'address': "",
-            'city': "",
-            'state': "",
-            'zip': "",
-            'frppOptIn': false,
-            'rmwOptIn': false,
-            'dzOptIn': false,
-          }
-      );
-  }
-
-  Future updateUserProfile(
-      String firstName,
-      String lastName,
-      String tagline,
-      String pronouns,
-      String organization,
-      String address,
-      String city,
-      String state,
-      String zip,
-      bool frppOptIn,
-      bool rmwOptIn,
-      bool dzOptIn
-  ) async {
-
-    var shouldUpdate = await isCachedUserProfileDifferent(
-      firstName,
-      lastName,
-      tagline,
-      pronouns,
-      organization,
-      address,
-      city,
-      state,
-      zip,
-      frppOptIn,
-      rmwOptIn,
-      dzOptIn
+    var cachedUserProfile = await getCurrentUserProfileFromCache();
+    var updatedUserProfile = AppUserProfile(
+        trimmedFirstName,
+        trimmedLastName,
+        tagline: trimmedTagline,
+        pronouns: trimmedPronouns,
+        organization: trimmedOrganization,
+        address: trimmedAddress,
+        city: trimmedCity,
+        state: trimmedState,
+        zip: trimmedZip,
+        frppOptIn: frppOptIn,
+        rmwOptIn: rmwOptIn,
+        dzOptIn: dzOptIn
     );
+    
+    var shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
 
     if (!shouldUpdate) {
       showToast("Profile is already up-to-date");
@@ -182,15 +91,15 @@ class FirebaseDatabaseService {
 
     await userProfilesCollection.doc(uid).set(
         {
-          'firstName': firstName.trim(),
-          'lastName': lastName.trim(),
-          'tagline' : tagline.trim(),
-          'pronouns': pronouns.trim(),
-          'organization': organization.trim(),
-          'address': address.trim(),
-          'city': city.trim(),
-          'state': state.trim(),
-          'zip': zip.trim(),
+          'firstName': trimmedFirstName,
+          'lastName': trimmedLastName,
+          'tagline' : trimmedTagline,
+          'pronouns': trimmedPronouns,
+          'organization': trimmedOrganization,
+          'address': trimmedAddress,
+          'city': trimmedCity,
+          'state': trimmedState,
+          'zip': trimmedZip,
           'frppOptIn': frppOptIn,
           'rmwOptIn': rmwOptIn,
           'dzOptIn': dzOptIn,

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/firebase_registration_result.dart';
 import 'firebase_database_service.dart';
@@ -94,21 +95,43 @@ class FirebaseAuthService {
     }
   }
 
-  Future signOut() async {
+  Future<FirebaseAuthException?> signOut() async {
     try {
-      return await _auth.signOut();
-    } catch(e) {
-      developer.log(e.toString());
+      await _auth.signOut();
       return null;
+    } on FirebaseAuthException catch(e) {
+      developer.log(e.toString());
+      return e;
     }
   }
 
-  Future deleteUser() async {
+  Future<FirebaseAuthException?> deleteUser() async {
       try {
         User? user = _auth.currentUser;
         user?.delete();
-      } catch(e) {
+
+        // Don't sign out before deleting user because the user must be signed into to delete themselves
+        await signOut();
+
+        // Old user data will remain cached and the user can't re-register with the same email - even if the email isn't in Firebase!
+        clearPersistedUserData();
+
+        return null;
+      } on FirebaseAuthException catch(e) {
         developer.log(e.toString());
+        return e;
       }
+  }
+
+
+  //https://stackoverflow.com/questions/63930954/how-to-properly-call-firebasefirestore-instance-clearpersistence-in-flutter/64380036#64380036
+  Future<FirebaseAuthException?> clearPersistedUserData() async {
+    try {
+      //await FirebaseFirestore.instance.terminate();<-I'm hoping this isn't required as stated in the SO post, because it'll mean restarting Firestore :(
+      await FirebaseFirestore.instance.clearPersistence();
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e;
+    }
   }
 }

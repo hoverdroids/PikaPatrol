@@ -280,7 +280,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       isEditMode: isEditingProfile,
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
-        await firebaseAuthService.signOut();
+        var result = await firebaseAuthService.signOut();
+        final message = result?.message;
+        if (message != null) {
+          showToast(message);
+        }
       },
       onTapEdit: () {
         resetEditedUserProfileFields();
@@ -316,10 +320,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            await firebaseAuthService.deleteUser();
+            //TODO - CHRIS - delete the user profile when the user is deleted
 
-            // Don't sign out before deleting user because the user must be signed into to delete themselves
-            await firebaseAuthService.signOut();
+            var result = await firebaseAuthService.deleteUser();
+            var message = result?.message;
+            if (message != null) {
+              //There was an error deleting the user, show the error and exit the process
+              showToast(message);
+              return;
+            }
+
             showToast("Account Deleted");
           },
         );

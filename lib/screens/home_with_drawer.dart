@@ -26,6 +26,7 @@ import 'package:pika_patrol/screens/training_screens_pager.dart';
 import '../model/firebase_registration_result.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
+import 'dart:developer' as developer;
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -100,6 +101,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     //If the user signed in and the user profile hasn't been filled out, force the profile open
     //This should only happen when the app is opened and the user is signed in, so the profile screen isn't displayed yet.
     if (forceProfileOpen) {
+      isEditingProfile = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scaffoldKey.currentState?.openEndDrawer();
       });
@@ -115,10 +117,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         drawer: buildDrawer(context, user, userProfile, bottom),
         endDrawer: buildEndDrawer(context, user, userProfile, bottom),
         onEndDrawerChanged: (isOpen) {
+          // developer.log("IsOpen:$isOpen");
+
           //If the user tries to close the profile screen with an incomplete profile, force it back open
           if (isOpen && forceProfileOpen && !isEditingProfile) {
+            // developer.log("Setting isEditingProfile true. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             setState((){ isEditingProfile = true; });
           } else if (forceProfileOpen && !isOpen) {
+            // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
             showToast("You must enter the required fields");
           }

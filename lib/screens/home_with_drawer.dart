@@ -183,6 +183,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   Widget buildDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
+
+    var avatarTitle = "Login";
+    var avatarSubtitle = "";
+    if (user != null) {
+      if (userProfile == null) {
+        //A profile has not been initialized
+        avatarTitle = "Empty User Profile";
+      } else {
+        //A profile has been initialized
+        avatarTitle = "${userProfile.firstName} ${userProfile.lastName}";
+        avatarSubtitle = userProfile.tagline;
+      }
+    }
+
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
       leftIconType: ThemeGroupType.MOP,
@@ -214,8 +228,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",
           avatarImageUrl: "assets/images/pika4.jpg",
-          avatarTitle: userProfile == null ? "Login" : "${userProfile.firstName} ${userProfile.lastName}",
-          avatarSubtitle: userProfile == null ? "" : userProfile.tagline,
+          avatarTitle: avatarTitle,
+          avatarSubtitle: avatarSubtitle,
           avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
           cardElevationLevel: ElevationLevel.LOW,
           usePolygonAvatar: true,
@@ -250,7 +264,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                 ] else if(showSignIn) ... [
                   buildLoginScreen(context, firebaseAuthService),
                 ] else ... [
-                  buildRegisterScreen(context, firebaseAuthService),
+                  buildRegisterScreen(context, firebaseAuthService, firebaseDatabaseService),
                 ],
                 if(loading) ... [
                   buildLoadingOverlay(context)
@@ -424,7 +438,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
+  Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService, FirebaseDatabaseService firebaseDatabaseService) {
     return LoginRegisterScreen(
       key: _registerKey,
       isLogin: false,
@@ -472,7 +486,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
 
         if (result.appUser != null) {
-          onRegistrationSuccess(result);
+          onRegistrationSuccess(firebaseDatabaseService, result);
         } else {
           await onRegistrationFailed(result);
         }
@@ -482,7 +496,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  onRegistrationSuccess(FirebaseRegistrationResult result) {
+  onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult result) async {
     showToast("Registered ${result.email} as a new user");
   }
 

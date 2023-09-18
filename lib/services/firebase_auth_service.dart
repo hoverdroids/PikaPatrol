@@ -127,7 +127,7 @@ class FirebaseAuthService {
   //https://stackoverflow.com/questions/63930954/how-to-properly-call-firebasefirestore-instance-clearpersistence-in-flutter/64380036#64380036
   Future<FirebaseAuthException?> clearPersistedUserData() async {
     try {
-      //await FirebaseFirestore.instance.terminate();<-I'm hoping this isn't required as stated in the SO post, because it'll mean restarting Firestore :(
+      //await FirebaseFirestore.instance.terminate();//<-I'm hoping this isn't required as stated in the SO post, because it'll mean restarting Firestore :(
       await FirebaseFirestore.instance.clearPersistence();
       return null;
     } on FirebaseAuthException catch (e) {

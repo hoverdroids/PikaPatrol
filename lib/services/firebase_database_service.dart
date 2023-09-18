@@ -54,6 +54,25 @@ class FirebaseDatabaseService {
       cachedUserProfile.dzOptIn != dzOptIn;
   }
 
+  Future initializeUserProfile() async {
+    await userProfilesCollection.doc(uid).set(
+        {
+          'firstName': "Brownie",
+          'lastName': "Booo",
+          'tagline' : "",
+          'pronouns': "",
+          'organization': "",
+          'address': "",
+          'city': "",
+          'state': "",
+          'zip': "",
+          'frppOptIn': false,
+          'rmwOptIn': false,
+          'dzOptIn': false,
+        }
+    );
+  }
+
   Future updateUserProfile(
       String firstName,
       String lastName,

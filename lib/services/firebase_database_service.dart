@@ -54,23 +54,95 @@ class FirebaseDatabaseService {
       cachedUserProfile.dzOptIn != dzOptIn;
   }
 
-  Future initializeUserProfile() async {
-    await userProfilesCollection.doc(uid).set(
-        {
-          'firstName': "Brownie",
-          'lastName': "Booo",
-          'tagline' : "",
-          'pronouns': "",
-          'organization': "",
-          'address': "",
-          'city': "",
-          'state': "",
-          'zip': "",
-          'frppOptIn': false,
-          'rmwOptIn': false,
-          'dzOptIn': false,
-        }
-    );
+  Future addOrUpdateUserProfile(
+      String firstName,
+      String lastName,
+      String tagline,
+      String pronouns,
+      String organization,
+      String address,
+      String city,
+      String state,
+      String zip,
+      bool frppOptIn,
+      bool rmwOptIn,
+      bool dzOptIn
+  ) async {
+      var cachedUserProfile = await getCurrentUserProfileFromCache();
+
+      final trimmedFirstName = firstName.trim();
+      final trimmedLastName = lastName.trim();
+      final trimmedTagline = tagline.trim();
+      final trimmedPronouns = pronouns.trim();
+      final trimmedOrganization = organization.trim();
+      final trimmedAddress = address.trim();
+      final trimmedCity = city.trim();
+      final trimmedState = state.trim();
+      final trimmedZip = zip.trim();
+
+      if (cachedUserProfile == null) {
+        return addUserProfile(
+            trimmedFirstName,
+            trimmedLastName,
+            trimmedTagline,
+            trimmedPronouns,
+            trimmedOrganization,
+            trimmedAddress,
+            trimmedCity,
+            trimmedState,
+            trimmedZip,
+            frppOptIn,
+            rmwOptIn,
+            dzOptIn
+        );
+      } else {
+        return updateUserProfile(
+            trimmedFirstName,
+            trimmedLastName,
+            trimmedTagline,
+            trimmedPronouns,
+            trimmedOrganization,
+            trimmedAddress,
+            trimmedCity,
+            trimmedState,
+            trimmedZip,
+            frppOptIn,
+            rmwOptIn,
+            dzOptIn
+        );
+      }
+  }
+
+  Future addUserProfile(
+      String firstName,
+      String lastName,
+      String tagline,
+      String pronouns,
+      String organization,
+      String address,
+      String city,
+      String state,
+      String zip,
+      bool frppOptIn,
+      bool rmwOptIn,
+      bool dzOptIn
+  ) async {
+      await userProfilesCollection.doc(uid).set(
+          {
+            'firstName': "Brownie",
+            'lastName': "Booo",
+            'tagline' : "",
+            'pronouns': "",
+            'organization': "",
+            'address': "",
+            'city': "",
+            'state': "",
+            'zip': "",
+            'frppOptIn': false,
+            'rmwOptIn': false,
+            'dzOptIn': false,
+          }
+      );
   }
 
   Future updateUserProfile(
@@ -129,24 +201,30 @@ class FirebaseDatabaseService {
   }
   
   AppUserProfile? _userProfileFromSnapshot(DocumentSnapshot snapshot) {
-    if (uid == null) {
+    var exists = snapshot.exists;
+    if (uid == null || !exists) {
       return null;
     }
-    return AppUserProfile(
-      snapshot.get('firstName')?.trim() ?? '',
-      snapshot.get('lastName')?.trim() ?? '',
-      uid: uid?.trim(),
-      tagline: snapshot.get('tagline')?.trim() ?? '',
-      pronouns: snapshot.get('pronouns')?.trim() ?? '',
-      organization: snapshot.get('organization')?.trim() ?? '',
-      address: snapshot.get('address')?.trim() ?? '',
-      city: snapshot.get('city')?.trim() ?? '',
-      state: snapshot.get('state')?.trim() ?? '',
-      zip: snapshot.get('zip')?.trim() ?? '',
-      frppOptIn: snapshot.get('frppOptIn') ?? false,
-      rmwOptIn: snapshot.get('rmwOptIn') ?? false,
-      dzOptIn: snapshot.get('dzOptIn') ?? false,
-    );
+
+    try {
+      return AppUserProfile(
+        snapshot.get('firstName')?.trim() ?? '',
+        snapshot.get('lastName')?.trim() ?? '',
+        uid: uid?.trim(),
+        tagline: snapshot.get('tagline')?.trim() ?? '',
+        pronouns: snapshot.get('pronouns')?.trim() ?? '',
+        organization: snapshot.get('organization')?.trim() ?? '',
+        address: snapshot.get('address')?.trim() ?? '',
+        city: snapshot.get('city')?.trim() ?? '',
+        state: snapshot.get('state')?.trim() ?? '',
+        zip: snapshot.get('zip')?.trim() ?? '',
+        frppOptIn: snapshot.get('frppOptIn') ?? false,
+        rmwOptIn: snapshot.get('rmwOptIn') ?? false,
+        dzOptIn: snapshot.get('dzOptIn') ?? false,
+      );
+    } catch(e){
+      return null;
+    }
   }
 
   Stream<AppUserProfile?> get userProfile {

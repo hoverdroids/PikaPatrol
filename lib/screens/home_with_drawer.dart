@@ -332,8 +332,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapSave: () async {
         setState(() => loading = true);
 
-        await firebaseDatabaseService.updateUserProfile(
-            editedFirstName ?? userProfile?.firstName ?? "NO USER PROFILE",
+        await firebaseDatabaseService.addOrUpdateUserProfile(
+            editedFirstName ?? userProfile?.firstName ?? "",
             editedLastName ?? userProfile?.lastName ?? "",
             editedTagline ?? userProfile?.tagline ?? "",
             editedPronouns ?? userProfile?.pronouns ?? "",

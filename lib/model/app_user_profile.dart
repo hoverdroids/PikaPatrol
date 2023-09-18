@@ -31,4 +31,8 @@ class AppUserProfile {
       this.dzOptIn = false
     }
   );
+
+  bool areRequiredFieldsValid() {
+    return firstName.isNotEmpty && lastName.isNotEmpty && zip.isNotEmpty;
+  }
 }

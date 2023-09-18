@@ -96,7 +96,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     AppUser? user = Provider.of<AppUser?>(context);
     AppUserProfile? userProfile = Provider.of<AppUserProfile?>(context);
 
-    var forceProfileOpen = false;//user != null && userProfile == null;
+    var forceProfileOpen = user != null && userProfile != null && !userProfile.areRequiredFieldsValid();
 
     //If the user signed in and the user profile hasn't been filled out, force the profile open
     //This should only happen when the app is opened and the user is signed in, so the profile screen isn't displayed yet.

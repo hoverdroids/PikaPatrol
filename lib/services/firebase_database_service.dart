@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:path/path.dart';
@@ -22,6 +23,33 @@ class FirebaseDatabaseService {
     var options = const GetOptions(source: Source.cache);
     var userProfileSnapshot = await userProfilesCollection.doc(uid).get(options);
     return _userProfileFromSnapshot(userProfileSnapshot);
+  }
+
+  //Don't use class uid because it will still be null immediately after registration.
+  //Instead, pass the newly registered user's ID and add a user profile to simplify the streams
+  //providing the AppUserProfile
+  Future<FirebaseAuthException?> initializeUser(String newlyRegisteredUid) async {
+    try {
+      await userProfilesCollection.doc(newlyRegisteredUid).set(
+          {
+            'firstName': "",
+            'lastName': "",
+            'tagline': "",
+            'pronouns': "",
+            'organization': "",
+            'address': "",
+            'city': "",
+            'state': "",
+            'zip': "",
+            'frppOptIn': false,
+            'rmwOptIn': false,
+            'dzOptIn': false,
+          }
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return e;
+    }
   }
 
   bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) {

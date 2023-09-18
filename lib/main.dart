@@ -49,22 +49,24 @@ Future<void> main() async {
           initialData: null,
           builder: (context, appUserSnapshot) {
 
-            final AppUser? appUser = appUserSnapshot.data;
+            final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
 
-            return MultiProvider(
-              providers: [
-                Provider<AppUser?>.value(
-                  value: appUser
-                ),
-              ],
-              builder: (context, child) {
+            var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
+            firebaseDatabaseService.uid = appUser?.uid;
 
-                var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
-                firebaseDatabaseService.uid = appUser?.uid;
+            return StreamBuilder<AppUserProfile?>(
+              stream: firebaseDatabaseService.userProfile,
+              initialData: null,
+              builder: (context, appUserProfileSnapshot) {
 
-                return StreamProvider<AppUserProfile?>.value(
-                    value: firebaseDatabaseService.userProfile,
-                    initialData: null,
+                final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
+
+                return MultiProvider(
+                    providers: [
+                      Provider<AppUser?>.value(
+                          value: appUser
+                      ),
+                    ],
                     child: const MyApp()
                 );
               }

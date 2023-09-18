@@ -83,8 +83,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool? editedRmwOptIn;
   bool? editedDzOptIn;
 
-  DateTime? appUserNotNullTime;
-
   @override
   Widget build(BuildContext context) {
 
@@ -98,19 +96,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     AppUser? user = Provider.of<AppUser?>(context);
     AppUserProfile? userProfile = Provider.of<AppUserProfile?>(context);
 
-    if (user == null) {
-      appUserNotNullTime = null;
-    } else{
-      appUserNotNullTime ??= DateTime.now();
-    }
-
-    //There is a delay between user and user profile being propagated after a user signs in and has already filled out the profile
-    //So, need a slight delay so that only a real null user profile forces open the profile screen
-    var previousTime = appUserNotNullTime ?? DateTime.now();
-    var deltaTimeInSeconds = DateTime.now().difference(previousTime).inSeconds;
-    var enoughTimeElapsed = deltaTimeInSeconds >= 5;
-
-    var forceProfileOpen = user != null && userProfile == null && enoughTimeElapsed;
+    var forceProfileOpen = false;//user != null && userProfile == null;
 
     //If the user signed in and the user profile hasn't been filled out, force the profile open
     //This should only happen when the app is opened and the user is signed in, so the profile screen isn't displayed yet.
@@ -525,7 +511,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
 
         if (result.appUser != null) {
-          onRegistrationSuccess(firebaseDatabaseService, result);
+          await onRegistrationSuccess(firebaseDatabaseService, result);
         } else {
           await onRegistrationFailed(result);
         }
@@ -535,8 +521,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult result) async {
-    showToast("Registered ${result.email} as a new user");
+  onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult registrationResult) async {
+    showToast("Registered ${registrationResult.email}");
+
+    var newlyRegisteredUid = registrationResult.appUser?.uid;
+    if (newlyRegisteredUid != null) {
+      var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
+      if (initializationException == null) {
+        showToast("Initialized ${registrationResult.email}");
+      }
+    }
   }
 
   onRegistrationFailed(FirebaseRegistrationResult result) async {

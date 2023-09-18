@@ -95,6 +95,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     AppUser? user = Provider.of<AppUser?>(context);
     AppUserProfile? userProfile = Provider.of<AppUserProfile?>(context);
 
+    var forceProfileOpen = user != null && userProfile == null;
+
+    //If the user signed in and the user profile hasn't been filled out, force the profile open
+    //This should only happen when the app is opened and the user is signed in, so the profile screen isn't displayed yet.
+    if (forceProfileOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scaffoldKey.currentState?.openEndDrawer();
+      });
+    }
+
     return Scaffold(
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
@@ -103,7 +113,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         body: buildBody(context, width),
         bottomNavigationBar: buildBottomNavigationBar(context, user),
         drawer: buildDrawer(context, user, userProfile, bottom),
-        endDrawer: buildEndDrawer(context, user, userProfile, bottom)
+        endDrawer: buildEndDrawer(context, user, userProfile, bottom),
+        onEndDrawerChanged: (isOpen) {
+          //If the user tries to close the profile screen with an incomplete profile, force it back open
+          if (isOpen && forceProfileOpen && !isEditingProfile) {
+            setState((){ isEditingProfile = true; });
+          } else if (forceProfileOpen && !isOpen) {
+            _scaffoldKey.currentState?.openEndDrawer();
+            showToast("You must enter the required fields");
+          }
+        },
     );
   }
 
@@ -246,7 +265,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     return SimpleClipPathDrawer(
         padding: EdgeInsets.fromLTRB(0, 0, 0,bottom),
-        widthPercent: 0.9,
+        widthPercent: 0.99,
         leftIconType: ThemeGroupType.MOP,
         leftIconClickedCallback: () => Navigator.pop(context),
         showRightIcon: isEditingProfile ? true : false,

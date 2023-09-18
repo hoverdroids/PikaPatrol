@@ -66,6 +66,9 @@ Future<void> main() async {
                       Provider<AppUser?>.value(
                           value: appUser
                       ),
+                      Provider<AppUserProfile?>.value(
+                        value: appUserProfile
+                      )
                     ],
                     child: const MyApp()
                 );

@@ -108,13 +108,13 @@ class FirebaseAuthService {
   Future<FirebaseAuthException?> deleteUser() async {
       try {
         User? user = _auth.currentUser;
-        user?.delete();
+        await user?.delete();
 
         // Don't sign out before deleting user because the user must be signed into to delete themselves
         await signOut();
 
         // Old user data will remain cached and the user can't re-register with the same email - even if the email isn't in Firebase!
-        clearPersistedUserData();
+        await clearPersistedUserData();
 
         return null;
       } on FirebaseAuthException catch(e) {

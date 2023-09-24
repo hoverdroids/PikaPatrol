@@ -359,7 +359,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            //TODO - CHRIS - delete the user profile when the user is deleted
+            await firebaseDatabaseService.deleteUserProfile();
 
             var result = await firebaseAuthService.deleteUser();
             var message = result?.message;

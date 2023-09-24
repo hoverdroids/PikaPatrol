@@ -136,6 +136,10 @@ class FirebaseDatabaseService {
 
     showToast("Profile updated");
   }
+
+  Future deleteUserProfile() async {
+    return userProfilesCollection.doc(uid).delete();
+  }
   
   AppUserProfile? _userProfileFromSnapshot(DocumentSnapshot snapshot) {
     var exists = snapshot.exists;

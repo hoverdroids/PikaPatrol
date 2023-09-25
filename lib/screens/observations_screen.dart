@@ -10,6 +10,8 @@ import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/card_scroll.dart';
 import 'package:provider/provider.dart';
+import '../model/app_user.dart';
+import '../utils/observation_utils.dart';
 import 'observation_screen.dart';
 import 'dart:developer' as developer;
 
@@ -33,6 +35,10 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
+
+  bool localObservationsNeedUploaded() {
+    return localObservations.isNotEmpty && localObservations.any((Observation observation) => observation.uid == null || observation.uid?.isEmpty == true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -92,6 +98,8 @@ class ObservationsPageState extends State<ObservationsPage> {
           localObservations.add(observation);
         }
 
+        var user = Provider.of<AppUser?>(context);
+
         return SizedBox(
             width: double.infinity,
             height: double.infinity,
@@ -142,21 +150,24 @@ class ObservationsPageState extends State<ObservationsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              //TODO - upload all local observations at once
-                              /*if(localObservations.isNotEmpty) ... [
+                              if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
                                     onPressedCallback: () async {
                                       var hasConnection = await DataConnectionChecker().hasConnection;
-                                      if(hasConnection) {
+                                      if(hasConnection && context.mounted) {
                                         showToast("Uploading observations");
+
+                                        for (var observation in localObservations) {
+                                          saveObservation(user, observation, true);
+                                        }
                                       } else {
                                         showToast("Could not upload observations. No data connection.");
                                       }
                                     }
                                 )
-                              ]*/
+                              ]
                             ],
                           ),
                           Stack(

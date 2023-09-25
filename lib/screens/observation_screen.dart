@@ -42,6 +42,8 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
+import '../utils/observation_utils.dart';
+
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
 
@@ -172,7 +174,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   if (_formKey.currentState?.validate() == true) {
                     _formKey.currentState?.save();
 
-                    saveLocalObservation();
+                    saveLocalObservation(widget.observation);
 
                     var hasConnection = await DataConnectionChecker().hasConnection;
                     if(!hasConnection) {
@@ -187,7 +189,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                       widget.observation.observerUid = user.uid;
 
                       //Share with others
-                      await saveObservation(user);
+                      await saveObservation(user, widget.observation, false);
+
+                      setState(() {
+                        _isUploading = false;
+                        widget.isEditMode = false;
+                      });
                     } else {
                       showToast("You must login to upload an observation.\nObservation saved locally.");
                     }
@@ -196,90 +203,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               },
             )
     );
-  }
-
-  Future saveObservation(AppUser? user) async {
-    if (context.mounted) {
-
-      var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
-
-      var imageUrls = widget.observation.imageUrls;
-      if (imageUrls != null && imageUrls.isNotEmpty) {
-        widget.observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
-      }
-      developer.log("ImageUrls: ${widget.observation.imageUrls.toString()}");
-
-      var audioUrls = widget.observation.audioUrls;
-      if (audioUrls != null && audioUrls.isNotEmpty) {
-        widget.observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
-      }
-      developer.log("AudioUrls: ${widget.observation.audioUrls.toString()}");
-
-      await databaseService.updateObservation(widget.observation);
-
-      setState(() {
-        // Update local observation after successful upload because the uid will be non empty now
-        saveLocalObservation();
-
-        _isUploading = false;
-        widget.isEditMode = false;
-      });
-    }
-  }
-
-  void saveLocalObservation() {
-    var box = Hive.box<LocalObservation>('observations');
-
-    //The observation screen can be opened from an online observation, which means that the dbId can be null.
-    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
-    Map<dynamic, dynamic> raw = box.toMap();
-    List list = raw.values.toList();
-
-    for (var element in list) {
-      LocalObservation localObservation = element;
-      if(localObservation.uid == widget.observation.uid) {
-        widget.observation.dbId = localObservation.key;
-      }
-    }
-
-    var localObservation = LocalObservation(
-        uid: widget.observation.uid ?? "",
-        observerUid: widget.observation.observerUid ?? "",
-        altitude: widget.observation.altitude ?? 0.0,
-        longitude: widget.observation.longitude ?? 0.0,
-        latitude: widget.observation.latitude ?? 0.0,
-        name: widget.observation.name ?? "",
-        location: widget.observation.location ?? "",
-        date: widget.observation.date?.toString() ?? "",
-        signs: widget.observation.signs ?? <String>[],
-        pikasDetected: widget.observation.pikasDetected ?? "",
-        distanceToClosestPika: widget.observation.distanceToClosestPika ?? "",
-        searchDuration: widget.observation.searchDuration ?? "",
-        talusArea: widget.observation.talusArea ?? "",
-        temperature: widget.observation.temperature ?? "",
-        skies: widget.observation.skies ?? "",
-        wind: widget.observation.wind ?? "",
-        otherAnimalsPresent: widget.observation.otherAnimalsPresent ?? <String>[],
-        siteHistory: widget.observation.siteHistory ?? "",
-        comments: widget.observation.comments ?? "",
-        imageUrls: widget.observation.imageUrls ?? <String>[],
-        audioUrls: widget.observation.audioUrls ?? <String>[]
-    );
-
-    if(widget.observation.dbId == null) {
-      box.add(localObservation);
-
-      //If the user remains on the observation page, they can edit/save again. In that case, they need
-      //to use the same database ID instead of adding a new entry each time
-      widget.observation.dbId = localObservation.key;
-    } else {
-      box.put(widget.observation.dbId, localObservation);
-    }
-
-    setState(() {
-      _isUploading = false;
-      widget.isEditMode = false;
-    });
   }
 
   Box? box;

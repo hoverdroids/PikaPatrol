@@ -1,3 +1,4 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -6,16 +7,15 @@ import 'package:material_themes_widgets/screens/onboarding_screen.dart';
 
 class TrainingScreensPager extends StatefulWidget {
 
-  final Function backClickedCallback;
+  final VoidCallback? backClickedCallback;
 
-  TrainingScreensPager({this.backClickedCallback});
+  const TrainingScreensPager({super.key, this.backClickedCallback});
 
   @override
-  _TrainingScreensPagerState createState() => _TrainingScreensPagerState();
-
+  TrainingScreensPagerState createState() => TrainingScreensPagerState();
 }
 
-class _TrainingScreensPagerState extends State<TrainingScreensPager> {
+class TrainingScreensPagerState extends State<TrainingScreensPager> {
 
   LiquidController liquidController = LiquidController();
 
@@ -93,9 +93,20 @@ class _TrainingScreensPagerState extends State<TrainingScreensPager> {
             ],
             enableLoop: false,
             fullTransitionValue: 300,
-            enableSlideIcon: true,
+            slideIconWidget: Container(
+              margin: const EdgeInsets.all(10.0),
+              decoration: const BoxDecoration(
+                  color: Colors.white,//TODO - CHRIS - use theme manager
+                  shape: BoxShape.circle
+              ),
+              child: ThemedIconButton(
+                  Icons.arrow_back_ios,
+                  emphasis: Emphasis.HIGH,
+                  type: ThemeGroupType.POM
+              ),
+            ),
             waveType: WaveType.liquidReveal,
-            positionSlideIcon: 0.5,
+            positionSlideIcon: 0.99,
             liquidController: liquidController,
             ignoreUserGestureWhileAnimating: false,
             disableUserGesture: false,

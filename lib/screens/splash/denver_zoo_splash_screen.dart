@@ -1,13 +1,17 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 
 class DenverZooSplashScreen extends Container {
+
+  DenverZooSplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color(0xff39156A),
+      color: const Color(0xff39156A),
       width: double.infinity,
       height: double.infinity,
       child: SafeArea(
@@ -27,7 +31,7 @@ class DenverZooSplashScreen extends Container {
                       iconSize: IconSize.MEDIUM,
                       onPressedCallback: () => {
                         Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                            MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                         )
                       }
                   )

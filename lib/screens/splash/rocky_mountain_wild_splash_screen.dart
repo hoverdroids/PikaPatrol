@@ -1,9 +1,13 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 
 class RockyMountainWildSplashScreen extends Container {
+
+  RockyMountainWildSplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -27,7 +31,7 @@ class RockyMountainWildSplashScreen extends Container {
                     iconSize: IconSize.MEDIUM,
                     onPressedCallback: () => {
                       Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                          MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                       )
                     }
                 )

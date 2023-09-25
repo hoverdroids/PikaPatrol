@@ -1,3 +1,4 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -6,6 +7,9 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 
 class PartneringWithSplashScreen extends Container {
+
+  PartneringWithSplashScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -20,7 +24,7 @@ class PartneringWithSplashScreen extends Container {
                 child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
                     child: Shimmer.fromColors(
-                      period: Duration(milliseconds: 1500),
+                      period: const Duration(milliseconds: 1500),
                       baseColor: Colors.white,
                       highlightColor: Colors.brown,
                       child: ThemedH3(
@@ -39,7 +43,7 @@ class PartneringWithSplashScreen extends Container {
                     iconSize: IconSize.MEDIUM,
                     onPressedCallback: () => {
                       Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                          MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                       )
                     }
                 )

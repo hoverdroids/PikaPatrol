@@ -1,4 +1,4 @@
-
+// ignore_for_file: depend_on_referenced_packages
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -12,28 +12,30 @@ class AudioContentScroll extends StatefulWidget {
 
   final List<String> urls;
   final String title;
-  final double imageHeight;
-  final double imageWidth;
+  final double? imageHeight;
+  final double? imageWidth;
   final EdgeInsets padding;
   final List<Widget> icons;
-  final List<Function> iconsClickedCallbacks;
+  final List<VoidCallback> iconsClickedCallbacks;
   final String emptyListMessage;
 
-  AudioContentScroll({
-    this.urls,
+  const AudioContentScroll({
+    super.key,
+    this.urls = const <String>[],
     this.title = "",
     this.imageHeight,
     this.imageWidth,
     this.padding = const EdgeInsets.symmetric(horizontal: 20.0),
-    this.icons,
-    this.iconsClickedCallbacks,
+    this.icons = const <Widget>[],
+    this.iconsClickedCallbacks = const <VoidCallback>[],
     this.emptyListMessage = ""
   });
 
-  _AudioContentScrollState createState() => _AudioContentScrollState();
+  @override
+  AudioContentScrollState createState() => AudioContentScrollState();
 }
 
-class _AudioContentScrollState extends State<AudioContentScroll>{
+class AudioContentScrollState extends State<AudioContentScroll>{
 
   AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer();
 
@@ -53,7 +55,7 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
       child: Column(
         children: <Widget>[
           _buildHeaderRow(),
-          if (widget.urls == null || widget.urls.isEmpty) ... [
+          if (widget.urls.isEmpty) ... [
             miniTransparentDivider,
             _buildEmptyRow(context),
           ] else ... [
@@ -68,7 +70,7 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
     return Row(
       children: [
         ThemedSubTitle(widget.title, type: ThemeGroupType.POM),
-        if (widget.icons != null) ... [
+        if (widget.icons.isNotEmpty) ... [
           Expanded(
             flex: 1,
             child: Row(
@@ -84,7 +86,7 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
   Widget _buildEmptyRow(BuildContext context) {
     return Card(
       color: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).cardTheme.color,
-      child: Container(
+      child: SizedBox(
         width: double.infinity,
         height: widget.imageHeight,
         child: Center(
@@ -95,14 +97,14 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
   }
 
   Widget _buildGridView() {
-    return Container(
+    return SizedBox(
       height: widget.imageHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: widget.urls.length,
         itemBuilder: (BuildContext context, int index) {
           return Container(
-            margin: EdgeInsets.symmetric(
+            margin: const EdgeInsets.symmetric(
               horizontal: 10.0,
               vertical: 15.0,
             ),
@@ -110,7 +112,7 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10.0),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Colors.black54,
                   offset: Offset(0.0, 4.0),
@@ -169,7 +171,7 @@ class _AudioContentScrollState extends State<AudioContentScroll>{
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(
-                        padding: EdgeInsets.all(paddingMini),
+                        padding: const EdgeInsets.all(paddingMini),
                         child: ThemedTitle(basenameWithoutExtension(widget.urls[index]), type:ThemeGroupType.MOM),
                       ),
                     ),

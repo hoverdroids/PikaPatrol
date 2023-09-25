@@ -1,38 +1,36 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'custom_pan_gesture_recognizer.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
 
-  List<Observation> observations;
-  var cardAspectRatio;
-  var widgetAspectRatio;
+  List<Observation> observations = <Observation>[];
+  late double cardAspectRatio;
+  late double widgetAspectRatio;
 
   var currentPage = 0.0;
   var padding = 20.0;
   var verticalInset = 20.0;
 
-  CardScrollWidget(this.observations, {this.currentPage = 0.0}){
+  CardScrollWidget(this.observations, {super.key, this.currentPage = 0.0}){
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
-    if (this.observations == null) {
-      this.observations = <Observation>[];
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return observations == null || observations.isEmpty ? _buildEmptyCards() : _buildCards();
+    return observations.isEmpty ? _buildEmptyCards() : _buildCards();
   }
 
   Widget _buildCards() {
-    return new AspectRatio(
+    return AspectRatio(
       aspectRatio: widgetAspectRatio,
       child: LayoutBuilder(builder: (context, constraints) {
         var width = constraints.maxWidth;
@@ -47,18 +45,18 @@ class CardScrollWidget extends StatelessWidget {
         var primaryCardLeft = safeWidth - widthOfPrimaryCard;
         var horizontalInset = primaryCardLeft / 2;
 
-        List<Widget> cardList = new List();
+        List<Widget> cardList = <Widget>[];
 
-        _onPanDown(DragUpdateDetails details) {
-          print('Pan Down');
+        onPanDown(DragUpdateDetails details) {
+          developer.log('Pan Down');
         }
 
-        _onPanUpdate(DragUpdateDetails details) {
-          print('Pan Update');
+        onPanUpdate(DragUpdateDetails details) {
+          developer.log('Pan Update');
         }
 
-        _onPanEnd(_) {
-          print('Pan End');
+        onPanEnd(_) {
+          developer.log('Pan End');
           return true;
         }
 
@@ -80,7 +78,7 @@ class CardScrollWidget extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16.0),
               child: Container(
-                decoration: BoxDecoration(color: Colors.white, boxShadow: [
+                decoration: const BoxDecoration(color: Colors.white, boxShadow: [
                   BoxShadow(
                       color: Colors.black12,
                       offset: Offset(3.0, 6.0),
@@ -89,12 +87,17 @@ class CardScrollWidget extends StatelessWidget {
                 child: AspectRatio(
                   aspectRatio: cardAspectRatio,
                   child: GestureDetector(
-                    onTap: () => print('Bummer'),
+                    onTap: () => developer.log('Bummer'),
                     child: Stack(
                       fit: StackFit.expand,
                       children: <Widget>[
-                        UniversalImage(observations[i].imageUrls.isNotEmpty ? observations[i].imageUrls[0] : null),
-                        if (observations[i].uid.isNotEmpty) ... [
+                        if (observations[i].imageUrls?.isNotEmpty == true) ... [
+                          //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
+                          UniversalImage(observations[i].imageUrls?.elementAt(0) ?? ""),
+                        ] else ... [
+                          const UniversalImage("")
+                        ],
+                        if (observations[i].uid?.isNotEmpty == true) ... [
                           Align(
                               alignment: Alignment.topLeft,
                               child: ThemedIconButton(Icons.cloud_upload, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
@@ -112,23 +115,25 @@ class CardScrollWidget extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: <Widget>[
                               Padding(
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 16.0, vertical: 8.0),
-                                child: Text(observations[i].name,//
-                                    style: TextStyle(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16.0,
+                                    vertical: 8.0),
+                                child: Text(observations[i].name ?? "BAD NAME",//
+                                    style: const TextStyle(
                                         color: Colors.white,
                                         fontSize: 25.0,
                                         fontFamily: "SF-Pro-Text-Regular")),
                               ),
-                              SizedBox(
+                              const SizedBox(
                                 height: 10.0,
                               ),
                               Padding(
                                 padding: const EdgeInsets.only(
                                     left: 12.0, bottom: 12.0),
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 22.0, vertical: 6.0),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 22.0,
+                                      vertical: 6.0),
                                   decoration: BoxDecoration(
                                       color: Colors.teal,
                                       borderRadius: BorderRadius.circular(20.0)),
@@ -136,9 +141,9 @@ class CardScrollWidget extends StatelessWidget {
                                     gestures: <Type, GestureRecognizerFactory>{
                                       CustomPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
                                             () => CustomPanGestureRecognizer(
-                                            onPanDown: () => _onPanDown,
-                                            onPanUpdate: () => _onPanUpdate,
-                                            onPanEnd:  () => _onPanEnd
+                                            onPanDown: () => onPanDown,
+                                            onPanUpdate: () => onPanUpdate,
+                                            onPanEnd:  () => onPanEnd
                                         ),
                                             (CustomPanGestureRecognizer instance) {},
                                       ),
@@ -149,7 +154,7 @@ class CardScrollWidget extends StatelessWidget {
                                         builder: (_) => MovieScreen(movie: movies[2]),
                                       ),
                                     ),*/
-                                    child: Text("View Observation",
+                                    child: const Text("View Observation",
                                         style: TextStyle(color: Colors.white)),
                                   ),
                                 ),

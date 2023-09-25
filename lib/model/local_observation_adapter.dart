@@ -1,4 +1,3 @@
-
 import 'package:hive/hive.dart';
 import 'local_observation.dart';
 

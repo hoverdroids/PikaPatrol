@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 
 class CustomPanGestureRecognizer extends OneSequenceGestureRecognizer {
@@ -6,10 +5,11 @@ class CustomPanGestureRecognizer extends OneSequenceGestureRecognizer {
   final Function onPanUpdate;
   final Function onPanEnd;
 
-  CustomPanGestureRecognizer(
-      {@required this.onPanDown,
-        @required this.onPanUpdate,
-        @required this.onPanEnd});
+  CustomPanGestureRecognizer({
+    required this.onPanDown,
+    required this.onPanUpdate,
+    required this.onPanEnd
+  });
 
   @override
   void addPointer(PointerEvent event) {

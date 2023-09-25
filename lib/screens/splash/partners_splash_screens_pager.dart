@@ -1,5 +1,5 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:pika_patrol/screens/splash/denver_zoo_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/front_range_pika_project_splash_screen.dart';
@@ -7,20 +7,22 @@ import 'package:pika_patrol/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/rocky_mountain_wild_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/partnering_with_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/if_then_splash_screen.dart';
-
 import '../home_with_drawer.dart';
 
 class PartnersSplashScreensPager extends StatefulWidget {
+
+  const PartnersSplashScreensPager({super.key});
+
   @override
-  _PartnersSplashScreensPagerState createState() => _PartnersSplashScreensPagerState();
+  PartnersSplashScreensPagerState createState() => PartnersSplashScreensPagerState();
 }
 
-class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> {
+class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> {
 
   LiquidController liquidController = LiquidController();
 
   Future<bool> _showNextSplashScreen() async {
-    await Future.delayed(Duration(milliseconds: 3000), () {});
+    await Future.delayed(const Duration(milliseconds: 3000), () {});
     return true;
   }
 
@@ -45,7 +47,7 @@ class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager>
 
               _showNextSplashScreen().then((value) {
                 Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => HomeWithDrawer())
+                    MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                 );
               });
             });
@@ -70,7 +72,6 @@ class _PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager>
         ],
         enableLoop: false,
         fullTransitionValue: 300,
-        enableSlideIcon: false,
         waveType: WaveType.liquidReveal,
         positionSlideIcon: 0.5,
         liquidController: liquidController,

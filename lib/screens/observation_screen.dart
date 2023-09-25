@@ -1,21 +1,18 @@
+// ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
 import 'dart:io';
-
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
-import 'package:data_connection_checker/data_connection_checker.dart';
+import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_audio_recorder/flutter_audio_recorder.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';  //for date format
-import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_fake_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
@@ -25,45 +22,53 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
-import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
-import 'package:provider/provider.dart';
+import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
+import 'package:intl/intl.dart';  //for date format
+import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
+import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:developer' as developer;
+
+import '../utils/observation_utils.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
 
   final Observation observation;
-  bool isEditMode;
+  late bool isEditMode;
 
-  ObservationScreen(this.observation) {
+  ObservationScreen(this.observation, {super.key}) {
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
     isEditMode = observation.uid == null ? true : false;
   }
 
   @override
-  _ObservationScreenState createState() => _ObservationScreenState();
+  ObservationScreenState createState() => ObservationScreenState();
 }
 
-class _ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
+class ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
 
   final _formKey = GlobalKey<FormState>();
 
-  EdgeInsets _horzPadding = EdgeInsets.symmetric(horizontal: 20.0);
+  final EdgeInsets _horzPadding = const EdgeInsets.symmetric(horizontal: 20.0);
 
-  ScrollController _scrollController;
-  AnimationController _colorAnimationController;
-  Animation _colorTween;
+  late ScrollController _scrollController;
+  late AnimationController _colorAnimationController;
+  late Animation<Color?> _colorTween;
 
   bool needsUpdated = false;
 
@@ -75,7 +80,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   bool _isUploading = false;
 
   bool _hideGeoFields = false;
-  bool _hideDateFields = false;
+  final bool _hideDateFields = false;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -89,18 +94,19 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   @override
   void initState() {
     _scrollController = ScrollController();
-    _colorAnimationController = AnimationController(vsync: this, duration: Duration(seconds: 0));
+    _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
+
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
 
-    final user = Provider.of<AppUser>(context);
+    final user = Provider.of<AppUser?>(context);
 
     _colorTween = ColorTween(
-        begin: Colors.transparent,
-        end: context.watch<MaterialThemesManager>().colorPalette().primary)
+        begin: context.watch<MaterialThemesManager>().colorPalette().secondary, //Colors.transparent,
+        end: context.watch<MaterialThemesManager>().colorPalette().secondary)
         .animate(_colorAnimationController);
 
     return Scaffold(
@@ -144,64 +150,53 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     );
   }
 
-  Widget _buildAppbar(AppUser user) {
+  Widget _buildAppbar(AppUser? user) {
     return AnimatedBuilder(
         animation: _colorAnimationController,
         builder: (context, child) =>
             IconTitleIconFakeAppBar(
-              shape: StadiumBorder(),
+              shape: const StadiumBorder(),
               backgroundColor: _colorTween.value,
               title: 'Make Observation',
-              titleType: ThemeGroupType.MOI,
+              titleType: ThemeGroupType.MOS,
               leftIcon: Icons.arrow_back,
-              leftIconType: ThemeGroupType.MOI,
+              leftIconType: ThemeGroupType.MOS,
               leftIconClickedCallback: () => Navigator.pop(context),
-              rightIcon: widget.isEditMode ? Icons.save : Icons.edit,
+              rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
               showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
-              rightIconType: ThemeGroupType.MOI,
+              rightIconType: ThemeGroupType.MOS,
               rightIconClickedCallback: () async {
                 if(!widget.isEditMode) {
                   setState(() {
                     widget.isEditMode = true;
                   });
                 } else {
-                  if (_formKey.currentState.validate()) {
-                    _formKey.currentState.save();
+                  if (_formKey.currentState?.validate() == true) {
+                    _formKey.currentState?.save();
 
-                    saveLocalObservation();
+                    saveLocalObservation(widget.observation);
 
                     var hasConnection = await DataConnectionChecker().hasConnection;
                     if(!hasConnection) {
-                      Fluttertoast.showToast(
-                          msg: "No connection found.\nObservation saved locally.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
+                      showToast("No connection found.\nObservation saved locally.");
                     } else if (user != null) {
                       setState((){
                         _isUploading = true;
                       });
 
-                      //If the observation was made when the user was not logged in, then edited after loggin in, the user
+                      //If the observation was made when the user was not logged in, then edited after logging in, the user
                       //id can be null. So update it now. This allows local observations to be uploaded when online.
                       widget.observation.observerUid = user.uid;
 
                       //Share with others
-                      await saveObservation(user);
+                      await saveObservation(user, widget.observation, false);
+
+                      setState(() {
+                        _isUploading = false;
+                        widget.isEditMode = false;
+                      });
                     } else {
-                      Fluttertoast.showToast(
-                          msg: "You must login to upload an observation.\nObservation saved locally.",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                          textColor: Colors.white,
-                          fontSize: 16.0
-                      );
+                      showToast("You must login to upload an observation.\nObservation saved locally.");
                     }
                   }
                 }
@@ -210,82 +205,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     );
   }
 
-  Future saveObservation(AppUser user) async {
-
-    var databaseService = FirebaseDatabaseService(uid: user != null ? user.uid : null);
-    widget.observation.imageUrls = await databaseService.uploadFiles(widget.observation.imageUrls, true);
-    print("ImageUrls: ${widget.observation.imageUrls.toString()}");
-
-    widget.observation.audioUrls = await databaseService.uploadFiles(widget.observation.audioUrls, false);
-    print("AudioUrls: ${widget.observation.audioUrls.toString()}");
-
-    dynamic result = await FirebaseDatabaseService(uid: user != null ? user.uid : null).updateObservation(widget.observation);
-
-    setState(() {
-      // Update local observation after successful upload because the uid will be non empty now
-      saveLocalObservation();
-
-      _isUploading = false;
-      widget.isEditMode = false;
-    });
-  }
-
-  void saveLocalObservation() {
-    var box = Hive.box<LocalObservation>('observations');
-
-    //The observation screen can be opened from an online observation, which means that the dbId can be null.
-    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
-    Map<dynamic, dynamic> raw = box.toMap();
-    List list = raw.values.toList();
-    var localObservations = <Observation>[];
-    list.forEach((element) {
-      LocalObservation localObservation = element;
-      if(localObservation.uid == widget.observation.uid) {
-        widget.observation.dbId = localObservation.key;
-      }
-    });
-
-    var localObservation = LocalObservation(
-        uid: widget.observation.uid ?? "",
-        observerUid: widget.observation.observerUid ?? "",
-        altitude: widget.observation.altitude ?? 0.0,
-        longitude: widget.observation.longitude ?? 0.0,
-        latitude: widget.observation.latitude ?? 0.0,
-        name: widget.observation.name ?? "",
-        location: widget.observation.location ?? "",
-        date: widget.observation.date?.toString() ?? "",
-        signs: widget.observation.signs ?? <String>[],
-        pikasDetected: widget.observation.pikasDetected ?? "",
-        distanceToClosestPika: widget.observation.distanceToClosestPika ?? "",
-        searchDuration: widget.observation.searchDuration ?? "",
-        talusArea: widget.observation.talusArea ?? "",
-        temperature: widget.observation.temperature ?? "",
-        skies: widget.observation.skies ?? "",
-        wind: widget.observation.wind ?? "",
-        otherAnimalsPresent: widget.observation.otherAnimalsPresent ?? <String>[],
-        siteHistory: widget.observation.siteHistory ?? "",
-        comments: widget.observation.comments ?? "",
-        imageUrls: widget.observation.imageUrls ?? <String>[],
-        audioUrls: widget.observation.audioUrls ?? <String>[]
-    );
-
-    if(widget.observation.dbId == null) {
-      box.add(localObservation);
-
-      //If the user remains on the observation page, they can edit/save again. In that case, they need
-      //to use the same database ID instead of adding a new entry each time
-      widget.observation.dbId = localObservation.key;
-    } else {
-      box.put(widget.observation.dbId, localObservation);
-    }
-
-    setState(() {
-      _isUploading = false;
-      widget.isEditMode = false;
-    });
-  }
-
-  Box box;
+  Box? box;
   Future openBox() async {
     var dir = await getApplicationDocumentsDirectory();
     Hive.init(dir.path);
@@ -299,23 +219,21 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
 
   Widget _buildHeaderImage() {
     return GestureDetector(
-      onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : print(""),
-      child: Container(
+      onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
+      child: SizedBox(
         height: 330,
         child: Stack(
           children: <Widget>[
-            Container(
-              child: Hero(
-                tag: "observationCoverImage",
-                child: ClipShadowPath(
-                  clipper: SimpleClipPath(
-                      type: ClipPathType.ROUNDED_DOWN,
-                      bottomLeftPercentOfHeight: 80,
-                      bottomRightPercentOfHeight: 80
-                  ),
-                  shadow: Shadow(blurRadius: 20.0),
-                  child: _buildImage(),
+            Hero(
+              tag: "observationCoverImage",
+              child: ClipShadowPath(
+                clipper: SimpleClipPath(
+                    type: ClipPathType.ROUNDED_DOWN,
+                    bottomLeftPercentOfHeight: 80,
+                    bottomRightPercentOfHeight: 80
                 ),
+                shadow: const Shadow(blurRadius: 20.0),
+                child: _buildImage(),
               ),
             ),
             Positioned.fill(
@@ -324,8 +242,8 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 child: RawMaterialButton(
                   //padding: EdgeInsets.all(0.0),
                   //elevation: 12.0,
-                  onPressed: () => print('Play Video'),
-                  shape: CircleBorder(),
+                  onPressed: () => developer.log('Play Video'),
+                  shape: const CircleBorder(),
                   fillColor: Colors.white,
                   child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
                 ),
@@ -337,7 +255,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               child: ThemedIconButton(
                 Icons.add_location,
                 iconSize: IconSize.MEDIUM,
-                onPressedCallback: () => print('Allow user to manually select a geo point'),
+                onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
               )
           ),*/
             if(widget.isEditMode) ... [
@@ -389,18 +307,13 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
       playIcon: Icon(Icons.play_arrow,
           color: context.watch<MaterialThemesManager>().colorPalette().secondary,
           size: 48),
-      onPressed: () => {
-        widget.observation.audioUrls.isNotEmpty
-            ? _playAudio(widget.observation.audioUrls[0])
-            : Fluttertoast.showToast(
-            msg: "No recordings to play",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-            textColor: Colors.white,
-            fontSize: 16.0
-        )
+      onPressed: () {
+        var audioUrls = widget.observation.audioUrls;
+        if (audioUrls != null && audioUrls.isNotEmpty) {
+          _playAudio(audioUrls[0]);
+        } else {
+          showToast("No recordings to play");
+        }
       },
     );
   }
@@ -443,23 +356,24 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildImage() {
-    if(widget.observation.imageUrls.isEmpty) {
-      return Image(
+    var imageUrls = widget.observation.imageUrls ?? <String>[];
+    if(imageUrls.isEmpty) {
+      return const Image(
         height: 300.0,
         width: double.infinity,
         fit: BoxFit.cover,
         image: AssetImage("assets/images/add_image.png"),
       );
-    } else if(widget.observation.imageUrls[0].contains("https://")) {
+    } else if(imageUrls[0].contains("https://")) {
       return Image.network(
-        widget.observation.imageUrls[0],
+        imageUrls[0],
         height: 300.0,
         width: double.infinity,
         fit: BoxFit.cover,
       );
     } else {
       return Image.file(
-        File(widget.observation.imageUrls[0]),
+        File(imageUrls[0]),
         height: 300.0,
         width: double.infinity,
         fit: BoxFit.cover,
@@ -468,75 +382,70 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildLatLonAltitude() {
-    double lat = widget.observation.latitude;
-    double lon = widget.observation.longitude;
-    double alt = widget.observation.altitude;
-
-    String latitude = lat == null ? "" : widget.observation.latitude.toString();//.toStringAsFixed(2);
-    String longitude = lon == null ? "" : widget.observation.longitude.toString();//.toStringAsFixed(2);
-    String altitude = alt == null ? "" : widget.observation.altitude.toString();//.toStringAsFixed(2);
+    String latitude = widget.observation.latitude?.toStringAsFixed(3) ?? "";
+    String editLatitude = widget.observation.latitude?.toString() ?? "";
+    String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
+    String editLongitude = widget.observation.longitude?.toString() ?? "";
+    String altitude = widget.observation.altitude?.toStringAsFixed(2) ?? "";
+    String editAltitude = widget.observation.altitude?.toString() ?? "";
 
     return Row(
       children: <Widget>[
         Flexible(
           flex: 1,
-          child: Container(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child:Column(
-                children: <Widget>[
-                  ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
-                  tinyTransparentDivider,
-                  if (_hideGeoFields) ... [
-                    //A hack state because geo fields not updating from self location button
-                    //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                  ]
-                  else if (widget.isEditMode) ...[
-                    ThemedEditableLabelValue(
-                      showLabel: false,
-                      text: latitude,
-                      textType: ThemeGroupType.POM,
-                      hintText: "0.0",
-                      onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
-                      validator: (value) => isValidGeo(value, "Latitude"),
-                    ),
-                  ] else ... [
-                    ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                  ]
-                ],
-              ),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child:Column(
+              children: <Widget>[
+                ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
+                tinyTransparentDivider,
+                if (_hideGeoFields) ... [
+                  //A hack state because geo fields not updating from self location button
+                  //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                  ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+                else if (widget.isEditMode) ...[
+                  ThemedEditableLabelValue(
+                    showLabel: false,
+                    text: editLatitude,
+                    textType: ThemeGroupType.POM,
+                    hintText: "0.0",
+                    onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
+                    validator: (value) => isValidGeo(value, "Latitude"),
+                  ),
+                ] else ... [
+                  ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+              ],
             ),
           ),
         ),
         Flexible(
           flex: 1,
-          child: Container(
-              child: Align(
-                alignment: Alignment.center,
-                child: Column(
-                  children: <Widget>[
-                    ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
-                    tinyTransparentDivider,
-                    if (_hideGeoFields) ... [
-                      //A hack state because geo fields not updating from self location button
-                      //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                    ] else if (widget.isEditMode) ...[
-                      ThemedEditableLabelValue(
-                        showLabel: false,
-                        text: longitude,
-                        textType: ThemeGroupType.POM,
-                        hintText: "0.0",
-                        onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
-                        validator: (value) => isValidGeo(value, "Longitude"),
-                      ),
-                    ] else ... [
-                      ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                    ]
-                  ],
-                ),
-              )
+          child: Align(
+            alignment: Alignment.center,
+            child: Column(
+              children: <Widget>[
+                ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
+                tinyTransparentDivider,
+                if (_hideGeoFields) ... [
+                  //A hack state because geo fields not updating from self location button
+                  //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
+                  ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ] else if (widget.isEditMode) ...[
+                  ThemedEditableLabelValue(
+                    showLabel: false,
+                    text: editLongitude,
+                    textType: ThemeGroupType.POM,
+                    hintText: "0.0",
+                    onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
+                    validator: (value) => isValidGeo(value, "Longitude"),
+                  ),
+                ] else ... [
+                  ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ]
+              ],
+            ),
           ),
         ),
         Flexible(
@@ -554,7 +463,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: altitude,
+                    text: editAltitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
@@ -572,50 +481,27 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   _getCurrentPositionAndUpdateUi() async {
-    Fluttertoast.showToast(
-        msg: "Fetching location ...",
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-        textColor: Colors.white,
-        fontSize: 16.0
-    );
+    showToast("Fetching location ...");
 
     await checkPermissionsAndGetCurrentPosition()
-        .then((Position position) {
-          String lat = position.latitude.toStringAsFixed(2);
-          String lon = position.longitude.toStringAsFixed(2);
-          String alt = position.altitude.toStringAsFixed(2);
-            Fluttertoast.showToast(
-                msg: "Location:\n$lat $lon $alt",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.CENTER,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-                textColor: Colors.white,
-                fontSize: 16.0
-            );
-          setState(() {
-            widget.observation.latitude = position.latitude;
-            widget.observation.longitude = position.longitude;
-            widget.observation.altitude = position.altitude;
+      .then((Position position) {
+        String lat = position.latitude.toStringAsFixed(2);
+        String lon = position.longitude.toStringAsFixed(2);
+        String alt = position.altitude.toStringAsFixed(2);
+        showToast("Location:\n$lat $lon $alt");
 
-            _hideGeoFields = true;
-            resetHideGeoFields();
-          });
-        })
-        .catchError((e) {
-          Fluttertoast.showToast(
-              msg: "$e",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.CENTER,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
-              textColor: Colors.white,
-              fontSize: 16.0
-          );
+        setState(() {
+          widget.observation.latitude = position.latitude;
+          widget.observation.longitude = position.longitude;
+          widget.observation.altitude = position.altitude;
+
+          _hideGeoFields = true;
+          resetHideGeoFields();
         });
+      })
+      .catchError((e) {
+        showToast("$e");
+      });
   }
 
   resetHideGeoFields() async {
@@ -627,9 +513,11 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildHeader() {
-    String month = new DateFormat.yMMMMd('en_US').format(widget.observation.date).split(" ")[0];
-    String day = widget.observation.date.day.toString();
-    String year = widget.observation.date.year.toString();
+    var date = widget.observation.date;
+    String month = date == null ? "" : DateFormat.yMMMMd('en_US').format(date).split(" ")[0];
+    String day = date == null ? "" : date.day.toString();
+    String year = date == null ? "" : date.year.toString();
+
     return Padding(
       padding: _horzPadding,
       child: Column(
@@ -640,24 +528,24 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.name.toUpperCase(),
+              text: widget.observation.name?.toUpperCase() ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Observation Name",
               onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
-              validator: (value) => nonEmptyValidator(value, "Observation Name"),
+              validator: (value) => nonEmptyValidator(value, "Observation Name", true),
             )
           ] else ... [
-            ThemedH5(widget.observation.name.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+            ThemedH5(widget.observation.name?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           ],
           miniTransparentDivider,
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.location,
+              text: widget.observation.location ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Site Location Name",
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, "Site Location Name"),
+              validator: (value) => nonEmptyValidator(value, "Site Location Name", true),
             )
           ] else ... [
             ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),
@@ -677,21 +565,19 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               ],
               Flexible(
                 flex: 1,
-                child: Container(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child:Column(
-                      children: <Widget>[
-                        ThemedSubTitle("Month", type: ThemeGroupType.POM),
-                        tinyTransparentDivider,
-                        if (_hideDateFields) ... [
-                          //A hack state because geo fields not updating from self location button
-                          //Don't add another ThemedTitle here; it'll just create the same issue of not updating
-                        ] else ... [
-                          ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                        ],
+                child: Align(
+                  alignment: Alignment.centerRight,
+                  child:Column(
+                    children: <Widget>[
+                      ThemedSubTitle("Month", type: ThemeGroupType.POM),
+                      tinyTransparentDivider,
+                      if (_hideDateFields) ... [
+                        //A hack state because geo fields not updating from self location button
+                        //Don't add another ThemedTitle here; it'll just create the same issue of not updating
+                      ] else ... [
+                        ThemedTitle(month, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                       ],
-                    ),
+                    ],
                   ),
                 ),
               ),
@@ -775,7 +661,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         _takePictureAndCrop(
             context.read<MaterialThemesManager>().colorPalette().primary,
             context.read<MaterialThemesManager>().colorPalette().primary,
-            context.read<MaterialThemesManager>().getTheme(ThemeGroupType.MOP, emphasis: Emphasis.HIGH).iconTheme.color,
+            context.read<MaterialThemesManager>().getTheme(ThemeGroupType.MOP, emphasis: Emphasis.HIGH).iconTheme.color ?? Colors.white,
             context.read<MaterialThemesManager>().colorPalette().primary,
             context.read<MaterialThemesManager>().colorPalette().primary,
             context.read<MaterialThemesManager>().colorPalette().primary,
@@ -789,7 +675,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     ];
 
     return ContentScroll(
-      images: widget.observation.imageUrls,
+      images: widget.observation.imageUrls ?? <String>[],
       title: 'Images',
       emptyListMessage: "No Images",
       imageHeight: 200.0,
@@ -802,19 +688,11 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   _removeImage(path) {
     setState(() {
       //remove image from the observation
-      widget.observation.imageUrls.remove(path);
+      widget.observation.imageUrls?.remove(path);
       needsUpdated = true;
     });
 
-    Fluttertoast.showToast(
-      msg: "Delete $path",
-      toastLength: Toast.LENGTH_SHORT,
-      gravity: ToastGravity.CENTER,
-      timeInSecForIosWeb: 1,
-      backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-      textColor: Colors.white,
-      fontSize: 16.0
-    );
+    showToast("Delete $path");
   }
 
   Widget _buildAudioRecordings() {
@@ -825,7 +703,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     ];
 
     return AudioContentScroll(
-      urls: widget.observation.audioUrls,
+      urls: widget.observation.audioUrls ?? <String>[],
       title: 'Audio Recordings',
       emptyListMessage: "No Audio Recordings",
       imageHeight: 200.0,
@@ -834,95 +712,160 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
     );
   }
 
-  void _openAudioRecorder() async {
-    try {
-      //Always check for permission. It will ask for permission if not already granted
-      if (await FlutterAudioRecorder.hasPermissions) {
-        showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              print("AudioUrl...");
-              return AudioRecorderDialog();
-            }
-        ).then((value) => {
-          setState((){
-            if (value != null && (value as String).isNotEmpty) {
-              print("AudioUrls value: " + value);
-              widget.observation.audioUrls.add(value);
-              justKeepToggling = !justKeepToggling;
-              print("AudioUrls: " + widget.observation.audioUrls.toString());
-            }
-          })
-        });
-      } else {
-        Fluttertoast.showToast(
-            msg: "Could not open recorder.\nYou must accept audio permissions.",
-            toastLength: Toast.LENGTH_SHORT,
-            gravity: ToastGravity.CENTER,
-            timeInSecForIosWeb: 1,
-            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-            textColor: Colors.white,
-            fontSize: 16.0
-        );
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  bool _loadingPath = false;
-  String _path;
-  Map<String, String> _paths;
-  String _fileName;
-  void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
-    setState(() => _loadingPath = true);
-    try {
-      if (isMultiPick) {
-        _path = null;
-        _paths = await FilePicker.getMultiFilePath(
-            type: pickingType,
-            allowedExtensions: allowedExtensions
-        );
-        //if (_paths.isNotEmpty) {
-
-        setState(() {
-          _paths.forEach((key, value) {
-            if (addImages) {
-              widget.observation.imageUrls.add(value);
-            } else {
-              widget.observation.audioUrls.add(value);
-            }
-          });
-          needsUpdated = true;
-        });
-
-        //}
-      } else {
-        _paths = null;
-        _path = await FilePicker.getFilePath(
-            type: pickingType,
-            allowedExtensions: allowedExtensions
-        );
-        //if(_path.isNotEmpty) {
-
-        setState(() {
-          widget.observation.imageUrls.add(_path);
-          needsUpdated = true;
-        });
-        //}
-      }
-    } on PlatformException catch (e) {
-      print("Unsupported operation" + e.toString());
-    }
+  void showAudioRecorderDialog() {
     if (!mounted) return;
-    setState(() {
-      _loadingPath = false;
-      _fileName = _path != null
-          ? _path.split('/').last
-          : _paths != null ? _paths.keys.toString() : '...';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        developer.log("AudioUrl...");
+        return const AudioRecorderDialog();
+      }
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          developer.log("AudioUrls value: $value");
+          widget.observation.audioUrls?.add(value);
+          justKeepToggling = !justKeepToggling;
+          developer.log("AudioUrls: ${widget.observation.audioUrls}");
+        }
+      })
     });
   }
 
+  void _openAudioRecorder() async {
+    try {
+      //Always check for permission. It will ask for permission if not already granted
+      //NOTE: FlutterAudioRecorder3.hasPermissions requests the permission by showing the dialog to the user,
+      //but hasPermissions is always false. So, don't use it. Keeping this here as a reminder.
+      //bool hasPermission = await FlutterAudioRecorder3.hasPermissions ?? false;
+
+      if (await Permission.microphone.request().isGranted) {
+        showAudioRecorderDialog();
+      } else {
+        showToast("Could not open recorder.\nYou must accept audio permissions.");
+      }
+    } catch (e) {
+      developer.log(e.toString());
+    }
+  }
+
+  void _addMediaUrlsToObservations(List<String> filePaths, bool addImages) {
+    setState(() {
+      for (var filePath in filePaths) {
+        if (addImages) {
+          if (widget.observation.imageUrls?.contains(filePath) == true) {
+            showToast("Did not add image. It is already in list.");
+          } else {
+            widget.observation.imageUrls?.add(filePath);
+          }
+        } else if (widget.observation.audioUrls?.contains(filePath) == true) {
+          showToast("Did not add audio. It is already in list.");
+        } else {
+          widget.observation.audioUrls?.add(filePath);
+        }
+      }
+
+      needsUpdated = filePaths.isNotEmpty;
+    });
+  }
+
+  Future<void> _pickMultipleFiles(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: pickingType,
+        allowedExtensions: allowedExtensions,
+        allowMultiple: true
+    );
+
+    // Result is null if user cancelled
+    List<String> filePaths = result?.paths.whereType<String>().toList() ?? <String>[];
+    //List<File> files = filePaths.map((path) => File(path)).toList();
+
+    /*if (mounted && filePaths.isNotEmpty) {
+      developer.log("File paths:$filePaths");
+    }*/
+
+    _addMediaUrlsToObservations(filePaths, addImages);
+  }
+
+  Future<void> _pickSingleFile(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
+
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: pickingType,
+        allowedExtensions: allowedExtensions
+    );
+
+    // Result is null if user cancelled
+    var filePath = result?.files.single.path ?? "";
+    //File file = File(filePath);
+
+    /*if (mounted && filePath.isNotEmpty) {
+      developer.log("File path:$filePath name:${ filePath.split('/').last }");
+    }*/
+
+    if (filePath.isNotEmpty) {
+      _addMediaUrlsToObservations([filePath], addImages);
+    }
+  }
+  
+  void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
+    try {
+      if (isMultiPick) {
+        await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
+      } else {
+        await _pickSingleFile(pickingType, allowedExtensions, addImages);
+      }
+    } on PlatformException catch (e) {
+      developer.log("Unsupported operation$e");
+    }
+  }
+
+  Future<void> _cropImage(
+    String sourcePath,
+    Color toolbarColor,
+    Color statusBarColor,
+    Color toolbarWidgetColor,
+    Color backgroundColor,
+    Color activeControlsWidgetColor,
+    Color dimmedLayerColor,
+    Color cropFrameColor,
+    Color cropGridColor,
+    int cropFrameStrokeWidth,
+    int cropGridRowCount,
+    int cropGridColumnCount
+  ) async {
+    
+    CroppedFile? cropped = await ImageCropper().cropImage(
+      sourcePath: sourcePath,
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarColor: toolbarColor,
+            statusBarColor: statusBarColor,
+            toolbarWidgetColor: toolbarWidgetColor,
+            backgroundColor: backgroundColor,
+            activeControlsWidgetColor: activeControlsWidgetColor,
+            dimmedLayerColor: dimmedLayerColor,
+            cropFrameColor: cropFrameColor,
+            cropGridColor: cropGridColor,
+            cropFrameStrokeWidth: 12,
+            cropGridRowCount: 10,
+            cropGridColumnCount: 6
+        ),
+      ]
+    );
+    
+    var croppedPath = cropped?.path;
+    
+    if (croppedPath == null) {
+      showToast("Error when trying to crop image");
+    }
+
+    setState(() {
+      widget.observation.imageUrls?.add(croppedPath ?? sourcePath);
+    });
+  }
+  
   Future<void> _takePictureAndCrop(
       Color toolbarColor,
       Color statusBarColor,
@@ -935,32 +878,38 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
       int cropFrameStrokeWidth,
       int cropGridRowCount,
       int cropGridColumnCount
-      ) async {
+  ) async {
+
+    var isPermissionGranted = await Permission.camera.request().isGranted;
+    if (!isPermissionGranted) {
+      showToast("Could not open camera.\nYou must accept camera permissions.");
+      return;
+    }
 
     //Take picture with camera ...
-    File selected = await ImagePicker.pickImage(source: ImageSource.camera);
+    var imagePicker = ImagePicker();
+    XFile? selected = await imagePicker.pickImage(source: ImageSource.camera);
 
-    //Crop Image ...
-    File cropped = await ImageCropper().cropImage(
-      sourcePath: selected.path,
-      androidUiSettings: AndroidUiSettings(
-          toolbarColor: toolbarColor,
-          statusBarColor: statusBarColor,
-          toolbarWidgetColor: toolbarWidgetColor,
-          backgroundColor: backgroundColor,
-          activeControlsWidgetColor: activeControlsWidgetColor,
-          dimmedLayerColor: dimmedLayerColor,
-          cropFrameColor: cropFrameColor,
-          cropGridColor: cropGridColor,
-          cropFrameStrokeWidth: 12,
-          cropGridRowCount: 10,
-          cropGridColumnCount: 6
-      ),
-    );
-
-    setState(() {
-      widget.observation.imageUrls.add(cropped?.path ?? selected.path);
-    });
+    var selectedPath = selected?.path;
+    
+    if (selectedPath == null) {
+      showToast("Error when trying to take picture");
+    } else {
+      _cropImage(
+          selectedPath,
+          toolbarColor,
+          statusBarColor,
+          toolbarWidgetColor,
+          backgroundColor,
+          activeControlsWidgetColor,
+          dimmedLayerColor,
+          cropFrameColor,
+          cropGridColor,
+          cropFrameStrokeWidth,
+          cropGridRowCount,
+          cropGridColumnCount
+      ); 
+    }
   }
 
   Widget _buildSignsChoices() {
@@ -970,8 +919,8 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Signs", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
-          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.signs,
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: widget.observation.signs ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
               setState(() => widget.observation.signs = val)
@@ -995,7 +944,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.pikasDetected,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1020,7 +969,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Distance to Closest Pika", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.distanceToClosestPika,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1045,7 +994,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Search Duration", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.searchDuration,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1087,7 +1036,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           ],
         ),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.talusArea,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1106,14 +1055,14 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Widget _buildTemperatureChoices() {
-    var degF = String.fromCharCode($deg) + "F";
+    var degF = "${String.fromCharCode($deg)}F";
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
         ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.temperature,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1121,7 +1070,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Cold: <45" + degF , "Cool: 45 - 60" + degF, "Warm: 60 - 75" + degF, "Hot: >75" + degF],
+              source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],
               value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
@@ -1138,7 +1087,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Skies", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.skies,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1163,7 +1112,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Wind", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.wind,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1188,8 +1137,8 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
         smallTransparentDivider,
         ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
-          padding: EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.otherAnimalsPresent,
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: widget.observation.otherAnimalsPresent ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
               setState(() => widget.observation.otherAnimalsPresent = val)
@@ -1218,7 +1167,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.siteHistory,
+              text: widget.observation.siteHistory ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Note any history you've had with this site",
               //hintTextType: hintTextType,
@@ -1228,7 +1177,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               //validator: validator
             )
           ] else ... [
-            Container(
+            SizedBox(
               height: 120.0,
               child: SingleChildScrollView(
                 child: ThemedBody(
@@ -1255,7 +1204,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.comments,
+              text: widget.observation.comments ?? "",
               textType: ThemeGroupType.POM,
               hintText: "Any additional observations",
               //hintTextType: hintTextType,
@@ -1265,7 +1214,7 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
               //validator: validator
             )
           ] else ... [
-            Container(
+            SizedBox(
               height: 120.0,
               child: SingleChildScrollView(
                 child: ThemedBody(
@@ -1281,9 +1230,9 @@ class _ObservationScreenState extends State<ObservationScreen> with TickerProvid
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final DateTime picked = await showDatePicker(
+    final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.observation.date,
+      initialDate: widget.observation.date ?? DateTime.now(),
       firstDate: DateTime.fromMicrosecondsSinceEpoch(0),
       lastDate: DateTime.now()
     );

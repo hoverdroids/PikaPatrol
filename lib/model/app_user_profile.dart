@@ -1,6 +1,6 @@
 class AppUserProfile {
 
-  final String uid;
+  final String? uid;
   final String firstName;
   final String lastName;
   final String tagline;
@@ -31,4 +31,8 @@ class AppUserProfile {
       this.dzOptIn = false
     }
   );
+
+  bool areRequiredFieldsValid() {
+    return firstName.isNotEmpty && lastName.isNotEmpty && zip.isNotEmpty;
+  }
 }

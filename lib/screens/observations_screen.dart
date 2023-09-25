@@ -1,46 +1,55 @@
+// ignore_for_file: depend_on_referenced_packages
+import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/card_scroll.dart';
 import 'package:provider/provider.dart';
-
+import '../model/app_user.dart';
+import '../utils/observation_utils.dart';
 import 'observation_screen.dart';
+import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
 
-  List<Observation> observations;
-  double currentPage;
+  late List<Observation> observations;
+  double currentPage = 0;
 
-  ObservationsPage(this.observations) {
-    observations = observations == null ? <Observation>[] : List.from(observations.reversed);
-    currentPage = observations.isEmpty ? 0.0 : observations.length - 1.0;
-    print("CurrentPage:$currentPage");
+  ObservationsPage(List<Observation>? observations, {super.key}) {
+    this.observations = observations == null ? <Observation>[] : List.from(observations.reversed);
+    currentPage = this.observations.isEmpty ? 0.0 : this.observations.length - 1.0;
+    developer.log("CurrentPage:$currentPage");
   }
 
   @override
-  _ObservationsPageState createState() => _ObservationsPageState();
+  ObservationsPageState createState() => ObservationsPageState();
 }
 
-class _ObservationsPageState extends State<ObservationsPage> {
+class ObservationsPageState extends State<ObservationsPage> {
 
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
+
+  bool localObservationsNeedUploaded() {
+    return localObservations.isNotEmpty && localObservations.any((Observation observation) => observation.uid == null || observation.uid?.isEmpty == true);
+  }
 
   @override
   Widget build(BuildContext context) {
 
     //TODO - for some reason this page number is zero instead of the latest page nuber
-    print("Current Page ${widget.currentPage} init");
+    developer.log("Current Page ${widget.currentPage} init");
     PageController controller = PageController(initialPage: widget.currentPage.toInt());
 
     controller.addListener(() {
       setState(() {
-        widget.currentPage = controller.page;
+        widget.currentPage = controller.page ?? 0;
       });
     });
 
@@ -48,7 +57,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
 
     localObservationsController.addListener(() {
       setState(() {
-        localObservationsCurrentPage = localObservationsController.page;
+        localObservationsCurrentPage = localObservationsController.page ?? 0;
       });
     });
 
@@ -60,7 +69,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
         Map<dynamic, dynamic> raw = box.toMap();
         List list = raw.values.toList();
         localObservations = <Observation>[];
-        list.forEach((element) {
+        for (var element in list) {
           LocalObservation localObservation = element;
           var observation = Observation(
               dbId: localObservation.key,
@@ -87,9 +96,11 @@ class _ObservationsPageState extends State<ObservationsPage> {
               audioUrls: localObservation.audioUrls
           );
           localObservations.add(observation);
-        });
+        }
 
-        return Container(
+        var user = Provider.of<AppUser?>(context);
+
+        return SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: Stack(
@@ -97,7 +108,7 @@ class _ObservationsPageState extends State<ObservationsPage> {
                 context.watch<MaterialThemesManager>().getBackgroundGradient(BackgroundGradientType.PRIMARY),
                 SafeArea(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.0),
+                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,37 +150,24 @@ class _ObservationsPageState extends State<ObservationsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              //TODO - upload all local observations at once
-                              /*if(localObservations.isNotEmpty) ... [
+                              if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
                                     onPressedCallback: () async {
                                       var hasConnection = await DataConnectionChecker().hasConnection;
-                                      if(hasConnection) {
-                                        Fluttertoast.showToast(
-                                            msg: "Uploading observations",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.CENTER,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                            textColor: Colors.white,
-                                            fontSize: 16.0
-                                        );
+                                      if(hasConnection && context.mounted) {
+                                        showToast("Uploading observations");
+
+                                        for (var observation in localObservations) {
+                                          saveObservation(user, observation, true);
+                                        }
                                       } else {
-                                        Fluttertoast.showToast(
-                                            msg: "Could not upload observations. No data connection.",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                            gravity: ToastGravity.CENTER,
-                                            timeInSecForIosWeb: 1,
-                                            backgroundColor: Colors.teal,//TODO - need to use Toast with context to link to the primary color
-                                            textColor: Colors.white,
-                                            fontSize: 16.0
-                                        );
+                                        showToast("Could not upload observations. No data connection.");
                                       }
                                     }
                                 )
-                              ]*/
+                              ]
                             ],
                           ),
                           Stack(

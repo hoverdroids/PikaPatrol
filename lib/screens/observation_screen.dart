@@ -201,7 +201,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Future saveObservation(AppUser? user) async {
     if (context.mounted) {
 
-      var databaseService = Provider.of<FirebaseDatabaseService>(context);
+      var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
       var imageUrls = widget.observation.imageUrls;
       if (imageUrls != null && imageUrls.isNotEmpty) {

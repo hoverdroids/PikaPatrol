@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import '../model/firebase_registration_result.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
@@ -103,6 +104,19 @@ class FirebaseAuthService {
       developer.log(e.toString());
       return e;
     }
+  }
+
+  Future<FirebaseAuthException?> requestPasswordReset(String email) async {
+    try {
+      await _auth
+        .sendPasswordResetEmail(email: email)
+        .then((value) => {
+        });
+    } on FirebaseAuthException catch(e) {
+      developer.log(e.toString());
+      return e;
+    }
+    return null;
   }
 
   Future<FirebaseAuthException?> deleteUser() async {

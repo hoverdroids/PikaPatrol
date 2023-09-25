@@ -457,6 +457,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
         setState((){ loading = false; });
       },
+      onTapForgotPassword: () async {
+        var trimmedEmail = editedEmail?.trim() ?? "";
+        if (trimmedEmail.isEmpty) {
+          showToast("Invalid email; cannot send password reset email");
+        } else {
+          var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
+          if (result == null) {
+            showToast("Password reset email sent");
+          } else {
+            showToast("Password reset email could not be sent");
+          }
+        }
+      },
       onTapRegister: () => {
         setState(() => showSignIn = false)
       },

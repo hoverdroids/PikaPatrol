@@ -13,6 +13,7 @@
     <option name="EXECUTE_SCRIPT_FILE" value="false" />
     <envs />
     <method v="2">
+      <option name="RunConfigurationTask" enabled="true" run_configuration_name="Remove Podfile.lock" run_configuration_type="ShConfigurationType" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Clean All  Cache" run_configuration_type="ShConfigurationType" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Update Pods" run_configuration_type="ShConfigurationType" />
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="Install Pods" run_configuration_type="ShConfigurationType" />

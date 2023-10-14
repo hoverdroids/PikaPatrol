@@ -113,7 +113,8 @@ class ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ThemedH4("Shared Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Stack(
                             children: <Widget>[
                               /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
@@ -146,10 +147,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                               ),
                             ],
                           ),
+                          ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,

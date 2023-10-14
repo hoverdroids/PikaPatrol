@@ -160,7 +160,14 @@ class ObservationsPageState extends State<ObservationsPage> {
                                         showToast("Uploading observations");
 
                                         for (var observation in localObservations) {
-                                          saveObservation(user, observation, true);
+                                          //TODO - CHRIS - if the user updated an observation when offline,
+                                          //the UID won't be null or empty, so those updates will never get pushed
+                                          //in the bulk upload. This will get fixed when we compare current observations
+                                          //vs the stored observation.
+                                          var uid = observation.uid;
+                                          if (uid == null || uid.isEmpty) {
+                                            saveObservation(user, observation);
+                                          }
                                         }
                                       } else {
                                         showToast("Could not upload observations. No data connection.");

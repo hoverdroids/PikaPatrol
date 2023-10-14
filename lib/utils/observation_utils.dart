@@ -7,13 +7,8 @@ import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../services/firebase_database_service.dart';
 
-Future saveObservation(AppUser? user, Observation observation, bool dontSaveIfIsNotEmpty) async {
+Future saveObservation(AppUser? user, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
-    var uid = observation.uid;
-    if (uid == null || (uid.isNotEmpty && dontSaveIfIsNotEmpty)) {
-      return;
-    }
-
     var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
     var imageUrls = observation.imageUrls;
@@ -74,11 +69,11 @@ Future<void> saveLocalObservation(Observation observation) async {
   );
 
   if(observation.dbId == null) {
-    await box.add(localObservation);
+    int? key = await box.add(localObservation);
 
     //If the user remains on the observation page, they can edit/save again. In that case, they need
     //to use the same database ID instead of adding a new entry each time
-    observation.dbId = localObservation.key;
+    observation.dbId = key;
   } else {
     await box.put(observation.dbId, localObservation);
   }

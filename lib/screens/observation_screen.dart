@@ -174,8 +174,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   if (_formKey.currentState?.validate() == true) {
                     _formKey.currentState?.save();
 
-                    saveLocalObservation(widget.observation);
+                    await saveLocalObservation(widget.observation);
 
+                    //TODO - CHRIS - probably worth moving to the saveObservationon method
                     var hasConnection = await DataConnectionChecker().hasConnection;
                     if(!hasConnection) {
                       showToast("No connection found.\nObservation saved locally.");
@@ -189,7 +190,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                       widget.observation.observerUid = user.uid;
 
                       //Share with others
-                      await saveObservation(user, widget.observation, false);
+                      await saveObservation(user, widget.observation);
 
                       setState(() {
                         _isUploading = false;

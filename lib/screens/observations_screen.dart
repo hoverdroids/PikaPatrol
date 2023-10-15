@@ -113,7 +113,8 @@ class ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ThemedH4("Shared Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Stack(
                             children: <Widget>[
                               /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
@@ -146,10 +147,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                               ),
                             ],
                           ),
+                          ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Your Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
@@ -160,7 +162,14 @@ class ObservationsPageState extends State<ObservationsPage> {
                                         showToast("Uploading observations");
 
                                         for (var observation in localObservations) {
-                                          saveObservation(user, observation, true);
+                                          //TODO - CHRIS - if the user updated an observation when offline,
+                                          //the UID won't be null or empty, so those updates will never get pushed
+                                          //in the bulk upload. This will get fixed when we compare current observations
+                                          //vs the stored observation.
+                                          var uid = observation.uid;
+                                          if (uid == null || uid.isEmpty) {
+                                            saveObservation(user, observation);
+                                          }
                                         }
                                       } else {
                                         showToast("Could not upload observations. No data connection.");

@@ -1,13 +1,13 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Build, Rename, Move, Open" type="ShConfigurationType" folderName="CocoaPods">
-    <option name="SCRIPT_TEXT" value="flutter --no-color build apk &amp;&amp; explorer &quot;I:\Google Drive (spragucm)\Projects\Pika Patrol\PikaPatrol2\build\app\outputs&quot;" />
+  <configuration default="false" name="Remove Pods" type="ShConfigurationType" folderName="CocoaPods">
+    <option name="SCRIPT_TEXT" value="rm -rf “`pwd`/Pods/“" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
     <option name="INDEPENDENT_SCRIPT_WORKING_DIRECTORY" value="true" />
-    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$/ios" />
+    <option name="SCRIPT_WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <option name="INDEPENDENT_INTERPRETER_PATH" value="true" />
-    <option name="INTERPRETER_PATH" value="" />
+    <option name="INTERPRETER_PATH" value="/bin/zsh" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="EXECUTE_IN_TERMINAL" value="true" />
     <option name="EXECUTE_SCRIPT_FILE" value="false" />

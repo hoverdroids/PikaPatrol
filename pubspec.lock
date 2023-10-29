@@ -374,14 +374,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_audio_recorder3:
-    dependency: "direct main"
-    description:
-      name: flutter_audio_recorder3
-      sha256: "6c612c436ab7c18ff2ecda6f5601e8e36e44a0f9d2e4e4b23e54ff74e4a76cdd"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.5"
   flutter_cache_manager:
     dependency: transitive
     description:

@@ -45,5 +45,27 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+    <string>Need to upload image</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>We need access to the camera, photos and microphone so that users can document pika observations by taking photos of pikas and recording audio of pika calls</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Need to upload image</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>This app needs access to location when in the background to record the locations of pika observations.</string>
+    <key>NSLocationAlwaysUsageDescription</key>
+    <string>This app needs access to location when in the background to record the locations of pika observations.</string>
+    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
+    <dict>
+        <key>YourPurposeKey</key>
+        <string>This app needs access to location when in the background to record the precise locations of pika observations.</string>
+    </dict>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>This app needs access to the location to record the locations of pika observations.</string>
+    <key>NSAppleMusicUsageDescription</key>
+    <string>We need access to music so that users can attach the file to an observation</string>
+    <key>kTCCServiceMediaLibrary</key>
+    <string>We need access to music so that users can attach the file to an observation</string>
 </dict>
 </plist>

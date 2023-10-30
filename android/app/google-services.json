@@ -59,19 +59,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "954700599379-ijj6m2nn1k8soirvk2e9vpa46md5iabv.apps.googleusercontent.com",
+          "client_id": "954700599379-d8j8doa4q86lhion1605pl26ul2sa4qv.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.tcubedstudios.pika_patrol",
-            "certificate_hash": "b13ad7cd2fb1c1d7cb4f74dfa79f9bd27a736081"
+            "certificate_hash": "4c6383e2d1166c435fc8fc7d1bb967e5157613b2"
           }
         },
         {
-          "client_id": "954700599379-rj6ujktoco34fl64f07l2vof17k17p44.apps.googleusercontent.com",
+          "client_id": "954700599379-sslavic57q658c52k1apuv5dbsf7dmu6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.tcubedstudios.pika_patrol",
-            "certificate_hash": "b40f783fd02e0b10ed6e2b5ee03cd1df01f47755"
+            "certificate_hash": "4b18e78c2f2ead4092c2cdb1f79e31abcdbe0878"
           }
         },
         {

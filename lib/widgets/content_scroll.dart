@@ -108,15 +108,19 @@ class ContentScroll extends StatelessWidget {
             child: Stack(
               children: [
                 ClipRRect(
+                  clipBehavior: Clip.antiAlias,
                   borderRadius: BorderRadius.circular(10.0),
                   child: images[index].contains("https://")
                       ? Image.network(
-                    images[index],
-                    fit: BoxFit.cover,
-                  )
+                          images[index],
+                          fit: BoxFit.cover,
+                        )
                       : Image.file(
-                      File(images[index]),
-                      fit: BoxFit.cover),
+                          File(images[index]),
+                          fit: BoxFit.cover,
+                          width: imageWidth,
+                          height: imageHeight,
+                        ),
                 ),
                 if (showDeleteButtonOnCard)...[
                   ThemedIconButton(Icons.delete, type: ThemeGroupType.MOI, onPressedCallback: () => {

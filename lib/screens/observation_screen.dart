@@ -197,6 +197,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                         widget.isEditMode = false;
                       });
                     } else {
+                      setState((){
+                        widget.isEditMode = false;
+                      });
                       showToast("You must login to upload an observation.\nObservation saved locally.");
                     }
                   }

@@ -1,9 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
-// TODO - MVP
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:path/path.dart';
 import 'package:pika_patrol/model/observation.dart';
@@ -11,8 +10,7 @@ import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
 
 class FirebaseDatabaseService {
-  // TODO - MVP
-/*
+
   String? uid;
 
   FirebaseDatabaseService({ this.uid });
@@ -264,9 +262,9 @@ class FirebaseDatabaseService {
 
     await Future.wait(filepaths.map((String filepath) async {
       //TODO - base on mime
-      *//*String mimeStr = lookupMimeType(filepath);
+      /*String mimeStr = lookupMimeType(filepath);
       var fileType = mimeStr.split('/');
-      developer.log('file type ${fileType}');*//*
+      developer.log('file type ${fileType}');*/
       var folder = areImages ? "images" : "audio";
       if(filepath.contains('pikajoe-97c5c.appspot.com')) {
         //Do not try to upload an image that has already been uploaded
@@ -293,5 +291,5 @@ class FirebaseDatabaseService {
     });
 
     return uploadUrls;
-  }*/
+  }
 }

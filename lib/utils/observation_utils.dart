@@ -3,29 +3,29 @@ import 'package:hive/hive.dart';
 import '../model/app_user.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
-// TODO - MVP import '../services/firebase_database_service.dart';
+import '../services/firebase_database_service.dart';
 
 Future saveObservation(AppUser? user, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
-    // TODO - MVP
-    // var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
-    //
-    // var imageUrls = observation.imageUrls;
-    // if (imageUrls != null && imageUrls.isNotEmpty) {
-    //   observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
-    // }
-    // //developer.log("ImageUrls: ${observation.imageUrls.toString()}");
-    //
-    // var audioUrls = observation.audioUrls;
-    // if (audioUrls != null && audioUrls.isNotEmpty) {
-    //   observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
-    // }
-    // //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
-    //
-    // await databaseService.updateObservation(observation);
-    //
-    // // Update local observation after successful upload because the uid will be non empty now
-    // saveLocalObservation(observation);
+
+    var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
+
+    var imageUrls = observation.imageUrls;
+    if (imageUrls != null && imageUrls.isNotEmpty) {
+      observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
+    }
+    //developer.log("ImageUrls: ${observation.imageUrls.toString()}");
+
+    var audioUrls = observation.audioUrls;
+    if (audioUrls != null && audioUrls.isNotEmpty) {
+      observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
+    }
+    //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
+
+    await databaseService.updateObservation(observation);
+
+    // Update local observation after successful upload because the uid will be non empty now
+    saveLocalObservation(observation);
 }
 
 Future<void> saveLocalObservation(Observation observation) async {

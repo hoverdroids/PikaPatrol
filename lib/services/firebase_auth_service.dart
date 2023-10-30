@@ -1,23 +1,22 @@
 import 'dart:async';
-// TODO - MVP
-// import 'package:cloud_firestore/cloud_firestore.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import '../model/firebase_registration_result.dart';
 import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
-// TODO - MVP
-// import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer' as developer;
 
 class FirebaseAuthService {
 
-  // TODO - MVP final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   //TODO - use the User's info from the provider
   //UserInfo userInfo;
-  // TODO - MVP
-  /*AppUser? _userFromFirebaseUser(User? user) {
+
+  AppUser? _userFromFirebaseUser(User? user) {
     return user != null ? AppUser(uid: user.uid) : null;
   }
 
@@ -149,5 +148,5 @@ class FirebaseAuthService {
     } on FirebaseAuthException catch (e) {
       return e;
     }
-  }*/
+  }
 }

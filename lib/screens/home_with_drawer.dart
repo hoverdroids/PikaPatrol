@@ -148,17 +148,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       width: width,
       child: Stack(
         children: <Widget>[
-          // TODO - MVP
-          // PageView.builder(
-          //     controller: pageController,
-          //     itemCount: 1,
-          //     itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-          //         stream: Provider.of<FirebaseDatabaseService>(context).observations,
-          //         builder: (context, snapshot) {
-          //           List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
-          //           return ObservationsPage(observations ?? <Observation>[]);
-          //         })
-          // )
+          PageView.builder(
+              controller: pageController,
+              itemCount: 1,
+              itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
+                  stream: Provider.of<FirebaseDatabaseService>(context).observations,
+                  builder: (context, snapshot) {
+                    List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
+                    return ObservationsPage(observations ?? <Observation>[]);
+                  })
+          )
           /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),
@@ -320,12 +319,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       isEditMode: isEditingProfile,
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
-        // TODO - MVP
-        // var result = await firebaseAuthService.signOut();
-        // final message = result?.message;
-        // if (message != null) {
-        //   showToast(message);
-        // }
+
+        var result = await firebaseAuthService.signOut();
+        final message = result?.message;
+        if (message != null) {
+          showToast(message);
+        }
       },
       onTapEdit: () {
         resetEditedUserProfileFields();
@@ -334,21 +333,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapSave: () async {
         setState(() => loading = true);
 
-        // TODO - MVP
-        // await firebaseDatabaseService.addOrUpdateUserProfile(
-        //     editedFirstName ?? userProfile?.firstName ?? "",
-        //     editedLastName ?? userProfile?.lastName ?? "",
-        //     editedTagline ?? userProfile?.tagline ?? "",
-        //     editedPronouns ?? userProfile?.pronouns ?? "",
-        //     editedOrganization ?? userProfile?.organization ?? "",
-        //     editedAddress ?? userProfile?.address ?? "",
-        //     editedCity ?? userProfile?.city ?? "",
-        //     editedState ?? userProfile?.state ?? "",
-        //     editedZip ?? userProfile?.zip ?? "",
-        //     editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
-        //     editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
-        //     editedDzOptIn ?? userProfile?.dzOptIn ?? false
-        // );
+        await firebaseDatabaseService.addOrUpdateUserProfile(
+            editedFirstName ?? userProfile?.firstName ?? "",
+            editedLastName ?? userProfile?.lastName ?? "",
+            editedTagline ?? userProfile?.tagline ?? "",
+            editedPronouns ?? userProfile?.pronouns ?? "",
+            editedOrganization ?? userProfile?.organization ?? "",
+            editedAddress ?? userProfile?.address ?? "",
+            editedCity ?? userProfile?.city ?? "",
+            editedState ?? userProfile?.state ?? "",
+            editedZip ?? userProfile?.zip ?? "",
+            editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
+            editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
+            editedDzOptIn ?? userProfile?.dzOptIn ?? false
+        );
         resetEditedUserProfileFields();
         setState(() => isEditingProfile = false);
         setState(() => loading = false);
@@ -362,19 +360,17 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            // TODO - MVP
-            // await firebaseDatabaseService.deleteUserProfile();
+            await firebaseDatabaseService.deleteUserProfile();
 
-            // TODO - MVP
-            // var result = await firebaseAuthService.deleteUser();
-            // var message = result?.message;
-            // if (message != null) {
-            //   //There was an error deleting the user, show the error and exit the process
-            //   showToast(message);
-            //   return;
-            // }
-            //
-            // showToast("Account Deleted");
+            var result = await firebaseAuthService.deleteUser();
+            var message = result?.message;
+            if (message != null) {
+              //There was an error deleting the user, show the error and exit the process
+              showToast(message);
+              return;
+            }
+
+            showToast("Account Deleted");
           },
         );
 
@@ -442,23 +438,23 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         }
 
         setState(() => loading = true);
-        // TODO - MVP
-        // dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
-        // //dynamic result = await _auth.signInWithGoogle();
-        //
-        // if(result == null) {
-        //   // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
-        //   try {
-        //     final result = await InternetAddress.lookup('google.com');
-        //     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-        //       showToast("Could not sign in with those credentials");
-        //     }
-        //   } on SocketException catch (_) {
-        //     showToast("Can not sign in. Not connected to internet.");
-        //   }
-        // } else {
-        //   showToast("Successfully Logged In");
-        // }
+
+        dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+        //dynamic result = await _auth.signInWithGoogle();
+
+        if(result == null) {
+          // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
+          try {
+            final result = await InternetAddress.lookup('google.com');
+            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+              showToast("Could not sign in with those credentials");
+            }
+          } on SocketException catch (_) {
+            showToast("Can not sign in. Not connected to internet.");
+          }
+        } else {
+          showToast("Successfully Logged In");
+        }
 
         setState((){ loading = false; });
       },
@@ -467,13 +463,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         if (trimmedEmail.isEmpty) {
           showToast("Invalid email; cannot send password reset email");
         } else {
-          // TODO - MVP
-          // var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
-          // if (result == null) {
-          //   showToast("Password reset email sent");
-          // } else {
-          //   showToast("Password reset email could not be sent");
-          // }
+          var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
+          if (result == null) {
+            showToast("Password reset email sent");
+          } else {
+            showToast("Password reset email could not be sent");
+          }
         }
       },
       onTapRegister: () => {
@@ -512,29 +507,28 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
         setState(() => loading = true);
 
-        // TODO - MVP
-        // FirebaseRegistrationResult result = await firebaseAuthService.registerWithEmailAndPassword(
-        //     trimmedEmail,
-        //     trimmedPassword,
-        //     editedFirstName ?? "",
-        //     editedLastName ?? "",
-        //     editedTagline ?? "",
-        //     editedPronouns ?? "",
-        //     editedOrganization ?? "",
-        //     editedAddress ?? "",
-        //     editedCity ?? "",
-        //     editedState ?? "",
-        //     editedZip ?? "",
-        //     editedFrppOptIn ?? false,
-        //     editedRmwOptIn ?? false,
-        //     editedDzOptIn ?? false
-        // );
+        FirebaseRegistrationResult result = await firebaseAuthService.registerWithEmailAndPassword(
+            trimmedEmail,
+            trimmedPassword,
+            editedFirstName ?? "",
+            editedLastName ?? "",
+            editedTagline ?? "",
+            editedPronouns ?? "",
+            editedOrganization ?? "",
+            editedAddress ?? "",
+            editedCity ?? "",
+            editedState ?? "",
+            editedZip ?? "",
+            editedFrppOptIn ?? false,
+            editedRmwOptIn ?? false,
+            editedDzOptIn ?? false
+        );
 
-        // if (result.appUser != null) {
-        //   await onRegistrationSuccess(firebaseDatabaseService, result);
-        // } else {
-        //   await onRegistrationFailed(result);
-        // }
+        if (result.appUser != null) {
+          await onRegistrationSuccess(firebaseDatabaseService, result);
+        } else {
+          await onRegistrationFailed(result);
+        }
 
         setState(() => loading = false);
       },
@@ -546,17 +540,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
-      // TODO - MVP
-      // var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
-      // if (initializationException == null) {
-      //   showToast("Initialized ${registrationResult.email}");
-      // }
+      var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
+      if (initializationException == null) {
+        showToast("Initialized ${registrationResult.email}");
+      }
     }
   }
 
   onRegistrationFailed(FirebaseRegistrationResult result) async {
     //TODO - CHRIS - In cases where we can do something smart, let's do it!
-    // TODO - MVP showToast("${result.exception?.message}");
+    showToast("${result.exception?.message}");
   }
 
   Widget buildLoadingOverlay(BuildContext context) {

@@ -10,8 +10,8 @@ import 'model/app_user.dart';
 import 'model/app_user_profile.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
-// TODO - MVP - import 'package:firebase_core/firebase_core.dart';
-// TODO - MVP import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
 
@@ -22,12 +22,10 @@ Future<void> main() async {
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
-  /*
-  // TODO - MVP
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  */
 
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
@@ -48,41 +46,38 @@ Future<void> main() async {
         //Using StreamBuilder here in order so that appUserSnapshot is the desired type
         //since it's used when building the other providers
 
-        return const MyApp();
+        return StreamBuilder<AppUser?>(
+          stream: Provider.of<FirebaseAuthService>(context).user,
+          initialData: null,
+          builder: (context, appUserSnapshot) {
 
-        // TODO - MVP
-        // return StreamBuilder<AppUser?>(
-        //   stream: Provider.of<FirebaseAuthService>(context).user,
-        //   initialData: null,
-        //   builder: (context, appUserSnapshot) {
-        //
-        //     final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
-        //
-        //     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
-        //     firebaseDatabaseService.uid = appUser?.uid;
-        //
-        //     return StreamBuilder<AppUserProfile?>(
-        //       stream: firebaseDatabaseService.userProfile,
-        //       initialData: null,
-        //       builder: (context, appUserProfileSnapshot) {
-        //
-        //         final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
-        //
-        //         return MultiProvider(
-        //             providers: [
-        //               Provider<AppUser?>.value(
-        //                   value: appUser
-        //               ),
-        //               Provider<AppUserProfile?>.value(
-        //                 value: appUserProfile
-        //               )
-        //             ],
-        //             child: const MyApp()
-        //         );
-        //       }
-        //     );
-        //   }
-        // );
+            final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
+
+            var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
+            firebaseDatabaseService.uid = appUser?.uid;
+
+            return StreamBuilder<AppUserProfile?>(
+              stream: firebaseDatabaseService.userProfile,
+              initialData: null,
+              builder: (context, appUserProfileSnapshot) {
+
+                final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
+
+                return MultiProvider(
+                    providers: [
+                      Provider<AppUser?>.value(
+                          value: appUser
+                      ),
+                      Provider<AppUserProfile?>.value(
+                        value: appUserProfile
+                      )
+                    ],
+                    child: const MyApp()
+                );
+              }
+            );
+          }
+        );
       },
     ),
   );

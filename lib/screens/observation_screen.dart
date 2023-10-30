@@ -812,6 +812,56 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   
   void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
     try {
+      var isAndroid = Platform.isAndroid;
+      var isIos = Platform.isIOS;
+
+      if (isAndroid || isIos) {
+        var isCameraPermissionGranted = await Permission.camera.request().isGranted;
+        if (!isCameraPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept camera permissions.");
+          return;
+        }
+        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
+        if (!isPhotosPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept photos permissions.");
+          return;
+        }
+
+        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
+        if (!isStoragePermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept storage permissions.");
+          return;
+        }
+      }
+
+      if (isAndroid) {
+        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
+        if (!isMediaLocationPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept media location permissions.");
+          return;
+        }
+
+        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
+        if (!isManageExternalStoragePermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept external storage permissions.");
+          return;
+        }
+
+        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
+        if (!isVideosPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept videos permissions.");
+          return;
+        }
+      }
+
+      if (isIos) {
+        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
+        if (!isMediaLibraryPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept media library permissions.");
+          return;
+        }
+      }
+
       if (isMultiPick) {
         await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
       } else {

@@ -52,7 +52,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.tcubedstudios.pika_patrol"
-    compileSdkVersion flutter.compileSdkVersion
+    compileSdkVersion flutterCompileSdkVersion.toInteger()
     ndkVersion flutter.ndkVersion
 
     compileOptions {

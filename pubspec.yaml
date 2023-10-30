@@ -31,10 +31,11 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flutter_plugin_android_lifecycle: ^2.0.15
-  cupertino_icons: ^1.0.5
+  flutter_plugin_android_lifecycle: ^2.0.15 #TODO - 2.0.17
+  cupertino_icons: ^1.0.5 #TODO - 1.0.6
   provider: ^6.0.5
-  image_cropper: ^5.0.0 #TODO - fork assets_audio_player and set http ^1.0.0
+  image_cropper: ^5.0.0
+  #TODO - fork assets_audio_player and set http ^1.0.0
   image_picker: ^1.0.2
   file_picker: ^5.3.1 #file_picker >=5.3.2 depends on win32 >=5.0.0 which requires SDK version >=3.0.0 <4.0.0, file_picker >=5.3.2 is forbidden.
   shimmer: ^3.0.0

@@ -682,7 +682,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
-      onDeleteClickedCallback: (value) => { _removeImage(value) }
+      onDeleteClickedCallback: (value) => { _removeImage(value) },
+      showDeleteButtonOnCard: widget.isEditMode
     );
   }
 

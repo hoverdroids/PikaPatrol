@@ -125,17 +125,18 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     _directory = await getTemporaryDirectory();//blu getApplicationDocumentsDirectory();
 
     if (_directory != null) {
-      final tempPath = '${_directory?.path}/tempAudioRecording';
+      var audioExtension = "m4a";
+      final tempPath = '${_directory?.path}/tempAudioRecording.$audioExtension';
 
       //Delete the last temp recording if it exists - no reason to keep these around
       try {
-        final file = File('$tempPath.aac');
+        final file = File(tempPath);
         await file.delete();
       } catch (e) {
         developer.log(e.toString());
       }
 
-      _recorder = FlutterAudioRecorder3(tempPath, audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
+      _recorder = FlutterAudioRecorder3(tempPath);
       await _recorder.initialized;
       var recording = await _recorder.current(channel: 0);
       setRecordingStatus(recording);

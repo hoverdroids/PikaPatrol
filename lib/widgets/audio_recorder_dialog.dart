@@ -69,47 +69,50 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                   validator:  (value) => nonEmptyValidator(value, "Name", true),
                   onStringChangedCallback: (value) => setState(() => recordingName = value ),
                 ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextButton(
-                      style: TextButton.styleFrom(
-                        // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-                        backgroundColor: context.watch<MaterialThemesManager>().colorPalette().lightBg,
-                        shape: const StadiumBorder(),
-                      ),
-                      child: ThemedTitle("Cancel", type: ThemeGroupType.MOM),
-                      onPressed: () {
-                        _quitWithoutSaving();
-                      },
-                    ),
-                    if (_recordingStatus != RecordingStatus.Initialized) ... [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-                            backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
-                            shape: const StadiumBorder(),
-                          ),
-                          child: ThemedTitle("Save", type: ThemeGroupType.MOP),
-                          onPressed: () {
-                            if (_formKey.currentState?.validate() == true) {
-                              _formKey.currentState?.save();
-
-                              //There is a valid file name, so save the recording and close the dialog
-                              _save();
-                            } else {
-                              //There is not a valid file name. Since only pause/play are shown, don't stop because
-                              //it's possible for the user to click save, not have a file name, and continue recording.
-                              _pause();
-                            }
-                          },
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 16.0, 0, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                          backgroundColor: context.watch<MaterialThemesManager>().colorPalette().lightBg,
+                          shape: const StadiumBorder(),
                         ),
-                      )
-                    ]
-                  ],
-                ),
+                        child: ThemedTitle("Cancel", type: ThemeGroupType.MOM),
+                        onPressed: () {
+                          _quitWithoutSaving();
+                        },
+                      ),
+                      if (_recordingStatus == RecordingStatus.Recording || _recordingStatus == RecordingStatus.Paused || _recordingStatus == RecordingStatus.Stopped) ... [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                              backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: ThemedTitle("Save", type: ThemeGroupType.MOP),
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() == true) {
+                                _formKey.currentState?.save();
+
+                                //There is a valid file name, so save the recording and close the dialog
+                                _save();
+                              } else {
+                                //There is not a valid file name. Since only pause/play are shown, don't stop because
+                                //it's possible for the user to click save, not have a file name, and continue recording.
+                                _pause();
+                              }
+                            },
+                          ),
+                        )
+                      ]
+                    ],
+                  ),
+                )
               ],
             ),
           ),

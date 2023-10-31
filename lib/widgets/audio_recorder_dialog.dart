@@ -122,7 +122,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   }
 
   void _initAsync() async {
-    _directory = await getTemporaryDirectory();//blu getApplicationDocumentsDirectory();
+    _directory = await getApplicationDocumentsDirectory();
 
     if (_directory != null) {
       var audioExtension = "m4a";

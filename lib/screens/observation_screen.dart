@@ -725,7 +725,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       builder: (BuildContext context) {
         developer.log("AudioUrl...");
         return const AudioRecorderDialog();
-      }
+      },
+      barrierDismissible: false
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {

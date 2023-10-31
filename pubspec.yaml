@@ -52,7 +52,7 @@ dependencies:
   liquid_swipe: ^3.1.0
   curved_navigation_bar: ^1.0.3
   #  flutter_audio_recorder: ^0.5.5 TODO - fork flutter_audio_recorder for dart 3 compat, though I think the following does that already:
-  #flutter_audio_recorder3: ^0.0.5 #requires sdk >= 3.0.0 <4.0.0
+  flutter_audio_recorder3: ^0.0.5 #requires sdk >= 3.0.0 <4.0.0
   material_themes_widgets: ^1.5.2
   url_launcher: ^6.1.12 #requires sdk >= 3.0.0 <4.0.0
   chips_choice: ^3.0.0

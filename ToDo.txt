@@ -1,0 +1,52 @@
+flutter_audio_recorder3
+-use hasPermission api to ask user for permission when needed (NSMicrophoneUsageDescription)
+
+fluttertoast
+-android 30+ -> no custom toast
+
+data_connection_checker_nulls
+- Note: Remember to dispose of any listeners, when they're not needed to prevent memory leaks, e.g. in a StatefulWidget's dispose() method:
+    @override
+    void dispose() {
+      listener.cancel();
+      super.dispose();
+    }
+
+old plist items I don't think matter
+<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+            <true/>
+    </dict>
+
+<key>com.apple.security.network.client</key>
+        <true/>
+
+
+
+
+Geo Utils
+Position position = await Geolocator.getCurrentPosition();
+if (position == null) <- can't be null; so something non null is returned that let's us know it's a bad geo
+
+
+
+validator: (value) => isValidGeo(value, "Latitude"),
+isValidGeo returns null or invalid; doesn't make sense
+
+
+
+The following position is never null. So how do we determine valid geo?
+Position position = await Geolocator.getCurrentPosition();
+
+  if (position == null) {
+    Fluttertoast.showToast(
+        msg: "Could not retrieve location from GPS.",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: Colors.red,//TODO - need to use Toast with context to link to the primary color
+        textColor: Colors.white,
+        fontSize: 16.0
+    );
+  }

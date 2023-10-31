@@ -44,25 +44,13 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
         clipBehavior: Clip.none,
         children: <Widget>[
           //context.watch<MaterialThemesManager>().getBackgroundGradient(BackgroundGradientType.PRIMARY),
-          Positioned(
-            right: -40.0,
-            top: -40.0,
-            child: InkResponse(
-              onTap: () {
-                _quitWithoutSaving();
-              },
-              child: CircleAvatar(
-                backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
-                child: ThemedIcon(Icons.close, type: ThemeGroupType.MOP),
-              ),
-            ),
-          ),
           Form(
             key: _formKey,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                if (_recordingStatus == RecordingStatus.Recording) ... [
+                 if (_recordingStatus == RecordingStatus.Recording) ... [
                   Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ThemedIconButton(Icons.pause, onPressedCallback: () => setState(() => _pause()
@@ -81,31 +69,50 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                   validator:  (value) => nonEmptyValidator(value, "Name", true),
                   onStringChangedCallback: (value) => setState(() => recordingName = value ),
                 ),
-                if (_recordingStatus != RecordingStatus.Initialized) ... [
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
-                        backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
-                        shape: const StadiumBorder(),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 16.0, 0, 0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      TextButton(
+                        style: TextButton.styleFrom(
+                          // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                          backgroundColor: context.watch<MaterialThemesManager>().colorPalette().lightBg,
+                          shape: const StadiumBorder(),
+                        ),
+                        child: ThemedTitle("Cancel", type: ThemeGroupType.MOM),
+                        onPressed: () {
+                          _quitWithoutSaving();
+                        },
                       ),
-                      child: ThemedTitle("Save", type: ThemeGroupType.MOP),
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() == true) {
-                          _formKey.currentState?.save();
+                      if (_recordingStatus == RecordingStatus.Recording || _recordingStatus == RecordingStatus.Paused || _recordingStatus == RecordingStatus.Stopped) ... [
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              // padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
+                              backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
+                              shape: const StadiumBorder(),
+                            ),
+                            child: ThemedTitle("Save", type: ThemeGroupType.MOP),
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() == true) {
+                                _formKey.currentState?.save();
 
-                          //There is a valid file name, so save the recording and close the dialog
-                          _save();
-                        } else {
-                          //There is not a valid file name. Since only pause/play are shown, don't stop because
-                          //it's possible for the user to click save, not have a file name, and continue recording.
-                          _pause();
-                        }
-                      },
-                    ),
-                  )
-                ]
+                                //There is a valid file name, so save the recording and close the dialog
+                                _save();
+                              } else {
+                                //There is not a valid file name. Since only pause/play are shown, don't stop because
+                                //it's possible for the user to click save, not have a file name, and continue recording.
+                                _pause();
+                              }
+                            },
+                          ),
+                        )
+                      ]
+                    ],
+                  ),
+                )
               ],
             ),
           ),
@@ -118,7 +125,8 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     _directory = await getApplicationDocumentsDirectory();
 
     if (_directory != null) {
-      final tempPath = '${_directory?.path}/tempAudioRecording';
+      var audioExtension = "m4a";
+      final tempPath = '${_directory?.path}/tempAudioRecording.$audioExtension';
 
       //Delete the last temp recording if it exists - no reason to keep these around
       try {
@@ -128,7 +136,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
         developer.log(e.toString());
       }
 
-      _recorder = FlutterAudioRecorder3(tempPath, audioFormat: AudioFormat.AAC); // or AudioFormat.WAV
+      _recorder = FlutterAudioRecorder3(tempPath);
       await _recorder.initialized;
       var recording = await _recorder.current(channel: 0);
       setRecordingStatus(recording);

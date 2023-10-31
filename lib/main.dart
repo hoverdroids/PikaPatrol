@@ -22,6 +22,7 @@ Future<void> main() async {
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -44,6 +45,7 @@ Future<void> main() async {
       builder: (context, child) {
         //Using StreamBuilder here in order so that appUserSnapshot is the desired type
         //since it's used when building the other providers
+
         return StreamBuilder<AppUser?>(
           stream: Provider.of<FirebaseAuthService>(context).user,
           initialData: null,

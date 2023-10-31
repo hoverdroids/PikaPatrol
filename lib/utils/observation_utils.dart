@@ -1,5 +1,3 @@
-
-
 import 'package:hive/hive.dart';
 
 import '../model/app_user.dart';
@@ -9,6 +7,7 @@ import '../services/firebase_database_service.dart';
 
 Future saveObservation(AppUser? user, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
+
     var databaseService = FirebaseDatabaseService();//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
     var imageUrls = observation.imageUrls;

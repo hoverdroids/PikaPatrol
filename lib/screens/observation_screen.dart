@@ -37,7 +37,7 @@ import 'package:pika_patrol/widgets/content_scroll.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
-import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
+// import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
@@ -197,6 +197,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                         widget.isEditMode = false;
                       });
                     } else {
+                      setState((){
+                        widget.isEditMode = false;
+                      });
                       showToast("You must login to upload an observation.\nObservation saved locally.");
                     }
                   }
@@ -682,7 +685,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
-      onDeleteClickedCallback: (value) => { _removeImage(value) }
+      onDeleteClickedCallback: (value) => { _removeImage(value) },
+      showDeleteButtonOnCard: widget.isEditMode
     );
   }
 
@@ -699,7 +703,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildAudioRecordings() {
 
     var icons = !widget.isEditMode ? <Widget>[] : [
-      ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.audio, [], false)),//TODO - should be allowed to set ['mp3']
+      ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.custom, ['3gp','aa','aac','aax','act','aiff','alac','amr','ape','au','awb','dss','dvf','flac','gsm','iklax','kvs','m4a','m4b','m4p','mmf','movpkg','mp3','mpc','msv','nmf','ogg','oga','mogg','opus','ra','rm','raw','rf64','sln','tta','voc','vox','wav','wma','wv','webm','8svx','cda'], false)),
       ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
     ];
 
@@ -721,7 +725,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       builder: (BuildContext context) {
         developer.log("AudioUrl...");
         return const AudioRecorderDialog();
-      }
+      },
+      barrierDismissible: false
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
@@ -812,6 +817,56 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   
   void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
     try {
+      var isAndroid = Platform.isAndroid;
+      var isIos = Platform.isIOS;
+
+      if (isAndroid || isIos) {
+        var isCameraPermissionGranted = await Permission.camera.request().isGranted;
+        if (!isCameraPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept camera permissions.");
+          return;
+        }
+        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
+        if (!isPhotosPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept photos permissions.");
+          return;
+        }
+
+        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
+        if (!isStoragePermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept storage permissions.");
+          return;
+        }
+      }
+
+      if (isAndroid) {
+        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
+        if (!isMediaLocationPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept media location permissions.");
+          return;
+        }
+
+        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
+        if (!isManageExternalStoragePermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept external storage permissions.");
+          return;
+        }
+
+        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
+        if (!isVideosPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept videos permissions.");
+          return;
+        }
+      }
+
+      if (isIos) {
+        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
+        if (!isMediaLibraryPermissionGranted) {
+          showToast("Could not open file picker.\nYou must accept media library permissions.");
+          return;
+        }
+      }
+
       if (isMultiPick) {
         await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
       } else {

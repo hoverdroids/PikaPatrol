@@ -319,6 +319,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       isEditMode: isEditingProfile,
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
+
         var result = await firebaseAuthService.signOut();
         final message = result?.message;
         if (message != null) {

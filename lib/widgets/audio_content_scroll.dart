@@ -136,12 +136,13 @@ class AudioContentScrollState extends State<AudioContentScroll>{
                               }
 
                               assetsAudioPlayer = AssetsAudioPlayer();//create a new player after the current file has stopped
-
-                              assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
-                                setState(() {
-                                  _playerState = PlayerState.stop;
-                                  _playingIndex = -1;
-                                });
+                              assetsAudioPlayer.playlistFinished.listen((finished) {
+                                if(finished) {
+                                  setState(() {
+                                    _playerState = PlayerState.stop;
+                                    _playingIndex = -1;
+                                  });
+                                }
                               });
 
                               var url = widget.urls[index];

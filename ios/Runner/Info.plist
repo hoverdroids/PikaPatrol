@@ -46,51 +46,47 @@
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-    <string>Need to upload image</string>
-    <key>NSMicrophoneUsageDescription</key>
-    <string>We need access to the camera, photos and microphone so that users can document pika observations by taking photos of pikas and recording audio of pika calls</string>
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Need to upload image</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>This app needs access to location when in the background to record the locations of pika observations.</string>
-    <key>NSLocationAlwaysUsageDescription</key>
-    <string>This app needs access to location when in the background to record the locations of pika observations.</string>
-    <key>NSLocationTemporaryUsageDescriptionDictionary</key>
-    <dict>
-        <key>YourPurposeKey</key>
-        <string>This app needs access to location when in the background to record the precise locations of pika observations.</string>
-    </dict>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>This app needs access to the location to record the locations of pika observations.</string>
-    <key>NSAppleMusicUsageDescription</key>
-    <string>We need access to music so that users can attach the file to an observation</string>
-    <key>kTCCServiceMediaLibrary</key>
-    <string>We need access to music so that users can attach the file to an observation</string>
-    <key>UIBackgroundModes</key>
-    <array>
-       <string>fetch</string>
-       <string>remote-notification</string>
-    </array>
-    <key>UISupportsDocumentBrowser</key>
-    <true/>
-    <key>LSSupportsOpeningDocumentsInPlace</key>
-    <true/>
-    <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>Attach photos from library to Pika observation</string>
-    <!-- Google Sign-in Section -->
-    <key>CFBundleURLTypes</key>
-    <array>
-    	<dict>
-    		<key>CFBundleTypeRole</key>
-    		<string>Editor</string>
-    		<key>CFBundleURLSchemes</key>
-    		<array>
-    			<!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
-    			<string>com.googleusercontent.apps.954700599379-qp2i96hjt2shcf3hmkoa8dvrb3nvpmp7</string>
-    		</array>
-    	</dict>
-    </array>
-    <!-- End of the Google Sign-in Section -->
+	<string>We need access to the camera and photos so that users can document pika observations by taking photos of pikas or selecting previously taken photos of pikas</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>We need access to the microphone so that users can document pika observations by recording audio of pika calls or selecting previously recorded audio of pika calls</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to the camera and photos so that users can document pika observations by taking photos of pikas or selecting previously taken photos of pikas</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to location when in the background to record the locations of pika observations.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location when in the background to record the locations of pika observations.</string>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>YourPurposeKey</key>
+		<string>This app needs access to location when in the background to record the precise locations of pika observations.</string>
+	</dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to the location to record the locations of pika observations.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>We need access to music so that users can attach the file to an observation</string>
+	<key>kTCCServiceMediaLibrary</key>
+	<string>We need access to music so that users can attach the file to an observation</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>fetch</string>
+		<string>remote-notification</string>
+	</array>
+	<key>UISupportsDocumentBrowser</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Attach photos from library to Pika observation</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.googleusercontent.apps.954700599379-qp2i96hjt2shcf3hmkoa8dvrb3nvpmp7</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

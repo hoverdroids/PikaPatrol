@@ -28,19 +28,6 @@ class CardScrollWidget extends StatelessWidget {
     return observations.isEmpty ? _buildEmptyCards() : _buildCards();
   }
 
-  _onButtonPanDown(DragUpdateDetails details) {
-    developer.log('Pan Down');
-  }
-
-  _onButtonPanUpdate(DragUpdateDetails details) {
-    developer.log('Pan Update');
-  }
-
-  _onButtonPanEnd(_) {
-    developer.log('Pan End');
-    return true;
-  }
-
   Widget _buildCards() => AspectRatio(
     aspectRatio: widgetAspectRatio,
     child: LayoutBuilder(builder: (context, constraints) {
@@ -84,40 +71,49 @@ class CardScrollWidget extends StatelessWidget {
     var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);
     var start = padding + max(cardLeft, 0.0);
 
-    return Positioned.directional(
-      top: padding + verticalInset * max(-numberCardsToMove, 0.0),
-      bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
-      start: start,
-      textDirection: TextDirection.rtl,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.0),
-        child: Container(
-          decoration: _buildCardShadow(),
-          child: AspectRatio(
-            aspectRatio: cardAspectRatio,
-            child: GestureDetector(
-              onTap: () => developer.log('Tapped'),
-              child: Stack(
-                fit: StackFit.expand,
-                children: <Widget>[_buildCardImage(observationIndex), _buildObservationUploadStatusIcon(observationIndex), _buildObservationNameAndButton(observationIndex, _onButtonPanDown, _onButtonPanUpdate, _onButtonPanEnd)],
-              ),
+    return _buildSomething(observationIndex, numberCardsToMove, start);
+  }
+
+  Widget _buildSomething(int observationIndex, double numberCardsToMove, double start) => Positioned.directional(
+    top: padding + verticalInset * max(-numberCardsToMove, 0.0),
+    bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
+    start: start,
+    textDirection: TextDirection.rtl,
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(16.0),
+      child: Container(
+        decoration: _buildCardShadow(),
+        child: AspectRatio(
+          aspectRatio: cardAspectRatio,
+          child: GestureDetector(
+            onTap: () => developer.log('Tapped'),
+            child: Stack(
+              fit: StackFit.expand,
+              children: <Widget>[
+                _buildCardImage(observationIndex),
+                _buildObservationUploadStatusIcon(observationIndex),
+                _buildObservationNameAndButton(observationIndex)
+              ],
             ),
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
 
-  Decoration _buildCardShadow() => const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, offset: Offset(3.0, 6.0), blurRadius: 10.0)]);
+  Decoration _buildCardShadow() => const BoxDecoration(
+    color: Colors.white,
+    boxShadow: [
+      BoxShadow(color: Colors.black12,
+      offset: Offset(3.0, 6.0),
+      blurRadius: 10.0)
+    ]
+  );
 
-  Widget _buildCardImage(int observationIndex) {
-    var imageUrls = observations[observationIndex].imageUrls;
-
-    if (imageUrls?.isNotEmpty == true) {
-      //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-      return UniversalImage(imageUrls?.elementAt(0) ?? "");
-    }
-    return const UniversalImage("");
+  Widget _buildCardImage(int observationIndex) {//TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
+    var imageUrls = observations[observationIndex].imageUrls ?? [];
+    var url = imageUrls.isNotEmpty ? imageUrls.elementAt(0) : "";
+    return UniversalImage(url);
   }
 
   Widget _buildObservationUploadStatusIcon(int observationIndex) {
@@ -128,34 +124,33 @@ class CardScrollWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildObservationNameAndButton(int observationIndex, Function onPanDown, Function onPanUpdate, Function onPanEnd) => Align(
-        alignment: Alignment.bottomLeft,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[_buildObservationName(observations[observationIndex].name), const SizedBox(height: 10.0), _buildViewObservationButton(onPanDown, onPanUpdate, onPanEnd)],
-        ),
-      );
+  Widget _buildObservationNameAndButton(int observationIndex) => Align(
+    alignment: Alignment.bottomLeft,
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        _buildObservationName(observations[observationIndex].name),
+        const SizedBox(height: 10.0),
+        _buildViewObservationButton()
+      ],
+    ),
+  );
 
   Widget _buildObservationName(String? observationName) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-        child: Text(observationName ?? "!!! NO OBSERVATION NAME !!!", style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")),
-      );
+    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+    child: Text(
+      observationName ?? "!!! NO OBSERVATION NAME !!!",
+      style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")
+    ),
+  );
 
-  Widget _buildViewObservationButton(Function onPanDown, Function onPanUpdate, Function onPanEnd) => Padding(
-        padding: const EdgeInsets.only(left: 12.0, bottom: 12.0),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
-          decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(20.0)),
-          child: RawGestureDetector(
-            gestures: <Type, GestureRecognizerFactory>{
-              CustomPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
-                () => CustomPanGestureRecognizer(onPanDown: () => onPanDown, onPanUpdate: () => onPanUpdate, onPanEnd: () => onPanEnd),
-                (CustomPanGestureRecognizer instance) {},
-              ),
-            },
-            child: const Text("View Observation", style: TextStyle(color: Colors.white)),
-          ),
-        ),
-      );
+  Widget _buildViewObservationButton() => Padding(
+    padding: const EdgeInsets.only(left: 12.0, bottom: 12.0),
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
+      decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(20.0)),
+      child: const Text("View Observation", style: TextStyle(color: Colors.white))
+    ),
+  );
 }

@@ -8,10 +8,10 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
-import 'package:pika_patrol/widgets/card_scroll.dart';
 import 'package:provider/provider.dart';
 import '../model/app_user.dart';
 import '../utils/observation_utils.dart';
+import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
 import 'dart:developer' as developer;
 
@@ -33,10 +33,6 @@ class ObservationsPage extends StatefulWidget {
 
 class ObservationsPageState extends State<ObservationsPage> {
 
-  int numberOldObservations = 0;
-
-  late PageController sharedObservationsPageController;
-
   late PageController localObservationsPageController;
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
@@ -48,20 +44,6 @@ class ObservationsPageState extends State<ObservationsPage> {
   @override
   void initState() {
     super.initState();
-    sharedObservationsPageController = PageController(initialPage: widget.currentPage.toInt());
-    sharedObservationsPageController.addListener(() {
-      setState(() {
-        if (widget.observations.length != numberOldObservations) {
-          numberOldObservations = widget.observations.length;
-          widget.currentPage = numberOldObservations - 1.0;
-          sharedObservationsPageController.jumpTo(widget.currentPage);
-
-        } else {
-          widget.currentPage = sharedObservationsPageController.page ?? widget.currentPage;
-        }
-      });
-    });
-
     localObservationsPageController = PageController(initialPage: localObservationsCurrentPage.toInt());
     localObservationsPageController.addListener(() {
       setState(() {
@@ -128,38 +110,15 @@ class ObservationsPageState extends State<ObservationsPage> {
                         children: <Widget>[
                           ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          Stack(
-                            children: <Widget>[
-                              /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(widget.observations, widget.currentPage),
-                              /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
-
-                              Positioned.fill(
-                                child: PageView.builder(
-                                  itemCount: widget.observations.length,
-                                  controller: sharedObservationsPageController,
-                                  reverse: true,
-                                  scrollDirection: Axis.horizontal,
-                                  allowImplicitScrolling: true,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () => {
-                                        Navigator.push(context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ObservationScreen(widget.observations[index]),
-                                          ),
-                                        )
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
-                                      ),
-                                    );
-                                  },
+                          CardScroller(
+                            widget.observations,
+                            onTapCard: (index) => {
+                              Navigator.push( context,
+                                MaterialPageRoute(
+                                  builder: (_) => ObservationScreen(widget.observations[index]),
                                 ),
-                              ),
-                            ],
+                              )
+                            }
                           ),
                           ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(

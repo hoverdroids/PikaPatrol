@@ -1,4 +1,8 @@
-class Observation {
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:pika_patrol/model/card.dart' as card;
+
+class Observation implements card.Card {
   int? dbId;
   String? uid;
   String? observerUid;
@@ -54,4 +58,32 @@ class Observation {
     this.imageUrls = imageUrls ?? <String>[];
     this.audioUrls = audioUrls ?? <String>[];
   }
+
+  @override
+  String get title => name ?? "";
+
+  @override
+  set title(String title) {}
+
+  @override
+  IconData? get icon => uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
+
+  @override
+  set icon(IconData? icon) {}
+
+  @override
+  String get imageUrl {
+    var imgUrls = imageUrls ?? [];
+    if (imgUrls.isEmpty == true) return "";
+    return imgUrls.elementAt(0);
+  }
+
+  @override
+  set imageUrl(String imageUrl) {}
+
+  @override
+  String get buttonText =>  "View Observation";
+
+  @override
+  set buttonText(String buttonText) {}
 }

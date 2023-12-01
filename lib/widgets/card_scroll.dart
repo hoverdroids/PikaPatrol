@@ -2,31 +2,29 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
-import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/model/card.dart' as card;
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
-  List<Observation> observations = <Observation>[]; //TODO - CHRIS - this should be generic "cards"
+  List<card.Card> cards;
   late double cardAspectRatio;
   late double widgetAspectRatio;
 
-  var currentCardPosition = 0.0;
+  double currentCardPosition;
   var padding = 20.0;
   var verticalInset = 20.0;
 
-  CardScrollWidget(this.observations, {super.key, this.currentCardPosition = 0.0}) {
+  CardScrollWidget(this.cards, this.currentCardPosition, {super.key}) {
     //developer.log("CurrentCardPosition:$currentCardPosition");
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return observations.isEmpty ? _buildEmptyCards() : _buildCards();
-  }
+  Widget build(BuildContext context) => cards.isEmpty ? _buildEmptyCards() : _buildCards();
 
   Widget _buildCards() => AspectRatio(
     aspectRatio: widgetAspectRatio,
@@ -37,9 +35,9 @@ class CardScrollWidget extends StatelessWidget {
 
       List<Widget> cardList = <Widget>[];
 
-      for (var cardIndex = 0; cardIndex < observations.length; cardIndex++) {
-        var title = observations[cardIndex].name ?? "";
-        var buttonText = "View Observation";
+      for (var cardIndex = 0; cardIndex < cards.length; cardIndex++) {
+        var title = cards[cardIndex].title;
+        var buttonText = cards[cardIndex].buttonText;
         var card = _buildCard(cardIndex, title, buttonText, primaryCardLeft, horizontalInset);
         cardList.add(card);
       }
@@ -77,7 +75,7 @@ class CardScrollWidget extends StatelessWidget {
     fit: StackFit.expand,
     children: <Widget>[
       _buildCardImage(cardIndex),
-      _buildObservationUploadStatusIcon(cardIndex),
+      _buildIcon(cardIndex),
       _buildTitleAndMoreDetailsButton(cardIndex, title, buttonText)
     ],
   );
@@ -121,18 +119,13 @@ class CardScrollWidget extends StatelessWidget {
   );
 
   Widget _buildCardImage(int cardIndex) {//TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-    var imageUrls = observations[cardIndex].imageUrls ?? [];
-    var url = imageUrls.isNotEmpty ? imageUrls.elementAt(0) : "";
-    return UniversalImage(url);
+    return UniversalImage(cards[cardIndex].imageUrl);
   }
 
-  Widget _buildObservationUploadStatusIcon(int cardIndex) {
-    var icon = observations[cardIndex].uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
-    return Align(
-      alignment: Alignment.topLeft,
-      child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
-    );
-  }
+  Widget _buildIcon(int cardIndex) => Align(
+    alignment: Alignment.topLeft,
+    child: ThemedIconButton(cards[cardIndex].icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+  );
 
   Widget _buildTitleAndMoreDetailsButton(int cardIndex, String title, String buttonText) => Align(
     alignment: Alignment.bottomLeft,
@@ -140,14 +133,14 @@ class CardScrollWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _buildCardTitle(title),
+        _buildTitle(title),
         const SizedBox(height: 10.0),
         _buildMoreDetailsButton(buttonText)
       ],
     ),
   );
 
-  Widget _buildCardTitle(String? title) => Padding(
+  Widget _buildTitle(String? title) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     child: Text(
       title ?? "!!! NO TITLE !!!",
@@ -160,7 +153,10 @@ class CardScrollWidget extends StatelessWidget {
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
       decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(20.0)),
-      child: Text(buttonText, style: const TextStyle(color: Colors.white))
+      child: Text(
+          buttonText,
+          style: const TextStyle(color: Colors.white)
+      )
     ),
   );
 }

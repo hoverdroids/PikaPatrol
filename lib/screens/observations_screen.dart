@@ -131,7 +131,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                           Stack(
                             children: <Widget>[
                               /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(widget.observations, currentCardPosition: widget.currentPage),
+                              CardScrollWidget(widget.observations, widget.currentPage),
                               /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
 
                               Positioned.fill(

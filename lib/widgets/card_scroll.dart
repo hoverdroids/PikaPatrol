@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
-import 'custom_pan_gesture_recognizer.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'dart:developer' as developer;
 
@@ -38,8 +37,10 @@ class CardScrollWidget extends StatelessWidget {
 
       List<Widget> cardList = <Widget>[];
 
-      for (var observationIndex = 0; observationIndex < observations.length; observationIndex++) {
-        var card = _buildCard(observationIndex, primaryCardLeft, horizontalInset);
+      for (var cardIndex = 0; cardIndex < observations.length; cardIndex++) {
+        var title = observations[cardIndex].name ?? "";
+        var buttonText = "View Observation";
+        var card = _buildCard(cardIndex, title, buttonText, primaryCardLeft, horizontalInset);
         cardList.add(card);
       }
 
@@ -67,22 +68,22 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildEmptyCards() => Container(color: Colors.transparent, width: 100, height: 100);
 
-  Widget _buildCard(int observationIndex, double primaryCardLeft, double horizontalInset) {
-    var cardContent = _buildCardContent(observationIndex);
-    return _buildCardWrapper(observationIndex, primaryCardLeft, horizontalInset, cardContent);
+  Widget _buildCard(int cardIndex, String title, String buttonText, double primaryCardLeft, double horizontalInset) {
+    var cardContent = _buildCardContent(cardIndex, title, buttonText);
+    return _buildCardWrapper(cardIndex, primaryCardLeft, horizontalInset, cardContent);
   }
 
-  Widget _buildCardContent(int observationIndex) => Stack(
+  Widget _buildCardContent(int cardIndex, String title, String buttonText) => Stack(
     fit: StackFit.expand,
     children: <Widget>[
-      _buildCardImage(observationIndex),
-      _buildObservationUploadStatusIcon(observationIndex),
-      _buildObservationNameAndButton(observationIndex)
+      _buildCardImage(cardIndex),
+      _buildObservationUploadStatusIcon(cardIndex),
+      _buildTitleAndMoreDetailsButton(cardIndex, title, buttonText)
     ],
   );
 
-  Widget _buildCardWrapper (int observationIndex, double primaryCardLeft, double horizontalInset, Widget cardContent) {
-    var numberCardsToMove = observationIndex - currentCardPosition;
+  Widget _buildCardWrapper (int cardIndex, double primaryCardLeft, double horizontalInset, Widget cardContent) {
+    var numberCardsToMove = cardIndex - currentCardPosition;
     bool isOnRight = numberCardsToMove > 0;
 
     var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);
@@ -119,47 +120,47 @@ class CardScrollWidget extends StatelessWidget {
     ]
   );
 
-  Widget _buildCardImage(int observationIndex) {//TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-    var imageUrls = observations[observationIndex].imageUrls ?? [];
+  Widget _buildCardImage(int cardIndex) {//TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
+    var imageUrls = observations[cardIndex].imageUrls ?? [];
     var url = imageUrls.isNotEmpty ? imageUrls.elementAt(0) : "";
     return UniversalImage(url);
   }
 
-  Widget _buildObservationUploadStatusIcon(int observationIndex) {
-    var icon = observations[observationIndex].uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
+  Widget _buildObservationUploadStatusIcon(int cardIndex) {
+    var icon = observations[cardIndex].uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
     return Align(
       alignment: Alignment.topLeft,
       child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
     );
   }
 
-  Widget _buildObservationNameAndButton(int observationIndex) => Align(
+  Widget _buildTitleAndMoreDetailsButton(int cardIndex, String title, String buttonText) => Align(
     alignment: Alignment.bottomLeft,
     child: Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        _buildObservationName(observations[observationIndex].name),
+        _buildCardTitle(title),
         const SizedBox(height: 10.0),
-        _buildViewObservationButton()
+        _buildMoreDetailsButton(buttonText)
       ],
     ),
   );
 
-  Widget _buildObservationName(String? observationName) => Padding(
+  Widget _buildCardTitle(String? title) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     child: Text(
-      observationName ?? "!!! NO OBSERVATION NAME !!!",
+      title ?? "!!! NO TITLE !!!",
       style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")
     ),
   );
 
-  Widget _buildViewObservationButton() => Padding(
+  Widget _buildMoreDetailsButton(String buttonText) => Padding(
     padding: const EdgeInsets.only(left: 12.0, bottom: 12.0),
     child: Container(
       padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
       decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(20.0)),
-      child: const Text("View Observation", style: TextStyle(color: Colors.white))
+      child: Text(buttonText, style: const TextStyle(color: Colors.white))
     ),
   );
 }

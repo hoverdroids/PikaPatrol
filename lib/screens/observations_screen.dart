@@ -24,7 +24,7 @@ class ObservationsPage extends StatefulWidget {
   ObservationsPage(List<Observation>? observations, {super.key}) {
     this.observations = observations == null ? <Observation>[] : List.from(observations.reversed);
     currentPage = this.observations.isEmpty ? 0.0 : this.observations.length - 1.0;
-    developer.log("CurrentPage:$currentPage");
+    developer.log("ObservationsPage ctor observations length:${observations?.length}");
   }
 
   @override
@@ -33,6 +33,9 @@ class ObservationsPage extends StatefulWidget {
 
 class ObservationsPageState extends State<ObservationsPage> {
 
+  late PageController sharedObservationsPageController;
+
+  late PageController localObservationsPageController;
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
 
@@ -41,26 +44,25 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    sharedObservationsPageController = PageController(initialPage: widget.currentPage.toInt());
+    sharedObservationsPageController.addListener(() {
+      setState(() {
+        widget.currentPage = sharedObservationsPageController.page ?? widget.currentPage;
+      });
+    });
+
+    localObservationsPageController = PageController(initialPage: localObservationsCurrentPage.toInt());
+    localObservationsPageController.addListener(() {
+      setState(() {
+        localObservationsCurrentPage = localObservationsPageController.page ?? localObservationsCurrentPage;
+      });
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-
-    //TODO - for some reason this page number is zero instead of the latest page nuber
-    developer.log("Current Page ${widget.currentPage} init");
-    PageController controller = PageController(initialPage: widget.currentPage.toInt());
-
-    controller.addListener(() {
-      setState(() {
-        widget.currentPage = controller.page ?? 0;
-      });
-    });
-
-    PageController localObservationsController = PageController(initialPage: localObservationsCurrentPage.toInt());
-
-    localObservationsController.addListener(() {
-      setState(() {
-        localObservationsCurrentPage = localObservationsController.page ?? 0;
-      });
-    });
-
     return ValueListenableBuilder(
       valueListenable: Hive.box<LocalObservation>('observations').listenable(),
       builder: (context, box, widget2){
@@ -100,6 +102,8 @@ class ObservationsPageState extends State<ObservationsPage> {
 
         var user = Provider.of<AppUser?>(context);
 
+        //developer.log("widget.currentPage ${widget.currentPage}");
+
         return SizedBox(
             width: double.infinity,
             height: double.infinity,
@@ -118,12 +122,13 @@ class ObservationsPageState extends State<ObservationsPage> {
                           Stack(
                             children: <Widget>[
                               /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(widget.observations, currentCardIndex: widget.currentPage),
+                              CardScrollWidget(widget.observations, currentCardPosition: widget.currentPage),
                               /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
+
                               Positioned.fill(
                                 child: PageView.builder(
                                   itemCount: widget.observations.length,
-                                  controller: controller,
+                                  controller: sharedObservationsPageController,
                                   reverse: true,
                                   scrollDirection: Axis.horizontal,
                                   allowImplicitScrolling: true,
@@ -177,38 +182,6 @@ class ObservationsPageState extends State<ObservationsPage> {
                                     }
                                 )
                               ]
-                            ],
-                          ),
-                          Stack(
-                            children: <Widget>[
-                              /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(localObservations, currentCardIndex: localObservationsCurrentPage),
-                              /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
-                              Positioned.fill(
-                                child: PageView.builder(
-                                  itemCount: localObservations.length,
-                                  controller: localObservationsController,
-                                  reverse: true,
-                                  scrollDirection: Axis.horizontal,
-                                  allowImplicitScrolling: true,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () => {
-                                        Navigator.push(context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ObservationScreen(localObservations[index]),
-                                          ),
-                                        )
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
                             ],
                           ),
                         ],

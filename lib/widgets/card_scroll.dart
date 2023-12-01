@@ -14,11 +14,12 @@ class CardScrollWidget extends StatelessWidget {
   late double cardAspectRatio;
   late double widgetAspectRatio;
 
-  var currentCardIndex = 0.0;
+  var currentCardPosition = 0.0;
   var padding = 20.0;
   var verticalInset = 20.0;
 
-  CardScrollWidget(this.observations, {super.key, this.currentCardIndex = 0.0}) {
+  CardScrollWidget(this.observations, {super.key, this.currentCardPosition = 0.0}) {
+    //developer.log("CurrentCardPosition:$currentCardPosition");
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }
@@ -30,8 +31,10 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildCards() => AspectRatio(
     aspectRatio: widgetAspectRatio,
+
     child: LayoutBuilder(builder: (context, constraints) {
       var (primaryCardLeft, horizontalInset) = _calculateCardLeftAndHorizontalInset(constraints);
+      //developer.log("CurrentCardPosition:$currentCardPosition primaryCardLeft:$primaryCardLeft horzInset:$horizontalInset");
 
       List<Widget> cardList = <Widget>[];
 
@@ -79,7 +82,7 @@ class CardScrollWidget extends StatelessWidget {
   );
 
   Widget _buildCardWrapper (int observationIndex, double primaryCardLeft, double horizontalInset, Widget cardContent) {
-    var numberCardsToMove = observationIndex - currentCardIndex;
+    var numberCardsToMove = observationIndex - currentCardPosition;
     bool isOnRight = numberCardsToMove > 0;
 
     var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);

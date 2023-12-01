@@ -10,16 +10,15 @@ import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
-
-  List<Observation> observations = <Observation>[];
+  List<Observation> observations = <Observation>[]; //TODO - CHRIS - this should be generic "cards"
   late double cardAspectRatio;
   late double widgetAspectRatio;
 
-  var currentPage = 0.0;
+  var currentCardIndex = 0.0;
   var padding = 20.0;
   var verticalInset = 20.0;
 
-  CardScrollWidget(this.observations, {super.key, this.currentPage = 0.0}){
+  CardScrollWidget(this.observations, {super.key, this.currentCardIndex = 0.0}) {
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }
@@ -29,160 +28,134 @@ class CardScrollWidget extends StatelessWidget {
     return observations.isEmpty ? _buildEmptyCards() : _buildCards();
   }
 
-  Widget _buildCards() {
-    return AspectRatio(
-      aspectRatio: widgetAspectRatio,
-      child: LayoutBuilder(builder: (context, constraints) {
-        var width = constraints.maxWidth;
-        var height = constraints.maxHeight;
+  _onButtonPanDown(DragUpdateDetails details) {
+    developer.log('Pan Down');
+  }
 
-        var safeWidth = width - 2 * padding;
-        var safeHeight = height - 2 * padding;
+  _onButtonPanUpdate(DragUpdateDetails details) {
+    developer.log('Pan Update');
+  }
 
-        var heightOfPrimaryCard = safeHeight;
-        var widthOfPrimaryCard = heightOfPrimaryCard * cardAspectRatio;
+  _onButtonPanEnd(_) {
+    developer.log('Pan End');
+    return true;
+  }
 
-        var primaryCardLeft = safeWidth - widthOfPrimaryCard;
-        var horizontalInset = primaryCardLeft / 2;
+  Widget _buildCards() => AspectRatio(
+    aspectRatio: widgetAspectRatio,
+    child: LayoutBuilder(builder: (context, constraints) {
+      var (primaryCardLeft, horizontalInset) = _calculateCardLeftAndHorizontalInset(constraints);
 
-        List<Widget> cardList = <Widget>[];
+      List<Widget> cardList = <Widget>[];
 
-        onPanDown(DragUpdateDetails details) {
-          developer.log('Pan Down');
-        }
+      for (var observationIndex = 0; observationIndex < observations.length; observationIndex++) {
+        var card = _buildCard(observationIndex, primaryCardLeft, horizontalInset);
+        cardList.add(card);
+      }
 
-        onPanUpdate(DragUpdateDetails details) {
-          developer.log('Pan Update');
-        }
+      return Stack(
+        children: cardList,
+      );
+    }),
+  );
 
-        onPanEnd(_) {
-          developer.log('Pan End');
-          return true;
-        }
+  (double, double) _calculateCardLeftAndHorizontalInset(BoxConstraints constraints) {
+    var width = constraints.maxWidth;
+    var height = constraints.maxHeight;
 
-        for (var i = 0; i < observations.length; i++) {
-          var delta = i - currentPage;
-          bool isOnRight = delta > 0;
+    var safeWidth = width - 2 * padding;
+    var safeHeight = height - 2 * padding;
 
-          var start = padding +
-              max(
-                  primaryCardLeft -
-                      horizontalInset * -delta * (isOnRight ? 15 : 1),
-                  0.0);
+    var heightOfPrimaryCard = safeHeight;
+    var widthOfPrimaryCard = heightOfPrimaryCard * cardAspectRatio;
 
-          var cardItem = Positioned.directional(
-            top: padding + verticalInset * max(-delta, 0.0),
-            bottom: padding + verticalInset * max(-delta, 0.0),
-            start: start,
-            textDirection: TextDirection.rtl,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16.0),
-              child: Container(
-                decoration: const BoxDecoration(color: Colors.white, boxShadow: [
-                  BoxShadow(
-                      color: Colors.black12,
-                      offset: Offset(3.0, 6.0),
-                      blurRadius: 10.0)
-                ]),
-                child: AspectRatio(
-                  aspectRatio: cardAspectRatio,
-                  child: GestureDetector(
-                    onTap: () => developer.log('Bummer'),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: <Widget>[
-                        if (observations[i].imageUrls?.isNotEmpty == true) ... [
-                          //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-                          UniversalImage(observations[i].imageUrls?.elementAt(0) ?? ""),
-                        ] else ... [
-                          const UniversalImage("")
-                        ],
-                        if (observations[i].uid?.isNotEmpty == true) ... [
-                          Align(
-                              alignment: Alignment.topLeft,
-                              child: ThemedIconButton(Icons.cloud_upload, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
-                          ),
-                        ] else ... [
-                          Align(
-                              alignment: Alignment.topLeft,
-                              child: ThemedIconButton(Icons.access_time_filled, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
-                          ),
-                        ],
-                        Align(
-                          alignment: Alignment.bottomLeft,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: <Widget>[
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16.0,
-                                    vertical: 8.0),
-                                child: Text(observations[i].name ?? "BAD NAME",//
-                                    style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 25.0,
-                                        fontFamily: "SF-Pro-Text-Regular")),
-                              ),
-                              const SizedBox(
-                                height: 10.0,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 12.0, bottom: 12.0),
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 22.0,
-                                      vertical: 6.0),
-                                  decoration: BoxDecoration(
-                                      color: Colors.teal,
-                                      borderRadius: BorderRadius.circular(20.0)),
-                                  child: RawGestureDetector(
-                                    gestures: <Type, GestureRecognizerFactory>{
-                                      CustomPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
-                                            () => CustomPanGestureRecognizer(
-                                            onPanDown: () => onPanDown,
-                                            onPanUpdate: () => onPanUpdate,
-                                            onPanEnd:  () => onPanEnd
-                                        ),
-                                            (CustomPanGestureRecognizer instance) {},
-                                      ),
-                                    },
-                                    /*onTap: () => Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => MovieScreen(movie: movies[2]),
-                                      ),
-                                    ),*/
-                                    child: const Text("View Observation",
-                                        style: TextStyle(color: Colors.white)),
-                                  ),
-                                ),
-                              )
-                            ],
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
+    var primaryCardLeft = safeWidth - widthOfPrimaryCard;
+    var horizontalInset = primaryCardLeft / 2;
+
+    return (primaryCardLeft, horizontalInset);
+  }
+
+  Widget _buildEmptyCards() => Container(color: Colors.transparent, width: 100, height: 100);
+
+  Widget _buildCard(int observationIndex, double primaryCardLeft, double horizontalInset) {
+    var numberCardsToMove = observationIndex - currentCardIndex;
+    bool isOnRight = numberCardsToMove > 0;
+
+    var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);
+    var start = padding + max(cardLeft, 0.0);
+
+    return Positioned.directional(
+      top: padding + verticalInset * max(-numberCardsToMove, 0.0),
+      bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
+      start: start,
+      textDirection: TextDirection.rtl,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.0),
+        child: Container(
+          decoration: _buildCardShadow(),
+          child: AspectRatio(
+            aspectRatio: cardAspectRatio,
+            child: GestureDetector(
+              onTap: () => developer.log('Tapped'),
+              child: Stack(
+                fit: StackFit.expand,
+                children: <Widget>[_buildCardImage(observationIndex), _buildObservationUploadStatusIcon(observationIndex), _buildObservationNameAndButton(observationIndex, _onButtonPanDown, _onButtonPanUpdate, _onButtonPanEnd)],
               ),
             ),
-          );
-          cardList.add(cardItem);
-        }
-        return Stack(
-          children: cardList,
-        );
-      }),
+          ),
+        ),
+      ),
     );
   }
 
-  Widget _buildEmptyCards() {
-    return Container(
-      color: Colors.transparent,
-      width: 100,
-      height: 100,
+  Decoration _buildCardShadow() => const BoxDecoration(color: Colors.white, boxShadow: [BoxShadow(color: Colors.black12, offset: Offset(3.0, 6.0), blurRadius: 10.0)]);
+
+  Widget _buildCardImage(int observationIndex) {
+    var imageUrls = observations[observationIndex].imageUrls;
+
+    if (imageUrls?.isNotEmpty == true) {
+      //TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
+      return UniversalImage(imageUrls?.elementAt(0) ?? "");
+    }
+    return const UniversalImage("");
+  }
+
+  Widget _buildObservationUploadStatusIcon(int observationIndex) {
+    var icon = observations[observationIndex].uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
+    return Align(
+      alignment: Alignment.topLeft,
+      child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
     );
   }
+
+  Widget _buildObservationNameAndButton(int observationIndex, Function onPanDown, Function onPanUpdate, Function onPanEnd) => Align(
+        alignment: Alignment.bottomLeft,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[_buildObservationName(observations[observationIndex].name), const SizedBox(height: 10.0), _buildViewObservationButton(onPanDown, onPanUpdate, onPanEnd)],
+        ),
+      );
+
+  Widget _buildObservationName(String? observationName) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+        child: Text(observationName ?? "!!! NO OBSERVATION NAME !!!", style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")),
+      );
+
+  Widget _buildViewObservationButton(Function onPanDown, Function onPanUpdate, Function onPanEnd) => Padding(
+        padding: const EdgeInsets.only(left: 12.0, bottom: 12.0),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 6.0),
+          decoration: BoxDecoration(color: Colors.teal, borderRadius: BorderRadius.circular(20.0)),
+          child: RawGestureDetector(
+            gestures: <Type, GestureRecognizerFactory>{
+              CustomPanGestureRecognizer: GestureRecognizerFactoryWithHandlers<CustomPanGestureRecognizer>(
+                () => CustomPanGestureRecognizer(onPanDown: () => onPanDown, onPanUpdate: () => onPanUpdate, onPanEnd: () => onPanEnd),
+                (CustomPanGestureRecognizer instance) {},
+              ),
+            },
+            child: const Text("View Observation", style: TextStyle(color: Colors.white)),
+          ),
+        ),
+      );
 }

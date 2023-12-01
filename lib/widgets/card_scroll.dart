@@ -84,10 +84,11 @@ class CardScrollWidget extends StatelessWidget {
 
     var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);
     var start = padding + max(cardLeft, 0.0);
+    var verticalDeltaBetweenCards = padding + verticalInset * max(-numberCardsToMove, 0.0);
 
     return Positioned.directional(
-      top: padding + verticalInset * max(-numberCardsToMove, 0.0),
-      bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
+      top: verticalDeltaBetweenCards,//should be called from top
+      bottom: verticalDeltaBetweenCards,//should be called from bottom
       start: start,
       textDirection: TextDirection.rtl,
       child: ClipRRect(

@@ -33,6 +33,8 @@ class ObservationsPage extends StatefulWidget {
 
 class ObservationsPageState extends State<ObservationsPage> {
 
+  int numberOldObservations = 0;
+
   late PageController sharedObservationsPageController;
 
   late PageController localObservationsPageController;
@@ -49,7 +51,14 @@ class ObservationsPageState extends State<ObservationsPage> {
     sharedObservationsPageController = PageController(initialPage: widget.currentPage.toInt());
     sharedObservationsPageController.addListener(() {
       setState(() {
-        widget.currentPage = sharedObservationsPageController.page ?? widget.currentPage;
+        if (widget.observations.length != numberOldObservations) {
+          numberOldObservations = widget.observations.length;
+          widget.currentPage = numberOldObservations - 1.0;
+          sharedObservationsPageController.jumpTo(widget.currentPage);
+
+        } else {
+          widget.currentPage = sharedObservationsPageController.page ?? widget.currentPage;
+        }
       });
     });
 

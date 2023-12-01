@@ -65,41 +65,46 @@ class CardScrollWidget extends StatelessWidget {
   Widget _buildEmptyCards() => Container(color: Colors.transparent, width: 100, height: 100);
 
   Widget _buildCard(int observationIndex, double primaryCardLeft, double horizontalInset) {
+    var cardContent = _buildCardContent(observationIndex);
+    return _buildCardWrapper(observationIndex, primaryCardLeft, horizontalInset, cardContent);
+  }
+
+  Widget _buildCardContent(int observationIndex) => Stack(
+    fit: StackFit.expand,
+    children: <Widget>[
+      _buildCardImage(observationIndex),
+      _buildObservationUploadStatusIcon(observationIndex),
+      _buildObservationNameAndButton(observationIndex)
+    ],
+  );
+
+  Widget _buildCardWrapper (int observationIndex, double primaryCardLeft, double horizontalInset, Widget cardContent) {
     var numberCardsToMove = observationIndex - currentCardIndex;
     bool isOnRight = numberCardsToMove > 0;
 
     var cardLeft = primaryCardLeft - horizontalInset * -numberCardsToMove * (isOnRight ? 15 : 1);
     var start = padding + max(cardLeft, 0.0);
 
-    return _buildSomething(observationIndex, numberCardsToMove, start);
-  }
-
-  Widget _buildSomething(int observationIndex, double numberCardsToMove, double start) => Positioned.directional(
-    top: padding + verticalInset * max(-numberCardsToMove, 0.0),
-    bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
-    start: start,
-    textDirection: TextDirection.rtl,
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(16.0),
-      child: Container(
-        decoration: _buildCardShadow(),
-        child: AspectRatio(
-          aspectRatio: cardAspectRatio,
-          child: GestureDetector(
-            onTap: () => developer.log('Tapped'),
-            child: Stack(
-              fit: StackFit.expand,
-              children: <Widget>[
-                _buildCardImage(observationIndex),
-                _buildObservationUploadStatusIcon(observationIndex),
-                _buildObservationNameAndButton(observationIndex)
-              ],
+    return Positioned.directional(
+      top: padding + verticalInset * max(-numberCardsToMove, 0.0),
+      bottom: padding + verticalInset * max(-numberCardsToMove, 0.0),
+      start: start,
+      textDirection: TextDirection.rtl,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.0),
+        child: Container(
+          decoration: _buildCardShadow(),
+          child: AspectRatio(
+            aspectRatio: cardAspectRatio,
+            child: GestureDetector(
+              onTap: () => developer.log('Tapped'),
+              child: cardContent,
             ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
 
   Decoration _buildCardShadow() => const BoxDecoration(
     color: Colors.white,

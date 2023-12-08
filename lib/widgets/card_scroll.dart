@@ -135,10 +135,13 @@ class CardScrollWidget extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: cardLayout == CardLayout.bottomLeft ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: <Widget>[
-        _buildTitle(title),
-        const SizedBox(height: 10.0),
+        if (title != null) ... [
           _buildTitle(title, cardLayout),
-        _buildMoreDetailsButton(buttonText)
+          const SizedBox(height: 10.0),
+        ],
+        if (buttonText != null) ... [
+          _buildMoreDetailsButton(buttonText)
+        ]
       ],
     ),
   );

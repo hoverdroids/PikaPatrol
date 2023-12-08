@@ -90,19 +90,23 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildEmptyCards() => Container(color: Colors.transparent, width: 100, height: 100);
 
-  Widget _buildCard(int cardIndex, String title, String buttonText, double primaryCardLeft, double horizontalInset) {
-    var cardContent = _buildCardContent(cardIndex, title, buttonText);
+  Widget _buildCard(int cardIndex, double primaryCardLeft, double horizontalInset) {
+    var cardContent = _buildCardContent(cardIndex);
     return _buildCardWrapper(cardIndex, primaryCardLeft, horizontalInset, cardContent);
   }
 
-  Widget _buildCardContent(int cardIndex, String title, String buttonText) => Stack(
+  Widget _buildCardContent(int cardIndex) {
     var card = cards[cardIndex];
-    children: <Widget>[
-      _buildCardImage(cardIndex),
-      _buildIcon(cardIndex),
-      _buildTitleAndMoreDetailsButton(cardIndex, title, buttonText)
-    ],
-  );
+
+    return Stack(
+      fit: StackFit.expand,
+      children: <Widget>[
+        _buildCardImage(card.imageUrl ?? "assets/images/pika4.jpg"),
+        _buildIcon(card.icon),
+        _buildTitleAndMoreDetailsButton(card.title, card.buttonText, card.cardLayout)
+      ],
+    );
+  }
 
   Widget _buildCardWrapper (int cardIndex, double primaryCardLeft, double horizontalInset, Widget cardContent) {
     var numberCardsToMove = cardIndex - currentCardPosition;
@@ -113,8 +117,8 @@ class CardScrollWidget extends StatelessWidget {
     var verticalDeltaBetweenCards = padding + verticalInset * max(-numberCardsToMove, 0.0);
 
     return Positioned.directional(
-      top: verticalDeltaBetweenCards,//should be called from top
-      bottom: verticalDeltaBetweenCards,//should be called from bottom
+      top: verticalDeltaBetweenCards,//should be called "from top"
+      bottom: verticalDeltaBetweenCards,//should be called "from bottom"
       start: start,
       textDirection: TextDirection.rtl,
       child: Container(
@@ -141,13 +145,11 @@ class CardScrollWidget extends StatelessWidget {
     ]
   );
 
-  Widget _buildCardImage(int cardIndex) {//TODO - CHRIS - was passing null; need to pass local image path so cards still show with blank bg
-    return UniversalImage(cards[cardIndex].imageUrl);
-  }
+  Widget _buildCardImage(String imageUrl) => UniversalImage(imageUrl);
 
-  Widget _buildIcon(int cardIndex) => Align(
+  Widget _buildIcon(IconData? icon) => Align(
     alignment: Alignment.topLeft,
-    child: ThemedIconButton(cards[cardIndex].icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+    child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
   );
 
   Widget _buildTitleAndMoreDetailsButton(String? title, String? buttonText, CardLayout cardLayout) => Align(

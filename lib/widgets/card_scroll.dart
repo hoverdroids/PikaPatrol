@@ -101,7 +101,7 @@ class CardScrollWidget extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        _buildCardImage(card.imageUrl ?? "assets/images/pika4.jpg"),
+        _buildCardImage(card.imageUrl ?? ""),
         _buildIcon(card.icon),
         _buildTitleAndMoreDetailsButton(card.title, card.buttonText, card.cardLayout)
       ],

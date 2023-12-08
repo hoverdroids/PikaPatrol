@@ -24,7 +24,7 @@ class UniversalImage extends StatelessWidget {
     this.path,
     {
       super.key,
-      this.emptyAssetPath = "assets/images/add_image.png",
+      this.emptyAssetPath = "assets/images/pika4.jpg",
       this.overlayMode = OverlayMode.sometimes,
       this.colorWhenImageNotShowing = DEFAULT_COLOR,
       this.overlayColor = DEFAULT_COLOR,

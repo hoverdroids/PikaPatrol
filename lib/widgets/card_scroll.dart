@@ -19,7 +19,17 @@ class CardScrollWidget extends StatelessWidget {
   var padding = 20.0;
   var verticalInset = 20.0;
 
-  CardScrollWidget(this.cards, this.currentCardPosition, {super.key}) {
+  late BorderRadius cardBorderRadius;
+  double cardShadowOffsetX;
+  double cardShadowOffsetY;
+  double cardShadowBlurRadius;
+  Color cardShadowColor;
+        BorderRadius? cardBorderRadius,
+        this.cardShadowOffsetX = 3.0,
+        this.cardShadowOffsetY = 3.0,
+        this.cardShadowBlurRadius = 10.0,
+        this.cardShadowColor = Colors.black38
+    this.cardBorderRadius = cardBorderRadius ?? BorderRadius.circular(16);
     //developer.log("CurrentCardPosition:$currentCardPosition");
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
@@ -95,28 +105,27 @@ class CardScrollWidget extends StatelessWidget {
       bottom: verticalDeltaBetweenCards,//should be called from bottom
       start: start,
       textDirection: TextDirection.rtl,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16.0),
-        child: Container(
-          decoration: _buildCardShadow(),
+      child: Container(
+        decoration: _buildCardShadow(),
+        child: ClipRRect(
+          borderRadius: cardBorderRadius,
           child: AspectRatio(
             aspectRatio: cardAspectRatio,
-            child: GestureDetector(
-              onTap: () => developer.log('Tapped'),
-              child: cardContent,
-            ),
-          ),
-        ),
-      ),
+            child: cardContent
+          )
+        )
+      )
     );
   }
 
-  Decoration _buildCardShadow() => const BoxDecoration(
-    color: Colors.white,
+  Decoration _buildCardShadow() => BoxDecoration(
+    borderRadius: cardBorderRadius,
     boxShadow: [
-      BoxShadow(color: Colors.black12,
-      offset: Offset(3.0, 6.0),
-      blurRadius: 10.0)
+      BoxShadow(
+        color: cardShadowColor,
+        offset: Offset(cardShadowOffsetX, cardShadowOffsetY),
+        blurRadius: cardShadowBlurRadius
+      )
     ]
   );
 

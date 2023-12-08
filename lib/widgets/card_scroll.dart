@@ -7,6 +7,8 @@ import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'dart:developer' as developer;
 
+import '../primitives/card_layout.dart';
+
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
   List<card.Card> cards;
@@ -127,23 +129,25 @@ class CardScrollWidget extends StatelessWidget {
     child: ThemedIconButton(cards[cardIndex].icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
   );
 
-  Widget _buildTitleAndMoreDetailsButton(int cardIndex, String title, String buttonText) => Align(
-    alignment: Alignment.bottomLeft,
+  Widget _buildTitleAndMoreDetailsButton(String? title, String? buttonText, CardLayout cardLayout) => Align(
+    alignment: cardLayout == CardLayout.bottomLeft ? Alignment.bottomLeft : Alignment.center,
     child: Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: cardLayout == CardLayout.bottomLeft ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: <Widget>[
         _buildTitle(title),
         const SizedBox(height: 10.0),
+          _buildTitle(title, cardLayout),
         _buildMoreDetailsButton(buttonText)
       ],
     ),
   );
 
-  Widget _buildTitle(String? title) => Padding(
+  Widget _buildTitle(String? title, CardLayout cardLayout) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
     child: Text(
       title ?? "!!! NO TITLE !!!",
+      textAlign: cardLayout == CardLayout.bottomLeft ? TextAlign.start : TextAlign.center,
       style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")
     ),
   );

@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pika_patrol/model/card.dart' as card;
@@ -33,6 +32,7 @@ class CardScrollerState extends State<CardScroller> {
         if (widget.cards.length != numberOldObservations) {
           numberOldObservations = widget.cards.length;
           widget.currentCardPosition = numberOldObservations - 1.0;
+
           pageController.jumpTo(widget.currentCardPosition);
         } else {
           widget.currentCardPosition = pageController.page ?? widget.currentCardPosition;

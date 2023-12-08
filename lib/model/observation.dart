@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 
-class Observation implements card.Card {
+class Observation extends card.Card {
   int? dbId;
   String? uid;
   String? observerUid;
@@ -63,13 +63,7 @@ class Observation implements card.Card {
   String get title => name ?? "";
 
   @override
-  set title(String title) {}
-
-  @override
   IconData? get icon => uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
-
-  @override
-  set icon(IconData? icon) {}
 
   @override
   String get imageUrl {
@@ -79,11 +73,5 @@ class Observation implements card.Card {
   }
 
   @override
-  set imageUrl(String imageUrl) {}
-
-  @override
-  String get buttonText =>  "View Observation";
-
-  @override
-  set buttonText(String buttonText) {}
+  String? get buttonText =>  "View Observation";
 }

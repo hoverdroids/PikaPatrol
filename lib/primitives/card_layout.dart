@@ -1,0 +1,4 @@
+enum CardLayout {
+  centered,
+  bottomLeft
+}

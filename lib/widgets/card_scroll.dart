@@ -11,7 +11,8 @@ import '../primitives/card_layout.dart';
 
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
-  List<card.Card> cards;
+
+  List<card.Card> cards = [];
   late double cardAspectRatio;
   late double widgetAspectRatio;
 
@@ -24,13 +25,27 @@ class CardScrollWidget extends StatelessWidget {
   double cardShadowOffsetY;
   double cardShadowBlurRadius;
   Color cardShadowColor;
+
+  CardScrollWidget(
+      List<card.Card> cards,
+      this.currentCardPosition,
+      {
+        super.key,
         BorderRadius? cardBorderRadius,
         this.cardShadowOffsetX = 3.0,
         this.cardShadowOffsetY = 3.0,
         this.cardShadowBlurRadius = 10.0,
         this.cardShadowColor = Colors.black38
+      }
+  ) {
     this.cardBorderRadius = cardBorderRadius ?? BorderRadius.circular(16);
     //developer.log("CurrentCardPosition:$currentCardPosition");
+    var defaultCards = [
+      card.Card(title:"No Observations Found", buttonText: null, cardLayout: CardLayout.centered)
+    ];
+
+    this.cards = cards.isEmpty ? defaultCards : cards;
+
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }
@@ -48,10 +63,7 @@ class CardScrollWidget extends StatelessWidget {
       List<Widget> cardList = <Widget>[];
 
       for (var cardIndex = 0; cardIndex < cards.length; cardIndex++) {
-        var title = cards[cardIndex].title;
-        var buttonText = cards[cardIndex].buttonText;
-        var card = _buildCard(cardIndex, title, buttonText, primaryCardLeft, horizontalInset);
-        cardList.add(card);
+        cardList.add(_buildCard(cardIndex, primaryCardLeft, horizontalInset));
       }
 
       return Stack(
@@ -84,7 +96,7 @@ class CardScrollWidget extends StatelessWidget {
   }
 
   Widget _buildCardContent(int cardIndex, String title, String buttonText) => Stack(
-    fit: StackFit.expand,
+    var card = cards[cardIndex];
     children: <Widget>[
       _buildCardImage(cardIndex),
       _buildIcon(cardIndex),

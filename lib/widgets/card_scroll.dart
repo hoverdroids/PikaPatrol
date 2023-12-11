@@ -27,7 +27,7 @@ class CardScrollWidget extends StatelessWidget {
   Color cardShadowColor;
 
   CardScrollWidget(
-      List<card.Card> cards,
+      this.cards,
       this.currentCardPosition,
       {
         super.key,
@@ -40,12 +40,6 @@ class CardScrollWidget extends StatelessWidget {
   ) {
     this.cardBorderRadius = cardBorderRadius ?? BorderRadius.circular(16);
     //developer.log("CurrentCardPosition:$currentCardPosition");
-    var defaultCards = [
-      card.Card(title:"No Observations Found", buttonText: null, cardLayout: CardLayout.centered)
-    ];
-
-    this.cards = cards.isEmpty ? defaultCards : cards;
-
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }

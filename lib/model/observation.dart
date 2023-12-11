@@ -52,20 +52,20 @@ class Observation extends card.Card {
     imageUrls,
     audioUrls,
     otherAnimalsPresent,
-    super.buttonText,
-    super.cardLayout
+    super.buttonText = "View Observation",
+    super.cardLayout,
+    IconData? uploadedIcon = Icons.cloud_upload,
+    IconData? notUploadedIcon = Icons.access_time_filled
   }){
     this.signs = signs ?? <String>[];
     this.otherAnimalsPresent = otherAnimalsPresent ?? <String>[];
     this.imageUrls = imageUrls ?? <String>[];
     this.audioUrls = audioUrls ?? <String>[];
+    super.icon = uid?.isNotEmpty == true ? uploadedIcon : notUploadedIcon;
   }
 
   @override
   String get title => name ?? "";
-
-  @override
-  IconData? get icon => uid?.isNotEmpty == true ? Icons.cloud_upload : Icons.access_time_filled;
 
   @override
   String get imageUrl {
@@ -73,7 +73,4 @@ class Observation extends card.Card {
     if (imgUrls.isEmpty == true) return "";
     return imgUrls.elementAt(0);
   }
-
-  @override
-  String? get buttonText =>  "View Observation";
 }

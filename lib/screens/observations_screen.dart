@@ -10,10 +10,12 @@ import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:provider/provider.dart';
 import '../model/app_user.dart';
+import '../primitives/card_layout.dart';
 import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
 import 'dart:developer' as developer;
+import 'package:pika_patrol/model/card.dart' as card;
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
@@ -22,13 +24,21 @@ class ObservationsPage extends StatefulWidget {
   double currentPage = 0;
 
   ObservationsPage(List<Observation>? observations, {super.key}) {
-    this.observations = observations == null ? <Observation>[] : List.from(observations.reversed);
+    this.observations = _createDefaultObservations();//observations == null ? _createDefaultObservations() : List.from(observations.reversed);
     currentPage = this.observations.isEmpty ? 0.0 : this.observations.length - 1.0;
     developer.log("ObservationsPage ctor observations length:${observations?.length}");
   }
 
   @override
   ObservationsPageState createState() => ObservationsPageState();
+
+  List<Observation> _createDefaultObservations() => [
+    Observation(name:"No Observations Found1", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
+    Observation(name:"No Observations Found2", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
+    Observation(name:"No Observations Found3", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
+    Observation(name:"No Observations Found4", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
+    Observation(name:"No Observations Found5", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
+  ];
 }
 
 class ObservationsPageState extends State<ObservationsPage> {

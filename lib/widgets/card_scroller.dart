@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 import 'card_scroll.dart';
+import 'dart:developer' as developer;
 
 class CardScroller extends StatefulWidget {
 
@@ -11,7 +12,8 @@ class CardScroller extends StatefulWidget {
   double currentCardPosition = 0.0;
 
   CardScroller(this.cards, {super.key, this.onTapCard, this.reverse = true}) {
-    currentCardPosition = cards.length - 1;
+    currentCardPosition = cards.isEmpty ? 0.0 : cards.length.toDouble();
+    developer.log("CardScroller ctor currentCardPosition:$currentCardPosition cards.length:${cards.length}");
   }
 
   @override
@@ -19,29 +21,6 @@ class CardScroller extends StatefulWidget {
 }
 
 class CardScrollerState extends State<CardScroller> {
-
-  int numberOldObservations = 0;
-
-  late PageController pageController;
-
-  @override
-  void initState() {
-    pageController = PageController(initialPage: widget.currentCardPosition.toInt());//initialPage: widget.currentPage.toInt()
-    pageController.addListener(() {
-      setState(() {
-        if (widget.cards.length != numberOldObservations) {
-          numberOldObservations = widget.cards.length;
-          widget.currentCardPosition = numberOldObservations - 1.0;
-
-          pageController.jumpTo(widget.currentCardPosition);
-        } else {
-          widget.currentCardPosition = pageController.page ?? widget.currentCardPosition;
-        }
-      });
-    });
-    
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +33,7 @@ class CardScrollerState extends State<CardScroller> {
         Positioned.fill(
           child: PageView.builder(
             itemCount: widget.cards.length,
-            controller: pageController,
+            controller: _createPageController(),
             reverse: widget.reverse,
             scrollDirection: Axis.horizontal,
             allowImplicitScrolling: true,
@@ -72,5 +51,20 @@ class CardScrollerState extends State<CardScroller> {
         ),
       ],
     );
+  }
+
+  PageController _createPageController() {
+    var pageController = PageController(initialPage: widget.currentCardPosition.toInt());//initialPage: widget.currentPage.toInt()
+
+    // developer.log("CardScroller initState currentCardPosition:${widget.currentCardPosition} pageController.page:${pageController.page}");
+
+    pageController.addListener(() {
+      setState(() {
+        developer.log("CardScroller controller update currentCardPosition:${widget.currentCardPosition} pageController.page:${pageController.page}");
+        widget.currentCardPosition = pageController.page ?? widget.currentCardPosition;
+      });
+    });
+
+    return pageController;
   }
 }

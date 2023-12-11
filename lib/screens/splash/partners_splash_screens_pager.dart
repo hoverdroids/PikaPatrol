@@ -29,33 +29,9 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
   @override
   void initState() {
     super.initState();
-
     _showNextSplashScreen().then((value) {
       liquidController.animateToPage(page: 1);
-
-      _showNextSplashScreen().then((value) {
-        liquidController.animateToPage(page: 2);
-
-        _showNextSplashScreen().then((value) {
-          liquidController.animateToPage(page: 3);
-
-          _showNextSplashScreen().then((value) {
-            liquidController.animateToPage(page: 4);
-
-            _showNextSplashScreen().then((value) {
-              liquidController.animateToPage(page: 5);
-
-              _showNextSplashScreen().then((value) {
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                );
-              });
-            });
-          });
-        });
-      });
-    }
-    );
+    });
   }
 
   @override
@@ -77,7 +53,17 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
         liquidController: liquidController,
         ignoreUserGestureWhileAnimating: true,
         disableUserGesture: true,
-        //TODO - onPageChangeCallback: pageChangeCallback,
+        onPageChangeCallback: (page) => {
+          _showNextSplashScreen().then((value){
+            if (page < 5) {
+              liquidController.animateToPage(page: page + 1);
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+              );
+            }
+          })
+        },
       ),
     );
   }

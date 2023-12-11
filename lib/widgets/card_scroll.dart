@@ -21,6 +21,7 @@ class CardScrollWidget extends StatelessWidget {
   var verticalInset = 20.0;
 
   late BorderRadius cardBorderRadius;
+  Color cardBackgroundColor;
   double cardShadowOffsetX;
   double cardShadowOffsetY;
   double cardShadowBlurRadius;
@@ -32,6 +33,7 @@ class CardScrollWidget extends StatelessWidget {
       {
         super.key,
         BorderRadius? cardBorderRadius,
+        this.cardBackgroundColor = Colors.white,
         this.cardShadowOffsetX = 3.0,
         this.cardShadowOffsetY = 3.0,
         this.cardShadowBlurRadius = 10.0,
@@ -129,6 +131,7 @@ class CardScrollWidget extends StatelessWidget {
   }
 
   Decoration _buildCardShadow() => BoxDecoration(
+    color: cardBackgroundColor,
     borderRadius: cardBorderRadius,
     boxShadow: [
       BoxShadow(

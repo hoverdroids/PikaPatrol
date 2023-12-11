@@ -15,30 +15,21 @@ import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
 import 'dart:developer' as developer;
-import 'package:pika_patrol/model/card.dart' as card;
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
 
   late List<Observation> observations;
-  double currentPage = 0;
+  late bool observationsNotNull;
 
   ObservationsPage(List<Observation>? observations, {super.key}) {
-    this.observations = _createDefaultObservations();//observations == null ? _createDefaultObservations() : List.from(observations.reversed);
-    currentPage = this.observations.isEmpty ? 0.0 : this.observations.length - 1.0;
+    List<Observation> resolvedObservations = observations ?? <Observation>[];
+    this.observations = List.from(resolvedObservations.reversed);
     developer.log("ObservationsPage ctor observations length:${observations?.length}");
   }
 
   @override
   ObservationsPageState createState() => ObservationsPageState();
-
-  List<Observation> _createDefaultObservations() => [
-    Observation(name:"No Observations Found1", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
-    Observation(name:"No Observations Found2", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
-    Observation(name:"No Observations Found3", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
-    Observation(name:"No Observations Found4", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered),
-    Observation(name:"No Observations Found5", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
-  ];
 }
 
 class ObservationsPageState extends State<ObservationsPage> {
@@ -120,16 +111,20 @@ class ObservationsPageState extends State<ObservationsPage> {
                         children: <Widget>[
                           ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          CardScroller(
-                            widget.observations,
-                            onTapCard: (index) => {
-                              Navigator.push( context,
-                                MaterialPageRoute(
-                                  builder: (_) => ObservationScreen(widget.observations[index]),
-                                ),
-                              )
-                            }
-                          ),
+                          if (widget.observations.isNotEmpty) ... [
+                            CardScroller(
+                              widget.observations,
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(widget.observations[index]),
+                                  ),
+                                )
+                              }
+                            ),
+                          ] else ...[
+                            CardScroller(_createDefaultObservations()),
+                          ],
                           ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -174,4 +169,7 @@ class ObservationsPageState extends State<ObservationsPage> {
     );
   }
 
+  List<Observation> _createDefaultObservations() => [
+    Observation(name:"No Observations Found", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
+  ];
 }

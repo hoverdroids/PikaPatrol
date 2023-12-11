@@ -51,7 +51,9 @@ class Observation extends card.Card {
     this.comments = "",
     imageUrls,
     audioUrls,
-    otherAnimalsPresent
+    otherAnimalsPresent,
+    super.buttonText,
+    super.cardLayout
   }){
     this.signs = signs ?? <String>[];
     this.otherAnimalsPresent = otherAnimalsPresent ?? <String>[];

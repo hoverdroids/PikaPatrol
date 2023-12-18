@@ -389,8 +389,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     String editLatitude = widget.observation.latitude?.toString() ?? "";
     String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
     String editLongitude = widget.observation.longitude?.toString() ?? "";
-    String altitude = widget.observation.altitude?.toStringAsFixed(2) ?? "";
-    String editAltitude = widget.observation.altitude?.toString() ?? "";
+
+    double? altMeters = widget.observation.altitudeInMeters;
+    String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
+    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toString() : "";    //Editable altitude is full length
 
     return Row(
       children: <Widget>[
@@ -457,23 +459,26 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerLeft,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle("Altitude", type: ThemeGroupType.POM),
+                ThemedSubTitle("Altitude (ft)", type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: editAltitude,
+                    text: editAltitudeInMeters,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
+                    onStringChangedCallback: (value) {
+                      var altitudeInFeet = double.parse(value);
+                      widget.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
+                    },
                     validator: (value) => isValidGeo(value, "Altitude"),
                   )
                 ] else ...[
-                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
               ],
             ),
@@ -496,7 +501,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         setState(() {
           widget.observation.latitude = position.latitude;
           widget.observation.longitude = position.longitude;
-          widget.observation.altitude = position.altitude;
+          widget.observation.altitudeInMeters = position.altitude;
 
           _hideGeoFields = true;
           resetHideGeoFields();

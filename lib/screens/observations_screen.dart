@@ -69,7 +69,7 @@ class ObservationsPageState extends State<ObservationsPage> {
               dbId: localObservation.key,
               uid: localObservation.uid,
               observerUid: localObservation.observerUid,
-              altitude: localObservation.altitude,
+              altitudeInMeters: localObservation.altitude,
               longitude: localObservation.longitude,
               latitude: localObservation.latitude,
               name: localObservation.name,

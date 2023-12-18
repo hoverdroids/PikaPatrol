@@ -1,3 +1,4 @@
+// ignore_for_file: non_constant_identifier_names
 import 'package:geolocator/geolocator.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 
@@ -49,3 +50,9 @@ String? isValidGeo(String? value, String name) {
   bool isDouble = value == null ? false : double.tryParse(value) != null;
   return isDouble ? null : 'Invalid';
 }
+
+double FEET_PER_METER = 3.28084;
+
+double feetToMeters(double feet) => feet / FEET_PER_METER;
+
+double metersToFeet(double meter) => meter * FEET_PER_METER;

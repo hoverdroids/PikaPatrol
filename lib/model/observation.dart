@@ -8,7 +8,7 @@ class Observation extends card.Card {
   String? observerUid;
   //TODO - position: https://fireship.io/lessons/flutter-realtime-geolocation-firebase/
   //TODO was position manually entered?
-  double? altitude;
+  double? altitudeInMeters;
   double? longitude;
   double? latitude;
   String? name;
@@ -36,7 +36,7 @@ class Observation extends card.Card {
     this.name = "",
     this.location = "",
     this.date,
-    this.altitude,
+    this.altitudeInMeters,
     this.latitude,
     this.longitude,
     signs,

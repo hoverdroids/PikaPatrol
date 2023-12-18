@@ -194,6 +194,20 @@ class ObservationsPageState extends State<ObservationsPage> {
                               )
                             ],
                           ),
+                          if (localObservations.isNotEmpty) ... [
+                            CardScroller(
+                              localObservations,
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(localObservations[index]),
+                                  ),
+                                )
+                              }
+                            ),
+                          ] else ...[
+                            CardScroller(_createDefaultObservations()),
+                          ],
                         ],
                       ),
                     ),

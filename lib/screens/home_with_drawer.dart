@@ -232,11 +232,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
           [
-            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "If/Then", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
-            ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
             ListItemModel(title: "App Help and Info", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pika-patrol-tutorials/")),
             ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
@@ -248,7 +243,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                       })
                   )
               )
-            })
+            }),
+            ListItemModel(title: "Map of Pika Observations", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pikapatrolmap/")),
+            ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
+            ListItemModel(title: "Sponsors and Support", isSectionHeader: true),
+            ListItemModel(title: "Colorado Pika Project", indentLevel: 1, itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+            ListItemModel(title: "Rocky Mountain Wild", indentLevel: 1, itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
+            ListItemModel(title: "Denver Zoo", indentLevel: 1, itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
+            ListItemModel(title: "IF/THEN", indentLevel: 1, itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",

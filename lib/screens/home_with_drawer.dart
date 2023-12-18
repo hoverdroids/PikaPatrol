@@ -6,7 +6,7 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
-import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
@@ -246,11 +246,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             }),
             ListItemModel(title: "Map of Pika Observations", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pikapatrolmap/")),
             ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
-            ListItemModel(title: "Sponsors and Support", isSectionHeader: true),
-            ListItemModel(title: "Colorado Pika Project", indentLevel: 1, itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-            ListItemModel(title: "Rocky Mountain Wild", indentLevel: 1, itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "Denver Zoo", indentLevel: 1, itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-            ListItemModel(title: "IF/THEN", indentLevel: 1, itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
+            ListItemModel(title: "Sponsors and Support"),
+            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
+            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
+            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
+            ListItemModel(title: "IF/THEN", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",
@@ -258,7 +258,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           avatarTitle: avatarTitle,
           avatarSubtitle: avatarSubtitle,
           avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
-          cardElevationLevel: ElevationLevel.LOW,
+          cardElevationLevel: ElevationLevel.FLAT,
           usePolygonAvatar: true,
           headerGradientType: BackgroundGradientType.PRIMARY,
           isHeaderSticky: false
@@ -559,7 +559,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       width: double.infinity,
       height: double.infinity,
       color: Colors.white.withOpacity(0.70),
-      child: Loading(),
+      child: const Loading(),
     );
   }
 

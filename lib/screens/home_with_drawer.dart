@@ -6,6 +6,7 @@ import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
+import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
@@ -224,6 +225,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
+      widthPercent: .92,
       leftIconType: ThemeGroupType.MOP,
       leftIconClickedCallback: () => Navigator.pop(context),
       rightIconType: ThemeGroupType.MOP,
@@ -246,11 +248,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             }),
             ListItemModel(title: "Map of Pika Observations", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pikapatrolmap/")),
             ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
-            ListItemModel(title: "Sponsors and Support"),
-            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-            ListItemModel(title: "IF/THEN", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
+            ListItemModel(title: "Sponsors and Support", titleType: ThemeGroupType.SOM),
+            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/"), margin: indentationLevel1),
+            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/"), margin: indentationLevel1),
+            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/"), margin: indentationLevel1),
+            ListItemModel(title: "IF/THEN", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/"), margin: indentationLevel1),
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",

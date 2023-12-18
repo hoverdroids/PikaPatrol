@@ -110,17 +110,38 @@ class ObservationsPageState extends State<ObservationsPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedIconButton(
+                                Icons.info,
+                                type: ThemeGroupType.MOP,
+                                onPressedCallback: () async {
+                                  AlertDialog alert = const AlertDialog(
+                                    title: Text("Shared Observations"),
+                                    content: Text("The five most recent observations uploaded to Pika Patrol's server by any user."),
+                                  );
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return alert;
+                                    },
+                                  );
+                                }
+                              )
+                            ],
+                          ),
                           if (widget.observations.isNotEmpty) ... [
                             CardScroller(
-                              widget.observations,
-                              onTapCard: (index) => {
-                                Navigator.push( context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ObservationScreen(widget.observations[index]),
-                                  ),
-                                )
-                              }
+                                widget.observations,
+                                onTapCard: (index) => {
+                                  Navigator.push( context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ObservationScreen(widget.observations[index]),
+                                    ),
+                                  )
+                                }
                             ),
                           ] else ...[
                             CardScroller(_createDefaultObservations()),
@@ -154,7 +175,23 @@ class ObservationsPageState extends State<ObservationsPage> {
                                       }
                                     }
                                 )
-                              ]
+                              ],
+                              ThemedIconButton(
+                                Icons.info,
+                                type: ThemeGroupType.MOP,
+                                onPressedCallback: () async {
+                                  AlertDialog alert = const AlertDialog(
+                                    title: Text("Cached Observations"),
+                                    content: Text("Cached observations are those created on the current device. Clearing cache, deleting app data, or removing the app will permanently remove these observations from the device. If the observations were uploaded to the Pika Patrol server (i.e. there is a cloud icon in the top left of the card), then the observations will remain on the server but will not be pulled back onto the device."),
+                                  );
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return alert;
+                                    },
+                                  );
+                                }
+                              )
                             ],
                           ),
                         ],

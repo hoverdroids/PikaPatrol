@@ -536,27 +536,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.name?.toUpperCase() ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Observation Name",
-              onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
-              validator: (value) => nonEmptyValidator(value, "Observation Name", true),
-            )
-          ] else ... [
-            ThemedH5(widget.observation.name?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
-          ],
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
               text: widget.observation.location ?? "",
               textType: ThemeGroupType.POM,
-              hintText: "Site Location Name",
+              hintText: "Site Name",
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, "Site Location Name", true),
+              validator: (value) => nonEmptyValidator(value, "Site Name", true),
             )
           ] else ... [
-            ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),
+            ThemedH5(widget.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo

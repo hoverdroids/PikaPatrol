@@ -65,7 +65,7 @@ class Observation extends card.Card {
   }
 
   @override
-  String get title => name ?? "";
+  String get title => location?.toUpperCase() ?? "";
 
   @override
   String get imageUrl {

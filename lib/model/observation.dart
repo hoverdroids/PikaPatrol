@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 
 class Observation extends card.Card {
+
+  static List<String> OTHER_ANIMALS_DEFAULT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats"];
+
   int? dbId;
   String? uid;
   String? observerUid;
@@ -22,7 +25,13 @@ class Observation extends card.Card {
   String? temperature;
   String? skies;
   String? wind;
-  List<String>? otherAnimalsPresent;
+
+  List<String>? _otherAnimalsPresent;
+  List<String>? get otherAnimalsPresent => _otherAnimalsPresent;
+  set otherAnimalsPresent(List<String>? list) {
+    _otherAnimalsPresent = list?.toTrimmedUniqueList().sortList();
+  }
+
   String? siteHistory;
   String? comments;
   List<String>? imageUrls;
@@ -72,5 +81,11 @@ class Observation extends card.Card {
     var imgUrls = imageUrls ?? [];
     if (imgUrls.isEmpty == true) return "";
     return imgUrls.elementAt(0);
+  }
+
+  List<String> getOtherAnimalsPresentOptions() {
+    var selectedAnimals = otherAnimalsPresent ?? <String>[];
+    var defaultAnimals = OTHER_ANIMALS_DEFAULT;
+    return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
   }
 }

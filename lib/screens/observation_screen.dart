@@ -18,6 +18,7 @@ import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
+import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
@@ -1109,172 +1110,191 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         smallTransparentDivider,
         ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.temperature,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.temperature = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
-
-  Widget _buildSkiesChoices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Skies", type: ThemeGroupType.POM),
-        ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.skies,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.skies = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
-
-  Widget _buildWindChoices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Wind", type: ThemeGroupType.POM),
-        ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.wind,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.wind = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
-
-  Widget _buildOtherAnimalsPresent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
-        ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.otherAnimalsPresent ?? <String>[],
+          value: widget.observation.temperature,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => widget.observation.otherAnimalsPresent = val)
+              setState(() => widget.observation.temperature = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"],
+            source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],
             value: (i, v) => v,
             label: (i, v) => v,
             tooltip: (i, v) => v,
-          ),
+          )
         )
       ],
     );
   }
 
-  Widget _buildSiteHistory() {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (boolVal) { return true; },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSkiesChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      ThemedSubTitle("Skies", type: ThemeGroupType.POM),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.skies,
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.skies = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
+          value: (i, v) => v,
+          label: (i, v) => v,
+          tooltip: (i, v) => v,
+        )
+      )
+    ],
+  );
+
+  Widget _buildWindChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      ThemedSubTitle("Wind", type: ThemeGroupType.POM),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.wind,
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.wind = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
+          value: (i, v) => v,
+          label: (i, v) => v,
+          tooltip: (i, v) => v,
+        )
+      )
+    ],
+  );
+
+  Widget _buildOtherAnimalsPresent() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          smallTransparentDivider,
-          ThemedSubTitle("Site History", type: ThemeGroupType.POM),
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
-              text: widget.observation.siteHistory ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Note any history you've had with this site",
-              //hintTextType: hintTextType,
-              //hintTextEmphasis: hintTextEmphasis,
-              //backgroundType: textFieldBackgroundType,
-              onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
-              //validator: validator
-            )
-          ] else ... [
-            SizedBox(
-              height: 120.0,
-              child: SingleChildScrollView(
-                child: ThemedBody(
-                  widget.observation.siteHistory,
-                  type: ThemeGroupType.MOM,
-                ),
-              ),
-            )
-          ]
+          ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
+          ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
         ],
       ),
-    );
+      ChipsChoice<String>.multiple(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.otherAnimalsPresent ?? <String>[],
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.otherAnimalsPresent = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getOtherAnimalsPresentOptions(),
+          value: (i, v) => v,
+          label: (i, v) => v,
+          tooltip: (i, v) => v,
+        ),
+      )
+    ],
+  );
+
+  void _openAddOtherAnimalsDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const TextEntryDialog(
+          title: "Add another animal"
+        );
+      },
+      barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          var otherAnimalsPresent = widget.observation.otherAnimalsPresent ?? <String>[];
+          otherAnimalsPresent.addAll(value.split(","));
+          otherAnimalsPresent = otherAnimalsPresent.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
+          widget.observation.otherAnimalsPresent = otherAnimalsPresent;
+        }
+      })
+    });
   }
 
-  Widget _buildComments() {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (boolVal) { return true; },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          smallTransparentDivider,
-          ThemedSubTitle("Comments", type: ThemeGroupType.POM),
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
-              text: widget.observation.comments ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Any additional observations",
-              //hintTextType: hintTextType,
-              //hintTextEmphasis: hintTextEmphasis,
-              //backgroundType: textFieldBackgroundType,
-              onStringChangedCallback: (value) => { widget.observation.comments = value },
-              //validator: validator
-            )
-          ] else ... [
-            SizedBox(
-              height: 120.0,
-              child: SingleChildScrollView(
-                child: ThemedBody(
-                  widget.observation.comments,
-                  type: ThemeGroupType.MOM,
-                ),
+  Widget _buildSiteHistory() => NotificationListener<ScrollNotification>(
+    onNotification: (boolVal) { return true; },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Site History", type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        if(widget.isEditMode) ... [
+          ThemedEditableLabelValue(
+            showLabel: false,
+            text: widget.observation.siteHistory ?? "",
+            textType: ThemeGroupType.POM,
+            hintText: "Note any history you've had with this site",
+            //hintTextType: hintTextType,
+            //hintTextEmphasis: hintTextEmphasis,
+            //backgroundType: textFieldBackgroundType,
+            onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
+            //validator: validator
+          )
+        ] else ... [
+          SizedBox(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.observation.siteHistory,
+                type: ThemeGroupType.MOM,
               ),
-            )
-          ]
-        ],
-      ),
-    );
-  }
+            ),
+          )
+        ]
+      ],
+    ),
+  );
+
+  Widget _buildComments() => NotificationListener<ScrollNotification>(
+    onNotification: (boolVal) { return true; },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle("Comments", type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        if(widget.isEditMode) ... [
+          ThemedEditableLabelValue(
+            showLabel: false,
+            text: widget.observation.comments ?? "",
+            textType: ThemeGroupType.POM,
+            hintText: "Any additional observations",
+            //hintTextType: hintTextType,
+            //hintTextEmphasis: hintTextEmphasis,
+            //backgroundType: textFieldBackgroundType,
+            onStringChangedCallback: (value) => { widget.observation.comments = value },
+            //validator: validator
+          )
+        ] else ... [
+          SizedBox(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.observation.comments,
+                type: ThemeGroupType.MOM,
+              ),
+            ),
+          )
+        ]
+      ],
+    ),
+  );
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(

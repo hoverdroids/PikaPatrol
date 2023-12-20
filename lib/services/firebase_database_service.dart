@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:path/path.dart';
+import 'package:pika_patrol/data/pika_species.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
@@ -179,10 +180,11 @@ class FirebaseDatabaseService {
       'observerUid': observation.observerUid,
       'name': observation.name,
       'location': observation.location,
+      'date': observation.date,
       'altitude': observation.altitudeInMeters,
       'latitude': observation.latitude,
       'longitude': observation.longitude,
-      'date': observation.date,
+      'species': observation.species,
       'signs': observation.signs,
       'pikasDetected': observation.pikasDetected,
       'distanceToClosestPika': observation.distanceToClosestPika,
@@ -192,10 +194,10 @@ class FirebaseDatabaseService {
       'skies': observation.skies,
       'wind': observation.wind,
       'siteHistory': observation.siteHistory,
-      'otherAnimalsPresent': observation.otherAnimalsPresent,
       'comments': observation.comments,
       'imageUrls': observation.imageUrls,
-      'audioUrls': observation.audioUrls
+      'audioUrls': observation.audioUrls,
+      'otherAnimalsPresent': observation.otherAnimalsPresent,
     };
 
     DocumentReference doc;
@@ -233,11 +235,12 @@ class FirebaseDatabaseService {
           observerUid: dataMap['observerUid'] ?? '',
           name: dataMap['name'] ?? '',
           location: dataMap['location'] ?? '',
+          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),
           altitudeInMeters: dataMap['altitude'],
           latitude: dataMap['latitude'],
           longitude: dataMap['longitude'],
-          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),
           signs: signs,
+          species: dataMap['species'] ?? PikaSpecies.PIKA_SPECIES_DEFAULT,
           pikasDetected: dataMap['pikasDetected'] ?? '',
           distanceToClosestPika: dataMap['distanceToClosestPika'] ?? '',
           searchDuration: dataMap['searchDuration'] ?? '',

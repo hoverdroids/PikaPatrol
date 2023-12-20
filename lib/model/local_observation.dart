@@ -9,7 +9,7 @@ class LocalObservation extends HiveObject {
   String observerUid;
 
   @HiveField(2)
-  double altitude;
+  double altitudeInMeters;
 
   @HiveField(3)
   double longitude;
@@ -69,12 +69,12 @@ class LocalObservation extends HiveObject {
     {
       this.uid = "",
       this.observerUid = "",
-      this.altitude = 0.0,
-      this.longitude = 0.0,
-      this.latitude = 0.0,
       this.name = "",
       this.location = "",
       this.date = "",
+      this.altitudeInMeters = 0.0,
+      this.latitude = 0.0,
+      this.longitude = 0.0,
       this.signs = const <String>[],
       this.pikasDetected = "",
       this.distanceToClosestPika = "",
@@ -83,11 +83,11 @@ class LocalObservation extends HiveObject {
       this.temperature = "",
       this.skies = "",
       this.wind = "",
-      this.otherAnimalsPresent = const <String>[],
       this.siteHistory = "",
       this.comments = "",
       this.imageUrls = const <String>[],
-      this.audioUrls = const <String>[]
+      this.audioUrls = const <String>[],
+      this.otherAnimalsPresent = const <String>[]
     }
   );
 }

@@ -46,7 +46,7 @@ Future<void> saveLocalObservation(Observation observation) async {
   var localObservation = LocalObservation(
       uid: observation.uid ?? "",
       observerUid: observation.observerUid ?? "",
-      altitude: observation.altitudeInMeters ?? 0.0,
+      altitudeInMeters: observation.altitudeInMeters ?? 0.0,
       longitude: observation.longitude ?? 0.0,
       latitude: observation.latitude ?? 0.0,
       name: observation.name ?? "",

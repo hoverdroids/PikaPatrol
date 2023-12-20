@@ -8,7 +8,6 @@ import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -28,17 +27,14 @@ import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
-import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
-import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
-// import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
@@ -142,7 +138,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 width: double.infinity,
                 height: double.infinity,
                 color: Colors.white.withOpacity(0.70),
-                child: Loading(),
+                child: const Loading(),
               )
             ]
           ],

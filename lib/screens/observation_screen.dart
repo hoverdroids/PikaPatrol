@@ -39,7 +39,6 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
-import '../data/pika_species.dart';
 import '../utils/observation_utils.dart';
 
 // ignore: must_be_immutable
@@ -960,7 +959,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ThemedSubTitle("Species", type: ThemeGroupType.POM),
-          ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
+          if (widget.isEditMode)...[
+            ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
+          ]
         ],
       ),
       ChipsChoice<String>.single(
@@ -1223,7 +1224,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
-          ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
+          if (widget.isEditMode)...[
+            ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
+          ]
         ],
       ),
       ChipsChoice<String>.multiple(

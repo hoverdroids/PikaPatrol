@@ -6,7 +6,7 @@ import '../data/pika_species.dart';
 
 class Observation extends card.Card {
 
-  static List<String> OTHER_ANIMALS_DEFAULT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats"];
+  static List<String> OTHER_ANIMALS_DEFAULT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
 
   int? dbId;
   String? uid;

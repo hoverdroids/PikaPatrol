@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import 'package:pika_patrol/data/pika_species.dart';
 
 import '../model/app_user.dart';
 import '../model/local_observation.dart';
@@ -46,12 +47,13 @@ Future<void> saveLocalObservation(Observation observation) async {
   var localObservation = LocalObservation(
       uid: observation.uid ?? "",
       observerUid: observation.observerUid ?? "",
-      altitudeInMeters: observation.altitudeInMeters ?? 0.0,
-      longitude: observation.longitude ?? 0.0,
-      latitude: observation.latitude ?? 0.0,
       name: observation.name ?? "",
       location: observation.location ?? "",
       date: observation.date?.toString() ?? "",
+      altitudeInMeters: observation.altitudeInMeters ?? 0.0,
+      latitude: observation.latitude ?? 0.0,
+      longitude: observation.longitude ?? 0.0,
+      species: PikaSpecies.PIKA_SPECIES_DEFAULT,
       signs: observation.signs ?? <String>[],
       pikasDetected: observation.pikasDetected ?? "",
       distanceToClosestPika: observation.distanceToClosestPika ?? "",
@@ -60,11 +62,11 @@ Future<void> saveLocalObservation(Observation observation) async {
       temperature: observation.temperature ?? "",
       skies: observation.skies ?? "",
       wind: observation.wind ?? "",
-      otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
       siteHistory: observation.siteHistory ?? "",
       comments: observation.comments ?? "",
       imageUrls: observation.imageUrls ?? <String>[],
-      audioUrls: observation.audioUrls ?? <String>[]
+      audioUrls: observation.audioUrls ?? <String>[],
+      otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
   );
 
   if(observation.dbId == null) {

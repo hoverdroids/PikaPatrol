@@ -69,12 +69,13 @@ class ObservationsPageState extends State<ObservationsPage> {
               dbId: localObservation.key,
               uid: localObservation.uid,
               observerUid: localObservation.observerUid,
-              altitudeInMeters: localObservation.altitudeInMeters,
-              longitude: localObservation.longitude,
-              latitude: localObservation.latitude,
               name: localObservation.name,
               location: localObservation.location,
               date: DateTime.parse(localObservation.date),
+              altitudeInMeters: localObservation.altitudeInMeters,
+              latitude: localObservation.latitude,
+              longitude: localObservation.longitude,
+              species: localObservation.species,
               signs: localObservation.signs,
               pikasDetected: localObservation.pikasDetected,
               distanceToClosestPika: localObservation.distanceToClosestPika,
@@ -83,11 +84,11 @@ class ObservationsPageState extends State<ObservationsPage> {
               temperature: localObservation.temperature,
               skies: localObservation.skies,
               wind: localObservation.wind,
-              otherAnimalsPresent: localObservation.otherAnimalsPresent,
               siteHistory: localObservation.siteHistory,
               comments: localObservation.comments,
               imageUrls: localObservation.imageUrls,
-              audioUrls: localObservation.audioUrls
+              audioUrls: localObservation.audioUrls,
+              otherAnimalsPresent: localObservation.otherAnimalsPresent,
           );
           localObservations.add(observation);
         }

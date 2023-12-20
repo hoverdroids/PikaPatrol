@@ -53,7 +53,7 @@ Future<void> saveLocalObservation(Observation observation) async {
       altitudeInMeters: observation.altitudeInMeters ?? 0.0,
       latitude: observation.latitude ?? 0.0,
       longitude: observation.longitude ?? 0.0,
-      species: PikaSpecies.PIKA_SPECIES_DEFAULT,
+      species: observation.species,
       signs: observation.signs ?? <String>[],
       pikasDetected: observation.pikasDetected ?? "",
       distanceToClosestPika: observation.distanceToClosestPika ?? "",

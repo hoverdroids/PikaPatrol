@@ -1,5 +1,7 @@
 import 'package:hive/hive.dart';
 
+import '../data/pika_species.dart';
+
 @HiveType(typeId: 0)
 class LocalObservation extends HiveObject {
   @HiveField(0)
@@ -65,6 +67,9 @@ class LocalObservation extends HiveObject {
   @HiveField(20)
   List<String> audioUrls;
 
+  @HiveField(21)
+  String species;
+
   LocalObservation(
     {
       this.uid = "",
@@ -75,6 +80,7 @@ class LocalObservation extends HiveObject {
       this.altitudeInMeters = 0.0,
       this.latitude = 0.0,
       this.longitude = 0.0,
+      this.species = PikaSpecies.PIKA_SPECIES_DEFAULT,
       this.signs = const <String>[],
       this.pikasDetected = "",
       this.distanceToClosestPika = "",

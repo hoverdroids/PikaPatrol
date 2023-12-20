@@ -39,6 +39,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
+import '../data/pika_species.dart';
 import '../utils/observation_utils.dart';
 
 // ignore: must_be_immutable
@@ -147,63 +148,61 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  Widget _buildAppbar(AppUser? user) {
-    return AnimatedBuilder(
-        animation: _colorAnimationController,
-        builder: (context, child) =>
-            IconTitleIconFakeAppBar(
-              shape: const StadiumBorder(),
-              backgroundColor: _colorTween.value,
-              title: 'Make Observation',
-              titleType: ThemeGroupType.MOS,
-              leftIcon: Icons.arrow_back,
-              leftIconType: ThemeGroupType.MOS,
-              leftIconClickedCallback: () => Navigator.pop(context),
-              rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
-              showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
-              rightIconType: ThemeGroupType.MOS,
-              rightIconClickedCallback: () async {
-                if(!widget.isEditMode) {
-                  setState(() {
-                    widget.isEditMode = true;
-                  });
-                } else {
-                  if (_formKey.currentState?.validate() == true) {
-                    _formKey.currentState?.save();
+  Widget _buildAppbar(AppUser? user) => AnimatedBuilder(
+    animation: _colorAnimationController,
+    builder: (context, child) =>
+      IconTitleIconFakeAppBar(
+        shape: const StadiumBorder(),
+        backgroundColor: _colorTween.value,
+        title: 'Make Observation',
+        titleType: ThemeGroupType.MOS,
+        leftIcon: Icons.arrow_back,
+        leftIconType: ThemeGroupType.MOS,
+        leftIconClickedCallback: () => Navigator.pop(context),
+        rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
+        showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
+        rightIconType: ThemeGroupType.MOS,
+        rightIconClickedCallback: () async {
+          if(!widget.isEditMode) {
+            setState(() {
+              widget.isEditMode = true;
+            });
+          } else {
+            if (_formKey.currentState?.validate() == true) {
+              _formKey.currentState?.save();
 
-                    await saveLocalObservation(widget.observation);
+              await saveLocalObservation(widget.observation);
 
-                    //TODO - CHRIS - probably worth moving to the saveObservationon method
-                    var hasConnection = await DataConnectionChecker().hasConnection;
-                    if(!hasConnection) {
-                      showToast("No connection found.\nObservation saved locally.");
-                    } else if (user != null) {
-                      setState((){
-                        _isUploading = true;
-                      });
+              //TODO - CHRIS - probably worth moving to the saveObservationon method
+              var hasConnection = await DataConnectionChecker().hasConnection;
+              if(!hasConnection) {
+                showToast("No connection found.\nObservation saved locally.");
+              } else if (user != null) {
+                setState((){
+                  _isUploading = true;
+                });
 
-                      //If the observation was made when the user was not logged in, then edited after logging in, the user
-                      //id can be null. So update it now. This allows local observations to be uploaded when online.
-                      widget.observation.observerUid = user.uid;
+                //If the observation was made when the user was not logged in, then edited after logging in, the user
+                //id can be null. So update it now. This allows local observations to be uploaded when online.
+                widget.observation.observerUid = user.uid;
 
-                      //Share with others
-                      await saveObservation(user, widget.observation);
+                //Share with others
+                await saveObservation(user, widget.observation);
 
-                      setState(() {
-                        _isUploading = false;
-                      });
-                    } else {
-                      showToast("You must login to upload an observation.\nObservation saved locally.");
-                    }
-                    setState((){
-                      widget.isEditMode = false;
-                    });
-                  }
-                }
-              },
-            )
-    );
-  }
+                setState(() {
+                  _isUploading = false;
+                });
+              } else {
+                showToast("You must login to upload an observation.\nObservation saved locally.");
+              }
+              setState((){
+                widget.isEditMode = false;
+              });
+            }
+          }
+        },
+      )
+  );
 
   Box? box;
   Future openBox() async {
@@ -217,106 +216,102 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     await openBox();
   }
 
-  Widget _buildHeaderImage() {
-    return GestureDetector(
-      onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
-      child: SizedBox(
-        height: 330,
-        child: Stack(
-          children: <Widget>[
-            Hero(
-              tag: "observationCoverImage",
-              child: ClipShadowPath(
-                clipper: SimpleClipPath(
-                    type: ClipPathType.ROUNDED_DOWN,
-                    bottomLeftPercentOfHeight: 80,
-                    bottomRightPercentOfHeight: 80
-                ),
-                shadow: const Shadow(blurRadius: 20.0),
-                child: _buildImage(),
+  Widget _buildHeaderImage() => GestureDetector(
+    onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
+    child: SizedBox(
+      height: 330,
+      child: Stack(
+        children: <Widget>[
+          Hero(
+            tag: "observationCoverImage",
+            child: ClipShadowPath(
+              clipper: const SimpleClipPath(
+                  type: ClipPathType.ROUNDED_DOWN,
+                  bottomLeftPercentOfHeight: 80,
+                  bottomRightPercentOfHeight: 80
+              ),
+              shadow: const Shadow(blurRadius: 20.0),
+              child: _buildImage(),
+            ),
+          ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: RawMaterialButton(
+                //padding: EdgeInsets.all(0.0),
+                //elevation: 12.0,
+                onPressed: () => developer.log('Play Video'),
+                shape: const CircleBorder(),
+                fillColor: Colors.white,
+                child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
               ),
             ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: RawMaterialButton(
-                  //padding: EdgeInsets.all(0.0),
-                  //elevation: 12.0,
-                  onPressed: () => developer.log('Play Video'),
-                  shape: const CircleBorder(),
-                  fillColor: Colors.white,
-                  child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
-                ),
-              ),
-            ),
-            /*Positioned( //TODO
+          ),
+          /*Positioned( //TODO
+            bottom: 10.0,
+            left: 10.0,
+            child: ThemedIconButton(
+              Icons.add_location,
+              iconSize: IconSize.MEDIUM,
+              onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
+            )
+        ),*/
+          if(widget.isEditMode) ... [
+            Positioned(
               bottom: 10.0,
               left: 10.0,
               child: ThemedIconButton(
-                Icons.add_location,
-                iconSize: IconSize.MEDIUM,
-                onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
-              )
-          ),*/
-            if(widget.isEditMode) ... [
-              Positioned(
-                bottom: 10.0,
-                left: 10.0,
-                child: ThemedIconButton(
-                    Icons.my_location,
-                    iconSize: IconSize.MEDIUM,
-                    onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
-                    type: ThemeGroupType.SOM,
-                ),
-              ),
-            ],
-            Positioned(
-              bottom: 10.0,
-              right: 10.0,
-              child: ThemedIconButton(
-                  Icons.help,
+                  Icons.my_location,
                   iconSize: IconSize.MEDIUM,
+                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
                   type: ThemeGroupType.SOM,
-                  onPressedCallback: () => {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (BuildContext context) =>
-                            TrainingScreensPager(
-                                backClickedCallback: () =>
-                                    Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
-                                    )
-                            )
-                        )
-                    )
-                  }
               ),
             ),
           ],
-        ),
+          Positioned(
+            bottom: 10.0,
+            right: 10.0,
+            child: ThemedIconButton(
+                Icons.help,
+                iconSize: IconSize.MEDIUM,
+                type: ThemeGroupType.SOM,
+                onPressedCallback: () => {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (BuildContext context) =>
+                          TrainingScreensPager(
+                              backClickedCallback: () =>
+                                  Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
+                                  )
+                          )
+                      )
+                  )
+                }
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildPlayButton() {
-    return ThemedPlayButton(
-      isPlaying: _playerState == PlayerState.play,
-      pauseIcon: Icon(
-          Icons.pause,
-          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
-          size: 48),
-      playIcon: Icon(Icons.play_arrow,
-          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
-          size: 48),
-      onPressed: () {
-        var audioUrls = widget.observation.audioUrls;
-        if (audioUrls != null && audioUrls.isNotEmpty) {
-          _playAudio(audioUrls[0]);
-        } else {
-          showToast("No recordings to play");
-        }
-      },
-    );
-  }
+  Widget _buildPlayButton() => ThemedPlayButton(
+    isPlaying: _playerState == PlayerState.play,
+    pauseIcon: Icon(
+        Icons.pause,
+        color: context.watch<MaterialThemesManager>().colorPalette().secondary,
+        size: 48),
+    playIcon: Icon(Icons.play_arrow,
+        color: context.watch<MaterialThemesManager>().colorPalette().secondary,
+        size: 48),
+    onPressed: () {
+      var audioUrls = widget.observation.audioUrls;
+      if (audioUrls != null && audioUrls.isNotEmpty) {
+        _playAudio(audioUrls[0]);
+      } else {
+        showToast("No recordings to play");
+      }
+    },
+  );
 
   Widget _buildRecordButton() {
     return ThemedPlayButton(
@@ -629,6 +624,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          _buildPikaSpecies(),
           _buildSignsChoices(),
           _buildCountChoices(),
           _buildDistanceChoices(),
@@ -954,6 +950,55 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           cropGridColumnCount
       ); 
     }
+  }
+
+  Widget _buildPikaSpecies() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          ThemedSubTitle("Species", type: ThemeGroupType.POM),
+          ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
+        ],
+      ),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.species,
+        onChanged: (value) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.species = value)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getSpeciesOptions(),
+          value: (i, v) => v,
+          label: (i, v) => v,
+          tooltip: (i, v) => v,
+        ),
+      )
+    ],
+  );
+
+  void _openAddOtherSpeciesDialog() {
+    if (!mounted) return;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return const TextEntryDialog(
+              title: "Add another species"
+          );
+        },
+        barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          widget.observation.species = value.trim();
+        }
+      })
+    });
   }
 
   Widget _buildSignsChoices() {

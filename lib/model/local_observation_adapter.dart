@@ -16,6 +16,7 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
       altitudeInMeters: reader.readDouble(),
       latitude: reader.readDouble(),
       longitude: reader.readDouble(),
+      species: reader.readString(),
       signs: reader.readStringList(),
       pikasDetected: reader.readString(),
       distanceToClosestPika: reader.readString(),
@@ -41,6 +42,7 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
       writer.writeDouble(observation.altitudeInMeters);
       writer.writeDouble(observation.latitude);
       writer.writeDouble(observation.longitude);
+      writer.writeString(observation.species);
       writer.writeStringList(observation.signs);
       writer.writeString(observation.pikasDetected);
       writer.writeString(observation.distanceToClosestPika);

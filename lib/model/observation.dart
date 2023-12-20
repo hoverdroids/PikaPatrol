@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 
+import '../data/pika_species.dart';
+
 class Observation extends card.Card {
 
   static List<String> OTHER_ANIMALS_DEFAULT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats"];
@@ -17,6 +19,7 @@ class Observation extends card.Card {
   String? name;
   String? location;
   DateTime? date;
+  String species;
   List<String>? signs;
   String? pikasDetected;
   String? distanceToClosestPika;
@@ -48,6 +51,7 @@ class Observation extends card.Card {
     this.altitudeInMeters,
     this.latitude,
     this.longitude,
+    this.species = PikaSpecies.PIKA_SPECIES_DEFAULT,
     signs,
     this.pikasDetected = "",
     this.distanceToClosestPika = "",
@@ -88,4 +92,6 @@ class Observation extends card.Card {
     var defaultAnimals = OTHER_ANIMALS_DEFAULT;
     return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
   }
+
+  List<String> getSpeciesOptions() => ([species] + PikaSpecies.PIKA_SPECIES).toTrimmedUniqueList();
 }

@@ -140,12 +140,13 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
       var bla = OnboardingScreen(
           title: pika.species,
           imageUrl: "assets/images/${pika.imagePath}",
-          backgroundGradientType: index.isEven ? BackgroundGradientType.SECONDARY : BackgroundGradientType.PRIMARY,
-          descriptionType: index.isEven ? ThemeGroupType.MOS : ThemeGroupType.MOP,
+          backgroundGradientType: index.isEven ? BackgroundGradientType.PRIMARY : BackgroundGradientType.SECONDARY ,
+          descriptionType: index.isEven ? ThemeGroupType.MOP : ThemeGroupType.MOS,
           imageFit: BoxFit.cover,
           descriptionTextAlign: TextAlign.justify,
           descriptionFlex: 3,
-          description: "${pika.description} ${pika.moreInfoLink}"
+          description: pika.description,
+          moreInfoUrl: pika.moreInfoLink,
       );
       pages.add(bla);
     }

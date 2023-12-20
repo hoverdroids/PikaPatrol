@@ -9,25 +9,59 @@ class PikaSpecies {
   static const String PIKA_SPECIES_DEFAULT = "American Pika";
 
   static List<Pika> PIKAS = [
-    Pika("American Pika",
-        "The American pika, a diurnal species of pika, is found in the mountains of western North America, usually in boulder fields at or above the tree line. They are herbivorous, smaller relatives of rabbits and hares.",
-        "american_pika.jpg",
-        "https://en.wikipedia.org/wiki/American_pika"
+    Pika(
+      "American Pika",
+      "The American pika, a diurnal species of pika, is found in the mountains of western North America, usually in boulder fields at or above the tree line. They are herbivorous, smaller relatives of rabbits and hares.",
+      "american_pika.jpeg",
+      "https://en.wikipedia.org/wiki/American_pika"
     ),
-    Pika("Collared Pika",
-        "The collared pika is a species of mammal in the pika family, Ochotonidae, and part of the order Lagomorpha, which comprises rabbits, hares, and pikas",
-        "collared_pika.jpg",
-        "https://en.wikipedia.org/wiki/Collared_pika"
+    Pika(
+      "Collared Pika",
+      "If you’re in Alaska or parts of northern Canada, you might see a different species of pika, the collared pika! Collared pikas are about the same size and shape as their American cousins, but they have a distinct greyish “collar” near their shoulders and neck. Their call is also distinct from the American pika, but their haypiles and scat piles look the same.",
+      "collared_pika.jpg",
+      "https://en.wikipedia.org/wiki/Collared_pika"
     ),
-    Pika("Ili Pika",
-        "The Ili pika is a species of mammal in the family Ochotonidae, endemic to northwest China. After its discovery in 1983, it was studied for a decade. Increased temperatures, likely from global warming, and increased grazing pressure may have caused the rapid decline in population",
-        "ili_pika.jpeg",
-        "https://en.wikipedia.org/wiki/Ili_pika"
+    Pika(
+      "Ili Pika",
+      "The Ili pika is a species of mammal in the family Ochotonidae, endemic to northwest China. After its discovery in 1983, it was studied for a decade. Increased temperatures, likely from global warming, and increased grazing pressure may have caused the rapid decline in population",
+      "ili_pika.jpeg",
+      "https://en.wikipedia.org/wiki/Ili_pika"
     ),
-    Pika("Northern Pika",
-        "The northern pika is a species of pika found across mountainous regions of northern Asia, from the Ural Mountains to northern Japan and south through Mongolia, Manchuria and northern Korea. An adult northern pika has a body length of 12.5–18.5 centimeters, and a tail of 0.5–1.2 centimeters",
-        "northern_pika.jpg",
-        "https://en.wikipedia.org/wiki/Northern_pika"
+    Pika(
+      "Northern Pika",
+      "The northern pika is a species of pika found across mountainous regions of northern Asia, from the Ural Mountains to northern Japan and south through Mongolia, Manchuria and northern Korea. An adult northern pika has a body length of 12.5–18.5 centimeters, and a tail of 0.5–1.2 centimeters",
+      "northern_pika.jpeg",
+      "https://en.wikipedia.org/wiki/Northern_pika"
     ),
+    Pika(
+      "Helan Shan Pika",
+      "The Helan Shan pika or silver pika is a species of mammal in the pika family, Ochotonidae. It is endemic to China where it is found in a small region of the Helan Mountains. It is listed as 'Endangered' in the IUCN Red List of Threatened Species as of 2016",
+      "helan_shan_pika.jpeg",
+      "https://en.wikipedia.org/wiki/Helan_Shan_pika"
+    ),
+    Pika(
+      "Steppe Pika",
+      "The steppe pika is a small mammal of the pika family, Ochotonidae. It is found in the steppes of southern Russia and northern Kazakhstan.",
+      "steppe_pika.webp",
+      "https://en.wikipedia.org/wiki/Steppe_pika"
+    ),
+    Pika(
+      "Plateau Pika",
+      "The plateau pika, also known as the black-lipped pika, is a species of mammal in the pika family, Ochotonidae. It is a small diurnal and non-hibernating mammal weighing about 140 g when fully grown. The animals are reddish tan on the top-side with more of a whitish yellow on their under-belly.",
+      "plateau_pika.jpg",
+      "https://en.wikipedia.org/wiki/Plateau_pika"
+    ),
+    Pika(
+      "Alpine Pika",
+      "The alpine pika is a species of small mammal in the pika family, Ochotonidae. The summer pelage of different subspecies varies drastically but, in general, it is dark or cinnamon brown, turning to grey with a yellowish tinge during the winter.",
+      "alpine_pika.jpg",
+      "https://en.wikipedia.org/wiki/Alpine_pika"
+    ),
+    Pika(
+      "Koslov's Pika",
+      "Koslov's pika or Kozlov's pika is a species of mammal in the family Ochotonidae. It is endemic to China. Its natural habitat is tundra. It is threatened by habitat loss. Kozlov's pika are herbivores, they are known as 'ecosystem engineers' as they're known to promote diversity of different plants species.",
+      "koslovs_pika.jpeg",
+      "https://en.wikipedia.org/wiki/Koslov%27s_pika"
+    )
   ];
 }

@@ -924,10 +924,10 @@ packages:
     dependency: "direct main"
     description:
       name: material_themes_widgets
-      sha256: "5d77bc6a8bff7ed83c1cca3c22eddd128e80364da36b37d972f00b60bc680e57"
+      sha256: "7edecc0a2e242bc9a70889daaad0252cf4f3318e207a14cf131cc9ecce4e8dee"
       url: "https://pub.dev"
     source: hosted
-    version: "1.10.1"
+    version: "1.11.1"
   meta:
     dependency: transitive
     description:

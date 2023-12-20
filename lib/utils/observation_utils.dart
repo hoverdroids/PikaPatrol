@@ -29,7 +29,7 @@ Future saveObservation(AppUser? user, Observation observation) async {
     saveLocalObservation(observation);
 }
 
-Future<void> saveLocalObservation(Observation observation) async {
+Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   var box = Hive.box<LocalObservation>('observations');
 
   //The observation screen can be opened from an online observation, which means that the dbId can be null.
@@ -67,6 +67,7 @@ Future<void> saveLocalObservation(Observation observation) async {
       imageUrls: observation.imageUrls ?? <String>[],
       audioUrls: observation.audioUrls ?? <String>[],
       otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
+      sharedWithProjects: observation.sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT
   );
 
   if(observation.dbId == null) {
@@ -78,4 +79,6 @@ Future<void> saveLocalObservation(Observation observation) async {
   } else {
     await box.put(observation.dbId, localObservation);
   }
+
+  return box.get(observation.dbId);
 }

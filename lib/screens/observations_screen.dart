@@ -89,6 +89,7 @@ class ObservationsPageState extends State<ObservationsPage> {
               imageUrls: localObservation.imageUrls,
               audioUrls: localObservation.audioUrls,
               otherAnimalsPresent: localObservation.otherAnimalsPresent,
+              sharedWithProjects: localObservation.sharedWithProjects
           );
           localObservations.add(observation);
         }

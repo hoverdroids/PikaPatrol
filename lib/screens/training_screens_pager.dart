@@ -135,8 +135,8 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
   List<Widget> _buildSpeciesPages(BuildContext context) {
     var pages = <OnboardingScreen>[];
 
-    for (var index = 0; index < PikaSpecies.PIKAS.length; index++) {
-      Pika pika = PikaSpecies.PIKAS[index];
+    for (var index = 0; index < PikaData.PIKAS.length; index++) {
+      Pika pika = PikaData.PIKAS[index];
       var bla = OnboardingScreen(
           title: pika.species,
           imageUrl: "assets/images/${pika.imagePath}",

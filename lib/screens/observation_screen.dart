@@ -39,6 +39,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
+import '../data/pika_species.dart';
 import '../utils/observation_utils.dart';
 
 // ignore: must_be_immutable
@@ -170,7 +171,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
 
-              await saveLocalObservation(widget.observation);
+              var localObservation = await saveLocalObservation(widget.observation);
 
               //TODO - CHRIS - probably worth moving to the saveObservationon method
               var hasConnection = await DataConnectionChecker().hasConnection;
@@ -633,8 +634,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildSkiesChoices(),
           _buildWindChoices(),
           _buildOtherAnimalsPresent(),
+          _buildSharedWithProjects(),
           _buildSiteHistory(),
-          _buildComments()
+          _buildComments(),
         ],
       ),
     );
@@ -1265,6 +1267,60 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           otherAnimalsPresent.addAll(value.split(","));
           otherAnimalsPresent = otherAnimalsPresent.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
           widget.observation.otherAnimalsPresent = otherAnimalsPresent;
+        }
+      })
+    });
+  }
+
+  Widget _buildSharedWithProjects() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          ThemedSubTitle("Shared with projects", type: ThemeGroupType.POM),
+          if (widget.isEditMode)...[
+            ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
+          ]
+        ],
+      ),
+      ChipsChoice<String>.multiple(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.sharedWithProjects ?? <String>[],
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.sharedWithProjects = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getSharedWithProjectsOptions(),
+          value: (i, v) => v,
+          label: (i, v) => v,
+          tooltip: (i, v) => v,
+        ),
+      )
+    ],
+  );
+
+  void _openSharedWithProjectsDialog() {
+    if (!mounted) return;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return const TextEntryDialog(
+              title: "Add another project"
+          );
+        },
+        barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          var sharedWithProjects = widget.observation.sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
+          sharedWithProjects.addAll(value.split(","));
+          sharedWithProjects = sharedWithProjects.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
+          widget.observation.sharedWithProjects = sharedWithProjects;
         }
       })
     });

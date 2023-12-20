@@ -198,6 +198,7 @@ class FirebaseDatabaseService {
       'imageUrls': observation.imageUrls,
       'audioUrls': observation.audioUrls,
       'otherAnimalsPresent': observation.otherAnimalsPresent,
+      'sharedWithProjects': observation.sharedWithProjects
     };
 
     DocumentReference doc;
@@ -230,6 +231,9 @@ class FirebaseDatabaseService {
       data = dataMap['audioUrls'];
       List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
+      data = dataMap['sharedWithProjects'];
+      List<String> sharedWithProjects = data == null || data.isEmpty ? PikaData.SHARED_WITH_PROJECTS_DEFAULT : data.cast<String>().toList();
+
       return Observation(
           uid: doc.id,
           observerUid: dataMap['observerUid'] ?? '',
@@ -240,7 +244,7 @@ class FirebaseDatabaseService {
           latitude: dataMap['latitude'],
           longitude: dataMap['longitude'],
           signs: signs,
-          species: dataMap['species'] ?? PikaSpecies.PIKA_SPECIES_DEFAULT,
+          species: dataMap['species'] ?? PikaData.PIKA_SPECIES_DEFAULT,
           pikasDetected: dataMap['pikasDetected'] ?? '',
           distanceToClosestPika: dataMap['distanceToClosestPika'] ?? '',
           searchDuration: dataMap['searchDuration'] ?? '',
@@ -252,7 +256,8 @@ class FirebaseDatabaseService {
           otherAnimalsPresent: otherAnimalsPresent,
           comments: dataMap['comments'] ?? '',
           imageUrls: imageUrls,
-          audioUrls: audioUrls
+          audioUrls: audioUrls,
+          sharedWithProjects: sharedWithProjects
       );
     }).toList();
   }

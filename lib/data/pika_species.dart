@@ -2,7 +2,7 @@
 
 import 'package:pika_patrol/model/pika.dart';
 
-class PikaSpecies {
+class PikaData {
 
   static List<String> PIKA_SPECIES = PIKAS.map((pika) => pika.species).toList();
 
@@ -64,4 +64,10 @@ class PikaSpecies {
       "https://en.wikipedia.org/wiki/Koslov%27s_pika"
     )
   ];
+
+  static const List<String> OTHER_ANIMALS_PRESENT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
+
+  static const List<String> SHARED_WITH_PROJECTS = ["Colorado Pika Project", "Rocky Mountain Wild", "Denver Zoo", "IF/THEN", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)"];
+
+  static const List<String> SHARED_WITH_PROJECTS_DEFAULT = SHARED_WITH_PROJECTS;//Share with all sponsors by default
 }

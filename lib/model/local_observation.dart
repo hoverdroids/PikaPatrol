@@ -70,6 +70,9 @@ class LocalObservation extends HiveObject {
   @HiveField(21)
   String species;
 
+  @HiveField(22)
+  List<String> sharedWithProjects;
+
   LocalObservation(
     {
       this.uid = "",
@@ -80,7 +83,7 @@ class LocalObservation extends HiveObject {
       this.altitudeInMeters = 0.0,
       this.latitude = 0.0,
       this.longitude = 0.0,
-      this.species = PikaSpecies.PIKA_SPECIES_DEFAULT,
+      this.species = PikaData.PIKA_SPECIES_DEFAULT,
       this.signs = const <String>[],
       this.pikasDetected = "",
       this.distanceToClosestPika = "",
@@ -93,7 +96,8 @@ class LocalObservation extends HiveObject {
       this.comments = "",
       this.imageUrls = const <String>[],
       this.audioUrls = const <String>[],
-      this.otherAnimalsPresent = const <String>[]
+      this.otherAnimalsPresent = const <String>[],
+      this.sharedWithProjects = PikaData.SHARED_WITH_PROJECTS_DEFAULT
     }
   );
 }

@@ -6,8 +6,6 @@ import '../data/pika_species.dart';
 
 class Observation extends card.Card {
 
-  static List<String> OTHER_ANIMALS_DEFAULT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
-
   int? dbId;
   String? uid;
   String? observerUid;
@@ -40,6 +38,12 @@ class Observation extends card.Card {
   List<String>? imageUrls;
   List<String>? audioUrls;
 
+  List<String>? _sharedWithProjects;
+  List<String>? get sharedWithProjects => _sharedWithProjects;
+  set sharedWithProjects(List<String>? list) {
+    _sharedWithProjects = list?.toTrimmedUniqueList().sortList();
+  }
+
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
     this.dbId,
@@ -51,7 +55,7 @@ class Observation extends card.Card {
     this.altitudeInMeters,
     this.latitude,
     this.longitude,
-    this.species = PikaSpecies.PIKA_SPECIES_DEFAULT,
+    this.species = PikaData.PIKA_SPECIES_DEFAULT,
     signs,
     this.pikasDetected = "",
     this.distanceToClosestPika = "",
@@ -65,6 +69,7 @@ class Observation extends card.Card {
     imageUrls,
     audioUrls,
     otherAnimalsPresent,
+    sharedWithProjects,
     super.buttonText = "View Observation",
     super.cardLayout,
     IconData? uploadedIcon = Icons.cloud_upload,
@@ -72,6 +77,7 @@ class Observation extends card.Card {
   }){
     this.signs = signs ?? <String>[];
     this.otherAnimalsPresent = otherAnimalsPresent ?? <String>[];
+    this.sharedWithProjects = sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
     this.imageUrls = imageUrls ?? <String>[];
     this.audioUrls = audioUrls ?? <String>[];
     super.icon = uid?.isNotEmpty == true ? uploadedIcon : notUploadedIcon;
@@ -87,11 +93,17 @@ class Observation extends card.Card {
     return imgUrls.elementAt(0);
   }
 
+  List<String> getSpeciesOptions() => ([species] + PikaData.PIKA_SPECIES).toTrimmedUniqueList();
+
   List<String> getOtherAnimalsPresentOptions() {
     var selectedAnimals = otherAnimalsPresent ?? <String>[];
-    var defaultAnimals = OTHER_ANIMALS_DEFAULT;
+    var defaultAnimals = PikaData.OTHER_ANIMALS_PRESENT;
     return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
   }
 
-  List<String> getSpeciesOptions() => ([species] + PikaSpecies.PIKA_SPECIES).toTrimmedUniqueList();
+  List<String> getSharedWithProjectsOptions() {
+    var selectedProjects = sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
+    var defaultProjects = PikaData.SHARED_WITH_PROJECTS;
+    return (selectedProjects + defaultProjects).toTrimmedUniqueList();
+  }
 }

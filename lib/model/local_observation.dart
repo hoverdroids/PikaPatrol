@@ -2,7 +2,7 @@ import 'package:hive/hive.dart';
 
 import '../data/pika_species.dart';
 
-@HiveType(typeId: 0)
+@HiveType(typeId: 1)
 class LocalObservation extends HiveObject {
   @HiveField(0)
   String uid;

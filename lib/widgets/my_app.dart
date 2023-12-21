@@ -8,6 +8,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../screens/splash/partners_splash_screens_pager.dart';
+import '../services/settings_service.dart';
 
 class MyApp extends StatelessWidget {
 
@@ -49,7 +50,7 @@ class MyApp extends StatelessWidget {
         theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
         darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme(),
         supportedLocales: L10n.ALL,
-        locale: L10n.SPANISH,
+        locale: context.watch<SettingsService>().locale,
         localizationsDelegates: const [
           AppLocalizations.delegate,
           GlobalMaterialLocalizations.delegate,

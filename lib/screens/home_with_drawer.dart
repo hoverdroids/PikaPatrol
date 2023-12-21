@@ -2,9 +2,11 @@
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:language_code_icons/language_code_icons.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
+import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
@@ -14,6 +16,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
@@ -25,9 +28,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import '../model/firebase_registration_result.dart';
+import '../services/settings_service.dart';
+import '../utils/constants.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
-import 'dart:developer' as developer;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 //TODO - CHRIS - these should be somewhere else
@@ -135,14 +139,26 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
-    return IconTitleIconAppBar(
+    var locale = Provider.of<SettingsService>(context, listen: false).locale;
+    var localeIcon = locale == L10n.ENGLISH ? LanguageCodeIcons.EN : LanguageCodeIcons.ES;
+
+    return IconTitleIconIconAppBar(
       title: AppLocalizations.of(context)!.appName,
       titleType: ThemeGroupType.MOP,
       leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
       leftIconType: ThemeGroupType.MOP,
       rightIconClickedCallback: (){ _scaffoldKey.currentState?.openEndDrawer(); },
       rightIconType: ThemeGroupType.MOP,
+      rightIcon2: localeIcon,
+      rightIcon2ClickedCallback: (){ _toggleLanguage(); },
+      rightIcon2Type: ThemeGroupType.MOP,
     );
+  }
+
+  _toggleLanguage() async {
+    var settingsService = Provider.of<SettingsService>(context, listen: false);
+    var locale = settingsService.locale;
+    settingsService.updateLocale(locale == L10n.ENGLISH ? L10n.SPANISH : L10n.ENGLISH);
   }
 
   Widget buildBody(BuildContext context, double width) {
@@ -577,7 +593,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   showGeoTrackingDialog(BuildContext context, AppUser? user) async {
     final prefs = await SharedPreferences.getInstance();
-    final userAcked = prefs.getBool('userAckGeo');
+    final userAcked = prefs.getBool(Constants.PREFERENCE_USER_ACK_GEO);
 
     if (userAcked != null && userAcked == true) {
       if (mounted) showObservationScreen(context, user);
@@ -589,7 +605,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
           Permission.location.request();
           final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('userAckGeo', true);
+          await prefs.setBool(Constants.PREFERENCE_USER_ACK_GEO, true);
 
           if (mounted) showObservationScreen(context, user);
         },

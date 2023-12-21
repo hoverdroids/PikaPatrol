@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_patrol/services/settings_service.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/widgets/my_app.dart';
@@ -40,6 +41,9 @@ Future<void> main() async {
         ),
         Provider<FirebaseDatabaseService>(
             create: (_) => FirebaseDatabaseService()
+        ),
+        ChangeNotifierProvider(
+            create: (_) => SettingsService()
         )
       ],
       builder: (context, child) {
@@ -64,15 +68,15 @@ Future<void> main() async {
                 final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
 
                 return MultiProvider(
-                    providers: [
-                      Provider<AppUser?>.value(
-                          value: appUser
-                      ),
-                      Provider<AppUserProfile?>.value(
+                  providers: [
+                    Provider<AppUser?>.value(
+                        value: appUser
+                    ),
+                    Provider<AppUserProfile?>.value(
                         value: appUserProfile
-                      )
-                    ],
-                    child: const MyApp()
+                    )
+                  ],
+                  child: const MyApp()
                 );
               }
             );

@@ -28,6 +28,7 @@ import '../model/firebase_registration_result.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
 import 'dart:developer' as developer;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -135,7 +136,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
     return IconTitleIconAppBar(
-      title: 'Pika Patrol',
+      title: AppLocalizations.of(context)!.appName,
       titleType: ThemeGroupType.MOP,
       leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
       leftIconType: ThemeGroupType.MOP,

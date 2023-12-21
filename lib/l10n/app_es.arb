@@ -1,0 +1,7 @@
+{
+    "appName": "Pika Patrulla",
+    "language": "Español",
+    "helloWorld": "Hola mundo",
+    "multiLanguage": "Multi Language",
+    "hello": "Hello {username}"
+}

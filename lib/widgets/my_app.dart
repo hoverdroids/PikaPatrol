@@ -2,7 +2,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 import '../screens/splash/partners_splash_screens_pager.dart';
 
 class MyApp extends StatelessWidget {
@@ -43,7 +47,15 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
         theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),
-        darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme()
+        darkTheme: context.watch<MaterialThemesManager>().getPrimaryDarkTheme(),
+        supportedLocales: L10n.ALL,
+        locale: L10n.SPANISH,
+        localizationsDelegates: const [
+          AppLocalizations.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate
+        ]
     );
   }
 }

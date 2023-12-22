@@ -17,25 +17,25 @@ class PikaPatrolSplashScreen extends Container {
       child: SafeArea(
         child: Center(
           child: Stack(
-              alignment: Alignment.center,
-              children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  child: Image.asset("assets/images/pika_patrol_logo.png"),
-                ),
-                Align(
-                    alignment: Alignment.topRight,
-                    child: ThemedIconButton(
-                        Icons.highlight_off,
-                        iconSize: IconSize.MEDIUM,
-                        onPressedCallback: () => {
-                          Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                          )
-                        }
+            alignment: Alignment.center,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                child: Image.asset("assets/images/pika_patrol_logo.png"),
+              ),
+              Align(
+                alignment: Alignment.topRight,
+                child: ThemedIconButton(
+                  Icons.highlight_off,
+                  iconSize: IconSize.MEDIUM,
+                  onPressedCallback: () => {
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                     )
-                ),
-              ]
+                  }
+                )
+              ),
+            ]
           ),
         )
       ),

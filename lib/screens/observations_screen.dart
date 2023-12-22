@@ -15,6 +15,7 @@ import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
 import 'dart:developer' as developer;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
@@ -111,18 +112,18 @@ class ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4(AppLocalizations.of(context)?.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4(AppLocalizations.of(context)?.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               ThemedIconButton(
                                 Icons.info,
                                 type: ThemeGroupType.MOP,
                                 onPressedCallback: () async {
-                                  AlertDialog alert = const AlertDialog(
-                                    title: Text("Shared Observations"),
-                                    content: Text("The five most recent observations uploaded to Pika Patrol's server by any user."),
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text(AppLocalizations.of(context)?.sharedObservationsDialogTitle ?? "Error"),
+                                    content: Text(AppLocalizations.of(context)?.sharedObservationsDialogDetails ?? "Error"),
                                   );
                                   showDialog(
                                     context: context,
@@ -148,11 +149,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                           ] else ...[
                             CardScroller(_createDefaultObservations()),
                           ],
-                          ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4(AppLocalizations.of(context)?.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4(AppLocalizations.of(context)?.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
@@ -182,9 +183,9 @@ class ObservationsPageState extends State<ObservationsPage> {
                                 Icons.info,
                                 type: ThemeGroupType.MOP,
                                 onPressedCallback: () async {
-                                  AlertDialog alert = const AlertDialog(
-                                    title: Text("Cached Observations"),
-                                    content: Text("Cached observations are those created on the current device. Clearing cache, deleting app data, or removing the app will permanently remove these observations from the device. If the observations were uploaded to the Pika Patrol server (i.e. there is a cloud icon in the top left of the card), then the observations will remain on the server but will not be pulled back onto the device."),
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text(AppLocalizations.of(context)?.cachedObservationsDialogTitle ?? "ERROR"),
+                                    content: Text(AppLocalizations.of(context)?.cachedObservationsDialogDetails ?? "ERROR"),
                                   );
                                   showDialog(
                                     context: context,

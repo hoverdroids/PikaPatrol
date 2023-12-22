@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import '../primitives/card_layout.dart';
 
-class Card {
+class CardModel {
 
   String? title;
   IconData? icon;
@@ -10,11 +10,11 @@ class Card {
   String? buttonText;
   CardLayout cardLayout = CardLayout.bottomLeft;
 
-  Card({
+  CardModel({
     this.title,
     this.icon,
     this.imageUrl,
-    this.buttonText = "More Details",
+    this.buttonText,
     this.cardLayout = CardLayout.bottomLeft
   });
 }

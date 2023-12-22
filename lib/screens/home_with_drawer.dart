@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:language_code_icons/language_code_icons.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
@@ -132,7 +131,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           } else if (forceProfileOpen && !isOpen) {
             // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
-            showToast("You must enter the required fields");
+            showToast(AppLocalizations.of(context)?.enterRequiredFields ?? "ERROR");
           }
         },
     );
@@ -143,7 +142,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var localeIcon = locale == L10n.ENGLISH ? LanguageCodeIcons.EN : LanguageCodeIcons.ES;
 
     return IconTitleIconIconAppBar(
-      title: AppLocalizations.of(context)!.appName,
+      title: AppLocalizations.of(context)?.appName ?? "ERROR",
       titleType: ThemeGroupType.MOP,
       leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
       leftIconType: ThemeGroupType.MOP,
@@ -167,14 +166,21 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       child: Stack(
         children: <Widget>[
           PageView.builder(
-              controller: pageController,
-              itemCount: 1,
-              itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-                  stream: Provider.of<FirebaseDatabaseService>(context).observations,
-                  builder: (context, snapshot) {
-                    List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
-                    return ObservationsPage(observations ?? <Observation>[]);
-                  })
+            controller: pageController,
+            itemCount: 1,
+            itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
+              stream: Provider.of<FirebaseDatabaseService>(context).observations,
+              builder: (context, snapshot) {
+                List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
+                if (observations != null) {
+                  for (var observation in  observations) {
+                    observation.buttonText = AppLocalizations.of(context)?.viewObservation;
+                  }
+                }
+
+                return ObservationsPage(observations ?? <Observation>[]);
+              }
+            )
           )
           /*LiquidSwipe(
               pages: <Container>[
@@ -198,6 +204,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   Widget buildBottomNavigationBar(BuildContext context, AppUser? user) {
+    var okText = AppLocalizations.of(context)?.ok ?? "ERROR";
+    var locationTrackingDialogTitleText = AppLocalizations.of(context)?.locationTrackingDialogTitle ?? "ERROR";
+    var locationTrackingDialogDetailsText = AppLocalizations.of(context)?.locationTrackingDialogDetails ?? "ERROR";
+
     return CurvedNavigationBar (//TODO - migrate this into its own widget
       color: navbarColor,
       backgroundColor: navbarBgColor,
@@ -209,7 +219,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
       ],
       onTap: (index) {
-        showGeoTrackingDialog(context, user);
+        showGeoTrackingDialog(context, user, okText, locationTrackingDialogTitleText, locationTrackingDialogDetailsText);
         //TODO - combine these when we have more pages
 /*
             pageController.animateToPage(
@@ -227,12 +237,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   Widget buildDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
 
-    var avatarTitle = "Login";
+    var avatarTitle = AppLocalizations.of(context)?.login ?? "ERROR";
     var avatarSubtitle = "";
     if (user != null) {
       if (userProfile == null) {
         //A profile has not been initialized
-        avatarTitle = "Empty User Profile";
+        avatarTitle = AppLocalizations.of(context)?.emptyUserProfile ?? "ERROR";
       } else {
         //A profile has been initialized
         avatarTitle = "${userProfile.firstName} ${userProfile.lastName}";
@@ -251,25 +261,25 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
           [
-            ListItemModel(title: "App Help and Info", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pika-patrol-tutorials/")),
-            ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
+            ListItemModel(title: AppLocalizations.of(context)?.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.appHelpAndInfoUrl ?? "")),
+            ListItemModel(title: AppLocalizations.of(context)?.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) =>
-                      TrainingScreensPager(backClickedCallback: () => {
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                        )
-                      })
-                  )
+                MaterialPageRoute(builder: (BuildContext context) =>
+                  TrainingScreensPager(backClickedCallback: () => {
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+                    )
+                  })
+                )
               )
             }),
-            ListItemModel(title: "Map of Pika Observations", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pikapatrolmap/")),
-            ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
-            ListItemModel(title: "Sponsors and Support", titleType: ThemeGroupType.SOM),
-            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/"), margin: indentationLevel1),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/"), margin: indentationLevel1),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/"), margin: indentationLevel1),
-            ListItemModel(title: "IF/THEN", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/"), margin: indentationLevel1),
+            ListItemModel(title: AppLocalizations.of(context)?.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.mapOfPikaObservationsUrl ?? "")),
+            ListItemModel(title: AppLocalizations.of(context)?.takeClimateAction, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.takeClimateActionUrl ?? "")),
+            ListItemModel(title: AppLocalizations.of(context)?.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
+            ListItemModel(title: AppLocalizations.of(context)?.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: AppLocalizations.of(context)?.rockyMountainWild, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: AppLocalizations.of(context)?.denverZoo, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.denverZooUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: AppLocalizations.of(context)?.ifThen, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.ifThenUrl ?? ""), margin: indentationLevel1),
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",
@@ -332,6 +342,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var editProfileKey = userProfile == null ? _editProfileNullKey : _editProfileKey;
     var viewProfileKey = userProfile == null ? _nullProfileKey : _profileKey;
 
+    var deleteAccountDialogTitle = AppLocalizations.of(context)?.deleteAccountDialogTitle ?? "ERROR";
+    var deleteAccountDialogDetails = "";
+    var ok = AppLocalizations.of(context)?.ok ?? "";
+    var accountDeleted = AppLocalizations.of(context)?.accountDeleted ?? "Error";
+
     return ProfileScreen(
       //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
       //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
@@ -374,7 +389,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       onTapDelete: () async {
         Widget okButton = TextButton(
-          child: const Text("OK"),
+          child: Text(ok),
           onPressed:  () async {
             //Hide the alert
             Navigator.pop(context, true);
@@ -390,14 +405,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               showToast(message);
               return;
             }
-
-            showToast("Account Deleted");
-          },
+              showToast(accountDeleted);
+            },
         );
 
         AlertDialog alert = AlertDialog(
-          title: const Text("Delete Account"),
-          content: const Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
+          title: Text(deleteAccountDialogTitle),
+          content: Text(deleteAccountDialogDetails),
           actions: [
             okButton,
           ],
@@ -439,6 +453,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
+
+    var couldNotSignInWithThoseCredentials = AppLocalizations.of(context)?.couldNotSignInWithThoseCredentials ?? "ERROR";
+    var cannotSignInNoConnection = AppLocalizations.of(context)?.cannotSignInNoConnection ?? "ERROR";
+    var successfullyLoggedIn = AppLocalizations.of(context)?.successfullyLoggedIn ?? "ERROR";
+    var invalidEmailCannotSendPasswordResetEmail = AppLocalizations.of(context)?.invalidEmailCannotSendPasswordResetEmail ?? "ERROR";
+    var passwordResetEmailSent = AppLocalizations.of(context)?.passwordResetEmailSent ?? "ERROR";
+    var passwordResetEmailCouldNotBeSent = AppLocalizations.of(context)?.passwordResetEmailCouldNotBeSent ?? "ERROR";
+
     return LoginRegisterScreen(
       key: _loginKey,
       isLogin: true,
@@ -451,10 +473,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         var trimmedPassword = editedPassword?.trim() ?? "";
 
         if (trimmedEmail.isEmpty) {
-          showToast("Email cannot be empty");
+          showToast(AppLocalizations.of(context)?.emailCannotBeEmpty ?? "ERROR");
           return;
         } else if (trimmedPassword.isEmpty) {
-          showToast("Password cannot be empty");
+          showToast(AppLocalizations.of(context)?.passwordCannotBeEmpty ?? "ERROR");
           return;
         }
 
@@ -468,13 +490,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           try {
             final result = await InternetAddress.lookup('google.com');
             if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              showToast("Could not sign in with those credentials");
+              showToast(couldNotSignInWithThoseCredentials);
             }
           } on SocketException catch (_) {
-            showToast("Can not sign in. Not connected to internet.");
+            showToast(cannotSignInNoConnection);
           }
         } else {
-          showToast("Successfully Logged In");
+          showToast(successfullyLoggedIn);
         }
 
         setState((){ loading = false; });
@@ -482,13 +504,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapForgotPassword: () async {
         var trimmedEmail = editedEmail?.trim() ?? "";
         if (trimmedEmail.isEmpty) {
-          showToast("Invalid email; cannot send password reset email");
+          showToast(invalidEmailCannotSendPasswordResetEmail);
         } else {
           var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
           if (result == null) {
-            showToast("Password reset email sent");
+            showToast(passwordResetEmailSent);
           } else {
-            showToast("Password reset email could not be sent");
+            showToast(passwordResetEmailCouldNotBeSent);
           }
         }
       },
@@ -499,6 +521,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService, FirebaseDatabaseService firebaseDatabaseService) {
+    var registeredText = AppLocalizations.of(context)?.registered ?? "ERROR";
+    var initializedText = AppLocalizations.of(context)?.initialized ?? "ERROR";
+
     return LoginRegisterScreen(
       key: _registerKey,
       isLogin: false,
@@ -546,7 +571,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
 
         if (result.appUser != null) {
-          await onRegistrationSuccess(firebaseDatabaseService, result);
+          await onRegistrationSuccess(firebaseDatabaseService, result, registeredText, initializedText);
         } else {
           await onRegistrationFailed(result);
         }
@@ -556,14 +581,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult registrationResult) async {
-    showToast("Registered ${registrationResult.email}");
+  onRegistrationSuccess(
+      FirebaseDatabaseService firebaseDatabaseService,
+      FirebaseRegistrationResult registrationResult,
+      String registeredText,
+      String initializedText
+  ) async {
+    showToast("$registeredText ${registrationResult.email}");
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
       var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
       if (initializationException == null) {
-        showToast("Initialized ${registrationResult.email}");
+        showToast("$initializedText ${registrationResult.email}");
       }
     }
   }
@@ -591,7 +621,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  showGeoTrackingDialog(BuildContext context, AppUser? user) async {
+  showGeoTrackingDialog(
+    BuildContext context,
+    AppUser? user,
+    String okText,
+    String locationTrackingDialogTitle,
+    String locationTrackingDialogDetails
+  ) async {
     final prefs = await SharedPreferences.getInstance();
     final userAcked = prefs.getBool(Constants.PREFERENCE_USER_ACK_GEO);
 
@@ -599,7 +635,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       if (mounted) showObservationScreen(context, user);
     } else {
       Widget launchButton = TextButton(
-        child: const Text("OK"),
+        child: Text(okText),
         onPressed:  () async {
           Navigator.pop(context, true);
 
@@ -612,8 +648,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       );
       // set up the AlertDialog
       AlertDialog alert = AlertDialog(
-        title: const Text("Location Tracking"),
-        content: const Text("Pika Patrol records the current location when an observation is recorded in order to determine where the observation occurred. The observation, including the saved location, is sent in the background to our servers when WiFi is available."),
+        title: Text(locationTrackingDialogTitle),
+        content: Text(locationTrackingDialogDetails),
         actions: [
           launchButton,
         ],

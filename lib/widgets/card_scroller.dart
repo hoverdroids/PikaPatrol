@@ -6,7 +6,7 @@ import 'dart:developer' as developer;
 
 class CardScroller extends StatefulWidget {
 
-  List<card.Card> cards;
+  List<card.CardModel> cards;
   Function(int index)? onTapCard;
   bool reverse = true;
   double currentCardPosition = 0.0;

@@ -12,7 +12,7 @@ import '../primitives/card_layout.dart';
 // ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
 
-  List<card.Card> cards = [];
+  List<card.CardModel> cards = [];
   late double cardAspectRatio;
   late double widgetAspectRatio;
 

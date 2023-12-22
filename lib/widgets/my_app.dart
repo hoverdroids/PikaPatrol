@@ -43,7 +43,7 @@ class MyApp extends StatelessWidget {
     ));*/
 
     return MaterialApp(
-        title: "Pika Patrol",
+        title: AppLocalizations.of(context)?.appName ?? "ERROR",
         home: const PartnersSplashScreensPager(),
         debugShowCheckedModeBanner: false,
         themeMode: context.watch<MaterialThemesManager>().getThemeMode(),

@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../model/pika.dart';
+import '../services/settings_service.dart';
 
 class TrainingScreensPager extends StatefulWidget {
 
@@ -140,17 +141,19 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
   List<Widget> _buildSpeciesPages(BuildContext context) {
     var pages = <OnboardingScreen>[];
 
-    for (var index = 0; index < PikaData.PIKAS.length; index++) {
-      Pika pika = PikaData.PIKAS[index];
+    var pikas = PikaData.PIKAS;
+
+    for (var index = 0; index < pikas.length; index++) {
+      Pika pika = pikas[index];
       var bla = OnboardingScreen(
-          title: pika.species,
+          title: translations.get(pika.species),
           imageUrl: "assets/images/${pika.imagePath}",
           backgroundGradientType: index.isEven ? BackgroundGradientType.PRIMARY : BackgroundGradientType.SECONDARY ,
           descriptionType: index.isEven ? ThemeGroupType.MOP : ThemeGroupType.MOS,
           imageFit: BoxFit.cover,
           descriptionTextAlign: TextAlign.justify,
           descriptionFlex: 3,
-          description: pika.description,
+          description: translations.get(pika.description),
           moreInfoUrl: pika.moreInfoLink,
       );
       pages.add(bla);

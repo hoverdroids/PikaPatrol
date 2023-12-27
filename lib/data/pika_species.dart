@@ -10,18 +10,18 @@ class PikaData {
 
   static List<Pika> PIKAS = [
     Pika(
-      "American Pika",
-      "The American pika, a diurnal species of pika, is found in the mountains of western North America, usually in boulder fields at or above the tree line. They are herbivorous, smaller relatives of rabbits and hares.",
+      "americanPika",
+      "americanPikaDetails",
       "american_pika.jpeg",
       "https://en.wikipedia.org/wiki/American_pika"
     ),
     Pika(
-      "Collared Pika",
-      "If you’re in Alaska or parts of northern Canada, you might see a different species of pika, the collared pika! Collared pikas are about the same size and shape as their American cousins, but they have a distinct greyish “collar” near their shoulders and neck. Their call is also distinct from the American pika, but their haypiles and scat piles look the same.",
+      "collaredPika",
+      "collaredPikaDetails",
       "collared_pika.jpg",
       "https://en.wikipedia.org/wiki/Collared_pika"
-    ),
-    Pika(
+    )
+    /*Pika(
       "Ili Pika",
       "The Ili pika is a species of mammal in the family Ochotonidae, endemic to northwest China. After its discovery in 1983, it was studied for a decade. Increased temperatures, likely from global warming, and increased grazing pressure may have caused the rapid decline in population",
       "ili_pika.jpeg",
@@ -62,7 +62,7 @@ class PikaData {
       "Koslov's pika or Kozlov's pika is a species of mammal in the family Ochotonidae. It is endemic to China. Its natural habitat is tundra. It is threatened by habitat loss. Kozlov's pika are herbivores, they are known as 'ecosystem engineers' as they're known to promote diversity of different plants species.",
       "koslovs_pika.jpeg",
       "https://en.wikipedia.org/wiki/Koslov%27s_pika"
-    )
+    )*/
   ];
 
   static const List<String> OTHER_ANIMALS_PRESENT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];

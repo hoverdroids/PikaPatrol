@@ -1020,9 +1020,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(//TODO - CHRIS - strings with impact
-            source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"],
+            source: widget.observation.getSignsValues(),
             value: (i, v) => v,
-            label: (i, v) => v,
+            label: (i, v) => getSignsLabel(i, v, translations),
             tooltip: (i, v) => v,
           ),
         )

@@ -966,9 +966,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-          if (widget.isEditMode)...[
+          /*if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
-          ]
+          ]*/
         ],
       ),
       ChipsChoice<String>.single(

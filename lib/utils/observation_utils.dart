@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/data/pika_species.dart';
@@ -86,6 +84,53 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
 
   return box.get(observation.dbId);
 }
+
+//region
+/*List<String> getDefaults() => ;
+List<String> getDefaultsKeys() => ;
+
+String getLabel(int index, String value, Translations translations) {
+  var defaultIndex = getDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getDefaultsKeys()[defaultIndex]);
+}
+
+extension  on Observation {
+  List<String> getValues() {
+    var selected =  ?? <String>[];
+    var defaults = getDefaults();
+    return (selected + defaults).toTrimmedUniqueList();
+  }
+}*/
+//endregion
+
+
+
+//region Species
+const String SPECIES_DEFAULT = "American Pika";
+List<String> getSpeciesDefaults() => ["American Pika", "Collared Pika"];
+List<String> getSpeciesDefaultsKeys() => ["americanPika", "collaredPika"];
+
+String getSpeciesLabel(int index, String value, Translations translations) {
+  var defaultIndex = getSpeciesDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getSpeciesDefaultsKeys()[defaultIndex]);
+}
+
+extension Species on Observation {
+  List<String> getSpeciesValues() {
+    var selected = [species];
+    var defaults = getSpeciesDefaults();
+    return (selected + defaults).toTrimmedUniqueList();
+  }
+}
+//endregion
 
 //region Signs
 List<String> getSignsDefaults() => ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"];

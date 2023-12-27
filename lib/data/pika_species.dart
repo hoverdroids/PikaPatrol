@@ -4,10 +4,6 @@ import 'package:pika_patrol/model/pika.dart';
 
 class PikaData {
 
-  static List<String> PIKA_SPECIES = ["American Pika", "Collared Pika"];//PIKAS.map((pika) => pika.species).toList();
-
-  static const String PIKA_SPECIES_DEFAULT = "American Pika";
-
   static List<Pika> PIKAS = [
     Pika(
       "americanPika",

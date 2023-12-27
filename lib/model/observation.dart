@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 import '../data/pika_species.dart';
+import '../utils/observation_utils.dart';
 
 class Observation extends card.CardModel {
 
@@ -54,7 +55,7 @@ class Observation extends card.CardModel {
     this.altitudeInMeters,
     this.latitude,
     this.longitude,
-    this.species = PikaData.PIKA_SPECIES_DEFAULT,
+    this.species = SPECIES_DEFAULT,
     signs,
     this.pikasDetected = "",
     this.distanceToClosestPika = "",
@@ -90,12 +91,6 @@ class Observation extends card.CardModel {
     var imgUrls = imageUrls ?? [];
     if (imgUrls.isEmpty == true) return "";
     return imgUrls.elementAt(0);
-  }
-
-  List<String> getSpeciesOptions() {
-    var species = ([this.species] + PikaData.PIKA_SPECIES).toTrimmedUniqueList();
-
-    return species;
   }
 
   List<String> getSharedWithProjectsOptions() {

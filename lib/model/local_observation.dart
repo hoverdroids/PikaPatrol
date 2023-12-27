@@ -1,6 +1,7 @@
 import 'package:hive/hive.dart';
 
 import '../data/pika_species.dart';
+import '../utils/observation_utils.dart';
 
 @HiveType(typeId: 1)
 class LocalObservation extends HiveObject {
@@ -83,7 +84,7 @@ class LocalObservation extends HiveObject {
       this.altitudeInMeters = 0.0,
       this.latitude = 0.0,
       this.longitude = 0.0,
-      this.species = PikaData.PIKA_SPECIES_DEFAULT,
+      this.species = SPECIES_DEFAULT,
       this.signs = const <String>[],
       this.pikasDetected = "",
       this.distanceToClosestPika = "",

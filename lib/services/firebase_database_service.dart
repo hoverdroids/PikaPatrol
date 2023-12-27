@@ -10,6 +10,8 @@ import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
 
+import '../utils/observation_utils.dart';
+
 class FirebaseDatabaseService {
 
   String? uid;
@@ -244,7 +246,7 @@ class FirebaseDatabaseService {
           latitude: dataMap['latitude'],
           longitude: dataMap['longitude'],
           signs: signs,
-          species: dataMap['species'] ?? PikaData.PIKA_SPECIES_DEFAULT,
+          species: dataMap['species'] ?? SPECIES_DEFAULT,
           pikasDetected: dataMap['pikasDetected'] ?? '',
           distanceToClosestPika: dataMap['distanceToClosestPika'] ?? '',
           searchDuration: dataMap['searchDuration'] ?? '',

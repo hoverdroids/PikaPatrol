@@ -65,9 +65,6 @@ class PikaData {
     )*/
   ];
 
-  static const List<String> OTHER_ANIMALS_PRESENT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
-  static const List<String> OTHER_ANIMALS_PRESENT_TRANSLATION_KEYS =  ["marmots", "weasels", "woodrats", "mountainGoats", "cattle", "ptarmigans", "raptors", "brownCappedRosyFinch", "bats", "other"];
-
   static const List<String> SHARED_WITH_PROJECTS = ["Colorado Pika Project", "Rocky Mountain Wild", "Denver Zoo", "IF/THEN", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)"];
 
   static const List<String> SHARED_WITH_PROJECTS_DEFAULT = SHARED_WITH_PROJECTS;//Share with all sponsors by default

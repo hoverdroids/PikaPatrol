@@ -87,23 +87,36 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   return box.get(observation.dbId);
 }
 
-//Other animals present options will be keys
-//Other animals present values in db will always be the english variants
-//Other animals present labels will be whatever translations has
-extension ObservationUtils on Observation {
-
-  List<String> getOtherAnimalsPresentValues() {
-    var selectedAnimals = otherAnimalsPresent ?? <String>[];
-    var defaultAnimals = PikaData.OTHER_ANIMALS_PRESENT;
-    return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
-  }
+/*
+static List<String> getSignsValues(Observation observation) {
+var selectedAnimals = observation.otherAnimalsPresent ?? <String>[];
+var defaultAnimals = OTHER_ANIMALS_PRESENT;
+return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
 }
 
+["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"]
+*/
+
+
+
+//region OtherAnimalsPresent
+List<String> getOtherAnimalsPresentDefaults() => ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
+List<String> getOtherAnimalsPresentDefaultsKeys() => ["marmots", "weasels", "woodrats", "mountainGoats", "cattle", "ptarmigans", "raptors", "brownCappedRosyFinch", "bats", "other"];
+
 String getOtherAnimalsPresentLabel(int index, String value, Translations translations) {
-  var defaultIndex = PikaData.OTHER_ANIMALS_PRESENT.indexOf(value);
+  var defaultIndex = getOtherAnimalsPresentDefaults().indexOf(value);
   if (defaultIndex == -1) {
     //Can't find the animal in the defaults, so, can't translate it
     return value;
   }
-  return translations.get(PikaData.OTHER_ANIMALS_PRESENT_TRANSLATION_KEYS[defaultIndex]);
+  return translations.get(getOtherAnimalsPresentDefaultsKeys()[defaultIndex]);
 }
+
+extension OtherAnimalsPresent on Observation {
+  List<String> getOtherAnimalsPresentValues() {
+    var selectedAnimals = otherAnimalsPresent ?? <String>[];
+    var defaultAnimals = getOtherAnimalsPresentDefaults();
+    return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
+  }
+}
+//endregion

@@ -9,6 +9,7 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:provider/provider.dart';
+import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../primitives/card_layout.dart';
 import '../utils/observation_utils.dart';
@@ -35,6 +36,8 @@ class ObservationsPage extends StatefulWidget {
 
 class ObservationsPageState extends State<ObservationsPage> {
 
+  late Translations translations;
+
   late PageController localObservationsPageController;
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
@@ -56,6 +59,8 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    translations = Provider.of<Translations>(context);
+
     return ValueListenableBuilder(
       valueListenable: Hive.box<LocalObservation>('observations').listenable(),
       builder: (context, box, widget2){
@@ -112,18 +117,18 @@ class ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ThemedH4(AppLocalizations.of(context)?.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4(translations.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4(AppLocalizations.of(context)?.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4(translations.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               ThemedIconButton(
                                 Icons.info,
                                 type: ThemeGroupType.MOP,
                                 onPressedCallback: () async {
                                   AlertDialog alert = AlertDialog(
-                                    title: Text(AppLocalizations.of(context)?.sharedObservationsDialogTitle ?? "Error"),
-                                    content: Text(AppLocalizations.of(context)?.sharedObservationsDialogDetails ?? "Error"),
+                                    title: Text(translations.sharedObservationsDialogTitle),
+                                    content: Text(translations.sharedObservationsDialogDetails),
                                   );
                                   showDialog(
                                     context: context,
@@ -149,11 +154,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                           ] else ...[
                             CardScroller(_createDefaultObservations()),
                           ],
-                          ThemedH4(AppLocalizations.of(context)?.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4(AppLocalizations.of(context)?.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedH4(translations.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                               if(user != null && localObservationsNeedUploaded()) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
@@ -161,7 +166,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                     onPressedCallback: () async {
                                       var hasConnection = await DataConnectionChecker().hasConnection;
                                       if(hasConnection && context.mounted) {
-                                        showToast("Uploading observations");
+                                        showToast(translations.uploadingObservations);
 
                                         for (var observation in localObservations) {
                                           //TODO - CHRIS - if the user updated an observation when offline,
@@ -174,7 +179,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                           }
                                         }
                                       } else {
-                                        showToast("Could not upload observations. No data connection.");
+                                        showToast(translations.couldNotUploadObservationsNoDataConnection);
                                       }
                                     }
                                 )
@@ -184,8 +189,8 @@ class ObservationsPageState extends State<ObservationsPage> {
                                 type: ThemeGroupType.MOP,
                                 onPressedCallback: () async {
                                   AlertDialog alert = AlertDialog(
-                                    title: Text(AppLocalizations.of(context)?.cachedObservationsDialogTitle ?? "ERROR"),
-                                    content: Text(AppLocalizations.of(context)?.cachedObservationsDialogDetails ?? "ERROR"),
+                                    title: Text(translations.cachedObservationsDialogTitle),
+                                    content: Text(translations.cachedObservationsDialogDetails),
                                   );
                                   showDialog(
                                     context: context,
@@ -224,6 +229,6 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   List<Observation> _createDefaultObservations() => [
-    Observation(name:"No Observations Found", buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
+    Observation(name:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
   ];
 }

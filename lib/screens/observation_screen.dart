@@ -38,9 +38,9 @@ import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../data/pika_species.dart';
+import '../l10n/translations.dart';
 import '../utils/observation_utils.dart';
 
 // ignore: must_be_immutable
@@ -90,6 +90,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
+  late Translations translations;
+
   @override
   void initState() {
     _scrollController = ScrollController();
@@ -100,6 +102,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   @override
   Widget build(BuildContext context) {
+    translations = Provider.of<Translations>(context);
 
     final user = Provider.of<AppUser?>(context);
 
@@ -152,19 +155,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildAppbar(AppUser? user) => AnimatedBuilder(
     animation: _colorAnimationController,
     builder: (context, child) {
-      var noConnectionFoundObservationSavedLocally = AppLocalizations
-          .of(context)
-          ?.noConnectionFoundObservationSavedLocally ?? "ERROR";
-      var youMustLoginToUploadAnObservationObservationSavedLocally = AppLocalizations
-          .of(context)
-          ?.youMustLoginToUploadAnObservationObservationSavedLocally ?? "ERROR";
-
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),
         backgroundColor: _colorTween.value,
-        title: AppLocalizations
-            .of(context)
-            ?.makeObservation ?? "ERROR",
+        title: translations.makeObservation,
         titleType: ThemeGroupType.MOS,
         leftIcon: Icons.arrow_back,
         leftIconType: ThemeGroupType.MOS,
@@ -187,7 +181,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               //TODO - CHRIS - probably worth moving to the saveObservationon method
               var hasConnection = await DataConnectionChecker().hasConnection;
               if (!hasConnection) {
-                showToast(noConnectionFoundObservationSavedLocally);
+                showToast(translations.noConnectionFoundObservationSavedLocally);
               } else if (user != null) {
                 setState(() {
                   _isUploading = true;
@@ -204,7 +198,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   _isUploading = false;
                 });
               } else {
-                showToast(youMustLoginToUploadAnObservationObservationSavedLocally);
+                showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
               }
               setState(() {
                 widget.isEditMode = false;
@@ -275,7 +269,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               child: ThemedIconButton(
                   Icons.my_location,
                   iconSize: IconSize.MEDIUM,
-                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi(AppLocalizations.of(context)?.fetchingLocation ?? "ERROR", AppLocalizations.of(context)?.location ?? "ERROR") },
+                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
                   type: ThemeGroupType.SOM,
               ),
             ),
@@ -320,7 +314,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (audioUrls != null && audioUrls.isNotEmpty) {
         _playAudio(audioUrls[0]);
       } else {
-        showToast(AppLocalizations.of(context)?.noRecordingsToPlay ?? "ERROR");
+        showToast(translations.noRecordingsToPlay);
       }
     },
   );
@@ -330,7 +324,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       playIcon: Icon(Icons.mic,
           color: context.watch<MaterialThemesManager>().colorPalette().secondary,
           size: 48),
-      onPressed: () => { _openAudioRecorder(AppLocalizations.of(context)?.couldNotOpenRecorder ?? "ERROR") },
+      onPressed: () => { _openAudioRecorder() },
     );
   }
 
@@ -398,10 +392,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
     String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toString() : "";    //Editable altitude is full length
 
-    var latitudeText = AppLocalizations.of(context)?.latitude ?? "ERROR";
-    var longitudeText = AppLocalizations.of(context)?.longitude ?? "ERROR";
-    var altitudeText = AppLocalizations.of(context)?.altitude ?? "ERROR";
-
     return Row(
       children: <Widget>[
         Flexible(
@@ -410,7 +400,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerRight,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle(latitudeText, type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.latitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
@@ -424,7 +414,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, latitudeText),
+                    validator: (value) => isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -439,7 +429,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.center,
             child: Column(
               children: <Widget>[
-                ThemedSubTitle(longitudeText, type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.longitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
@@ -452,7 +442,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, longitudeText),
+                    validator: (value) => isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -467,7 +457,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerLeft,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle(altitudeText, type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.altitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
@@ -483,7 +473,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                       var altitudeInFeet = double.parse(value);
                       widget.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
                     },
-                    validator: (value) => isValidGeo(value, altitudeText),
+                    validator: (value) => isValidGeo(value, translations.altitude),
                   )
                 ] else ...[
                   ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -496,15 +486,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  _getCurrentPositionAndUpdateUi(String fetchingLocationText, String locationText) async {
-    showToast(fetchingLocationText);
+  _getCurrentPositionAndUpdateUi() async {
+    showToast(translations.fetchingLocation);
 
     await checkPermissionsAndGetCurrentPosition()
       .then((Position position) {
         String lat = position.latitude.toStringAsFixed(2);
         String lon = position.longitude.toStringAsFixed(2);
         String alt = position.altitude.toStringAsFixed(2);
-        showToast("$locationText:\n$lat $lon $alt");
+        showToast("${translations.location}:\n$lat $lon $alt");
 
         setState(() {
           widget.observation.latitude = position.latitude;
@@ -534,11 +524,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     String day = date == null ? "" : date.day.toString();
     String year = date == null ? "" : date.year.toString();
 
-    var siteNameText = AppLocalizations.of(context)?.siteName ?? "ERROR";
-    var monthText = AppLocalizations.of(context)?.month ?? "ERROR";
-    var dayText = AppLocalizations.of(context)?.day ?? "ERROR";
-    var yearText = AppLocalizations.of(context)?.year ?? "ERROR";
-
     return Padding(
       padding: _horzPadding,
       child: Column(
@@ -551,9 +536,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               showLabel: false,
               text: widget.observation.location ?? "",
               textType: ThemeGroupType.POM,
-              hintText: siteNameText,
+              hintText: translations.siteName,
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, siteNameText, true),
+              validator: (value) => nonEmptyValidator(value, translations.siteName, true),
             )
           ] else ... [
             ThemedH5(widget.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
@@ -577,7 +562,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   alignment: Alignment.centerRight,
                   child:Column(
                     children: <Widget>[
-                      ThemedSubTitle(monthText, type: ThemeGroupType.POM),
+                      ThemedSubTitle(translations.month, type: ThemeGroupType.POM),
                       tinyTransparentDivider,
                       if (_hideDateFields) ... [
                         //A hack state because geo fields not updating from self location button
@@ -595,7 +580,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     alignment: Alignment.center,
                     child: Column(
                       children: <Widget>[
-                        ThemedSubTitle(dayText, type: ThemeGroupType.POM),
+                        ThemedSubTitle(translations.day, type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
@@ -613,7 +598,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     alignment: Alignment.centerLeft,
                     child:Column(
                       children: <Widget>[
-                        ThemedSubTitle(yearText, type: ThemeGroupType.POM),
+                        ThemedSubTitle(translations.year, type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
@@ -684,41 +669,39 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       })
     ];
 
-    var deleteText = AppLocalizations.of(context)?.delete ?? "ERROR";
-
     return ContentScroll(
       images: widget.observation.imageUrls ?? <String>[],
-      title: AppLocalizations.of(context)?.images ?? "ERROR",
-      emptyListMessage: AppLocalizations.of(context)?.noImages ?? "ERROR",
+      title: translations.images,
+      emptyListMessage: translations.noImages,
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
-      onDeleteClickedCallback: (value) => { _removeImage(value, deleteText) },
+      onDeleteClickedCallback: (value) => { _removeImage(value) },
       showDeleteButtonOnCard: widget.isEditMode
     );
   }
 
-  _removeImage(path, String deleteText) {
+  _removeImage(path) {
     setState(() {
       //remove image from the observation
       widget.observation.imageUrls?.remove(path);
       needsUpdated = true;
     });
 
-    showToast("$deleteText $path");
+    showToast("${translations.delete} $path");
   }
 
   Widget _buildAudioRecordings() {
 
     var icons = !widget.isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.custom, ['3gp','aa','aac','aax','act','aiff','alac','amr','ape','au','awb','dss','dvf','flac','gsm','iklax','kvs','m4a','m4b','m4p','mmf','movpkg','mp3','mpc','msv','nmf','ogg','oga','mogg','opus','ra','rm','raw','rf64','sln','tta','voc','vox','wav','wma','wv','webm','8svx','cda'], false)),
-      ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder(AppLocalizations.of(context)?.couldNotOpenRecorder ?? "ERROR")})
+      ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder()})
     ];
 
     return AudioContentScroll(
       urls: widget.observation.audioUrls ?? <String>[],
-      title: AppLocalizations.of(context)?.audioRecordings ?? "ERROR",
-      emptyListMessage: AppLocalizations.of(context)?.noAudioRecordings ?? "ERROR",
+      title: translations.audioRecordings,
+      emptyListMessage: translations.noAudioRecordings,
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
@@ -742,7 +725,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
-  void _openAudioRecorder(String couldNotOpenRecorderText) async {
+  void _openAudioRecorder() async {
     try {
       //Always check for permission. It will ask for permission if not already granted
       //NOTE: FlutterAudioRecorder3.hasPermissions requests the permission by showing the dialog to the user,
@@ -752,24 +735,24 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (await Permission.microphone.request().isGranted) {
         showAudioRecorderDialog();
       } else {
-        showToast(couldNotOpenRecorderText);
+        showToast(translations.couldNotOpenRecorder);
       }
     } catch (e) {
       developer.log(e.toString());
     }
   }
 
-  void _addMediaUrlsToObservations(List<String> filePaths, bool addImages, String didNotAddImageText, String didNotAddAudioText) {
+  void _addMediaUrlsToObservations(List<String> filePaths, bool addImages) {
     setState(() {
       for (var filePath in filePaths) {
         if (addImages) {
           if (widget.observation.imageUrls?.contains(filePath) == true) {
-            showToast(didNotAddImageText);
+            showToast(translations.didNotAddImage);
           } else {
             widget.observation.imageUrls?.add(filePath);
           }
         } else if (widget.observation.audioUrls?.contains(filePath) == true) {
-          showToast(didNotAddAudioText);
+          showToast(translations.didNotAddAudio);
         } else {
           widget.observation.audioUrls?.add(filePath);
         }
@@ -782,9 +765,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Future<void> _pickMultipleFiles(
     FileType pickingType,
     List<String> allowedExtensions,
-    bool addImages,
-    String didNotAddImageText,
-    String didNotAddAudioText
+    bool addImages
   ) async {
 
     FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -801,7 +782,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       developer.log("File paths:$filePaths");
     }*/
 
-    _addMediaUrlsToObservations(filePaths, addImages, didNotAddImageText, didNotAddAudioText);
+    _addMediaUrlsToObservations(filePaths, addImages);
   }
 
   Future<void> _pickSingleFile(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
@@ -832,18 +813,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isAndroid || isIos) {
         var isCameraPermissionGranted = await Permission.camera.request().isGranted;
         if (!isCameraPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept camera permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
           return;
         }
         var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
         if (!isPhotosPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept photos permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
           return;
         }
 
         var isStoragePermissionGranted = await Permission.storage.request().isGranted;
         if (!isStoragePermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept storage permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
           return;
         }
       }
@@ -851,19 +832,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isAndroid) {
         var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
         if (!isMediaLocationPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept media location permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
           return;
         }
 
         var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
         if (!isManageExternalStoragePermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept external storage permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
           return;
         }
 
         var isVideosPermissionGranted = await Permission.videos.request().isGranted;
         if (!isVideosPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept videos permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
           return;
         }
       }
@@ -871,18 +852,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isIos) {
         var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
         if (!isMediaLibraryPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept media library permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
           return;
         }
       }
 
       if (isMultiPick) {
-        await _pickMultipleFiles(pickingType, allowedExtensions, addImages, didNot);
+        await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
       } else {
         await _pickSingleFile(pickingType, allowedExtensions, addImages);
       }
     } on PlatformException catch (e) {
-      developer.log("Unsupported operation$e");
+      developer.log("${translations.unsupportedOperation}: $e");
     }
   }
 
@@ -923,7 +904,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var croppedPath = cropped?.path;
     
     if (croppedPath == null) {
-      showToast("Error when trying to crop image");
+      showToast(translations.errorWhenTryingToCropImage);
     }
 
     setState(() {
@@ -947,7 +928,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     var isPermissionGranted = await Permission.camera.request().isGranted;
     if (!isPermissionGranted) {
-      showToast("Could not open camera.\nYou must accept camera permissions.");
+      showToast(translations.couldNotOpenCameraAcceptCameraPermissions);
       return;
     }
 
@@ -958,7 +939,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var selectedPath = selected?.path;
     
     if (selectedPath == null) {
-      showToast("Error when trying to take picture");
+      showToast(translations.errorWhenTryingToTakePicture);
     } else {
       _cropImage(
           selectedPath,
@@ -984,7 +965,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ThemedSubTitle("Species", type: ThemeGroupType.POM),
+          ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
           if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
           ]
@@ -1013,11 +994,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return const TextEntryDialog(
-              title: "Add another species"
-          );
-        },
+        builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherSpecies),
         barrierDismissible: false
     ).then((value) => {
       setState(() {
@@ -1033,7 +1010,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Signs", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.signs, type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: widget.observation.signs ?? <String>[],
@@ -1042,7 +1019,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               setState(() => widget.observation.signs = val)
             }
           },
-          choiceItems: C2Choice.listFrom<String, String>(
+          choiceItems: C2Choice.listFrom<String, String>(//TODO - CHRIS - strings with impact
             source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"],
             value: (i, v) => v,
             label: (i, v) => v,
@@ -1058,7 +1035,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.pikasDetected, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.pikasDetected,
@@ -1068,7 +1045,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],
+              source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],//TODO - CHRIS - strings with impact
               value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
@@ -1083,7 +1060,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Distance to Closest Pika", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.distanceToClosestPika, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.distanceToClosestPika,
@@ -1093,7 +1070,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],
+              source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],//TODO - CHRIS - string with impact
               value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
@@ -1108,7 +1085,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Search Duration", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.searchDuration, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.searchDuration,
@@ -1118,7 +1095,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],
+              source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],//TODO - CHRIS - strings with impact
               value: (i, v) => v,
               label: (i, v) => v,
               tooltip: (i, v) => v,
@@ -1129,7 +1106,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   bool showTalusAreaHints = false;
-  Widget _buildTalusAreaChoices() {
+  Widget _buildTalusAreaChoices() {//TODO - CHRIS - strings with impact
     var hints = ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
     var areas = ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
     return Column(
@@ -1138,10 +1115,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         //smallTransparentDivider, //TODO - add this after fixing the ThemedIconButton styling in ThemesManager
         Row(
           children: [
-            ThemedSubTitle(showTalusAreaHints ? "Search Area" : "Talus Area", type: ThemeGroupType.POM),
+            ThemedSubTitle(showTalusAreaHints ? translations.searchArea : translations.talusArea, type: ThemeGroupType.POM),
             Expanded(
               flex: 1,
-              child: ThemedCaption("Show Hints", type: ThemeGroupType.MOM, textAlign: TextAlign.end),
+              child: ThemedCaption(translations.showHints, type: ThemeGroupType.MOM, textAlign: TextAlign.end),
             ),
             ThemedSwitch(
                 value: showTalusAreaHints,
@@ -1176,7 +1153,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.temperature, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: widget.observation.temperature,
@@ -1186,7 +1163,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],
+            source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],//TODO - CHRIS - strings with impact
             value: (i, v) => v,
             label: (i, v) => v,
             tooltip: (i, v) => v,
@@ -1200,7 +1177,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       smallTransparentDivider,
-      ThemedSubTitle("Skies", type: ThemeGroupType.POM),
+      ThemedSubTitle(translations.skies, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         value: widget.observation.skies,
@@ -1210,7 +1187,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
+          source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],//TODO - CHRIS - strings with impact
           value: (i, v) => v,
           label: (i, v) => v,
           tooltip: (i, v) => v,
@@ -1223,7 +1200,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       smallTransparentDivider,
-      ThemedSubTitle("Wind", type: ThemeGroupType.POM),
+      ThemedSubTitle(translations.wind, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         value: widget.observation.wind,
@@ -1233,7 +1210,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
+          source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],//TODO - CHRIS - strings with impact
           value: (i, v) => v,
           label: (i, v) => v,
           tooltip: (i, v) => v,
@@ -1249,7 +1226,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
+          ThemedSubTitle(translations.otherAnimalsPresent, type: ThemeGroupType.POM),
           if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
           ]
@@ -1278,11 +1255,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return const TextEntryDialog(
-          title: "Add another animal"
-        );
-      },
+      builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherAnimal),
       barrierDismissible: false
     ).then((value) => {
       setState(() {
@@ -1303,7 +1276,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          ThemedSubTitle("Shared with projects", type: ThemeGroupType.POM),
+          ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
           if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
           ]
@@ -1332,11 +1305,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
         context: context,
-        builder: (BuildContext context) {
-          return const TextEntryDialog(
-              title: "Add another project"
-          );
-        },
+        builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherProject),
         barrierDismissible: false
     ).then((value) => {
       setState(() {
@@ -1356,14 +1325,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Site History", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.siteHistory, type: ThemeGroupType.POM),
         miniTransparentDivider,
         if(widget.isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observation.siteHistory ?? "",
             textType: ThemeGroupType.POM,
-            hintText: "Note any history you've had with this site",
+            hintText: translations.siteHistoryHint,
             //hintTextType: hintTextType,
             //hintTextEmphasis: hintTextEmphasis,
             //backgroundType: textFieldBackgroundType,
@@ -1391,14 +1360,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Comments", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.comments, type: ThemeGroupType.POM),
         miniTransparentDivider,
         if(widget.isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observation.comments ?? "",
             textType: ThemeGroupType.POM,
-            hintText: "Any additional observations",
+            hintText: translations.anyAdditionalObservations,
             //hintTextType: hintTextType,
             //hintTextEmphasis: hintTextEmphasis,
             //backgroundType: textFieldBackgroundType,

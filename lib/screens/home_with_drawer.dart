@@ -26,12 +26,12 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
+import '../l10n/translations.dart';
 import '../model/firebase_registration_result.dart';
 import '../services/settings_service.dart';
 import '../utils/constants.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -88,8 +88,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool? editedRmwOptIn;
   bool? editedDzOptIn;
 
+  late Translations translations;
+
   @override
   Widget build(BuildContext context) {
+    translations = Provider.of<Translations>(context);
+    translations.update(context);
 
     MediaQueryData mediaQuery = MediaQuery.of(context);
     Size size = mediaQuery.size;
@@ -131,18 +135,18 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           } else if (forceProfileOpen && !isOpen) {
             // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
-            showToast(AppLocalizations.of(context)?.enterRequiredFields ?? "ERROR");
+            showToast(translations.enterRequiredFields);
           }
         },
     );
   }
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
-    var locale = Provider.of<SettingsService>(context, listen: false).locale;
+    var locale = Provider.of<SettingsService>(context, listen: true).locale;
     var localeIcon = locale == L10n.ENGLISH ? LanguageCodeIcons.EN : LanguageCodeIcons.ES;
 
     return IconTitleIconIconAppBar(
-      title: AppLocalizations.of(context)?.appName ?? "ERROR",
+      title: translations.appName,
       titleType: ThemeGroupType.MOP,
       leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
       leftIconType: ThemeGroupType.MOP,
@@ -174,7 +178,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                 List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
                 if (observations != null) {
                   for (var observation in  observations) {
-                    observation.buttonText = AppLocalizations.of(context)?.viewObservation;
+                    observation.buttonText = translations.viewObservation;
                   }
                 }
 
@@ -204,10 +208,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   Widget buildBottomNavigationBar(BuildContext context, AppUser? user) {
-    var okText = AppLocalizations.of(context)?.ok ?? "ERROR";
-    var locationTrackingDialogTitleText = AppLocalizations.of(context)?.locationTrackingDialogTitle ?? "ERROR";
-    var locationTrackingDialogDetailsText = AppLocalizations.of(context)?.locationTrackingDialogDetails ?? "ERROR";
-
     return CurvedNavigationBar (//TODO - migrate this into its own widget
       color: navbarColor,
       backgroundColor: navbarBgColor,
@@ -219,7 +219,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
       ],
       onTap: (index) {
-        showGeoTrackingDialog(context, user, okText, locationTrackingDialogTitleText, locationTrackingDialogDetailsText);
+        showGeoTrackingDialog(context, user);
         //TODO - combine these when we have more pages
 /*
             pageController.animateToPage(
@@ -237,12 +237,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   Widget buildDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
 
-    var avatarTitle = AppLocalizations.of(context)?.login ?? "ERROR";
+    var avatarTitle = translations.login;
     var avatarSubtitle = "";
     if (user != null) {
       if (userProfile == null) {
         //A profile has not been initialized
-        avatarTitle = AppLocalizations.of(context)?.emptyUserProfile ?? "ERROR";
+        avatarTitle = translations.emptyUserProfile;
       } else {
         //A profile has been initialized
         avatarTitle = "${userProfile.firstName} ${userProfile.lastName}";
@@ -261,8 +261,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
           [
-            ListItemModel(title: AppLocalizations.of(context)?.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.appHelpAndInfoUrl ?? "")),
-            ListItemModel(title: AppLocalizations.of(context)?.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
+            ListItemModel(title: translations.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(translations.appHelpAndInfoUrl)),
+            ListItemModel(title: translations.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (BuildContext context) =>
                   TrainingScreensPager(backClickedCallback: () => {
@@ -273,13 +273,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
                 )
               )
             }),
-            ListItemModel(title: AppLocalizations.of(context)?.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.mapOfPikaObservationsUrl ?? "")),
-            ListItemModel(title: AppLocalizations.of(context)?.takeClimateAction, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.takeClimateActionUrl ?? "")),
-            ListItemModel(title: AppLocalizations.of(context)?.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
-            ListItemModel(title: AppLocalizations.of(context)?.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
-            ListItemModel(title: AppLocalizations.of(context)?.rockyMountainWild, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
-            ListItemModel(title: AppLocalizations.of(context)?.denverZoo, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.denverZooUrl ?? ""), margin: indentationLevel1),
-            ListItemModel(title: AppLocalizations.of(context)?.ifThen, itemClickedCallback: () => launchInBrowser(AppLocalizations.of(context)?.ifThenUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(translations.mapOfPikaObservationsUrl ?? "")),
+            ListItemModel(title: translations.takeClimateAction, itemClickedCallback: () => launchInBrowser(translations.takeClimateActionUrl ?? "")),
+            ListItemModel(title: translations.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
+            ListItemModel(title: translations.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(translations.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.denverZoo, itemClickedCallback: () => launchInBrowser(translations.denverZooUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",
@@ -342,11 +342,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var editProfileKey = userProfile == null ? _editProfileNullKey : _editProfileKey;
     var viewProfileKey = userProfile == null ? _nullProfileKey : _profileKey;
 
-    var deleteAccountDialogTitle = AppLocalizations.of(context)?.deleteAccountDialogTitle ?? "ERROR";
-    var deleteAccountDialogDetails = "";
-    var ok = AppLocalizations.of(context)?.ok ?? "";
-    var accountDeleted = AppLocalizations.of(context)?.accountDeleted ?? "Error";
-
     return ProfileScreen(
       //_nullProfileKey and _profileKey need to be different or else the ProfileScreen will not update without first receiving user input
       //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
@@ -389,7 +384,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       onTapDelete: () async {
         Widget okButton = TextButton(
-          child: Text(ok),
+          child: Text(translations.ok),
           onPressed:  () async {
             //Hide the alert
             Navigator.pop(context, true);
@@ -405,13 +400,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               showToast(message);
               return;
             }
-              showToast(accountDeleted);
+              showToast(translations.accountDeleted);
             },
         );
 
         AlertDialog alert = AlertDialog(
-          title: Text(deleteAccountDialogTitle),
-          content: Text(deleteAccountDialogDetails),
+          title: Text(translations.deleteAccountDialogTitle),
+          content: Text(translations.deleteAccountDialogDetails),
           actions: [
             okButton,
           ],
@@ -452,78 +447,65 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
+  Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) => LoginRegisterScreen(
+    key: _loginKey,
+    isLogin: true,
+    showLabels: false,
+    onPasswordChangedCallback: (value) => { editedPassword = value },
+    onEmailChangedCallback: (value) => { editedEmail = value },
+    onTapLogin: () async {
 
-    var couldNotSignInWithThoseCredentials = AppLocalizations.of(context)?.couldNotSignInWithThoseCredentials ?? "ERROR";
-    var cannotSignInNoConnection = AppLocalizations.of(context)?.cannotSignInNoConnection ?? "ERROR";
-    var successfullyLoggedIn = AppLocalizations.of(context)?.successfullyLoggedIn ?? "ERROR";
-    var invalidEmailCannotSendPasswordResetEmail = AppLocalizations.of(context)?.invalidEmailCannotSendPasswordResetEmail ?? "ERROR";
-    var passwordResetEmailSent = AppLocalizations.of(context)?.passwordResetEmailSent ?? "ERROR";
-    var passwordResetEmailCouldNotBeSent = AppLocalizations.of(context)?.passwordResetEmailCouldNotBeSent ?? "ERROR";
+      var trimmedEmail = editedEmail?.trim() ?? "";
+      var trimmedPassword = editedPassword?.trim() ?? "";
 
-    return LoginRegisterScreen(
-      key: _loginKey,
-      isLogin: true,
-      showLabels: false,
-      onPasswordChangedCallback: (value) => { editedPassword = value },
-      onEmailChangedCallback: (value) => { editedEmail = value },
-      onTapLogin: () async {
+      if (trimmedEmail.isEmpty) {
+        showToast(translations.emailCannotBeEmpty);
+        return;
+      } else if (trimmedPassword.isEmpty) {
+        showToast(translations.passwordCannotBeEmpty);
+        return;
+      }
 
-        var trimmedEmail = editedEmail?.trim() ?? "";
-        var trimmedPassword = editedPassword?.trim() ?? "";
+      setState(() => loading = true);
 
-        if (trimmedEmail.isEmpty) {
-          showToast(AppLocalizations.of(context)?.emailCannotBeEmpty ?? "ERROR");
-          return;
-        } else if (trimmedPassword.isEmpty) {
-          showToast(AppLocalizations.of(context)?.passwordCannotBeEmpty ?? "ERROR");
-          return;
-        }
+      dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+      //dynamic result = await _auth.signInWithGoogle();
 
-        setState(() => loading = true);
-
-        dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
-        //dynamic result = await _auth.signInWithGoogle();
-
-        if(result == null) {
-          // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
-          try {
-            final result = await InternetAddress.lookup('google.com');
-            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              showToast(couldNotSignInWithThoseCredentials);
-            }
-          } on SocketException catch (_) {
-            showToast(cannotSignInNoConnection);
+      if(result == null) {
+        // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
+        try {
+          final result = await InternetAddress.lookup('google.com');
+          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+            showToast(translations.couldNotSignInWithThoseCredentials);
           }
-        } else {
-          showToast(successfullyLoggedIn);
+        } on SocketException catch (_) {
+          showToast(translations.cannotSignInNoConnection);
         }
+      } else {
+        showToast(translations.successfullyLoggedIn);
+      }
 
-        setState((){ loading = false; });
-      },
-      onTapForgotPassword: () async {
-        var trimmedEmail = editedEmail?.trim() ?? "";
-        if (trimmedEmail.isEmpty) {
-          showToast(invalidEmailCannotSendPasswordResetEmail);
+      setState((){ loading = false; });
+    },
+    onTapForgotPassword: () async {
+      var trimmedEmail = editedEmail?.trim() ?? "";
+      if (trimmedEmail.isEmpty) {
+        showToast(translations.invalidEmailCannotSendPasswordResetEmail);
+      } else {
+        var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
+        if (result == null) {
+          showToast(translations.passwordResetEmailSent);
         } else {
-          var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
-          if (result == null) {
-            showToast(passwordResetEmailSent);
-          } else {
-            showToast(passwordResetEmailCouldNotBeSent);
-          }
+          showToast(translations.passwordResetEmailCouldNotBeSent);
         }
-      },
-      onTapRegister: () => {
-        setState(() => showSignIn = false)
-      },
-    );
-  }
+      }
+    },
+    onTapRegister: () => {
+      setState(() => showSignIn = false)
+    },
+  );
 
   Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService, FirebaseDatabaseService firebaseDatabaseService) {
-    var registeredText = AppLocalizations.of(context)?.registered ?? "ERROR";
-    var initializedText = AppLocalizations.of(context)?.initialized ?? "ERROR";
-
     return LoginRegisterScreen(
       key: _registerKey,
       isLogin: false,
@@ -571,7 +553,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
 
         if (result.appUser != null) {
-          await onRegistrationSuccess(firebaseDatabaseService, result, registeredText, initializedText);
+          await onRegistrationSuccess(firebaseDatabaseService, result);
         } else {
           await onRegistrationFailed(result);
         }
@@ -581,19 +563,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  onRegistrationSuccess(
-      FirebaseDatabaseService firebaseDatabaseService,
-      FirebaseRegistrationResult registrationResult,
-      String registeredText,
-      String initializedText
-  ) async {
-    showToast("$registeredText ${registrationResult.email}");
+  onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult registrationResult) async {
+    showToast("${translations.registered} ${registrationResult.email}");
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
       var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
       if (initializationException == null) {
-        showToast("$initializedText ${registrationResult.email}");
+        showToast("${translations.initialized} ${registrationResult.email}");
       }
     }
   }
@@ -612,7 +589,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  showObservationScreen(BuildContext contxt, AppUser? user) {
+  showObservationScreen(BuildContext context, AppUser? user) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -621,13 +598,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  showGeoTrackingDialog(
-    BuildContext context,
-    AppUser? user,
-    String okText,
-    String locationTrackingDialogTitle,
-    String locationTrackingDialogDetails
-  ) async {
+  showGeoTrackingDialog(BuildContext context, AppUser? user) async {
     final prefs = await SharedPreferences.getInstance();
     final userAcked = prefs.getBool(Constants.PREFERENCE_USER_ACK_GEO);
 
@@ -635,7 +606,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       if (mounted) showObservationScreen(context, user);
     } else {
       Widget launchButton = TextButton(
-        child: Text(okText),
+        child: Text(translations.ok),
         onPressed:  () async {
           Navigator.pop(context, true);
 
@@ -648,8 +619,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       );
       // set up the AlertDialog
       AlertDialog alert = AlertDialog(
-        title: Text(locationTrackingDialogTitle),
-        content: Text(locationTrackingDialogDetails),
+        title: Text(translations.locationTrackingDialogTitle),
+        content: Text(translations.locationTrackingDialogDetails),
         actions: [
           launchButton,
         ],

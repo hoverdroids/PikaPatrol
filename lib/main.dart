@@ -7,6 +7,7 @@ import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/widgets/my_app.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'l10n/translations.dart';
 import 'model/app_user.dart';
 import 'model/app_user_profile.dart';
 import 'model/local_observation.dart';
@@ -44,6 +45,9 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
             create: (_) => SettingsService()
+        ),
+        ChangeNotifierProvider(
+            create: (_) => Translations()
         )
       ],
       builder: (context, child) {

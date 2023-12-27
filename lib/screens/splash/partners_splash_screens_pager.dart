@@ -7,6 +7,8 @@ import 'package:pika_patrol/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/rocky_mountain_wild_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/partnering_with_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/if_then_splash_screen.dart';
+import 'package:provider/provider.dart';
+import '../../l10n/translations.dart';
 import '../home_with_drawer.dart';
 
 class PartnersSplashScreensPager extends StatefulWidget {
@@ -36,6 +38,10 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
 
   @override
   Widget build(BuildContext context) {
+
+    var translations = Provider.of<Translations>(context);
+    translations.update(context);
+
     return Scaffold(
       body: LiquidSwipe(
         pages: <Container>[

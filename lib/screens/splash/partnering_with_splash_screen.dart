@@ -2,10 +2,13 @@
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
+import '../../l10n/translations.dart';
 
 class PartneringWithSplashScreen extends Container {
 
@@ -13,6 +16,8 @@ class PartneringWithSplashScreen extends Container {
 
   @override
   Widget build(BuildContext context) {
+    var translations = Provider.of<Translations>(context);
+
     return Container(
       color: Colors.brown,
       width: double.infinity,
@@ -29,7 +34,7 @@ class PartneringWithSplashScreen extends Container {
                   baseColor: Colors.white,
                   highlightColor: Colors.brown,
                   child: ThemedH3(
-                    AppLocalizations.of(context)?.inPartnershipWith,
+                    translations.inPartnershipWith,
                     type: ThemeGroupType.MOP,
                     emphasis: Emphasis.HIGH,
                     textAlign: TextAlign.center,

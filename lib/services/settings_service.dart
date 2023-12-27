@@ -8,8 +8,11 @@ import '../utils/constants.dart';
 /// Mix-in [DiagnosticableTreeMixin] to have access to [debugFillProperties] for the devtool
 class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
 
+  SettingsService() {
+    init();
+  }
 
-  Locale _locale = L10n.SPANISH;
+  Locale _locale = L10n.ENGLISH;
   Locale get locale => _locale;
   set locale(Locale locale) {
     _locale = locale;

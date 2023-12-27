@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
+import '../l10n/translations.dart';
 import '../screens/splash/partners_splash_screens_pager.dart';
 import '../services/settings_service.dart';
 
@@ -16,6 +17,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     //First things first...set our theme to fit our brand!
     ColorPalette colorPalette = ColorPalette(
         primary: Colors.teal,
@@ -43,7 +45,7 @@ class MyApp extends StatelessWidget {
     ));*/
 
     return MaterialApp(
-        title: AppLocalizations.of(context)?.appName ?? "ERROR",
+        title: "Pika Patrol",//This doesn't matter and can't be translated because localization isn't applied until MaterialApp is instantiated
         home: const PartnersSplashScreensPager(),
         debugShowCheckedModeBanner: false,
         themeMode: context.watch<MaterialThemesManager>().getThemeMode(),

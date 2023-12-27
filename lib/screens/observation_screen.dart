@@ -1045,9 +1045,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],//TODO - CHRIS - strings with impact
+              source: widget.observation.getPikasDetectedValues(),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getPikasDetectedLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )

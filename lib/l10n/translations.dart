@@ -190,6 +190,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatPileOnboardingDetails = ERROR;
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
+  String unsureMoreThanOne = ERROR;
 
   update (BuildContext context) {
     appName =  AppLocalizations.of(context)?.appName ?? appName;
@@ -375,8 +376,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     scatPileOnboardingDetails = AppLocalizations.of(context)?.scatPileOnboardingDetails ?? scatPileOnboardingDetails;
     scatOnboardingTitle = AppLocalizations.of(context)?.scatOnboardingTitle ?? scatOnboardingTitle;
     scatOnboardingDetails = AppLocalizations.of(context)?.scatOnboardingDetails ?? scatOnboardingDetails;
-
-    // = AppLocalizations.of(context)?. ?? ;
+    unsureMoreThanOne = AppLocalizations.of(context)?.unsureMoreThanOne ?? unsureMoreThanOne;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -566,6 +566,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "scatPileOnboardingDetails": return scatPileOnboardingDetails;
       case "scatOnboardingTitle": return scatOnboardingTitle;
       case "scatOnboardingDetails": return scatOnboardingDetails;
+      case "unsureMoreThanOne": return unsureMoreThanOne;
       default: return key;
     }
   }

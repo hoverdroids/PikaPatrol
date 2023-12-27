@@ -132,6 +132,29 @@ extension Species on Observation {
 }
 //endregion
 
+//region
+List<String> getPikasDetectedDefaults() => ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"];
+List<String> getPikasDetectedDefaultsKeys() => ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
+
+String getPikasDetectedLabel(int index, String value, Translations translations) {
+  var defaultIndex = getPikasDetectedDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getPikasDetectedDefaultsKeys()[defaultIndex]);
+}
+
+extension PikasDetected on Observation {
+  List<String> getPikasDetectedValues() {
+    var detected = pikasDetected;
+    var selected = detected != null ? [detected] : <String>[];
+    var defaults = getPikasDetectedDefaults();
+    return (selected + defaults).toTrimmedUniqueList();
+  }
+}
+//endregion
+
 //region Signs
 List<String> getSignsDefaults() => ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"];
 List<String> getSignsDefaultsKeys() => ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];

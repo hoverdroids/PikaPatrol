@@ -1031,6 +1031,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildCountChoices() {
+    String? pikasDetected = widget.observation.pikasDetected;
+    bool pikasDetectedEmpty = pikasDetected != null && pikasDetected.isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1038,10 +1040,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.pikasDetected, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.pikasDetected,
+            value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => widget.observation.pikasDetected = val)
+                setState(() {
+                  //If selected the same value as before, unset the value
+                  widget.observation.pikasDetected = widget.observation.pikasDetected == val ? null : val;
+                })
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(

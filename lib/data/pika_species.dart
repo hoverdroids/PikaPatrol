@@ -4,7 +4,7 @@ import 'package:pika_patrol/model/pika.dart';
 
 class PikaData {
 
-  static List<String> PIKA_SPECIES = PIKAS.map((pika) => pika.species).toList();
+  static List<String> PIKA_SPECIES = ["American Pika", "Collared Pika"];//PIKAS.map((pika) => pika.species).toList();
 
   static const String PIKA_SPECIES_DEFAULT = "American Pika";
 
@@ -66,6 +66,7 @@ class PikaData {
   ];
 
   static const List<String> OTHER_ANIMALS_PRESENT =  ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
+  static const List<String> OTHER_ANIMALS_PRESENT_TRANSLATION_KEYS =  ["marmots", "weasels", "woodrats", "mountainGoats", "cattle", "ptarmigans", "raptors", "brownCappedRosyFinch", "bats", "other"];
 
   static const List<String> SHARED_WITH_PROJECTS = ["Colorado Pika Project", "Rocky Mountain Wild", "Denver Zoo", "IF/THEN", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)"];
 

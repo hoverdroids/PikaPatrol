@@ -92,12 +92,10 @@ class Observation extends card.CardModel {
     return imgUrls.elementAt(0);
   }
 
-  List<String> getSpeciesOptions() => ([species] + PikaData.PIKA_SPECIES).toTrimmedUniqueList();
+  List<String> getSpeciesOptions() {
+    var species = ([this.species] + PikaData.PIKA_SPECIES).toTrimmedUniqueList();
 
-  List<String> getOtherAnimalsPresentOptions() {
-    var selectedAnimals = otherAnimalsPresent ?? <String>[];
-    var defaultAnimals = PikaData.OTHER_ANIMALS_PRESENT;
-    return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
+    return species;
   }
 
   List<String> getSharedWithProjectsOptions() {

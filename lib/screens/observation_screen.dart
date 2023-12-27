@@ -982,7 +982,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         choiceItems: C2Choice.listFrom<String, String>(
           source: widget.observation.getSpeciesOptions(),
           value: (i, v) => v,
-          label: (i, v) => v,
+          label: (i, v) => translations.get(v),
           tooltip: (i, v) => v,
         ),
       )
@@ -1241,9 +1241,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getOtherAnimalsPresentOptions(),
+          source: widget.observation.getOtherAnimalsPresentValues(),
           value: (i, v) => v,
-          label: (i, v) => v,
+          label: (i, v) => getOtherAnimalsPresentLabel(i, v, translations),
           tooltip: (i, v) => v,
         ),
       )

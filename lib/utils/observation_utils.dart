@@ -1,6 +1,10 @@
+import 'dart:ui';
+
 import 'package:hive/hive.dart';
+import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/data/pika_species.dart';
 
+import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
@@ -81,4 +85,25 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   }
 
   return box.get(observation.dbId);
+}
+
+//Other animals present options will be keys
+//Other animals present values in db will always be the english variants
+//Other animals present labels will be whatever translations has
+extension ObservationUtils on Observation {
+
+  List<String> getOtherAnimalsPresentValues() {
+    var selectedAnimals = otherAnimalsPresent ?? <String>[];
+    var defaultAnimals = PikaData.OTHER_ANIMALS_PRESENT;
+    return (selectedAnimals + defaultAnimals).toTrimmedUniqueList();
+  }
+}
+
+String getOtherAnimalsPresentLabel(int index, String value, Translations translations) {
+  var defaultIndex = PikaData.OTHER_ANIMALS_PRESENT.indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(PikaData.OTHER_ANIMALS_PRESENT_TRANSLATION_KEYS[defaultIndex]);
 }

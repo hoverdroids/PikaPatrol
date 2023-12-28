@@ -125,9 +125,9 @@ String getSpeciesLabel(int index, String value, Translations translations) {
 
 extension Species on Observation {
   List<String> getSpeciesValues() {
-    var selected = [species];
+    var selected = species.isNotEmpty ? [species] : <String>[];
     var defaults = getSpeciesDefaults();
-    return (selected + defaults).toTrimmedUniqueList();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }
 //endregion
@@ -148,9 +148,9 @@ String getPikasDetectedLabel(int index, String value, Translations translations)
 extension PikasDetected on Observation {
   List<String> getPikasDetectedValues() {
     var detected = pikasDetected;
-    var selected = detected != null ? [detected] : <String>[];
+    var selected = detected != null && detected.isNotEmpty ? [detected] : <String>[];
     var defaults = getPikasDetectedDefaults();
-    return (selected + defaults).toTrimmedUniqueList();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }
 //endregion
@@ -199,7 +199,7 @@ extension Signs on Observation {
   List<String> getSignsValues() {
     var selected = signs ?? <String>[];
     var defaults = getSignsDefaults();
-    return (selected + defaults).toTrimmedUniqueList();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }
 //endregion
@@ -221,7 +221,7 @@ extension OtherAnimalsPresent on Observation {
   List<String> getOtherAnimalsPresentValues() {
     var selected = otherAnimalsPresent ?? <String>[];
     var defaults = getOtherAnimalsPresentDefaults();
-    return (selected + defaults).toTrimmedUniqueList();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }
 //endregion

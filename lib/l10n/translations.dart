@@ -191,6 +191,14 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
   String unsureMoreThanOne = ERROR;
+  String smallerThanTennisCourt = ERROR;
+  String tennisCourtToBaseballInfield = ERROR;
+  String baseballInfieldToFootballField = ERROR;
+  String largerThanFootballField = ERROR;
+  String lessThan3000Feet = ERROR;
+  String threeThousandToTenThousandFeet = ERROR;
+  String tenThousandToFiftyThousandFeet = ERROR;
+  String greaterThanOneAcre = ERROR;
 
   update (BuildContext context) {
     appName =  AppLocalizations.of(context)?.appName ?? appName;
@@ -377,6 +385,14 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     scatOnboardingTitle = AppLocalizations.of(context)?.scatOnboardingTitle ?? scatOnboardingTitle;
     scatOnboardingDetails = AppLocalizations.of(context)?.scatOnboardingDetails ?? scatOnboardingDetails;
     unsureMoreThanOne = AppLocalizations.of(context)?.unsureMoreThanOne ?? unsureMoreThanOne;
+    smallerThanTennisCourt = AppLocalizations.of(context)?.smallerThanTennisCourt ?? smallerThanTennisCourt;
+    tennisCourtToBaseballInfield = AppLocalizations.of(context)?.tennisCourtToBaseballInfield ?? tennisCourtToBaseballInfield;
+    baseballInfieldToFootballField = AppLocalizations.of(context)?.baseballInfieldToFootballField ?? baseballInfieldToFootballField;
+    largerThanFootballField = AppLocalizations.of(context)?.largerThanFootballField ?? largerThanFootballField;
+    lessThan3000Feet = AppLocalizations.of(context)?.lessThan3000Feet ?? lessThan3000Feet;
+    threeThousandToTenThousandFeet = AppLocalizations.of(context)?.threeThousandToTenThousandFeet ?? threeThousandToTenThousandFeet;
+    tenThousandToFiftyThousandFeet = AppLocalizations.of(context)?.tenThousandToFiftyThousandFeet ?? tenThousandToFiftyThousandFeet;
+    greaterThanOneAcre = AppLocalizations.of(context)?.greaterThanOneAcre ?? greaterThanOneAcre;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -567,6 +583,14 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "scatOnboardingTitle": return scatOnboardingTitle;
       case "scatOnboardingDetails": return scatOnboardingDetails;
       case "unsureMoreThanOne": return unsureMoreThanOne;
+      case "smallerThanTennisCourt": return smallerThanTennisCourt;
+      case "tennisCourtToBaseballInfield": return tennisCourtToBaseballInfield;
+      case "baseballInfieldToFootballField": return baseballInfieldToFootballField;
+      case "largerThanFootballField": return largerThanFootballField;
+      case "lessThan3000Feet": return lessThan3000Feet;
+      case "threeThousandToTenThousandFeet": return threeThousandToTenThousandFeet;
+      case "tenThousandToFiftyThousandFeet": return tenThousandToFiftyThousandFeet;
+      case "greaterThanOneAcre": return greaterThanOneAcre;
       default: return key;
     }
   }

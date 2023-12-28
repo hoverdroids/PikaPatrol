@@ -1111,9 +1111,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   bool showTalusAreaHints = false;
-  Widget _buildTalusAreaChoices() {//TODO - CHRIS - strings with impact
-    var hints = ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
-    var areas = ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
+  Widget _buildTalusAreaChoices() {
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1142,10 +1141,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: showTalusAreaHints ? hints : areas,
+              source: widget.observation.getTalusAreaValues(),
               value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => showTalusAreaHints ? areas[i] : hints[i],
+              label: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
+              tooltip: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
             )
         )
       ],

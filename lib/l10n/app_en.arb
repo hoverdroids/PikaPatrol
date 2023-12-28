@@ -182,5 +182,13 @@
     "scatPileOnboardingDetails": "Pikas deposit two types of scat. The most common is a hard, round, brown pellet that is about the size and shape of a peppercorn. These “fecal pellets” are usually found below a large boulder in latrine sites, which may also have large white smears on the rock from urine. It is notoriously difficult to tell the age of fecal pellets, but more-recent deposits tend to still have green plant material in them and tend to be perched in a pile on a rock, with the newest pellets on top. Older pellets typically turn gray with time, fall apart easily, and do not have any green plant material in them.",
     "scatOnboardingTitle": "Scat",
     "scatOnboardingDetails": "The second type of scat is a soft black shiny string of material called a caecal pellet. Caecal pellets are re-ingested because they are actually more nutritious than plants stored in haypiles! These pellets are sometimes found stored in haypiles (usually smeared on a rock or a cached plant), but are rarely found in latrine sites.",
-    "unsureMoreThanOne": "Unsure. More than 1"
+    "unsureMoreThanOne": "Unsure. More than 1",
+    "smallerThanTennisCourt": "Smaller than Tennis Court",
+    "tennisCourtToBaseballInfield": "Tennis Court to Baseball Infield",
+    "baseballInfieldToFootballField": "Baseball Infield to Football Field",
+    "largerThanFootballField": "Larger than Football Field",
+    "lessThan3000Feet": "<3,000 ft\u00B2",
+    "threeThousandToTenThousandFeet": "3,000 - 10,000 ft\u00B2",
+    "tenThousandToFiftyThousandFeet": "10,000 - 50,000 ft\u00B2",
+    "greaterThanOneAcre": "> 1 acre"
 }

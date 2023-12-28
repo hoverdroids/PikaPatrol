@@ -132,7 +132,7 @@ extension Species on Observation {
 }
 //endregion
 
-//region
+//region Pikas Detected
 List<String> getPikasDetectedDefaults() => ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"];
 List<String> getPikasDetectedDefaultsKeys() => ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
 
@@ -151,6 +151,33 @@ extension PikasDetected on Observation {
     var selected = detected != null ? [detected] : <String>[];
     var defaults = getPikasDetectedDefaults();
     return (selected + defaults).toTrimmedUniqueList();
+  }
+}
+//endregion
+
+//region Talus Area
+List<String> getTalusAreaDefaults() => ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
+List<String> getTalusAreaDefaultsKeys() => ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
+
+List<String> getTalusAreaHintsDefaults() => ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
+List<String> getTalusAreaHintsDefaultsKeys() => ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
+
+String getTalusAreaLabel(int index, String value, Translations translations, bool showHints) {
+  var defaultIndex = getTalusAreaDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  var keys = showHints ? getTalusAreaHintsDefaultsKeys() : getTalusAreaDefaultsKeys();
+  return translations.get(keys[defaultIndex]);
+}
+
+extension TalusArea on Observation {
+  List<String> getTalusAreaValues() {
+    String? talus = talusArea;
+    var selected = talus != null && talus.isNotEmpty ? [talus] : <String>[];
+    var defaults = getTalusAreaDefaults();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }
 //endregion

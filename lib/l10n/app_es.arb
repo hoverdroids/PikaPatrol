@@ -182,5 +182,13 @@
     "scatPileOnboardingDetails": "Los pikas depositan dos tipos de excrementos. El más común es una bolita dura, redonda y marrón que tiene aproximadamente el tamaño y la forma de un grano de pimienta. Estos “gránulos fecales” generalmente se encuentran debajo de una gran roca en los sitios de letrinas, que también pueden tener grandes manchas blancas en la roca debido a la orina. Es muy difícil determinar la edad de los gránulos fecales, pero los depósitos más recientes tienden a contener todavía material vegetal verde y tienden a estar colocados en una pila sobre una roca, con los gránulos más nuevos encima. Los gránulos más viejos generalmente se vuelven grises con el tiempo, se deshacen fácilmente y no contienen ningún material vegetal verde.",
     "scatOnboardingTitle": "Caca",
     "scatOnboardingDetails": "El segundo tipo de excremento es un hilo de material suave, negro y brillante llamado bolita cecal. ¡Los gránulos fecales se vuelven a ingerir porque en realidad son más nutritivos que las plantas almacenadas en montones de heno! Estos gránulos a veces se encuentran almacenados en montones de heno (normalmente esparcidos sobre una roca o una planta escondida), pero rara vez se encuentran en letrinas.",
-    "unsureMoreThanOne": "Inseguro. Más de 1"
+    "unsureMoreThanOne": "Inseguro. Más de 1",
+    "smallerThanTennisCourt": "Más Pequeño que la Pista de Tenis",
+    "tennisCourtToBaseballInfield": "Desde Cancha de Tenis Hasta Campo de Béisbol",
+    "baseballInfieldToFootballField": "Del Campo de Béisbol al Campo de Fútbol",
+    "largerThanFootballField": "Más Grande que un Campo de Fútbol",
+    "lessThan3000Feet": "<3,000 pie\u00B2",
+    "threeThousandToTenThousandFeet": "3,000 - 10,000 pie\u00B2",
+    "tenThousandToFiftyThousandFeet": "10,000 - 50,000 pie\u00B2",
+    "greaterThanOneAcre": "> 1 acre"
 }

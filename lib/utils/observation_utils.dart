@@ -175,7 +175,7 @@ extension Signs on Observation {
 }
 //endregion
 
-//region
+//region Skies
 List<String> getSkiesDefaults() => ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"];
 List<String> getSkiesDefaultsKeys() => ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
 
@@ -248,7 +248,7 @@ extension TalusArea on Observation {
 }
 //endregion
 
-//region
+//region Temperature
 var degF = "${String.fromCharCode($deg)}F";
 List<String> getTemperatureDefaults() => ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"];
 List<String> getTemperatureDefaultsKeys() => ["cold", "cool", "warm", "hot"];
@@ -267,6 +267,29 @@ extension Temperature on Observation {
     var temp = temperature;
     var selected = temp != null && temp.isNotEmpty ? [temp] : <String>[];
     var defaults = getTemperatureDefaults();
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
+//region Wind
+List<String> getWindDefaults() => ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"];
+List<String> getWindDefaultsKeys() => ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
+
+String getWindLabel(int index, String value, Translations translations) {
+  var defaultIndex = getWindDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getWindDefaultsKeys()[defaultIndex]);
+}
+
+extension Wind on Observation {
+  List<String> getWindValues() {
+    var wind = this.wind;
+    var selected = wind != null && wind.isNotEmpty ? [wind] : <String>[];
+    var defaults = getWindDefaults();
     return (defaults + selected).toTrimmedUniqueList();
   }
 }

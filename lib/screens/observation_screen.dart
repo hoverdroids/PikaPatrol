@@ -1214,9 +1214,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],//TODO - CHRIS - strings with impact
+          source: widget.observation.getWindValues(),
           value: (i, v) => v,
-          label: (i, v) => v,
+          label: (i, v) => getWindLabel(i, v, translations),
           tooltip: (i, v) => v,
         )
       )

@@ -175,6 +175,29 @@ extension Signs on Observation {
 }
 //endregion
 
+//region
+List<String> getSkiesDefaults() => ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"];
+List<String> getSkiesDefaultsKeys() => ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
+
+String getSkiesLabel(int index, String value, Translations translations) {
+  var defaultIndex = getSkiesDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getSkiesDefaultsKeys()[defaultIndex]);
+}
+
+extension Skies on Observation {
+  List<String> getSkiesValues() {
+    var sky = skies;
+    var selected = sky != null && sky.isNotEmpty ? [sky] : <String>[];
+    var defaults = getSkiesDefaults();
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
 //region Species
 const String SPECIES_DEFAULT = "American Pika";
 List<String> getSpeciesDefaults() => ["American Pika", "Collared Pika"];

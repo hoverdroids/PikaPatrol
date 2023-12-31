@@ -96,6 +96,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String cool = ERROR;
   String warm = ERROR;
   String hot = ERROR;
+  String clear = ERROR;
   String partlyCloudy = ERROR;
   String overcast = ERROR;
   String rainDrizzle = ERROR;
@@ -290,6 +291,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     cool =  AppLocalizations.of(context)?.cool ?? cool;
     warm =  AppLocalizations.of(context)?.warm ?? warm;
     hot =  AppLocalizations.of(context)?.hot ?? hot;
+    clear = AppLocalizations.of(context)?.clear ?? clear;
     partlyCloudy =  AppLocalizations.of(context)?.partlyCloudy ?? partlyCloudy;
     overcast =  AppLocalizations.of(context)?.overcast ?? overcast;
     rainDrizzle =  AppLocalizations.of(context)?.rainDrizzle ?? rainDrizzle;
@@ -488,6 +490,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "cool": return cool;
       case "warm": return warm;
       case "hot": return hot;
+      case "clear": return clear;
       case "partlyCloudy": return partlyCloudy;
       case "overcast": return overcast;
       case "rainDrizzle": return rainDrizzle;

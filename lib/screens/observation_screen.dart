@@ -1191,9 +1191,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],//TODO - CHRIS - strings with impact
+          source: widget.observation.getSkiesValues(),
           value: (i, v) => v,
-          label: (i, v) => v,
+          label: (i, v) => getSkiesLabel(i, v, translations),
           tooltip: (i, v) => v,
         )
       )

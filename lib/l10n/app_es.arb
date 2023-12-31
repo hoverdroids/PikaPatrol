@@ -88,6 +88,7 @@
     "cool": "Frío: 45 - 60°F",
     "warm": "Cálido: 60 - 75°F",
     "hot": "Caliente: >75°F",
+    "clear": "Despejados",
     "partlyCloudy": "Parcialmente Nublado",
     "overcast": "Nublado",
     "rainDrizzle": "Lluvia/Llovizna",

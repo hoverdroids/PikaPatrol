@@ -1,3 +1,4 @@
+import 'package:charcode/html_entity.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/data/pika_species.dart';
@@ -102,31 +103,28 @@ extension  on Observation {
   List<String> getValues() {
     var selected =  ?? <String>[];
     var defaults = getDefaults();
-    return (selected + defaults).toTrimmedUniqueList();
+    return (defaults + selected).toTrimmedUniqueList();
   }
 }*/
 //endregion
 
+//region OtherAnimalsPresent
+List<String> getOtherAnimalsPresentDefaults() => ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
+List<String> getOtherAnimalsPresentDefaultsKeys() => ["marmots", "weasels", "woodrats", "mountainGoats", "cattle", "ptarmigans", "raptors", "brownCappedRosyFinch", "bats", "other"];
 
-
-//region Species
-const String SPECIES_DEFAULT = "American Pika";
-List<String> getSpeciesDefaults() => ["American Pika", "Collared Pika"];
-List<String> getSpeciesDefaultsKeys() => ["americanPika", "collaredPika"];
-
-String getSpeciesLabel(int index, String value, Translations translations) {
-  var defaultIndex = getSpeciesDefaults().indexOf(value);
+String getOtherAnimalsPresentLabel(int index, String value, Translations translations) {
+  var defaultIndex = getOtherAnimalsPresentDefaults().indexOf(value);
   if (defaultIndex == -1) {
     //Can't find the animal in the defaults, so, can't translate it
     return value;
   }
-  return translations.get(getSpeciesDefaultsKeys()[defaultIndex]);
+  return translations.get(getOtherAnimalsPresentDefaultsKeys()[defaultIndex]);
 }
 
-extension Species on Observation {
-  List<String> getSpeciesValues() {
-    var selected = species.isNotEmpty ? [species] : <String>[];
-    var defaults = getSpeciesDefaults();
+extension OtherAnimalsPresent on Observation {
+  List<String> getOtherAnimalsPresentValues() {
+    var selected = otherAnimalsPresent ?? <String>[];
+    var defaults = getOtherAnimalsPresentDefaults();
     return (defaults + selected).toTrimmedUniqueList();
   }
 }
@@ -150,6 +148,51 @@ extension PikasDetected on Observation {
     var detected = pikasDetected;
     var selected = detected != null && detected.isNotEmpty ? [detected] : <String>[];
     var defaults = getPikasDetectedDefaults();
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
+//region Signs
+List<String> getSignsDefaults() => ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"];
+List<String> getSignsDefaultsKeys() => ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
+
+String getSignsLabel(int index, String value, Translations translations) {
+  var defaultIndex = getSignsDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getSignsDefaultsKeys()[defaultIndex]);
+}
+
+extension Signs on Observation {
+  List<String> getSignsValues() {
+    var selected = signs ?? <String>[];
+    var defaults = getSignsDefaults();
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
+//region Species
+const String SPECIES_DEFAULT = "American Pika";
+List<String> getSpeciesDefaults() => ["American Pika", "Collared Pika"];
+List<String> getSpeciesDefaultsKeys() => ["americanPika", "collaredPika"];
+
+String getSpeciesLabel(int index, String value, Translations translations) {
+  var defaultIndex = getSpeciesDefaults().indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(getSpeciesDefaultsKeys()[defaultIndex]);
+}
+
+extension Species on Observation {
+  List<String> getSpeciesValues() {
+    var selected = species.isNotEmpty ? [species] : <String>[];
+    var defaults = getSpeciesDefaults();
     return (defaults + selected).toTrimmedUniqueList();
   }
 }
@@ -182,45 +225,25 @@ extension TalusArea on Observation {
 }
 //endregion
 
-//region Signs
-List<String> getSignsDefaults() => ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"];
-List<String> getSignsDefaultsKeys() => ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
+//region
+var degF = "${String.fromCharCode($deg)}F";
+List<String> getTemperatureDefaults() => ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"];
+List<String> getTemperatureDefaultsKeys() => ["cold", "cool", "warm", "hot"];
 
-String getSignsLabel(int index, String value, Translations translations) {
-  var defaultIndex = getSignsDefaults().indexOf(value);
+String getTemperatureLabel(int index, String value, Translations translations) {
+  var defaultIndex = getTemperatureDefaults().indexOf(value);
   if (defaultIndex == -1) {
     //Can't find the animal in the defaults, so, can't translate it
     return value;
   }
-  return translations.get(getSignsDefaultsKeys()[defaultIndex]);
+  return translations.get(getTemperatureDefaultsKeys()[defaultIndex]);
 }
 
-extension Signs on Observation {
-  List<String> getSignsValues() {
-    var selected = signs ?? <String>[];
-    var defaults = getSignsDefaults();
-    return (defaults + selected).toTrimmedUniqueList();
-  }
-}
-//endregion
-
-//region OtherAnimalsPresent
-List<String> getOtherAnimalsPresentDefaults() => ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"];
-List<String> getOtherAnimalsPresentDefaultsKeys() => ["marmots", "weasels", "woodrats", "mountainGoats", "cattle", "ptarmigans", "raptors", "brownCappedRosyFinch", "bats", "other"];
-
-String getOtherAnimalsPresentLabel(int index, String value, Translations translations) {
-  var defaultIndex = getOtherAnimalsPresentDefaults().indexOf(value);
-  if (defaultIndex == -1) {
-    //Can't find the animal in the defaults, so, can't translate it
-    return value;
-  }
-  return translations.get(getOtherAnimalsPresentDefaultsKeys()[defaultIndex]);
-}
-
-extension OtherAnimalsPresent on Observation {
-  List<String> getOtherAnimalsPresentValues() {
-    var selected = otherAnimalsPresent ?? <String>[];
-    var defaults = getOtherAnimalsPresentDefaults();
+extension Temperature on Observation {
+  List<String> getTemperatureValues() {
+    var temp = temperature;
+    var selected = temp != null && temp.isNotEmpty ? [temp] : <String>[];
+    var defaults = getTemperatureDefaults();
     return (defaults + selected).toTrimmedUniqueList();
   }
 }

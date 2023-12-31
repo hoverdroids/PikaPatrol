@@ -1152,7 +1152,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildTemperatureChoices() {
-    var degF = "${String.fromCharCode($deg)}F";
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1167,9 +1167,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],//TODO - CHRIS - strings with impact
+            source: widget.observation.getTemperatureValues(),
             value: (i, v) => v,
-            label: (i, v) => v,
+            label: (i, v) => getTemperatureLabel(i, v, translations),
             tooltip: (i, v) => v,
           )
         )

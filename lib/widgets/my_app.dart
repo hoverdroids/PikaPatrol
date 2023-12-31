@@ -44,6 +44,10 @@ class MyApp extends StatelessWidget {
       systemNavigationBarIconBrightness: Brightness.dark
     ));*/
 
+    //This must be called before MaterialApp sets localizations
+    var translations = Provider.of<Translations>(context);
+    translations.init(context);
+
     return MaterialApp(
         title: "Pika Patrol",//This doesn't matter and can't be translated because localization isn't applied until MaterialApp is instantiated
         home: const PartnersSplashScreensPager(),

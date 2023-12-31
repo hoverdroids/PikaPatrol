@@ -2,7 +2,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:file_picker/file_picker.dart';
@@ -980,7 +979,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSpeciesValues(),
+          source: widget.observation.getSpeciesValues(translations),
           value: (i, v) => v,
           label: (i, v) => getSpeciesLabel(i, v, translations),
           tooltip: (i, v) => v,
@@ -1019,8 +1018,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               setState(() => widget.observation.signs = val)
             }
           },
-          choiceItems: C2Choice.listFrom<String, String>(//TODO - CHRIS - strings with impact
-            source: widget.observation.getSignsValues(),
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: widget.observation.getSignsValues(translations),
             value: (i, v) => v,
             label: (i, v) => getSignsLabel(i, v, translations),
             tooltip: (i, v) => v,
@@ -1050,7 +1049,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getPikasDetectedValues(),
+              source: widget.observation.getPikasDetectedValues(translations),
               value: (i, v) => v,
               label: (i, v) => getPikasDetectedLabel(i, v, translations),
               tooltip: (i, v) => v,
@@ -1141,7 +1140,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getTalusAreaValues(),
+              source: widget.observation.getTalusAreaValues(translations),
               value: (i, v) => v,
               label: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
               tooltip: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
@@ -1167,7 +1166,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: widget.observation.getTemperatureValues(),
+            source: widget.observation.getTemperatureValues(translations),
             value: (i, v) => v,
             label: (i, v) => getTemperatureLabel(i, v, translations),
             tooltip: (i, v) => v,
@@ -1191,7 +1190,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSkiesValues(),
+          source: widget.observation.getSkiesValues(translations),
           value: (i, v) => v,
           label: (i, v) => getSkiesLabel(i, v, translations),
           tooltip: (i, v) => v,
@@ -1214,7 +1213,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getWindValues(),
+          source: widget.observation.getWindValues(translations),
           value: (i, v) => v,
           label: (i, v) => getWindLabel(i, v, translations),
           tooltip: (i, v) => v,
@@ -1245,7 +1244,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getOtherAnimalsPresentValues(),
+          source: widget.observation.getOtherAnimalsPresentValues(translations),
           value: (i, v) => v,
           label: (i, v) => getOtherAnimalsPresentLabel(i, v, translations),
           tooltip: (i, v) => v,

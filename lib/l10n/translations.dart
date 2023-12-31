@@ -72,6 +72,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String register = ERROR;
   String registered = ERROR;
   String forgotPassword = ERROR;
+
   String americanPika = ERROR;
   String americanPikaDetails = ERROR;
   String collaredPika = ERROR;
@@ -83,6 +84,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String plateauPika = ERROR;
   String alpinePika = ERROR;
   String koslovsPika = ERROR;
+  late List<String> speciesKeys;
+  late List<String> speciesDefaultValues;
+
   String sawPika = ERROR;
   String heardPikaCalls = ERROR;
   String haypileOld = ERROR;
@@ -91,19 +95,31 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatOld = ERROR;
   String scatNew = ERROR;
   String scatOther = ERROR;
+  late List<String> signsKeys;
+  late List<String> signsDefaultValues;
+
   String showHints = ERROR;
   String cold = ERROR;
   String cool = ERROR;
   String warm = ERROR;
   String hot = ERROR;
+  late List<String> temperatureKeys;
+  late List<String> temperatureDefaultValues;
+  
   String clear = ERROR;
   String partlyCloudy = ERROR;
   String overcast = ERROR;
   String rainDrizzle = ERROR;
   String snow = ERROR;
+  late List<String> skiesKeys;
+  late List<String> skiesDefaultValues;
+  
   String lowBendsGrasses = ERROR;
   String mediumBendsBranches = ERROR;
   String highBendsTrees = ERROR;
+  late List<String> windKeys;
+  late List<String> windDefaultValues;
+
   String marmots = ERROR;
   String weasels = ERROR;
   String woodrats = ERROR;
@@ -114,6 +130,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String brownCappedRosyFinch = ERROR;
   String bats = ERROR;
   String other = ERROR;
+  late List<String> otherAnimalsPresentKeys;
+  late List<String> otherAnimalsPresentDefaultValues;
+
   String inPartnershipWith = ERROR;
   String enterRequiredFields = ERROR;
   String emptyUserProfile = ERROR;
@@ -191,15 +210,55 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatPileOnboardingDetails = ERROR;
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
+
   String unsureMoreThanOne = ERROR;
+  late List<String> pikasDetectedKeys;
+  late List<String> pikasDetectedDefaultValues;
+
   String smallerThanTennisCourt = ERROR;
   String tennisCourtToBaseballInfield = ERROR;
   String baseballInfieldToFootballField = ERROR;
   String largerThanFootballField = ERROR;
+  late List<String> talusAreaHintsKeys;
+  late List<String> talusAreaHintsDefaultValues;
+  
   String lessThan3000Feet = ERROR;
   String threeThousandToTenThousandFeet = ERROR;
   String tenThousandToFiftyThousandFeet = ERROR;
   String greaterThanOneAcre = ERROR;
+  late List<String> talusAreaKeys;
+  late List<String> talusAreaDefaultValues;
+
+  //This must be called before MaterialApp sets localizations
+  init (BuildContext context) {
+    update(context);
+    otherAnimalsPresentKeys = ["bats", "brownCappedRosyFinch", "cattle", "marmots", "mountainGoats", "ptarmigans", "raptors", "weasels", "woodrats", "other"];
+    otherAnimalsPresentDefaultValues = [bats, brownCappedRosyFinch, cattle, marmots, mountainGoats, ptarmigans, raptors, weasels, woodrats, other];
+
+    pikasDetectedKeys = ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
+    pikasDetectedDefaultValues = ["0", "1", "2", "3", "4", "5", ">5", ">10", unsureMoreThanOne];
+
+    signsKeys = ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
+    signsDefaultValues = [sawPika, heardPikaCalls, haypileOld, haypileNew, haypileOther, scatOld, scatNew, scatOther];
+
+    skiesKeys = ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
+    skiesDefaultValues = [clear, partlyCloudy, overcast, rainDrizzle, snow];
+
+    speciesKeys = ["americanPika", "collaredPika"];
+    speciesDefaultValues = [americanPika, collaredPika];
+
+    talusAreaKeys = ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
+    talusAreaDefaultValues = [lessThan3000Feet, threeThousandToTenThousandFeet, tenThousandToFiftyThousandFeet, greaterThanOneAcre];
+
+    talusAreaHintsKeys = ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
+    talusAreaHintsDefaultValues = [smallerThanTennisCourt, tennisCourtToBaseballInfield, baseballInfieldToFootballField, largerThanFootballField];
+    
+    temperatureKeys = ["cold", "cool", "warm", "hot"];
+    temperatureDefaultValues = [cold, cool, warm, hot];
+
+    windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
+    windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
+  }
 
   update (BuildContext context) {
     appName =  AppLocalizations.of(context)?.appName ?? appName;

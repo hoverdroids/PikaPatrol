@@ -106,6 +106,28 @@ extension OtherAnimalsPresent on Observation {
 }
 //endregion
 
+//region Distance to closest pika
+List<String> getDistanceToClosestPikaDefaults(Translations translations) => translations.distanceToClosestPikaDefaultValues;
+
+String getDistanceToClosestPikaLabel(int index, String value, Translations translations) {
+  var defaultIndex = getDistanceToClosestPikaDefaults(translations).indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(translations.distanceToClosestPikaKeys[defaultIndex]);
+}
+
+extension DistanceToClosestPika on Observation {
+  List<String> getDistanceToClosestPikaValues(Translations translations) {
+    var distanceToClosestPika = this.distanceToClosestPika;
+    var selected = distanceToClosestPika != null && distanceToClosestPika.isNotEmpty ? [distanceToClosestPika] : <String>[];
+    var defaults = getDistanceToClosestPikaDefaults(translations);
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
 //region Pikas Detected
 List<String> getPikasDetectedDefaults(Translations translations) => translations.pikasDetectedDefaultValues;
 

@@ -232,6 +232,13 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   late List<String> talusAreaKeys;
   late List<String> talusAreaDefaultValues;
 
+  String lessThan10Feet = ERROR;
+  String tenTo30Feet = ERROR;
+  String thirtyToOneHundredFeet = ERROR;
+  String moreThanOneHundredFeet = ERROR;
+  late List<String> distanceToClosestPikaKeys;
+  late List<String> distanceToClosestPikaDefaultValues;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
@@ -261,6 +268,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 
     windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
     windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
+
+    distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
+    distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
   }
 
   update (BuildContext context) {
@@ -460,6 +470,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     threeThousandToTenThousandFeet = AppLocalizations.of(context)?.threeThousandToTenThousandFeet ?? threeThousandToTenThousandFeet;
     tenThousandToFiftyThousandFeet = AppLocalizations.of(context)?.tenThousandToFiftyThousandFeet ?? tenThousandToFiftyThousandFeet;
     greaterThanOneAcre = AppLocalizations.of(context)?.greaterThanOneAcre ?? greaterThanOneAcre;
+    lessThan10Feet = AppLocalizations.of(context)?.lessThan10Feet ?? lessThan10Feet;
+    tenTo30Feet = AppLocalizations.of(context)?.tenTo30Feet ?? tenTo30Feet;
+    thirtyToOneHundredFeet = AppLocalizations.of(context)?.thirtyToOneHundredFeet ?? thirtyToOneHundredFeet;
+    moreThanOneHundredFeet = AppLocalizations.of(context)?.moreThanOneHundredFeet ?? moreThanOneHundredFeet;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -662,6 +676,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "threeThousandToTenThousandFeet": return threeThousandToTenThousandFeet;
       case "tenThousandToFiftyThousandFeet": return tenThousandToFiftyThousandFeet;
       case "greaterThanOneAcre": return greaterThanOneAcre;
+      case "lessThan10Feet": return lessThan10Feet;
+      case "tenTo30Feet": return tenTo30Feet;
+      case "thirtyToOneHundredFeet": return thirtyToOneHundredFeet;
+      case "moreThanOneHundredFeet": return moreThanOneHundredFeet;
       default: return key;
     }
   }

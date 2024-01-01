@@ -1077,9 +1077,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],//TODO - CHRIS - string with impact
+              source: widget.observation.getDistanceToClosestPikaValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getDistanceToClosestPikaLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )

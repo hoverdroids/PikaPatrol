@@ -194,5 +194,9 @@
     "lessThan3000Feet": "<3,000 ft\u00B2",
     "threeThousandToTenThousandFeet": "3,000 - 10,000 ft\u00B2",
     "tenThousandToFiftyThousandFeet": "10,000 - 50,000 ft\u00B2",
-    "greaterThanOneAcre": "> 1 acre"
+    "greaterThanOneAcre": "> 1 acre",
+    "lessThan10Feet": "<10ft",
+    "tenTo30Feet": "10 - 30 ft",
+    "thirtyToOneHundredFeet": "30 - 100 ft",
+    "moreThanOneHundredFeet": ">100 ft"
 }

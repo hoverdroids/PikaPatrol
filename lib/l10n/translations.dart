@@ -247,6 +247,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   late List<String> searchDurationKeys;
   late List<String> searchDurationDefaultValues;
 
+  String exportFirebaseToGoogleSheets = ERROR;
+  String exportFirebaseToGoogleSheetsDialogTitle = ERROR;
+  String exportFirebaseToGoogleSheetsDialogDescription = ERROR;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
@@ -490,6 +494,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     tenToTwentyMin = AppLocalizations.of(context)?.tenToTwentyMin ?? tenToTwentyMin;
     twentyToThirtyMin = AppLocalizations.of(context)?.twentyToThirtyMin ?? twentyToThirtyMin;
     moreThanThirtyMin = AppLocalizations.of(context)?.moreThanThirtyMin ?? moreThanThirtyMin;
+    exportFirebaseToGoogleSheets = AppLocalizations.of(context)?.exportFirebaseToGoogleSheets ?? exportFirebaseToGoogleSheets;
+    exportFirebaseToGoogleSheetsDialogTitle = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogTitle ?? exportFirebaseToGoogleSheetsDialogTitle;
+    exportFirebaseToGoogleSheetsDialogDescription = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogDescription ?? exportFirebaseToGoogleSheetsDialogDescription;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -701,6 +708,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "tenToTwentyMin": return tenToTwentyMin;
       case "twentyToThirtyMin": return twentyToThirtyMin;
       case "moreThanThirtyMin": return moreThanThirtyMin;
+      case "exportFirebaseToGoogleSheets": return exportFirebaseToGoogleSheets;
+      case "exportFirebaseToGoogleSheetsDialogTitle": return exportFirebaseToGoogleSheetsDialogTitle;
+      case "exportFirebaseToGoogleSheetsDialogDescription": return exportFirebaseToGoogleSheetsDialogDescription;
       default: return key;
     }
   }

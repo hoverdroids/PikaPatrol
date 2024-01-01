@@ -1,4 +1,5 @@
 import 'package:gsheets/gsheets.dart';
+import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
 import '../model/google_sheets_user_profile.dart';
 
@@ -20,15 +21,53 @@ class GoogleSheetsService {
   ''';
   static const _spreadsheetId = "1RXijstzfaWcl_xnHpF5iamS-lX-5FaTpcYoa9GsaX08";//TODO - CHRIS - this should be default and user should be allowed to change it
   static final _gsheets = GSheets(_credentials);
+
   static Worksheet? _userProfilesWorksheet;
+  static const String USER_PROFILES = "User Profiles";
+  static const String USER_PROFILES_COLUMN_UID = "uid";
+  static const String USER_PROFILES_COLUMN_FIRST_NAME = "firstName";
+  static const String USER_PROFILES_COLUMN_LAST_NAME = "lastName";
+  static const String USER_PROFILES_COLUMN_TAGLINE = "tagline";
+  static const String USER_PROFILES_COLUMN_PRONOUNS = "pronouns";
+  static const String USER_PROFILES_COLUMN_ORGANIZATION = "organization";
+  static const String USER_PROFILES_COLUMN_ADDRESS = "address";
+  static const String USER_PROFILES_COLUMN_CITY = "city";
+  static const String USER_PROFILES_COLUMN_STATE = "state";
+  static const String USER_PROFILES_COLUMN_ZIP = "zip";
+
+  static const List<String> USER_PROFILES_COLUMNS = [
+    USER_PROFILES_COLUMN_UID,
+    USER_PROFILES_COLUMN_FIRST_NAME,
+    USER_PROFILES_COLUMN_LAST_NAME,
+    USER_PROFILES_COLUMN_TAGLINE,
+    USER_PROFILES_COLUMN_PRONOUNS,
+    USER_PROFILES_COLUMN_ORGANIZATION,
+    USER_PROFILES_COLUMN_ADDRESS,
+    USER_PROFILES_COLUMN_CITY,
+    USER_PROFILES_COLUMN_STATE,
+    USER_PROFILES_COLUMN_ZIP
+  ];
+
+  static Map<String, dynamic> toGoogleSheetJson(AppUserProfile appUserProfile) => {
+    USER_PROFILES_COLUMN_UID: appUserProfile.uid,
+    USER_PROFILES_COLUMN_FIRST_NAME: appUserProfile.firstName,
+    USER_PROFILES_COLUMN_LAST_NAME: appUserProfile.lastName,
+    USER_PROFILES_COLUMN_TAGLINE: appUserProfile.tagline,
+    USER_PROFILES_COLUMN_PRONOUNS: appUserProfile.pronouns,
+    USER_PROFILES_COLUMN_ORGANIZATION: appUserProfile.organization,
+    USER_PROFILES_COLUMN_ADDRESS: appUserProfile.address,
+    USER_PROFILES_COLUMN_CITY: appUserProfile.city,
+    USER_PROFILES_COLUMN_STATE: appUserProfile.state,
+    USER_PROFILES_COLUMN_ZIP: appUserProfile.zip
+  };
+
   static Worksheet? _observationsWorksheet;
 
   static Future init() async {//TODO - CHRIS - do not init this when not an admin account; it will increase API usage without benefit
     try {
       final spreadsheet = await _gsheets.spreadsheet(_spreadsheetId);
-      _userProfilesWorksheet = await _getWorksheet(spreadsheet, "User Profiles");
-      final columnNamesRow = GoogleSheetsUserProfile.getColumnNames();
-      _userProfilesWorksheet?.values.insertRow(1, columnNamesRow);
+      _userProfilesWorksheet = await _getWorksheet(spreadsheet, USER_PROFILES);
+      _userProfilesWorksheet?.values.insertRow(1, USER_PROFILES_COLUMNS);
 
       _observationsWorksheet = await _getWorksheet(spreadsheet, "Observations");
     } catch(e) {
@@ -43,4 +82,9 @@ class GoogleSheetsService {
       return spreadsheet.worksheetByTitle(title)!;
     }
   }
+
+  static Future insert(List<Map<String, dynamic>> rowList) async {
+    _userProfilesWorksheet?.values.map.appendRows(rowList);
+  }
+
 }

@@ -8,6 +8,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
@@ -18,9 +19,11 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
+import 'package:pika_patrol/model/google_sheets_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -260,7 +263,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       clipPathType: ClipPathType.NONE,
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
-          [
+          [ //TODO - CHRIS - only show for admin;
+            ListItemModel(title: translations.exportFirebaseToGoogleSheets, itemClickedCallback: () => showExportFirebaseToGoogleSheetsDialog()),
             ListItemModel(title: translations.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(translations.appHelpAndInfoUrl)),
             ListItemModel(title: translations.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
@@ -634,6 +638,36 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           },
         );
       }
+    }
+  }
+
+  showExportFirebaseToGoogleSheetsDialog() {
+    Widget launchButton = TextButton(
+      child: Text(translations.ok),
+      onPressed: () async {
+        Navigator.pop(context, true);
+
+        var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
+        var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(appUserProfile);
+        await GoogleSheetsService.insert([appUserProfileJson]);
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(translations.exportFirebaseToGoogleSheetsDialogTitle),
+      content: Text(translations.exportFirebaseToGoogleSheetsDialogDescription),
+      actions: [
+        launchButton,
+      ],
+    );
+    // show the dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
     }
   }
 

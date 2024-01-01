@@ -203,5 +203,8 @@
     "fiveToTenMin": "5 - 10 min",
     "tenToTwentyMin": "10 - 20 min",
     "twentyToThirtyMin": "20 - 30 min",
-    "moreThanThirtyMin": ">30 min"
+    "moreThanThirtyMin": ">30 min",
+    "exportFirebaseToGoogleSheets": "Exportar Firebase a Google Sheets",
+    "exportFirebaseToGoogleSheetsDialogTitle": "¿Exportar Firebase a Google Sheets?",
+    "exportFirebaseToGoogleSheetsDialogDescription": "Esto sincronizará todos los datos de Firebase con las hojas de Google, lo que se descontará de la cuota tanto para la API de Firebase como para la API de Google Cloud."
 }

@@ -620,7 +620,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       // set up the AlertDialog
       AlertDialog alert = AlertDialog(
         title: Text(translations.locationTrackingDialogTitle),
-        content: Text(translations.locationTrackingDialogDetails),
+        content: Text(translations.locationTrackingDialogDescription),
         actions: [
           launchButton,
         ],

@@ -993,7 +993,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
         context: context,
-        builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherSpecies),
+        builder: (BuildContext context) => TextEntryDialog(
+          title: translations.addAnotherSpeciesDialogTitle,
+          description: translations.addAnotherSpeciesDialogDescription,
+        ),
         barrierDismissible: false
     ).then((value) => {
       setState(() {
@@ -1258,7 +1261,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
       context: context,
-      builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherAnimal),
+      builder: (BuildContext context) => TextEntryDialog(
+        title: translations.addAnotherAnimalDialogTitle,
+        description: translations.addAnotherAnimalDialogDescription,
+      ),
       barrierDismissible: false
     ).then((value) => {
       setState(() {
@@ -1308,7 +1314,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
         context: context,
-        builder: (BuildContext context) => TextEntryDialog(title: translations.addAnotherProject),
+        builder: (BuildContext context) => TextEntryDialog(
+          title: translations.addAnotherProjectDialogTitle,
+          description: translations.addAnotherProjectDialogDescription
+        ),
         barrierDismissible: false
     ).then((value) => {
       setState(() {

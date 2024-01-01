@@ -203,15 +203,24 @@ class FirebaseDatabaseService {
       'sharedWithProjects': observation.sharedWithProjects
     };
 
-    DocumentReference doc;
-    if(observation.uid == null || observation.uid?.isEmpty == true) {
-      doc = observationsCollection.doc();
-      observation.uid = doc.id;
-      await doc.set(observationObject);
-    } else {
-      doc = observationsCollection.doc(observation.uid);
-      await doc.update(observationObject);
-    }
+
+      DocumentReference doc;
+      if (observation.uid == null || observation.uid?.isEmpty == true) {
+        doc = observationsCollection.doc();
+        observation.uid = doc.id;
+        try {
+          await doc.set(observationObject);
+        } catch (e) {
+          developer.log("Firebase doc.set error:$e");
+        }
+      } else {
+        doc = observationsCollection.doc(observation.uid);
+        try {
+          await doc.update(observationObject);
+        } catch(e) {
+          developer.log("Firebase doc.update error:$e");
+        }
+      }
 
     developer.log("Update Observation id:${observation.uid}");
   }

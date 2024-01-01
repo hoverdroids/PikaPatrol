@@ -151,6 +151,11 @@ class FirebaseDatabaseService {
     }
 
     try {
+
+      final dataMap = snapshot.data() as Map<String, dynamic>;
+      List<dynamic>? roles = dataMap['roles'];
+      List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
+
       return AppUserProfile(
         snapshot.get('firstName')?.trim() ?? '',
         snapshot.get('lastName')?.trim() ?? '',
@@ -165,6 +170,7 @@ class FirebaseDatabaseService {
         frppOptIn: snapshot.get('frppOptIn') ?? false,
         rmwOptIn: snapshot.get('rmwOptIn') ?? false,
         dzOptIn: snapshot.get('dzOptIn') ?? false,
+        roles: resolvedRoles
       );
     } catch(e){
       return null;

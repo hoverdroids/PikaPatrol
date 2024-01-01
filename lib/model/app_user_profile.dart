@@ -13,6 +13,7 @@ class AppUserProfile {
   final bool frppOptIn;
   final bool rmwOptIn;
   final bool dzOptIn;
+  final List<String> roles;
 
   AppUserProfile(
     this.firstName,
@@ -28,7 +29,8 @@ class AppUserProfile {
       this.zip = "",
       this.frppOptIn = false,
       this.rmwOptIn = false,
-      this.dzOptIn = false
+      this.dzOptIn = false,
+      this.roles = const <String>[]
     }
   );
 

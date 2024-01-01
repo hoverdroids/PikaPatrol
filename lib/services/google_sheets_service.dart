@@ -135,5 +135,4 @@ class GoogleSheetsService {
     if (index == null || index == -1) return false;
     return await _userProfilesWorksheet?.deleteRow(index) ?? false;
   }
-
 }

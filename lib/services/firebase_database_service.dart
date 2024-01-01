@@ -177,8 +177,46 @@ class FirebaseDatabaseService {
     }
   }
 
+  List<AppUserProfile> _userProfilesFromSnapshot(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+
+      final dataMap = doc.data() as Map<String, dynamic>;
+      List<dynamic>? roles = dataMap['roles'];
+      List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
+
+      return AppUserProfile(
+        dataMap['firstName']?.trim() ?? '',
+        dataMap['lastName']?.trim() ?? '',
+        uid: doc.id.trim(),
+        tagline: dataMap['tagline']?.trim() ?? '',
+        pronouns: dataMap['pronouns']?.trim() ?? '',
+        organization: dataMap['organization']?.trim() ?? '',
+        address: dataMap['address']?.trim() ?? '',
+        city: dataMap['city']?.trim() ?? '',
+        state: dataMap['state']?.trim() ?? '',
+        zip: dataMap['zip']?.trim() ?? '',
+        frppOptIn: dataMap['frppOptIn'] ?? false,
+        rmwOptIn: dataMap['rmwOptIn'] ?? false,
+        dzOptIn: dataMap['dzOptIn'] ?? false,
+        roles: resolvedRoles
+      );
+    }).toList();
+  }
+
   Stream<AppUserProfile?> get userProfile {
     return userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
+  }
+
+  Future<List<AppUserProfile>> getUserProfiles({int? limit}) async {
+    Stream<QuerySnapshot> snapshots = limit != null ? userProfilesCollection.limit(limit).snapshots() : userProfilesCollection.snapshots();
+    Stream<List<AppUserProfile>> userProfilesListsStream = snapshots.map(_userProfilesFromSnapshot);
+    try {
+      List<List<AppUserProfile>> userProfilesLists = await userProfilesListsStream.toList();
+      var lastUserProfilesList = userProfilesLists.last;
+      return lastUserProfilesList;
+    } catch(e) {
+      return <AppUserProfile>[];
+    }
   }
 
   Future updateObservation(Observation observation) async {
@@ -208,8 +246,6 @@ class FirebaseDatabaseService {
       'otherAnimalsPresent': observation.otherAnimalsPresent,
       'sharedWithProjects': observation.sharedWithProjects
     };
-
-
       DocumentReference doc;
       if (observation.uid == null || observation.uid?.isEmpty == true) {
         doc = observationsCollection.doc();

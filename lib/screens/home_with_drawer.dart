@@ -644,11 +644,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       child: Text(translations.ok),
       onPressed: () async {
         Navigator.pop(context, true);
-
-        var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
-        var needAnId = 1;
-        var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(needAnId, appUserProfile);
-        await GoogleSheetsService.insert([appUserProfileJson]);
+        exportFirebaseToGoogleSheets();
       },
     );
     // set up the AlertDialog
@@ -668,6 +664,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         },
       );
     }
+  }
+
+  exportFirebaseToGoogleSheets() async {
+    var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+    var appUserProfiles = await firebaseDatabaseService.getUserProfiles(limit: 3);
+
+    var anything = "";
+    // var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
+    // var needAnId = 1;
+    // var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(needAnId, appUserProfile);
+    // await GoogleSheetsService.insert([appUserProfileJson]);
+
+    // var observations = firebaseDatabaseService.observations;
+    // observations.
   }
 
   resetEditedUserProfileFields() {

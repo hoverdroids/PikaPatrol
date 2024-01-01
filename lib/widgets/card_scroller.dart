@@ -60,7 +60,7 @@ class CardScrollerState extends State<CardScroller> {
 
     pageController.addListener(() {
       setState(() {
-        developer.log("CardScroller controller update currentCardPosition:${widget.currentCardPosition} pageController.page:${pageController.page}");
+        //developer.log("CardScroller controller update currentCardPosition:${widget.currentCardPosition} pageController.page:${pageController.page}");
         widget.currentCardPosition = pageController.page ?? widget.currentCardPosition;
       });
     });

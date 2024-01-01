@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/services/settings_service.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
@@ -24,6 +25,9 @@ Future<void> main() async {
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
+
+  //TODO - CHRIS - do not init the following unless admin user
+  await GoogleSheetsService.init();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

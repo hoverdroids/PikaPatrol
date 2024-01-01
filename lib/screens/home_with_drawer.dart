@@ -8,7 +8,6 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
-import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
@@ -19,7 +18,6 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
-import 'package:pika_patrol/model/google_sheets_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
@@ -648,7 +646,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         Navigator.pop(context, true);
 
         var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
-        var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(appUserProfile);
+        var needAnId = 1;
+        var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(needAnId, appUserProfile);
         await GoogleSheetsService.insert([appUserProfileJson]);
       },
     );

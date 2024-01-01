@@ -1,7 +1,8 @@
+// ignore_for_file: constant_identifier_names
+
 import 'package:gsheets/gsheets.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
-import '../model/google_sheets_user_profile.dart';
 
 class GoogleSheetsService {
   static const _credentials = r''' 
@@ -23,51 +24,70 @@ class GoogleSheetsService {
   static final _gsheets = GSheets(_credentials);
 
   static Worksheet? _userProfilesWorksheet;
-  static const String USER_PROFILES = "User Profiles";
-  static const String USER_PROFILES_COLUMN_UID = "uid";
-  static const String USER_PROFILES_COLUMN_FIRST_NAME = "firstName";
-  static const String USER_PROFILES_COLUMN_LAST_NAME = "lastName";
-  static const String USER_PROFILES_COLUMN_TAGLINE = "tagline";
-  static const String USER_PROFILES_COLUMN_PRONOUNS = "pronouns";
-  static const String USER_PROFILES_COLUMN_ORGANIZATION = "organization";
-  static const String USER_PROFILES_COLUMN_ADDRESS = "address";
-  static const String USER_PROFILES_COLUMN_CITY = "city";
-  static const String USER_PROFILES_COLUMN_STATE = "state";
-  static const String USER_PROFILES_COLUMN_ZIP = "zip";
+  static const String USER_PROFILES_WORKSHEET_TITLE = "User Profiles";
+  static const int USER_PROFILES_WORKSHEET_COLUMN_HEADERS_ROW_NUMBER = 1;
+  static const String USER_PROFILES_ID_COLUMN_TITLE = "id";
+  static const int USER_PROFILES_ID_COLUMN_NUMBER = 1;
+  static const String USER_PROFILES_FIREBASE_UID_COLUMN_TITLE = "firebaseUid";
+  static const String USER_PROFILES_FIRST_NAME_COLUMN_TITLE = "firstName";
+  static const String USER_PROFILES_LAST_NAME_COLUMN_TITLE = "lastName";
+  static const String USER_PROFILES_TAGLINE_COLUMN_TITLE = "tagline";
+  static const String USER_PROFILES_PRONOUNS_COLUMN_TITLE = "pronouns";
+  static const String USER_PROFILES_ORGANIZATION_COLUMN_TITLE = "organization";
+  static const String USER_PROFILES_ADDRESS_COLUMN_TITLE = "address";
+  static const String USER_PROFILES_CITY_COLUMN_TITLE = "city";
+  static const String USER_PROFILES_STATE_COLUMN_TITLE = "state";
+  static const String USER_PROFILES_ZIP_COLUMN_TITLE = "zip";
 
   static const List<String> USER_PROFILES_COLUMNS = [
-    USER_PROFILES_COLUMN_UID,
-    USER_PROFILES_COLUMN_FIRST_NAME,
-    USER_PROFILES_COLUMN_LAST_NAME,
-    USER_PROFILES_COLUMN_TAGLINE,
-    USER_PROFILES_COLUMN_PRONOUNS,
-    USER_PROFILES_COLUMN_ORGANIZATION,
-    USER_PROFILES_COLUMN_ADDRESS,
-    USER_PROFILES_COLUMN_CITY,
-    USER_PROFILES_COLUMN_STATE,
-    USER_PROFILES_COLUMN_ZIP
+    USER_PROFILES_ID_COLUMN_TITLE,
+    USER_PROFILES_FIREBASE_UID_COLUMN_TITLE,
+    USER_PROFILES_FIRST_NAME_COLUMN_TITLE,
+    USER_PROFILES_LAST_NAME_COLUMN_TITLE,
+    USER_PROFILES_TAGLINE_COLUMN_TITLE,
+    USER_PROFILES_PRONOUNS_COLUMN_TITLE,
+    USER_PROFILES_ORGANIZATION_COLUMN_TITLE,
+    USER_PROFILES_ADDRESS_COLUMN_TITLE,
+    USER_PROFILES_CITY_COLUMN_TITLE,
+    USER_PROFILES_STATE_COLUMN_TITLE,
+    USER_PROFILES_ZIP_COLUMN_TITLE
   ];
 
-  static Map<String, dynamic> toGoogleSheetJson(AppUserProfile appUserProfile) => {
-    USER_PROFILES_COLUMN_UID: appUserProfile.uid,
-    USER_PROFILES_COLUMN_FIRST_NAME: appUserProfile.firstName,
-    USER_PROFILES_COLUMN_LAST_NAME: appUserProfile.lastName,
-    USER_PROFILES_COLUMN_TAGLINE: appUserProfile.tagline,
-    USER_PROFILES_COLUMN_PRONOUNS: appUserProfile.pronouns,
-    USER_PROFILES_COLUMN_ORGANIZATION: appUserProfile.organization,
-    USER_PROFILES_COLUMN_ADDRESS: appUserProfile.address,
-    USER_PROFILES_COLUMN_CITY: appUserProfile.city,
-    USER_PROFILES_COLUMN_STATE: appUserProfile.state,
-    USER_PROFILES_COLUMN_ZIP: appUserProfile.zip
+  static Map<String, dynamic> toGoogleSheetJson(int id, AppUserProfile appUserProfile) => {
+    USER_PROFILES_ID_COLUMN_TITLE: id,
+    USER_PROFILES_FIREBASE_UID_COLUMN_TITLE: appUserProfile.uid,
+    USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
+    USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
+    USER_PROFILES_TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
+    USER_PROFILES_PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
+    USER_PROFILES_ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
+    USER_PROFILES_ADDRESS_COLUMN_TITLE: appUserProfile.address,
+    USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
+    USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
+    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip
   };
+
+  static AppUserProfile fromGoogleSheetsJson(Map<String, dynamic> json) => AppUserProfile(
+    //TODO - CHRIS - for non string fields, need to user jsonDecode(json[thekey])
+    json[USER_PROFILES_FIRST_NAME_COLUMN_TITLE],
+    json[USER_PROFILES_LAST_NAME_COLUMN_TITLE],
+    uid: json[USER_PROFILES_FIREBASE_UID_COLUMN_TITLE],
+    tagline: json[USER_PROFILES_TAGLINE_COLUMN_TITLE],
+    pronouns: json[USER_PROFILES_PRONOUNS_COLUMN_TITLE],
+    organization: json[USER_PROFILES_ORGANIZATION_COLUMN_TITLE],
+    address: json[USER_PROFILES_ADDRESS_COLUMN_TITLE],
+    city: json[USER_PROFILES_CITY_COLUMN_TITLE],
+    state: json[USER_PROFILES_STATE_COLUMN_TITLE],
+    zip: json[USER_PROFILES_ZIP_COLUMN_TITLE]
+  );
 
   static Worksheet? _observationsWorksheet;
 
   static Future init() async {//TODO - CHRIS - do not init this when not an admin account; it will increase API usage without benefit
     try {
       final spreadsheet = await _gsheets.spreadsheet(_spreadsheetId);
-      _userProfilesWorksheet = await _getWorksheet(spreadsheet, USER_PROFILES);
-      _userProfilesWorksheet?.values.insertRow(1, USER_PROFILES_COLUMNS);
+      _userProfilesWorksheet = await _getWorksheet(spreadsheet, USER_PROFILES_WORKSHEET_TITLE);
+      _userProfilesWorksheet?.values.insertRow(USER_PROFILES_WORKSHEET_COLUMN_HEADERS_ROW_NUMBER, USER_PROFILES_COLUMNS);
 
       _observationsWorksheet = await _getWorksheet(spreadsheet, "Observations");
     } catch(e) {
@@ -85,6 +105,35 @@ class GoogleSheetsService {
 
   static Future insert(List<Map<String, dynamic>> rowList) async {
     _userProfilesWorksheet?.values.map.appendRows(rowList);
+  }
+
+  static Future<int> getRowCount() async {
+    var lastRow = await _userProfilesWorksheet?.values.lastRow();
+    return int.tryParse(lastRow?.first ?? "0") ?? 0;
+  }
+
+  static Future<AppUserProfile?> getAppUserProfile(int id) async {
+    final json = await _userProfilesWorksheet?.values.map.rowByKey(id, fromColumn: USER_PROFILES_ID_COLUMN_NUMBER);
+    return json != null ? fromGoogleSheetsJson(json) : null;
+  }
+
+  static Future<List<AppUserProfile>> getAppUserProfiles() async {
+    final appUserProfiles = await _userProfilesWorksheet?.values.map.allRows();
+    return appUserProfiles == null ? <AppUserProfile>[] : appUserProfiles.map(fromGoogleSheetsJson).toList();
+  }
+
+  static Future<bool> updateAppUserProfile(int id, Map<String, dynamic> appUserProfile) async {
+    return await _userProfilesWorksheet?.values.map.insertRowByKey(id, appUserProfile) ?? false;
+  }
+
+  static Future<bool> updateAppUserProfileCell(int id, String columnName, dynamic value) async {
+    return await _userProfilesWorksheet?.values.insertValueByKeys(value, columnKey: columnName, rowKey: id) ?? false;
+  }
+
+  static Future<bool> deleteAppUserProfileById(int id) async {
+    final index = await _userProfilesWorksheet?.values.rowIndexOf(id);
+    if (index == null || index == -1) return false;
+    return await _userProfilesWorksheet?.deleteRow(index) ?? false;
   }
 
 }

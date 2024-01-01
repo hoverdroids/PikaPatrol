@@ -239,6 +239,14 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   late List<String> distanceToClosestPikaKeys;
   late List<String> distanceToClosestPikaDefaultValues;
 
+  String lessThanFiveMin = ERROR;
+  String fiveToTenMin = ERROR;
+  String tenToTwentyMin = ERROR;
+  String twentyToThirtyMin = ERROR;
+  String moreThanThirtyMin= ERROR;
+  late List<String> searchDurationKeys;
+  late List<String> searchDurationDefaultValues;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
@@ -271,6 +279,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 
     distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
     distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
+
+    searchDurationKeys = ["lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
+    searchDurationDefaultValues = [lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   update (BuildContext context) {
@@ -474,6 +485,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     tenTo30Feet = AppLocalizations.of(context)?.tenTo30Feet ?? tenTo30Feet;
     thirtyToOneHundredFeet = AppLocalizations.of(context)?.thirtyToOneHundredFeet ?? thirtyToOneHundredFeet;
     moreThanOneHundredFeet = AppLocalizations.of(context)?.moreThanOneHundredFeet ?? moreThanOneHundredFeet;
+    lessThanFiveMin = AppLocalizations.of(context)?.lessThanFiveMin ?? lessThanFiveMin;
+    fiveToTenMin = AppLocalizations.of(context)?.fiveToTenMin ?? fiveToTenMin;
+    tenToTwentyMin = AppLocalizations.of(context)?.tenToTwentyMin ?? tenToTwentyMin;
+    twentyToThirtyMin = AppLocalizations.of(context)?.twentyToThirtyMin ?? twentyToThirtyMin;
+    moreThanThirtyMin = AppLocalizations.of(context)?.moreThanThirtyMin ?? moreThanThirtyMin;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -680,6 +696,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "tenTo30Feet": return tenTo30Feet;
       case "thirtyToOneHundredFeet": return thirtyToOneHundredFeet;
       case "moreThanOneHundredFeet": return moreThanOneHundredFeet;
+      case "lessThanFiveMin": return lessThanFiveMin;
+      case "fiveToTenMin": return fiveToTenMin;
+      case "tenToTwentyMin": return tenToTwentyMin;
+      case "twentyToThirtyMin": return twentyToThirtyMin;
+      case "moreThanThirtyMin": return moreThanThirtyMin;
       default: return key;
     }
   }

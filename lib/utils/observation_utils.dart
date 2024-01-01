@@ -150,6 +150,28 @@ extension PikasDetected on Observation {
 }
 //endregion
 
+//region Search Duration
+List<String> getSearchDurationDefaults(Translations translations) => translations.searchDurationDefaultValues;
+
+String getSearchDurationLabel(int index, String value, Translations translations) {
+  var defaultIndex = getSearchDurationDefaults(translations).indexOf(value);
+  if (defaultIndex == -1) {
+    //Can't find the animal in the defaults, so, can't translate it
+    return value;
+  }
+  return translations.get(translations.searchDurationKeys[defaultIndex]);
+}
+
+extension SearchDuration on Observation {
+  List<String> getSearchDurationValues(Translations translations) {
+    var searchDuration = this.searchDuration;
+    var selected = searchDuration != null && searchDuration.isNotEmpty ? [searchDuration] : <String>[];
+    var defaults = getSearchDurationDefaults(translations);
+    return (defaults + selected).toTrimmedUniqueList();
+  }
+}
+//endregion
+
 //region Signs
 List<String> getSignsDefaults(Translations translations) => translations.signsDefaultValues;
 

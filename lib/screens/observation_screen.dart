@@ -1102,9 +1102,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],//TODO - CHRIS - strings with impact
+              source: widget.observation.getSearchDurationValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getSearchDurationLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )

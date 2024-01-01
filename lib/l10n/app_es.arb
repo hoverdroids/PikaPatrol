@@ -198,5 +198,10 @@
     "lessThan10Feet": "<10ft",
     "tenTo30Feet": "10 - 30 ft",
     "thirtyToOneHundredFeet": "30 - 100 ft",
-    "moreThanOneHundredFeet": ">100 ft"
+    "moreThanOneHundredFeet": ">100 ft",
+    "lessThanFiveMin": "<5 min",
+    "fiveToTenMin": "5 - 10 min",
+    "tenToTwentyMin": "10 - 20 min",
+    "twentyToThirtyMin": "20 - 30 min",
+    "moreThanThirtyMin": ">30 min"
 }

@@ -10,6 +10,7 @@ import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
 
+import '../l10n/translations.dart';
 import '../utils/observation_utils.dart';
 
 
@@ -85,7 +86,8 @@ class FirebaseDatabaseService {
       String zip,
       bool frppOptIn,
       bool rmwOptIn,
-      bool dzOptIn
+      bool dzOptIn,
+      Translations translations
   ) async {
 
     final trimmedFirstName = firstName.trim();
@@ -117,7 +119,7 @@ class FirebaseDatabaseService {
     var shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
 
     if (!shouldUpdate) {
-      showToast("Profile is already up-to-date");
+      showToast(translations.profileIsAlreadyUpToDate);
       return;
     }
 

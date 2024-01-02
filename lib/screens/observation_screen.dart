@@ -488,7 +488,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   _getCurrentPositionAndUpdateUi() async {
     showToast(translations.fetchingLocation);
 
-    await checkPermissionsAndGetCurrentPosition()
+    await checkPermissionsAndGetCurrentPosition(translations)
       .then((Position position) {
         String lat = position.latitude.toStringAsFixed(2);
         String lon = position.longitude.toStringAsFixed(2);

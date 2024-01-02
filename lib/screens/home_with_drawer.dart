@@ -378,7 +378,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             editedZip ?? userProfile?.zip ?? "",
             editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
             editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
-            editedDzOptIn ?? userProfile?.dzOptIn ?? false
+            editedDzOptIn ?? userProfile?.dzOptIn ?? false,
+            translations
         );
         resetEditedUserProfileFields();
         setState(() => isEditingProfile = false);
@@ -669,6 +670,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   exportFirebaseToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
     var appUserProfiles = await firebaseDatabaseService.getUserProfiles(limit: 3);
+
 
     await GoogleSheetsService.addOrUpdateAppUserProfiles(appUserProfiles);
     //var appUserProfilesAsJson = appUserProfiles.map((appUserProfile) => GoogleSheetsService.toGoogleSheetJson(appUserProfile));

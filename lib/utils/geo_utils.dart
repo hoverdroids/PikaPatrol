@@ -2,7 +2,9 @@
 import 'package:geolocator/geolocator.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 
-Future<Position> checkPermissionsAndGetCurrentPosition() async {
+import '../l10n/translations.dart';
+
+Future<Position> checkPermissionsAndGetCurrentPosition(Translations translations) async {
   bool isServiceEnabled;
   LocationPermission permission;
 
@@ -11,9 +13,9 @@ Future<Position> checkPermissionsAndGetCurrentPosition() async {
     // Location services are not enabled don't continue
     // accessing the position and request users of the
     // App to enable the location services.
-    showToast("Could not retrieve location.\nEnable GPS and try to save again.");
+    showToast(translations.couldNotRetrieveLocationEnableGps);
     await Geolocator.openLocationSettings();
-    return Future.error("Location services are disabled.");
+    return Future.error(translations.locationServicesAreDisabled);
   }
 
   permission = await Geolocator.checkPermission();
@@ -25,22 +27,22 @@ Future<Position> checkPermissionsAndGetCurrentPosition() async {
       // Android's shouldShowRequestPermissionRationale
       // returned true. According to Android guidelines
       // your App should show an explanatory UI now.
-      showToast("You must grant location permissions.");
+      showToast(translations.youMustGrantLocationPermissions);
       await Geolocator.openAppSettings();
-      return Future.error("Location permissions are denied");
+      return Future.error(translations.locationPermissionsAreDenied);
     }
   } else if (permission == LocationPermission.deniedForever) {
     // Permissions are denied forever, handle appropriately.
-    showToast("You must grant location permissions.");
+    showToast(translations.youMustGrantLocationPermissions);
     await Geolocator.openAppSettings();
-    return Future.error('Location permissions are permanently denied, we cannot request permissions.');
+    return Future.error(translations.locationPermissionsArePermanentlyDenied);
   }
 
   // When we reach here, permissions are granted and we can continue accessing the device position
   Position position = await Geolocator.getCurrentPosition();
 
   if (position == null) {
-    showToast("Could not retrieve location from GPS.");
+    showToast(translations.couldNotRetrieveLocationFromGps);
   }
 
   return position;

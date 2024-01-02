@@ -251,6 +251,14 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String exportFirebaseToGoogleSheetsDialogTitle = ERROR;
   String exportFirebaseToGoogleSheetsDialogDescription = ERROR;
 
+  String profileIsAlreadyUpToDate = ERROR;
+  String couldNotRetrieveLocationEnableGps = ERROR;
+  String locationServicesAreDisabled = ERROR;
+  String youMustGrantLocationPermissions = ERROR;
+  String locationPermissionsAreDenied = ERROR;
+  String locationPermissionsArePermanentlyDenied = ERROR;
+  String couldNotRetrieveLocationFromGps = ERROR;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
@@ -497,6 +505,13 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     exportFirebaseToGoogleSheets = AppLocalizations.of(context)?.exportFirebaseToGoogleSheets ?? exportFirebaseToGoogleSheets;
     exportFirebaseToGoogleSheetsDialogTitle = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogTitle ?? exportFirebaseToGoogleSheetsDialogTitle;
     exportFirebaseToGoogleSheetsDialogDescription = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogDescription ?? exportFirebaseToGoogleSheetsDialogDescription;
+    profileIsAlreadyUpToDate = AppLocalizations.of(context)?.profileIsAlreadyUpToDate ?? profileIsAlreadyUpToDate;
+    couldNotRetrieveLocationEnableGps = AppLocalizations.of(context)?.couldNotRetrieveLocationEnableGps ?? couldNotRetrieveLocationEnableGps;
+    locationServicesAreDisabled = AppLocalizations.of(context)?.locationServicesAreDisabled ?? locationServicesAreDisabled;
+    youMustGrantLocationPermissions = AppLocalizations.of(context)?.youMustGrantLocationPermissions ?? youMustGrantLocationPermissions;
+    locationPermissionsAreDenied = AppLocalizations.of(context)?.locationPermissionsAreDenied ?? locationPermissionsAreDenied;
+    locationPermissionsArePermanentlyDenied = AppLocalizations.of(context)?.locationPermissionsArePermanentlyDenied ?? locationPermissionsArePermanentlyDenied;
+    couldNotRetrieveLocationFromGps = AppLocalizations.of(context)?.couldNotRetrieveLocationFromGps ?? couldNotRetrieveLocationFromGps;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -711,6 +726,13 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "exportFirebaseToGoogleSheets": return exportFirebaseToGoogleSheets;
       case "exportFirebaseToGoogleSheetsDialogTitle": return exportFirebaseToGoogleSheetsDialogTitle;
       case "exportFirebaseToGoogleSheetsDialogDescription": return exportFirebaseToGoogleSheetsDialogDescription;
+      case "profileIsAlreadyUpToDate": return profileIsAlreadyUpToDate;
+      case "couldNotRetrieveLocationEnableGps": return couldNotRetrieveLocationEnableGps;
+      case "locationServicesAreDisabled": return locationServicesAreDisabled;
+      case "youMustGrantLocationPermissions": return youMustGrantLocationPermissions;
+      case "locationPermissionsAreDenied": return locationPermissionsAreDenied;
+      case "locationPermissionsArePermanentlyDenied": return locationPermissionsArePermanentlyDenied;
+      case "couldNotRetrieveLocationFromGps": return couldNotRetrieveLocationFromGps;
       default: return key;
     }
   }

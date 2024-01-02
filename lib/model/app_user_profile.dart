@@ -37,4 +37,38 @@ class AppUserProfile {
   bool areRequiredFieldsValid() {
     return firstName.isNotEmpty && lastName.isNotEmpty && zip.isNotEmpty;
   }
+  
+  AppUserProfile copy(
+    {
+      String? firstName,
+      String? lastName,
+      String? uid,
+      String? tagline,
+      String? pronouns,
+      String? organization,
+      String? address,
+      String? city,
+      String? state,
+      String? zip,
+      bool? frppOptIn,
+      bool? rmwOptIn,
+      bool? dzOptIn,
+      List<String>? roles
+    }
+  ) => AppUserProfile(
+    firstName ?? this.firstName,
+    lastName ?? this.lastName,
+    uid: uid ?? this.uid,
+    tagline: tagline ?? this.tagline,
+    pronouns: pronouns ?? this.pronouns,
+    organization: organization ?? this.organization,
+    address: address ?? this.address,
+    city: city ?? this.city,
+    state: state ?? this.state,
+    zip: zip ?? this.zip,
+    frppOptIn: frppOptIn ?? this.frppOptIn,
+    rmwOptIn: rmwOptIn ?? this.rmwOptIn,
+    dzOptIn: dzOptIn ?? this.dzOptIn,
+    roles: roles ?? this.roles
+  );
 }

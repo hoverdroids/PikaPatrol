@@ -74,7 +74,7 @@ class FirebaseDatabaseService {
            profile1?.dzOptIn != profile2?.dzOptIn;
   }
 
-  Future addOrUpdateUserProfile(
+  Future<AppUserProfile?> addOrUpdateUserProfile(
       String firstName,
       String lastName,
       String tagline,
@@ -120,7 +120,7 @@ class FirebaseDatabaseService {
 
     if (!shouldUpdate) {
       showToast(translations.profileIsAlreadyUpToDate);
-      return;
+      return null;
     }
 
     await userProfilesCollection.doc(uid).set(
@@ -141,6 +141,7 @@ class FirebaseDatabaseService {
     );
 
     showToast("Profile updated");
+    return updatedUserProfile;
   }
 
   Future deleteUserProfile() async {

@@ -366,7 +366,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapSave: () async {
         setState(() => loading = true);
 
-        await firebaseDatabaseService.addOrUpdateUserProfile(
+        var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
             editedFirstName ?? userProfile?.firstName ?? "",
             editedLastName ?? userProfile?.lastName ?? "",
             editedTagline ?? userProfile?.tagline ?? "",
@@ -381,6 +381,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             editedDzOptIn ?? userProfile?.dzOptIn ?? false,
             translations
         );
+
+        var uid = userProfile?.uid;
+        if (updatedUserProfile != null && uid != null) {
+          GoogleSheetsService.addOrUpdateAppUserProfiles([updatedUserProfile.copy(uid: uid)]);
+        }
+
         resetEditedUserProfileFields();
         setState(() => isEditingProfile = false);
         setState(() => loading = false);

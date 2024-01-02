@@ -670,7 +670,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
     var appUserProfiles = await firebaseDatabaseService.getUserProfiles(limit: 3);
 
-    var anything = "";
+    await GoogleSheetsService.addOrUpdateAppUserProfiles(appUserProfiles);
+    //var appUserProfilesAsJson = appUserProfiles.map((appUserProfile) => GoogleSheetsService.toGoogleSheetJson(appUserProfile));
     // var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
     // var needAnId = 1;
     // var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(needAnId, appUserProfile);

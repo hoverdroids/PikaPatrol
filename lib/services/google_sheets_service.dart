@@ -1,5 +1,7 @@
 // ignore_for_file: constant_identifier_names
 
+import 'dart:convert';
+
 import 'package:gsheets/gsheets.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
@@ -26,9 +28,8 @@ class GoogleSheetsService {
   static Worksheet? _userProfilesWorksheet;
   static const String USER_PROFILES_WORKSHEET_TITLE = "User Profiles";
   static const int USER_PROFILES_WORKSHEET_COLUMN_HEADERS_ROW_NUMBER = 1;
-  static const String USER_PROFILES_ID_COLUMN_TITLE = "id";
-  static const int USER_PROFILES_ID_COLUMN_NUMBER = 1;
-  static const String USER_PROFILES_FIREBASE_UID_COLUMN_TITLE = "firebaseUid";
+  static const String USER_PROFILES_UID_COLUMN_TITLE = "uid";
+  static const int USER_PROFILES_UID_COLUMN_NUMBER = 1;
   static const String USER_PROFILES_FIRST_NAME_COLUMN_TITLE = "firstName";
   static const String USER_PROFILES_LAST_NAME_COLUMN_TITLE = "lastName";
   static const String USER_PROFILES_TAGLINE_COLUMN_TITLE = "tagline";
@@ -38,10 +39,10 @@ class GoogleSheetsService {
   static const String USER_PROFILES_CITY_COLUMN_TITLE = "city";
   static const String USER_PROFILES_STATE_COLUMN_TITLE = "state";
   static const String USER_PROFILES_ZIP_COLUMN_TITLE = "zip";
+  static const String USER_PROFILES_ROLES_COLUMN_TITLE = "roles";
 
   static const List<String> USER_PROFILES_COLUMNS = [
-    USER_PROFILES_ID_COLUMN_TITLE,
-    USER_PROFILES_FIREBASE_UID_COLUMN_TITLE,
+    USER_PROFILES_UID_COLUMN_TITLE,
     USER_PROFILES_FIRST_NAME_COLUMN_TITLE,
     USER_PROFILES_LAST_NAME_COLUMN_TITLE,
     USER_PROFILES_TAGLINE_COLUMN_TITLE,
@@ -50,12 +51,12 @@ class GoogleSheetsService {
     USER_PROFILES_ADDRESS_COLUMN_TITLE,
     USER_PROFILES_CITY_COLUMN_TITLE,
     USER_PROFILES_STATE_COLUMN_TITLE,
-    USER_PROFILES_ZIP_COLUMN_TITLE
+    USER_PROFILES_ZIP_COLUMN_TITLE,
+    USER_PROFILES_ROLES_COLUMN_TITLE
   ];
 
-  static Map<String, dynamic> toGoogleSheetJson(int id, AppUserProfile appUserProfile) => {
-    USER_PROFILES_ID_COLUMN_TITLE: id,
-    USER_PROFILES_FIREBASE_UID_COLUMN_TITLE: appUserProfile.uid,
+  static Map<String, dynamic> toGoogleSheetJson(AppUserProfile appUserProfile) => {
+    USER_PROFILES_UID_COLUMN_TITLE: appUserProfile.uid,
     USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
     USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
     USER_PROFILES_TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
@@ -64,21 +65,22 @@ class GoogleSheetsService {
     USER_PROFILES_ADDRESS_COLUMN_TITLE: appUserProfile.address,
     USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
     USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
-    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip
+    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
+    USER_PROFILES_ROLES_COLUMN_TITLE: appUserProfile.roles.toString()
   };
 
   static AppUserProfile fromGoogleSheetsJson(Map<String, dynamic> json) => AppUserProfile(
-    //TODO - CHRIS - for non string fields, need to user jsonDecode(json[thekey])
     json[USER_PROFILES_FIRST_NAME_COLUMN_TITLE],
     json[USER_PROFILES_LAST_NAME_COLUMN_TITLE],
-    uid: json[USER_PROFILES_FIREBASE_UID_COLUMN_TITLE],
+    uid: json[USER_PROFILES_UID_COLUMN_TITLE],
     tagline: json[USER_PROFILES_TAGLINE_COLUMN_TITLE],
     pronouns: json[USER_PROFILES_PRONOUNS_COLUMN_TITLE],
     organization: json[USER_PROFILES_ORGANIZATION_COLUMN_TITLE],
     address: json[USER_PROFILES_ADDRESS_COLUMN_TITLE],
     city: json[USER_PROFILES_CITY_COLUMN_TITLE],
     state: json[USER_PROFILES_STATE_COLUMN_TITLE],
-    zip: json[USER_PROFILES_ZIP_COLUMN_TITLE]
+    zip: json[USER_PROFILES_ZIP_COLUMN_TITLE],
+    roles: jsonDecode(json[USER_PROFILES_ROLES_COLUMN_TITLE])//For non string fields, need to user jsonDecode(json[thekey])
   );
 
   static Worksheet? _observationsWorksheet;
@@ -103,18 +105,45 @@ class GoogleSheetsService {
     }
   }
 
-  static Future insert(List<Map<String, dynamic>> rowList) async {
-    _userProfilesWorksheet?.values.map.appendRows(rowList);
-  }
-
   static Future<int> getRowCount() async {
     var lastRow = await _userProfilesWorksheet?.values.lastRow();
     return int.tryParse(lastRow?.first ?? "0") ?? 0;
   }
 
-  static Future<AppUserProfile?> getAppUserProfile(int id) async {
-    final json = await _userProfilesWorksheet?.values.map.rowByKey(id, fromColumn: USER_PROFILES_ID_COLUMN_NUMBER);
+  static Future<AppUserProfile?> getAppUserProfile(String uid) async {
+    final json = await _userProfilesWorksheet?.values.map.rowByKey(uid, fromColumn: USER_PROFILES_UID_COLUMN_NUMBER);
     return json != null ? fromGoogleSheetsJson(json) : null;
+  }
+
+  static Future<void> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles) async {
+    for (var appUserProfile in appUserProfiles) {
+      var uid = appUserProfile.uid;
+      if (uid != null) {
+        final index = await _userProfilesWorksheet?.values.rowIndexOf(uid, inColumn: USER_PROFILES_UID_COLUMN_NUMBER);
+        final json = toGoogleSheetJson(appUserProfile);
+        if (index == null || index == -1) {
+          await insertAppUserProfile(json);
+        } else {
+          await updateAppUserProfile(uid, json);
+        }
+      }
+    }
+  }
+
+  static Future insertAppUserProfile(Map<String, dynamic> row) async {
+    try {
+      await _userProfilesWorksheet?.values.map.appendRow(row);
+    } catch (e) {
+      developer.log("Insert appUserProfile error:$e");
+    }
+  }
+
+  static Future insertAppUserProfiles(List<Map<String, dynamic>> rowList) async {
+    try {
+      _userProfilesWorksheet?.values.map.appendRows(rowList);
+    } catch(e) {
+      developer.log("Insert appUserProfiles error:$e");
+    }
   }
 
   static Future<List<AppUserProfile>> getAppUserProfiles() async {
@@ -122,8 +151,8 @@ class GoogleSheetsService {
     return appUserProfiles == null ? <AppUserProfile>[] : appUserProfiles.map(fromGoogleSheetsJson).toList();
   }
 
-  static Future<bool> updateAppUserProfile(int id, Map<String, dynamic> appUserProfile) async {
-    return await _userProfilesWorksheet?.values.map.insertRowByKey(id, appUserProfile) ?? false;
+  static Future<bool> updateAppUserProfile(String uid, Map<String, dynamic> appUserProfile) async {
+    return await _userProfilesWorksheet?.values.map.insertRowByKey(uid, appUserProfile) ?? false;
   }
 
   static Future<bool> updateAppUserProfileCell(int id, String columnName, dynamic value) async {

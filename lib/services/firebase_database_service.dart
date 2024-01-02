@@ -12,6 +12,7 @@ import 'dart:developer' as developer;
 
 import '../utils/observation_utils.dart';
 
+
 class FirebaseDatabaseService {
 
   String? uid;
@@ -208,15 +209,31 @@ class FirebaseDatabaseService {
   }
 
   Future<List<AppUserProfile>> getUserProfiles({int? limit}) async {
-    Stream<QuerySnapshot> snapshots = limit != null ? userProfilesCollection.limit(limit).snapshots() : userProfilesCollection.snapshots();
-    Stream<List<AppUserProfile>> userProfilesListsStream = snapshots.map(_userProfilesFromSnapshot);
-    try {
-      List<List<AppUserProfile>> userProfilesLists = await userProfilesListsStream.toList();
-      var lastUserProfilesList = userProfilesLists.last;
-      return lastUserProfilesList;
-    } catch(e) {
+    //https://stackoverflow.com/questions/50870652/flutter-firebase-basic-query-or-basic-search-code
+    Stream streamQuery = userProfilesCollection
+        .where('tagline', isGreaterThanOrEqualTo: "the bro")
+        .where('tagline', isLessThan: "the bro" +'z')
+        .snapshots();
+
+    await streamQuery.forEach((element) {
+      var showMe = element;
+      var bla = "";
+    });
+
+    //var list = await streamQuery.toList();
+
+    //var q = query(collection(db, "cities"), where("capital", "==", true));
+
+
+    // Stream<QuerySnapshot> snapshots = limit != null ? userProfilesCollection.limit(limit).snapshots() : userProfilesCollection.snapshots();
+    // Stream<List<AppUserProfile>> userProfilesListsStream = snapshots.map(_userProfilesFromSnapshot);
+    // try {
+    //   List<List<AppUserProfile>> userProfilesLists = await userProfilesListsStream.toList();
+    //   var lastUserProfilesList = userProfilesLists.last;
+    //   return lastUserProfilesList;
+    // } catch(e) {
       return <AppUserProfile>[];
-    }
+    //}
   }
 
   Future updateObservation(Observation observation) async {

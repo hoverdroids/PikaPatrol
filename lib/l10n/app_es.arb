@@ -207,11 +207,12 @@
     "exportFirebaseToGoogleSheets": "Exportar Firebase a Google Sheets",
     "exportFirebaseToGoogleSheetsDialogTitle": "¿Exportar Firebase a Google Sheets?",
     "exportFirebaseToGoogleSheetsDialogDescription": "Esto sincronizará todos los datos de Firebase con las hojas de Google, lo que se descontará de la cuota tanto para la API de Firebase como para la API de Google Cloud.",
-    "profileIsAlreadyUpToDate": "Profile is already up-to-date",
-    "couldNotRetrieveLocationEnableGps": "Could not retrieve location.\nEnable GPS and try to save again.",
-    "locationServicesAreDisabled": "Location services are disabled.",
-    "youMustGrantLocationPermissions": "You must grant location permissions.",
-    "locationPermissionsAreDenied": "Location permissions are denied",
-    "locationPermissionsArePermanentlyDenied": "Location permissions are permanently denied, we cannot request permissions.",
-    "couldNotRetrieveLocationFromGps": "Could not retrieve location from GPS."
+    "profileIsAlreadyUpToDate": "El perfil ya está actualizado",
+    "couldNotRetrieveLocationEnableGps": "No se pudo recuperar la ubicación.\nHabilite el GPS e intente guardar nuevamente.",
+    "locationServicesAreDisabled": "Los servicios de ubicación están deshabilitados.",
+    "youMustGrantLocationPermissions": "Debes otorgar permisos de ubicación.",
+    "locationPermissionsAreDenied": "Se deniegan los permisos de ubicación",
+    "locationPermissionsArePermanentlyDenied": "Los permisos de ubicación están permanentemente denegados, no podemos solicitar permisos.",
+    "couldNotRetrieveLocationFromGps": "No se pudo recuperar la ubicación del GPS.",
+    "profileUpdated": "Perfil actualizado"
 }

@@ -140,7 +140,7 @@ class FirebaseDatabaseService {
         }
     );
 
-    showToast("Profile updated");
+    showToast(translations.profileUpdated);
     return updatedUserProfile;
   }
 

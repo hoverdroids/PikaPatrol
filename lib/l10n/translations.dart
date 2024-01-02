@@ -258,6 +258,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String locationPermissionsAreDenied = ERROR;
   String locationPermissionsArePermanentlyDenied = ERROR;
   String couldNotRetrieveLocationFromGps = ERROR;
+  String profileUpdated = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -512,6 +513,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     locationPermissionsAreDenied = AppLocalizations.of(context)?.locationPermissionsAreDenied ?? locationPermissionsAreDenied;
     locationPermissionsArePermanentlyDenied = AppLocalizations.of(context)?.locationPermissionsArePermanentlyDenied ?? locationPermissionsArePermanentlyDenied;
     couldNotRetrieveLocationFromGps = AppLocalizations.of(context)?.couldNotRetrieveLocationFromGps ?? couldNotRetrieveLocationFromGps;
+    profileUpdated = AppLocalizations.of(context)?.profileUpdated ?? profileUpdated;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -733,6 +735,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "locationPermissionsAreDenied": return locationPermissionsAreDenied;
       case "locationPermissionsArePermanentlyDenied": return locationPermissionsArePermanentlyDenied;
       case "couldNotRetrieveLocationFromGps": return couldNotRetrieveLocationFromGps;
+      case "profileUpdated": return profileUpdated;
       default: return key;
     }
   }

@@ -213,5 +213,6 @@
     "youMustGrantLocationPermissions": "You must grant location permissions.",
     "locationPermissionsAreDenied": "Location permissions are denied",
     "locationPermissionsArePermanentlyDenied": "Location permissions are permanently denied, we cannot request permissions.",
-    "couldNotRetrieveLocationFromGps": "Could not retrieve location from GPS."
+    "couldNotRetrieveLocationFromGps": "Could not retrieve location from GPS.",
+    "profileUpdated": "Profile updated"
 }

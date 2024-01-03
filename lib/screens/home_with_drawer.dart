@@ -379,6 +379,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
             editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
             editedDzOptIn ?? userProfile?.dzOptIn ?? false,
+            userProfile?.roles ?? <String>[],
+            DateTime.now(),
             translations
         );
 
@@ -651,7 +653,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       child: Text(translations.ok),
       onPressed: () async {
         Navigator.pop(context, true);
-        exportFirebaseToGoogleSheets();
+        exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets();
       },
     );
     // set up the AlertDialog
@@ -673,20 +675,33 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
   }
 
-  exportFirebaseToGoogleSheets() async {
+  exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.getUserProfiles(limit: 3);
+    var appUserProfiles = await firebaseDatabaseService.getUserProfilesNotInGoogleSheets(limit: 3);
+    for (var appUserProfile in appUserProfiles) {
+      appUserProfile.dateUpdatedInGoogleSheets = DateTime.now();
 
+      //Update Firebase so that the next query for profiles not in sheets, doesn't return these results
+      await firebaseDatabaseService.addOrUpdateUserProfile(
+          appUserProfile.firstName,
+          appUserProfile.lastName,
+          appUserProfile.tagline,
+          appUserProfile.pronouns,
+          appUserProfile.organization,
+          appUserProfile.address,
+          appUserProfile.city,
+          appUserProfile.state,
+          appUserProfile.zip,
+          appUserProfile.frppOptIn,
+          appUserProfile.rmwOptIn,
+          appUserProfile.dzOptIn,
+          appUserProfile.roles,
+          appUserProfile.dateUpdatedInGoogleSheets,
+          translations
+      );
+    }
 
     await GoogleSheetsService.addOrUpdateAppUserProfiles(appUserProfiles);
-    //var appUserProfilesAsJson = appUserProfiles.map((appUserProfile) => GoogleSheetsService.toGoogleSheetJson(appUserProfile));
-    // var appUserProfile = AppUserProfile("Chris", "Sprague", uid: "lkajsldkjf8as98d798a7sdfkhjjkhlasd");
-    // var needAnId = 1;
-    // var appUserProfileJson = GoogleSheetsService.toGoogleSheetJson(needAnId, appUserProfile);
-    // await GoogleSheetsService.insert([appUserProfileJson]);
-
-    // var observations = firebaseDatabaseService.observations;
-    // observations.
   }
 
   resetEditedUserProfileFields() {

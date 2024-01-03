@@ -49,6 +49,8 @@ class FirebaseDatabaseService {
             'frppOptIn': false,
             'rmwOptIn': false,
             'dzOptIn': false,
+            'roles': null,
+            'dateUpdatedInGoogleSheets': null
           }
       );
       return null;
@@ -57,22 +59,23 @@ class FirebaseDatabaseService {
     }
   }
 
-  bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) {
-    return profile1 == null && profile2 != null ||
-           profile1 != null && profile2 == null ||
-           profile1?.firstName != profile2?.firstName ||
-           profile1?.lastName != profile2?.lastName ||
-           profile1?.tagline != profile2?.tagline ||
-           profile1?.pronouns != profile2?.pronouns ||
-           profile1?.organization != profile2?.organization ||
-           profile1?.address != profile2?.address ||
-           profile1?.city != profile2?.city ||
-           profile1?.state != profile2?.state ||
-           profile1?.zip != profile2?.zip ||
-           profile1?.frppOptIn != profile2?.frppOptIn ||
-           profile1?.rmwOptIn != profile2?.rmwOptIn ||
-           profile1?.dzOptIn != profile2?.dzOptIn;
-  }
+  bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) =>
+      profile1 == null && profile2 != null ||
+      profile1 != null && profile2 == null ||
+      profile1?.firstName != profile2?.firstName ||
+      profile1?.lastName != profile2?.lastName ||
+      profile1?.tagline != profile2?.tagline ||
+      profile1?.pronouns != profile2?.pronouns ||
+      profile1?.organization != profile2?.organization ||
+      profile1?.address != profile2?.address ||
+      profile1?.city != profile2?.city ||
+      profile1?.state != profile2?.state ||
+      profile1?.zip != profile2?.zip ||
+      profile1?.frppOptIn != profile2?.frppOptIn ||
+      profile1?.rmwOptIn != profile2?.rmwOptIn ||
+      profile1?.dzOptIn != profile2?.dzOptIn ||
+      profile1?.roles != profile2?.roles ||
+      profile1?.dateUpdatedInGoogleSheets != profile2?.dateUpdatedInGoogleSheets;
 
   Future<AppUserProfile?> addOrUpdateUserProfile(
       String firstName,
@@ -87,6 +90,8 @@ class FirebaseDatabaseService {
       bool frppOptIn,
       bool rmwOptIn,
       bool dzOptIn,
+      List<String> roles,
+      DateTime? dateUpdatedInGoogleSheets,
       Translations translations
   ) async {
 
@@ -113,7 +118,9 @@ class FirebaseDatabaseService {
         zip: trimmedZip,
         frppOptIn: frppOptIn,
         rmwOptIn: rmwOptIn,
-        dzOptIn: dzOptIn
+        dzOptIn: dzOptIn,
+        roles: roles,
+        dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets
     );
     
     var shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
@@ -137,6 +144,8 @@ class FirebaseDatabaseService {
           'frppOptIn': frppOptIn,
           'rmwOptIn': rmwOptIn,
           'dzOptIn': dzOptIn,
+          'roles' :roles,
+          'dateUpdatedInGoogleSheets': dateUpdatedInGoogleSheets
         }
     );
 
@@ -174,7 +183,8 @@ class FirebaseDatabaseService {
         frppOptIn: snapshot.get('frppOptIn') ?? false,
         rmwOptIn: snapshot.get('rmwOptIn') ?? false,
         dzOptIn: snapshot.get('dzOptIn') ?? false,
-        roles: resolvedRoles
+        roles: resolvedRoles,
+        dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(dataMap['dateUpdatedInGoogleSheets']?.millisecondsSinceEpoch)
       );
     } catch(e){
       return null;
@@ -202,7 +212,8 @@ class FirebaseDatabaseService {
         frppOptIn: dataMap['frppOptIn'] ?? false,
         rmwOptIn: dataMap['rmwOptIn'] ?? false,
         dzOptIn: dataMap['dzOptIn'] ?? false,
-        roles: resolvedRoles
+        roles: resolvedRoles,
+        dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(dataMap['dateUpdatedInGoogleSheets']?.millisecondsSinceEpoch)
       );
     }).toList();
   }
@@ -211,18 +222,20 @@ class FirebaseDatabaseService {
     return userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
-  Future<List<AppUserProfile>> getUserProfiles({int? limit}) async {
-    //https://stackoverflow.com/questions/50870652/flutter-firebase-basic-query-or-basic-search-code
+  Future<List<AppUserProfile>> getUserProfilesNotInGoogleSheets({int? limit}) async {
+    Query query = userProfilesCollection
+        .where('dateUpdatedInGoogleSheets', isEqualTo: null);
+    return await getUserProfiles(query, limit: limit);
+  }
 
-    var userProfiles = <AppUserProfile>[];
-    var query = userProfilesCollection
-        .where('tagline', isGreaterThanOrEqualTo: "the bro")
-        .where('tagline', isLessThan: "the bro" +'z');
+  Future<List<AppUserProfile>> getUserProfiles(Query query, {int? limit}) async {
+    //https://stackoverflow.com/questions/50870652/flutter-firebase-basic-query-or-basic-search-code
 
     if (limit != null) {
       query = query.limit(limit);
     }
 
+    var userProfiles = <AppUserProfile>[];
     await query
       .get()
       .then((QuerySnapshot snapshot){

@@ -14,6 +14,7 @@ class AppUserProfile {
   final bool rmwOptIn;
   final bool dzOptIn;
   final List<String> roles;
+  DateTime? dateUpdatedInGoogleSheets;
 
   AppUserProfile(
     this.firstName,
@@ -30,7 +31,8 @@ class AppUserProfile {
       this.frppOptIn = false,
       this.rmwOptIn = false,
       this.dzOptIn = false,
-      this.roles = const <String>[]
+      this.roles = const <String>[],
+      this.dateUpdatedInGoogleSheets
     }
   );
 
@@ -53,7 +55,8 @@ class AppUserProfile {
       bool? frppOptIn,
       bool? rmwOptIn,
       bool? dzOptIn,
-      List<String>? roles
+      List<String>? roles,
+      DateTime? dateUpdatedInGoogleSheets
     }
   ) => AppUserProfile(
     firstName ?? this.firstName,
@@ -69,6 +72,7 @@ class AppUserProfile {
     frppOptIn: frppOptIn ?? this.frppOptIn,
     rmwOptIn: rmwOptIn ?? this.rmwOptIn,
     dzOptIn: dzOptIn ?? this.dzOptIn,
-    roles: roles ?? this.roles
+    roles: roles ?? this.roles,
+    dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets
   );
 }

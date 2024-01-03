@@ -13,7 +13,7 @@ class CardScroller extends StatefulWidget {
 
   CardScroller(this.cards, {super.key, this.onTapCard, this.reverse = true}) {
     currentCardPosition = cards.isEmpty ? 0.0 : cards.length.toDouble();
-    developer.log("CardScroller ctor currentCardPosition:$currentCardPosition cards.length:${cards.length}");
+    //developer.log("CardScroller ctor currentCardPosition:$currentCardPosition cards.length:${cards.length}");
   }
 
   @override

@@ -677,7 +677,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.getUserProfilesNotInGoogleSheets(limit: 3);
+    var appUserProfiles = await firebaseDatabaseService.getAllUserProfiles();
     for (var appUserProfile in appUserProfiles) {
       appUserProfile.dateUpdatedInGoogleSheets = DateTime.now();
 

@@ -198,6 +198,13 @@ class FirebaseDatabaseService {
       List<dynamic>? roles = dataMap['roles'];
       List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
 
+      final millisecondsSinceEpoch = dataMap['dateUpdatedInGoogleSheets'];
+      // DateTime? dateUpdatedInGoogleSheets = null;
+      // if (millisecondsSinceEpoch != null) {
+      //   dateUpdatedInGoogleSheets = DateTime.fromMillisecondsSinceEpoch(?.millisecondsSinceEpoch)
+      // }
+
+
       return AppUserProfile(
         dataMap['firstName']?.trim() ?? '',
         dataMap['lastName']?.trim() ?? '',
@@ -213,7 +220,7 @@ class FirebaseDatabaseService {
         rmwOptIn: dataMap['rmwOptIn'] ?? false,
         dzOptIn: dataMap['dzOptIn'] ?? false,
         roles: resolvedRoles,
-        dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(dataMap['dateUpdatedInGoogleSheets']?.millisecondsSinceEpoch)
+        dateUpdatedInGoogleSheets: null
       );
     }).toList();
   }
@@ -222,6 +229,14 @@ class FirebaseDatabaseService {
     return userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
   }
 
+  Future<List<AppUserProfile>> getAllUserProfiles({int? limit}) async {
+    Query query = userProfilesCollection;
+    return await getUserProfiles(query, limit: limit);
+  }
+
+  // Firestore doesn't allow queries based on fields that don't yet exist in the document, so the following query doesn't do anything
+  // until all user profiles have the field
+  // https://stackoverflow.com/questions/49579693/how-do-i-get-documents-where-a-specific-field-exists-does-not-exists-in-firebase
   Future<List<AppUserProfile>> getUserProfilesNotInGoogleSheets({int? limit}) async {
     Query query = userProfilesCollection
         .where('dateUpdatedInGoogleSheets', isEqualTo: null);

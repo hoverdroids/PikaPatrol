@@ -27,7 +27,7 @@ class ObservationsPage extends StatefulWidget {
   ObservationsPage(List<Observation>? observations, {super.key}) {
     List<Observation> resolvedObservations = observations ?? <Observation>[];
     this.observations = List.from(resolvedObservations.reversed);
-    developer.log("ObservationsPage ctor observations length:${observations?.length}");
+    //developer.log("ObservationsPage ctor observations length:${observations?.length}");
   }
 
   @override

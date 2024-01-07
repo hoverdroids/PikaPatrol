@@ -31,9 +31,9 @@ class FirebaseDatabaseService {
     if (useEmulators) {
       host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
       firebaseFirestore.useFirestoreEmulator(host, 8080);
-      firebaseFirestore.settings = const Settings(
+      /*firebaseFirestore.settings = const Settings(
           persistenceEnabled: false
-      );
+      );*/
     }
 
     userProfilesCollection = firebaseFirestore.collection("userProfiles");

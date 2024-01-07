@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -10,6 +11,7 @@ import 'dart:developer' as developer;
 class FirebaseAuthService {
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  late final String _host;
 
   //TODO - use the User's info from the provider
   //UserInfo userInfo;
@@ -24,7 +26,13 @@ class FirebaseAuthService {
 
   bool useEmulators;
 
-  FirebaseAuthService(this.useEmulators);
+  FirebaseAuthService(this.useEmulators) {
+    if (useEmulators) {
+      _host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      _auth.useAuthEmulator(_host, 9099);
+      // _auth.setPersistence(Persistence.NONE);
+    }
+  }
 
   Future signInAnonymously() async {
     try {

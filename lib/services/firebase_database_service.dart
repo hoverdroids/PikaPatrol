@@ -80,6 +80,7 @@ class FirebaseDatabaseService {
   Future<AppUserProfile?> addOrUpdateUserProfile(
       String firstName,
       String lastName,
+      String? uid,
       String tagline,
       String pronouns,
       String organization,
@@ -91,7 +92,7 @@ class FirebaseDatabaseService {
       bool rmwOptIn,
       bool dzOptIn,
       List<String> roles,
-      DateTime? dateUpdatedInGoogleSheets,
+      DateTime dateUpdatedInGoogleSheets,
       Translations translations
   ) async {
 
@@ -105,10 +106,10 @@ class FirebaseDatabaseService {
     final trimmedState = state.trim();
     final trimmedZip = zip.trim();
 
-    var cachedUserProfile = await getCurrentUserProfileFromCache();
     var updatedUserProfile = AppUserProfile(
         trimmedFirstName,
         trimmedLastName,
+        uid: uid,
         tagline: trimmedTagline,
         pronouns: trimmedPronouns,
         organization: trimmedOrganization,
@@ -122,17 +123,24 @@ class FirebaseDatabaseService {
         roles: roles,
         dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets
     );
-    
-    var shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
+
+    var shouldUpdate = true;
+    var isCurrentUser = updatedUserProfile.uid == this.uid;
+    if (isCurrentUser) {
+      var cachedUserProfile = await getCurrentUserProfileFromCache();
+      shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
+    }
 
     if (!shouldUpdate) {
-      showToast(translations.profileIsAlreadyUpToDate);
+      if (isCurrentUser) {
+        showToast(translations.profileIsAlreadyUpToDate);
+      }
       return null;
     }
 
-    await userProfilesCollection.doc(uid).set(
+    await userProfilesCollection.doc(updatedUserProfile.uid).set(
         {
-          'firstName': trimmedFirstName,
+          'firstName': "${trimmedFirstName} FIXTHIS",//TODO - CHRIS - firebase rules are blocking this
           'lastName': trimmedLastName,
           'tagline' : trimmedTagline,
           'pronouns': trimmedPronouns,
@@ -148,8 +156,9 @@ class FirebaseDatabaseService {
           'dateUpdatedInGoogleSheets': dateUpdatedInGoogleSheets
         }
     );
-
-    showToast(translations.profileUpdated);
+    if (isCurrentUser) {
+      showToast(translations.profileUpdated);
+    }
     return updatedUserProfile;
   }
 
@@ -199,11 +208,7 @@ class FirebaseDatabaseService {
       List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
 
       final millisecondsSinceEpoch = dataMap['dateUpdatedInGoogleSheets'];
-      // DateTime? dateUpdatedInGoogleSheets = null;
-      // if (millisecondsSinceEpoch != null) {
-      //   dateUpdatedInGoogleSheets = DateTime.fromMillisecondsSinceEpoch(?.millisecondsSinceEpoch)
-      // }
-
+      DateTime? dateUpdatedInGoogleSheets = millisecondsSinceEpoch == null ? null : DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
 
       return AppUserProfile(
         dataMap['firstName']?.trim() ?? '',
@@ -220,7 +225,7 @@ class FirebaseDatabaseService {
         rmwOptIn: dataMap['rmwOptIn'] ?? false,
         dzOptIn: dataMap['dzOptIn'] ?? false,
         roles: resolvedRoles,
-        dateUpdatedInGoogleSheets: null
+        dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets
       );
     }).toList();
   }

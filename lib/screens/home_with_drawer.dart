@@ -369,6 +369,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
             editedFirstName ?? userProfile?.firstName ?? "",
             editedLastName ?? userProfile?.lastName ?? "",
+            userProfile?.uid,
             editedTagline ?? userProfile?.tagline ?? "",
             editedPronouns ?? userProfile?.pronouns ?? "",
             editedOrganization ?? userProfile?.organization ?? "",
@@ -677,14 +678,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.getAllUserProfiles();
+    var appUserProfiles = await firebaseDatabaseService.getAllUserProfiles(limit: 1);
     for (var appUserProfile in appUserProfiles) {
-      appUserProfile.dateUpdatedInGoogleSheets = DateTime.now();
+      var now = DateTime.now();
+      appUserProfile.dateUpdatedInGoogleSheets = now;
 
       //Update Firebase so that the next query for profiles not in sheets, doesn't return these results
       await firebaseDatabaseService.addOrUpdateUserProfile(
           appUserProfile.firstName,
           appUserProfile.lastName,
+          appUserProfile.uid,
           appUserProfile.tagline,
           appUserProfile.pronouns,
           appUserProfile.organization,
@@ -696,7 +699,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           appUserProfile.rmwOptIn,
           appUserProfile.dzOptIn,
           appUserProfile.roles,
-          appUserProfile.dateUpdatedInGoogleSheets,
+          now,
           translations
       );
     }

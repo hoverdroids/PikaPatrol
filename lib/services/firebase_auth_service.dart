@@ -2,9 +2,7 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:material_themes_widgets/utils/ui_utils.dart';
 import '../model/firebase_registration_result.dart';
-import 'firebase_database_service.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer' as developer;
@@ -23,6 +21,10 @@ class FirebaseAuthService {
   Stream<AppUser?> get user {
     return _auth.authStateChanges().map((User? user) => _userFromFirebaseUser(user));
   }
+
+  bool useEmulators;
+
+  FirebaseAuthService(this.useEmulators);
 
   Future signInAnonymously() async {
     try {

@@ -13,16 +13,32 @@ import 'dart:developer' as developer;
 import '../l10n/translations.dart';
 import '../utils/observation_utils.dart';
 
-
 class FirebaseDatabaseService {
 
   String? uid;
 
-  FirebaseDatabaseService({ this.uid });
+  late final FirebaseFirestore firebaseFirestore;
+  late final CollectionReference userProfilesCollection;
+  late final CollectionReference observationsCollection;
 
-  final CollectionReference userProfilesCollection = FirebaseFirestore.instance.collection("userProfiles");
+  bool useEmulators;
+  late String host;
 
-  final CollectionReference observationsCollection = FirebaseFirestore.instance.collection("observations");
+  FirebaseDatabaseService(this.useEmulators, { this.uid }){
+
+    firebaseFirestore = FirebaseFirestore.instance;
+
+    if (useEmulators) {
+      host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
+      firebaseFirestore.useFirestoreEmulator(host, 8080);
+      firebaseFirestore.settings = const Settings(
+          persistenceEnabled: false
+      );
+    }
+
+    userProfilesCollection = firebaseFirestore.collection("userProfiles");
+    observationsCollection = firebaseFirestore.collection("observations");
+  }
 
   Future<AppUserProfile?> getCurrentUserProfileFromCache() async {
     var options = const GetOptions(source: Source.cache);

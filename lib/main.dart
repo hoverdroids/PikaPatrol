@@ -16,6 +16,8 @@ import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+const useEmulators = true;
+
 Future<void> main() async {
 
   //debugPrintGestureArenaDiagnostics = true;
@@ -42,10 +44,10 @@ Future<void> main() async {
             create: (_) => MaterialThemesManager()
         ),
         Provider<FirebaseAuthService>(
-            create: (_) => FirebaseAuthService()//Only one service to avoid multiple connections to firebase
+            create: (_) => FirebaseAuthService(useEmulators)//Only one service to avoid multiple connections to firebase
         ),
         Provider<FirebaseDatabaseService>(
-            create: (_) => FirebaseDatabaseService()
+            create: (_) => FirebaseDatabaseService(useEmulators)
         ),
         ChangeNotifierProvider(
             create: (_) => SettingsService()

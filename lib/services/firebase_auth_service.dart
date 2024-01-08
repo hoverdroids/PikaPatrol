@@ -16,15 +16,19 @@ class FirebaseAuthService {
   //TODO - use the User's info from the provider
   //UserInfo userInfo;
 
-  AppUser? _userFromFirebaseUser(User? user) {
-    return user != null ? AppUser(uid: user.uid) : null;
-  }
-
   Stream<AppUser?> get user {
     return _auth.authStateChanges().map((User? user) => _userFromFirebaseUser(user));
   }
 
+  /*StreamSubscription<User?> get idToken {
+    return _auth.idTokenChanges().listen((User? user) { return user;});
+  }*/
+
+      // .map((User? user) async => await _userIdTokenFromFirebaseUser(user))
+
   bool useEmulators;
+  bool isAdmin = false;
+  String? userTokenId;
 
   FirebaseAuthService(this.useEmulators) {
     if (useEmulators) {
@@ -32,6 +36,29 @@ class FirebaseAuthService {
       _auth.useAuthEmulator(_host, 9099);
       // _auth.setPersistence(Persistence.NONE);
     }
+
+    _auth.idTokenChanges().listen((User? user) {
+      _updateUserTokenAndAdmin(user);
+    });
+  }
+
+  void _updateUserTokenAndAdmin(User? user) async {
+    userTokenId = await user?.getIdToken();
+
+    user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+      isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+      var bla = "";
+    });
+  }
+
+  Future<String?> getCurrentUserIdToken() async => await _auth.currentUser?.getIdToken();
+
+  AppUser? _userFromFirebaseUser(User? user) {
+    return user != null ? AppUser(uid: user.uid) : null;
+  }
+
+  Future<String?>? _userIdTokenFromFirebaseUser(User? user) {
+    return user?.getIdToken();
   }
 
   Future signInAnonymously() async {

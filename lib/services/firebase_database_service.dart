@@ -154,27 +154,32 @@ class FirebaseDatabaseService {
       return null;
     }
 
-    await userProfilesCollection.doc(updatedUserProfile.uid).set(
-        {
-          'firstName': "${trimmedFirstName} FIXTHIS",//TODO - CHRIS - firebase rules are blocking this
-          'lastName': trimmedLastName,
-          'tagline' : trimmedTagline,
-          'pronouns': trimmedPronouns,
-          'organization': trimmedOrganization,
-          'address': trimmedAddress,
-          'city': trimmedCity,
-          'state': trimmedState,
-          'zip': trimmedZip,
-          'frppOptIn': frppOptIn,
-          'rmwOptIn': rmwOptIn,
-          'dzOptIn': dzOptIn,
-          'roles' :roles,
-          'dateUpdatedInGoogleSheets': dateUpdatedInGoogleSheets
-        }
-    );
-    if (isCurrentUser) {
-      showToast(translations.profileUpdated);
+    try {
+      await userProfilesCollection.doc(updatedUserProfile.uid).set(
+          {
+            'firstName': trimmedFirstName,
+            'lastName': trimmedLastName,
+            'tagline': trimmedTagline,
+            'pronouns': trimmedPronouns,
+            'organization': trimmedOrganization,
+            'address': trimmedAddress,
+            'city': trimmedCity,
+            'state': trimmedState,
+            'zip': trimmedZip,
+            'frppOptIn': frppOptIn,
+            'rmwOptIn': rmwOptIn,
+            'dzOptIn': dzOptIn,
+            'roles': roles,
+            'dateUpdatedInGoogleSheets': dateUpdatedInGoogleSheets
+          }
+      );
+      if (isCurrentUser) {
+        showToast(translations.profileUpdated);
+      }
+    } catch(e) {
+      showToast("App profile update error:$e");
     }
+
     return updatedUserProfile;
   }
 
@@ -192,7 +197,10 @@ class FirebaseDatabaseService {
 
       final dataMap = snapshot.data() as Map<String, dynamic>;
       List<dynamic>? roles = dataMap['roles'];
-      List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
+      List<String> resolvedRoles = <String>[];
+      if (roles != null) {
+        resolvedRoles = roles.cast<String>().toList();
+      }
 
       return AppUserProfile(
         snapshot.get('firstName')?.trim() ?? '',
@@ -209,7 +217,7 @@ class FirebaseDatabaseService {
         rmwOptIn: snapshot.get('rmwOptIn') ?? false,
         dzOptIn: snapshot.get('dzOptIn') ?? false,
         roles: resolvedRoles,
-        dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(dataMap['dateUpdatedInGoogleSheets']?.millisecondsSinceEpoch)
+        dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     } catch(e){
       return null;
@@ -222,9 +230,6 @@ class FirebaseDatabaseService {
       final dataMap = doc.data() as Map<String, dynamic>;
       List<dynamic>? roles = dataMap['roles'];
       List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
-
-      final millisecondsSinceEpoch = dataMap['dateUpdatedInGoogleSheets'];
-      DateTime? dateUpdatedInGoogleSheets = millisecondsSinceEpoch == null ? null : DateTime.fromMillisecondsSinceEpoch(millisecondsSinceEpoch);
 
       return AppUserProfile(
         dataMap['firstName']?.trim() ?? '',
@@ -241,7 +246,7 @@ class FirebaseDatabaseService {
         rmwOptIn: dataMap['rmwOptIn'] ?? false,
         dzOptIn: dataMap['dzOptIn'] ?? false,
         roles: resolvedRoles,
-        dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets
+        dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     }).toList();
   }
@@ -357,7 +362,7 @@ class FirebaseDatabaseService {
           observerUid: dataMap['observerUid'] ?? '',
           name: dataMap['name'] ?? '',
           location: dataMap['location'] ?? '',
-          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),
+          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),//// parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
           altitudeInMeters: dataMap['altitude'],
           latitude: dataMap['latitude'],
           longitude: dataMap['longitude'],
@@ -418,5 +423,10 @@ class FirebaseDatabaseService {
     });
 
     return uploadUrls;
+  }
+
+  DateTime? parseTime(dynamic date) {
+    if (date == null) return null;
+    return Platform.isIOS ? (date as Timestamp).toDate() : (date as DateTime);
   }
 }

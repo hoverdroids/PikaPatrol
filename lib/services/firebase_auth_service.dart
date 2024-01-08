@@ -30,6 +30,26 @@ class FirebaseAuthService {
   bool isAdmin = false;
   String? userTokenId;
 
+  late Stream<bool> isAdminStream;
+
+  /*late Stream<bool> isAdminStream = _auth.idTokenChanges().asyncMap((User? user) async {
+    userTokenId = await user?.getIdToken();
+
+    user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+      isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+
+      //isAdminStreamController.add(isAdmin);
+    });
+
+
+
+    return await user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+      return true;
+    };
+  });*/
+
+  //late StreamController<bool> isAdminStreamController;
+
   FirebaseAuthService(this.useEmulators) {
     if (useEmulators) {
       _host = Platform.isAndroid ? '10.0.2.2' : 'localhost';
@@ -37,19 +57,92 @@ class FirebaseAuthService {
       // _auth.setPersistence(Persistence.NONE);
     }
 
-    _auth.idTokenChanges().listen((User? user) {
-      _updateUserTokenAndAdmin(user);
+    initIsAdminStream();
+
+    isAdminStream = _auth.idTokenChanges().asyncMap((User? user) => getIsAdminFromFirebase(user));
+    isAdminStream.listen((bool isAdmin) {
+      var isReallyAdmin = isAdmin;
     });
+
+
+    /*isAdminStream = mapStreamBla(_auth.idTokenChanges());
+
+    isAdminStream = _auth.idTokenChanges().map((User? user) async {
+    userTokenId = await user?.getIdToken();
+
+    user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+    isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+    isAdminStreamController.add(isAdmin);
+    });
+    })*/
+
+
+        /*_auth.idTokenChanges().map((User? user) async {
+      await _updateUserTokenAndAdmin(user);
+
+      return false;
+    });*/
+
+    /*_auth.idTokenChanges().listen((User? user) {
+      _updateUserTokenAndAdmin(user);
+    });*/
   }
 
-  void _updateUserTokenAndAdmin(User? user) async {
+  Future<bool> getIsAdminFromFirebase(User? user) async {
+    userTokenId = await user?.getIdToken();
+
+    var idTokenResult = await user?.getIdTokenResult();
+
+
+    /*user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+      isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+
+      //isAdminStreamController.add(isAdmin);
+    });*/
+
+    isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+    return isAdmin;
+  }
+
+  /*Stream<bool> mapStreamBla(
+      Stream<User?> stream,
+      // S Function(T event) convert,
+  ) async* {
+    stream.map((User? user) async {
+      userTokenId = await user?.getIdToken();
+
+      user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
+        isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
+        isAdminStreamController.add(isAdmin);
+      });
+    });
+
+
+    *//*stream.map((User? user) async {
+      await _updateUserTokenAndAdmin(user);
+
+      return false;
+    }
+
+    stream.map((event) => null)
+    var streamWithoutErrors = stream.handleError((e) => log(e));
+    await for (final event in streamWithoutErrors) {
+      yield true;//convert(event);
+    }*//*
+  }*/
+
+  void initIsAdminStream() {
+
+  }
+
+  /*void _updateUserTokenAndAdmin(User? user) async {
     userTokenId = await user?.getIdToken();
 
     user?.getIdTokenResult().then((IdTokenResult? idTokenResult) {
       isAdmin = idTokenResult?.claims?.containsKey("admin") == true;
-      var bla = "";
+      isAdminStreamController.add(isAdmin);
     });
-  }
+  }*/
 
   Future<String?> getCurrentUserIdToken() async => await _auth.currentUser?.getIdToken();
 

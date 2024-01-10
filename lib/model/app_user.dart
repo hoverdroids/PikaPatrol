@@ -11,6 +11,7 @@ class AppUser {
   final String? photoUrl;
   final String? tenantId;
   final bool isAdmin;
+  final String? idToken;
 
   AppUser({
     required this.uid,
@@ -23,6 +24,7 @@ class AppUser {
     this.phoneNumber,
     this.photoUrl,
     this.tenantId,
-    this.isAdmin = false
+    this.isAdmin = false,
+    this.idToken
   });
 }

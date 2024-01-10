@@ -15,6 +15,7 @@ class AppUserProfile {
   final bool dzOptIn;
   final List<String> roles;
   DateTime? dateUpdatedInGoogleSheets;
+  final bool isAdmin;
 
   AppUserProfile(
     this.firstName,
@@ -32,7 +33,8 @@ class AppUserProfile {
       this.rmwOptIn = false,
       this.dzOptIn = false,
       this.roles = const <String>[],
-      this.dateUpdatedInGoogleSheets
+      this.dateUpdatedInGoogleSheets,
+      this.isAdmin = false
     }
   );
 
@@ -56,7 +58,8 @@ class AppUserProfile {
       bool? rmwOptIn,
       bool? dzOptIn,
       List<String>? roles,
-      DateTime? dateUpdatedInGoogleSheets
+      DateTime? dateUpdatedInGoogleSheets,
+      bool? isAdmin
     }
   ) => AppUserProfile(
     firstName ?? this.firstName,
@@ -73,6 +76,7 @@ class AppUserProfile {
     rmwOptIn: rmwOptIn ?? this.rmwOptIn,
     dzOptIn: dzOptIn ?? this.dzOptIn,
     roles: roles ?? this.roles,
-    dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets
+    dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets,
+    isAdmin: isAdmin ?? this.isAdmin
   );
 }

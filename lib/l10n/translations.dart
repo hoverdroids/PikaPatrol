@@ -247,9 +247,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   late List<String> searchDurationKeys;
   late List<String> searchDurationDefaultValues;
 
+  String adminSettings = ERROR;
   String exportFirebaseToGoogleSheets = ERROR;
   String exportFirebaseToGoogleSheetsDialogTitle = ERROR;
   String exportFirebaseToGoogleSheetsDialogDescription = ERROR;
+  String userProfiles = ERROR;
 
   String profileIsAlreadyUpToDate = ERROR;
   String couldNotRetrieveLocationEnableGps = ERROR;
@@ -259,6 +261,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String locationPermissionsArePermanentlyDenied = ERROR;
   String couldNotRetrieveLocationFromGps = ERROR;
   String profileUpdated = ERROR;
+
+
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -503,6 +507,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     tenToTwentyMin = AppLocalizations.of(context)?.tenToTwentyMin ?? tenToTwentyMin;
     twentyToThirtyMin = AppLocalizations.of(context)?.twentyToThirtyMin ?? twentyToThirtyMin;
     moreThanThirtyMin = AppLocalizations.of(context)?.moreThanThirtyMin ?? moreThanThirtyMin;
+    adminSettings = AppLocalizations.of(context)?.adminSettings ?? adminSettings;
+    userProfiles = AppLocalizations.of(context)?.userProfiles ?? userProfiles;
     exportFirebaseToGoogleSheets = AppLocalizations.of(context)?.exportFirebaseToGoogleSheets ?? exportFirebaseToGoogleSheets;
     exportFirebaseToGoogleSheetsDialogTitle = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogTitle ?? exportFirebaseToGoogleSheetsDialogTitle;
     exportFirebaseToGoogleSheetsDialogDescription = AppLocalizations.of(context)?.exportFirebaseToGoogleSheetsDialogDescription ?? exportFirebaseToGoogleSheetsDialogDescription;
@@ -725,6 +731,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "tenToTwentyMin": return tenToTwentyMin;
       case "twentyToThirtyMin": return twentyToThirtyMin;
       case "moreThanThirtyMin": return moreThanThirtyMin;
+      case "adminSettings": return adminSettings;
+      case "userProfiles": return userProfiles;
       case "exportFirebaseToGoogleSheets": return exportFirebaseToGoogleSheets;
       case "exportFirebaseToGoogleSheetsDialogTitle": return exportFirebaseToGoogleSheetsDialogTitle;
       case "exportFirebaseToGoogleSheetsDialogDescription": return exportFirebaseToGoogleSheetsDialogDescription;

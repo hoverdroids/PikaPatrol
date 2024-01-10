@@ -17,7 +17,7 @@ class FirebaseAuthService {
   //UserInfo userInfo;
 
   Stream<AppUser?> get user {
-    return _auth.authStateChanges().map((User? user) => _userFromFirebaseUser(user));
+    return _auth.userChanges().asyncMap((User? user) => _userFromFirebaseUser(user));
   }
 
   /*StreamSubscription<User?> get idToken {
@@ -146,8 +146,26 @@ class FirebaseAuthService {
 
   Future<String?> getCurrentUserIdToken() async => await _auth.currentUser?.getIdToken();
 
-  AppUser? _userFromFirebaseUser(User? user) {
-    return user != null ? AppUser(uid: user.uid) : null;
+  Future<AppUser?> _userFromFirebaseUser(User? user) async {
+    if (user == null) {
+      return null;
+    }
+
+    var isAdmin = await getIsAdminFromFirebase(user);
+
+    return AppUser(
+      uid: user.uid,
+      displayName: user.displayName,
+      email: user.email,
+      emailVerified: user.emailVerified,
+      isAnonymous: user.isAnonymous,
+      creationTimestamp: user.metadata.creationTime,
+      lastSignInTime: user.metadata.lastSignInTime,
+      phoneNumber: user.phoneNumber,
+      photoUrl: user.photoURL,
+      tenantId: user.tenantId,
+      isAdmin: isAdmin
+    );
   }
 
   Future<String?>? _userIdTokenFromFirebaseUser(User? user) {
@@ -197,7 +215,7 @@ class FirebaseAuthService {
 
       try {
         UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
-        registrationResult.appUser = _userFromFirebaseUser(result.user);
+        registrationResult.appUser = await _userFromFirebaseUser(result.user);
 
       } on FirebaseAuthException catch(exception) {
         registrationResult.exception = exception;

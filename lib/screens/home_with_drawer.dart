@@ -240,6 +240,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     var avatarTitle = translations.login;
     var avatarSubtitle = "";
+    var isAdmin = user?.isAdmin ?? false;
     if (user != null) {
       if (userProfile == null) {
         //A profile has not been initialized
@@ -261,8 +262,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       clipPathType: ClipPathType.NONE,
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
-          [ //TODO - CHRIS - only show for admin;
-            ListItemModel(title: translations.exportFirebaseToGoogleSheets, itemClickedCallback: () => showExportFirebaseToGoogleSheetsDialog()),
+          [
             ListItemModel(title: translations.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(translations.appHelpAndInfoUrl)),
             ListItemModel(title: translations.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
@@ -282,6 +282,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.denverZoo, itemClickedCallback: () => launchInBrowser(translations.denverZooUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
+            if (isAdmin)...[
+              ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
+              ListItemModel(title: translations.exportFirebaseToGoogleSheets, itemClickedCallback: () => showExportFirebaseToGoogleSheetsDialog(), margin: indentationLevel1),
+              /*TODO - CHRIS - show user profiles so that they can be delted or have admin access granted. the later will require me interacting with node.js scripts locally*/
+            ],
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",

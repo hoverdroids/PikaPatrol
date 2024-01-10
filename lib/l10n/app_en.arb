@@ -204,6 +204,8 @@
     "tenToTwentyMin": "10 - 20 min",
     "twentyToThirtyMin": "20 - 30 min",
     "moreThanThirtyMin": ">30 min",
+    "adminSettings": "Admin Settings",
+    "userProfiles": "User Profiles",
     "exportFirebaseToGoogleSheets": "Export Firebase to Google Sheets",
     "exportFirebaseToGoogleSheetsDialogTitle": "Export Firebase to Google Sheets?",
     "exportFirebaseToGoogleSheetsDialogDescription": "This will sync all data from Firebase to Google sheets, which will count against the quota for both the Firebase API and Google Cloud API.",

@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../model/firebase_registration_result.dart';
@@ -165,6 +164,63 @@ class FirebaseAuthService {
       return e;
     }
     return null;
+  }
+
+  Future<FirebaseAuthException?> changeCurrentUserEmail(String email) async {
+    try {
+      var trimmedEmail = email.trim();
+      if (trimmedEmail.isNotEmpty) {
+        await _auth.currentUser?.updateEmail(trimmedEmail);
+      }
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
+  }
+
+  Future<FirebaseAuthException?> changeCurrentUserPassword(String password) async {
+    if (password.contains("*")) {
+      return FirebaseAuthException(code: "invalid-password");
+    }
+    try {
+      var trimmedPassword = password.trim();
+      if (trimmedPassword.isNotEmpty) {
+        await _auth.currentUser?.updatePassword(password);
+      }
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
+  }
+
+  Future<FirebaseAuthException?> changeCurrentUserDisplayName(String displayName) async {
+    try {
+      var trimmedDisplayName = displayName.trim();
+      if (trimmedDisplayName.isNotEmpty) {
+        await _auth.currentUser?.updateDisplayName(trimmedDisplayName);
+      }
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
+  }
+
+  Future<FirebaseAuthException?> changeCurrentUserPhoneNumber(PhoneAuthCredential phoneAuthCredential) async {
+    try {
+      await _auth.currentUser?.updatePhoneNumber(phoneAuthCredential);
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
+  }
+
+  Future<FirebaseAuthException?> changeCurrentUser(String? photoUrl) async {
+    try {
+      await _auth.currentUser?.updatePhotoURL(photoUrl);
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
   }
 
   Future<FirebaseAuthException?> deleteUser() async {

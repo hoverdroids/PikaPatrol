@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:language_code_icons/language_code_icons.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
@@ -371,28 +372,52 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapSave: () async {
         setState(() => loading = true);
 
-        var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
-            editedFirstName ?? userProfile?.firstName ?? "",
-            editedLastName ?? userProfile?.lastName ?? "",
-            userProfile?.uid,
-            editedTagline ?? userProfile?.tagline ?? "",
-            editedPronouns ?? userProfile?.pronouns ?? "",
-            editedOrganization ?? userProfile?.organization ?? "",
-            editedAddress ?? userProfile?.address ?? "",
-            editedCity ?? userProfile?.city ?? "",
-            editedState ?? userProfile?.state ?? "",
-            editedZip ?? userProfile?.zip ?? "",
-            editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
-            editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
-            editedDzOptIn ?? userProfile?.dzOptIn ?? false,
-            userProfile?.roles ?? <String>[],
-            DateTime.now(),
-            translations
-        );
+        var hasError = false;
 
-        var uid = userProfile?.uid;
-        if (updatedUserProfile != null && uid != null) {
-          GoogleSheetsService.addOrUpdateAppUserProfiles([updatedUserProfile.copy(uid: uid)]);
+        var updatedEmail = editedEmail?.trim();
+        if (updatedEmail != null) {
+          FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserEmail(updatedEmail);
+          var message = exception?.message;
+          if (message != null) {
+            showToast(message);
+            hasError = true;
+          }
+        }
+
+        var updatedPassword = editedPassword?.trim();
+        if (updatedPassword != null) {
+          FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserPassword(updatedPassword);
+          var message = exception?.message;
+          if (message != null) {
+            showToast(message);
+            hasError = true;
+          }
+        }
+
+        if (!hasError) {
+          var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
+              editedFirstName ?? userProfile?.firstName ?? "",
+              editedLastName ?? userProfile?.lastName ?? "",
+              userProfile?.uid,
+              editedTagline ?? userProfile?.tagline ?? "",
+              editedPronouns ?? userProfile?.pronouns ?? "",
+              editedOrganization ?? userProfile?.organization ?? "",
+              editedAddress ?? userProfile?.address ?? "",
+              editedCity ?? userProfile?.city ?? "",
+              editedState ?? userProfile?.state ?? "",
+              editedZip ?? userProfile?.zip ?? "",
+              editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
+              editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
+              editedDzOptIn ?? userProfile?.dzOptIn ?? false,
+              userProfile?.roles ?? <String>[],
+              userProfile?.dateUpdatedInGoogleSheets,
+              translations
+          );
+
+          var uid = userProfile?.uid;
+          if (updatedUserProfile != null && uid != null) {
+            GoogleSheetsService.addOrUpdateAppUserProfiles([updatedUserProfile.copy(uid: uid)]);
+          }
         }
 
         resetEditedUserProfileFields();
@@ -436,8 +461,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           },
         );
       },
-      showEmail: false, //TODO - need to wait until we allow the user to change their email
-      showPassword: false, //TODO - need to wait until we allow the user to change their password
+      email: user?.email ?? "",
+      password: "",//Auth doesn't provide password, so just show hint
+      showPasswordHint: true,
+      passwordHint: "**********",
+      validatePassword: editedPassword != null,
       firstName: userProfile?.firstName ?? "" ,
       lastName: userProfile?.lastName ?? "",
       tagline: userProfile?.tagline ?? "",

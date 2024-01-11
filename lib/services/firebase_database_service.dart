@@ -91,7 +91,7 @@ class FirebaseDatabaseService {
       profile1?.rmwOptIn != profile2?.rmwOptIn ||
       profile1?.dzOptIn != profile2?.dzOptIn ||
       profile1?.roles != profile2?.roles ||
-      profile1?.dateUpdatedInGoogleSheets != profile2?.dateUpdatedInGoogleSheets;
+      profile1?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch != profile2?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch;
 
   Future<AppUserProfile?> addOrUpdateUserProfile(
       String firstName,
@@ -108,7 +108,7 @@ class FirebaseDatabaseService {
       bool rmwOptIn,
       bool dzOptIn,
       List<String> roles,
-      DateTime dateUpdatedInGoogleSheets,
+      DateTime? dateUpdatedInGoogleSheets,
       Translations translations
   ) async {
 
@@ -170,7 +170,7 @@ class FirebaseDatabaseService {
             'rmwOptIn': rmwOptIn,
             'dzOptIn': dzOptIn,
             'roles': roles,
-            'dateUpdatedInGoogleSheets': dateUpdatedInGoogleSheets
+            'dateUpdatedInGoogleSheets': DateTime.now()
           }
       );
       if (isCurrentUser) {

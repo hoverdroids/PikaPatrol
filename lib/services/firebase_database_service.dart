@@ -144,9 +144,6 @@ class FirebaseDatabaseService {
     }
 
     if (!shouldUpdate) {
-      if (isCurrentUser) {
-        showToast(translations.profileIsAlreadyUpToDate);
-      }
       return null;
     }
 
@@ -168,9 +165,6 @@ class FirebaseDatabaseService {
             'dateUpdatedInGoogleSheets': DateTime.now()
           }
       );
-      if (isCurrentUser) {
-        showToast(translations.profileUpdated);
-      }
     } catch(e) {
       showToast("App profile update error:$e");
     }

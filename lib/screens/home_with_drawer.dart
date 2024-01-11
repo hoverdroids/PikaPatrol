@@ -377,7 +377,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         setState(() => loading = true);
 
         var hasError = false;
-
+        var emailUpdated = false;
         var updatedEmail = editedEmail?.trim();
         if (updatedEmail != null) {
           FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserEmail(updatedEmail);
@@ -385,19 +385,25 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           if (message != null) {
             showToast(message);
             hasError = true;
+          } else {
+            emailUpdated = true;
           }
         }
 
+        var passwordUpdated = false;
         var updatedPassword = editedPassword?.trim();
-        if (updatedPassword != null) {
+        if (updatedPassword != null && !hasError) {
           FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserPassword(updatedPassword);
           var message = exception?.message;
           if (message != null) {
             showToast(message);
             hasError = true;
+          } else {
+            passwordUpdated = true;
           }
         }
 
+        var profileUpdated = false;
         if (!hasError) {
           var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
               editedFirstName ?? userProfile?.firstName ?? "",
@@ -416,10 +422,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               userProfile?.dateUpdatedInGoogleSheets,
               translations
           );
+          profileUpdated = updatedUserProfile != null;
 
           var uid = userProfile?.uid;
-          if (updatedUserProfile != null && uid != null) {
+          if (profileUpdated && uid != null) {
             GoogleSheetsService.addOrUpdateAppUserProfiles([updatedUserProfile.copy(uid: uid)]);
+          }
+        }
+
+        if (!hasError) {
+          if (emailUpdated || passwordUpdated || profileUpdated) {
+            showToast(translations.profileUpdated);
+          } else {
+            showToast(translations.profileIsAlreadyUpToDate);
           }
         }
 
@@ -469,7 +484,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       emailLabel: translations.email,
       emailHint: translations.email,
       invalidEmailText: translations.invalidEmail,
-      password: "",//Auth doesn't provide password, so just show hint
+      password: isEditingProfile ? "" : "**********",//Auth doesn't provide password, so just show hint
       showPasswordHint: true,
       passwordHint: "**********",
       passwordLabel: translations.password,

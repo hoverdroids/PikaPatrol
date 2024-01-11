@@ -49,12 +49,18 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String takeClimateAction = ERROR;
   String takeClimateActionUrl = ERROR;
   String sponsorsAndSupport = ERROR;
+
   String email = ERROR;
   String emailCannotBeEmpty = ERROR;
+  String invalidEmail = ERROR;
   String password = ERROR;
   String passwordCannotBeEmpty = ERROR;
+  String invalidPassword = ERROR;
   String firstName = ERROR;
+  String invalidFirstName = ERROR;
   String lastName = ERROR;
+  String invalidLastName = ERROR;
+  String profile = ERROR;
   String tagline = ERROR;
   String pronouns = ERROR;
   String organization = ERROR;
@@ -62,6 +68,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String city = ERROR;
   String state = ERROR;
   String zip = ERROR;
+  String invalidZip = ERROR;
   String deleteAccount = ERROR;
   String deleteAccountDialogTitle = ERROR;
   String deleteAccountDialogDetails = ERROR;
@@ -72,6 +79,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String register = ERROR;
   String registered = ERROR;
   String forgotPassword = ERROR;
+  String save = ERROR;
 
   String americanPika = ERROR;
   String americanPikaDetails = ERROR;
@@ -520,6 +528,13 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     locationPermissionsArePermanentlyDenied = AppLocalizations.of(context)?.locationPermissionsArePermanentlyDenied ?? locationPermissionsArePermanentlyDenied;
     couldNotRetrieveLocationFromGps = AppLocalizations.of(context)?.couldNotRetrieveLocationFromGps ?? couldNotRetrieveLocationFromGps;
     profileUpdated = AppLocalizations.of(context)?.profileUpdated ?? profileUpdated;
+    profile = AppLocalizations.of(context)?.profile ?? profile;
+    invalidEmail = AppLocalizations.of(context)?.invalidEmail ?? invalidEmail;
+    invalidPassword = AppLocalizations.of(context)?.invalidPassword ?? invalidPassword;
+    invalidFirstName = AppLocalizations.of(context)?.invalidFirstName ?? invalidFirstName;
+    invalidLastName = AppLocalizations.of(context)?.invalidLastName ?? invalidLastName;
+    invalidZip = AppLocalizations.of(context)?.invalidZip ?? invalidZip;
+    save = AppLocalizations.of(context)?.save ?? save;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -744,6 +759,13 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "locationPermissionsArePermanentlyDenied": return locationPermissionsArePermanentlyDenied;
       case "couldNotRetrieveLocationFromGps": return couldNotRetrieveLocationFromGps;
       case "profileUpdated": return profileUpdated;
+      case "profile": return profile;
+      case "invalidEmail": return invalidEmail;
+      case "invalidPassword": return invalidPassword;
+      case "invalidFirstName": return invalidFirstName;
+      case "invalidLastName": return invalidLastName;
+      case "invalidZip": return invalidZip;
+      case "save": return save;
       default: return key;
     }
   }

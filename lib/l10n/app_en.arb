@@ -216,5 +216,12 @@
     "locationPermissionsAreDenied": "Location permissions are denied",
     "locationPermissionsArePermanentlyDenied": "Location permissions are permanently denied, we cannot request permissions.",
     "couldNotRetrieveLocationFromGps": "Could not retrieve location from GPS.",
-    "profileUpdated": "Profile updated"
+    "profileUpdated": "Profile updated",
+    "profile": "Profile",
+    "invalidEmail": "Email is required",
+    "invalidPassword": "Enter a password 6+ chars long",
+    "invalidFirstName": "First name is required",
+    "invalidLastName": "Last name is required",
+    "invalidZip": "Zip is required",
+    "save": "Save"
 }

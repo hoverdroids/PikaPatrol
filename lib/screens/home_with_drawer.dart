@@ -355,7 +355,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
       //pops up and then immediately pops back down when trying to type text
       key: isEditingProfile ? editProfileKey : viewProfileKey,
+      screenTitle: translations.profile,
       isEditMode: isEditingProfile,
+      logoutText: translations.logout,
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
@@ -365,10 +367,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           showToast(message);
         }
       },
+      editText: translations.edit,
       onTapEdit: () {
         resetEditedUserProfileFields();
         setState(() => isEditingProfile = true);
       },
+      saveText: translations.save,
       onTapSave: () async {
         setState(() => loading = true);
 
@@ -424,7 +428,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         setState(() => isEditingProfile = false);
         setState(() => loading = false);
       },
-      onTapDelete: () async {
+      deleteAccount: translations.deleteAccount,
+      onTapDeleteAccount: () async {
         Widget okButton = TextButton(
           child: Text(translations.ok),
           onPressed:  () async {
@@ -462,19 +467,36 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         );
       },
       email: user?.email ?? "",
+      emailLabel: translations.email,
+      emailHint: translations.email,
+      invalidEmailText: translations.invalidEmail,
       password: "",//Auth doesn't provide password, so just show hint
       showPasswordHint: true,
       passwordHint: "**********",
+      passwordLabel: translations.password,
+      invalidPasswordText: translations.invalidPassword,
       validatePassword: editedPassword != null,
       firstName: userProfile?.firstName ?? "" ,
+      firstNameLabel: translations.firstName,
+      invalidFirstNameText: translations.invalidFirstName,
       lastName: userProfile?.lastName ?? "",
+      lastNameLabel: translations.lastName,
+      invalidLastNameText: translations.invalidLastName,
       tagline: userProfile?.tagline ?? "",
+      taglineLabel: translations.tagline,
       pronouns: userProfile?.pronouns ?? "",
+      pronounsLabel: translations.pronouns,
       organization: userProfile?.organization ?? "",
+      organizationLabel: translations.organization,
       address: userProfile?.address ?? "",
+      addressLabel: translations.address,
       city: userProfile?.city ?? "",
+      cityLabel: translations.city,
       state: userProfile?.state ?? "",
+      stateLabel: translations.state,
       zip: userProfile?.zip ?? "",
+      zipLabel: translations.zip,
+      invalidZipText: translations.invalidZip,
       onEmailChangedCallback: (value) => { editedEmail = value },
       onPasswordChangedCallback: (value) => { editedPassword = value },
       onFirstNameChangedCallback: (value) => { editedFirstName = value },
@@ -496,8 +518,15 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     key: _loginKey,
     isLogin: true,
     showLabels: false,
+    passwordLabel: translations.password,
+    passwordHint: translations.password,
+    invalidPasswordText: translations.invalidPassword,
     onPasswordChangedCallback: (value) => { editedPassword = value },
+    emailLabel: translations.email,
+    emailHint: translations.email,
+    invalidEmailText: translations.invalidEmail,
     onEmailChangedCallback: (value) => { editedEmail = value },
+    loginText: translations.login,
     onTapLogin: () async {
 
       var trimmedEmail = editedEmail?.trim() ?? "";
@@ -532,6 +561,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
       setState((){ loading = false; });
     },
+    forgotPasswordText: translations.forgotPassword,
     onTapForgotPassword: () async {
       var trimmedEmail = editedEmail?.trim() ?? "";
       if (trimmedEmail.isEmpty) {
@@ -545,6 +575,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         }
       }
     },
+    registerText: translations.register,
     onTapRegister: () => {
       setState(() => showSignIn = false)
     },
@@ -555,9 +586,17 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       key: _registerKey,
       isLogin: false,
       showLabels: false,
+      passwordLabel: translations.password,
+      passwordHint: translations.password,
+      invalidPasswordText: translations.invalidPassword,
       onPasswordChangedCallback: (value) => { editedPassword = value },
+      emailLabel: translations.email,
+      emailHint: translations.email,
+      invalidEmailText: translations.invalidEmail,
       onEmailChangedCallback: (value) => { editedEmail = value },
+      loginText: translations.login,
       onTapLogin: () => { setState(() => showSignIn = true) },
+      registerText: translations.register,
       onTapRegister: () async {
 
         var trimmedEmail = editedEmail?.trim() ?? "";

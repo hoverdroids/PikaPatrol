@@ -216,5 +216,12 @@
     "locationPermissionsAreDenied": "Se deniegan los permisos de ubicación",
     "locationPermissionsArePermanentlyDenied": "Los permisos de ubicación están permanentemente denegados, no podemos solicitar permisos.",
     "couldNotRetrieveLocationFromGps": "No se pudo recuperar la ubicación del GPS.",
-    "profileUpdated": "Perfil actualizado"
+    "profileUpdated": "Perfil actualizado",
+    "profile": "Perfil",
+    "invalidEmail": "Correo electronico es requerido",
+    "invalidPassword": "Ingrese una contraseña de más de 6 caracteres",
+    "invalidFirstName": "Se requiere el primer nombre",
+    "invalidLastName": "Se requiere apellido",
+    "invalidZip": "Se requiere código postal",
+    "save": "Ahorrar"
 }

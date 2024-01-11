@@ -1,4 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -16,7 +17,7 @@ import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
-const useEmulators = true;
+const useEmulators = false;
 
 Future<void> main() async {
 

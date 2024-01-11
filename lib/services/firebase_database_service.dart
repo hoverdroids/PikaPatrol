@@ -65,7 +65,6 @@ class FirebaseDatabaseService {
             'frppOptIn': false,
             'rmwOptIn': false,
             'dzOptIn': false,
-            'roles': null,
             'dateUpdatedInGoogleSheets': null
           }
       );
@@ -75,23 +74,22 @@ class FirebaseDatabaseService {
     }
   }
 
-  bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) =>
-      profile1 == null && profile2 != null ||
-      profile1 != null && profile2 == null ||
-      profile1?.firstName != profile2?.firstName ||
-      profile1?.lastName != profile2?.lastName ||
-      profile1?.tagline != profile2?.tagline ||
-      profile1?.pronouns != profile2?.pronouns ||
-      profile1?.organization != profile2?.organization ||
-      profile1?.address != profile2?.address ||
-      profile1?.city != profile2?.city ||
-      profile1?.state != profile2?.state ||
-      profile1?.zip != profile2?.zip ||
-      profile1?.frppOptIn != profile2?.frppOptIn ||
-      profile1?.rmwOptIn != profile2?.rmwOptIn ||
-      profile1?.dzOptIn != profile2?.dzOptIn ||
-      profile1?.roles != profile2?.roles ||
-      profile1?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch != profile2?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch;
+  bool areUserProfilesDifferent(AppUserProfile? profile1, AppUserProfile? profile2) => 
+    profile1 == null && profile2 != null ||
+    profile1 != null && profile2 == null ||
+    profile1?.firstName != profile2?.firstName ||
+    profile1?.lastName != profile2?.lastName ||
+    profile1?.tagline != profile2?.tagline ||
+    profile1?.pronouns != profile2?.pronouns ||
+    profile1?.organization != profile2?.organization ||
+    profile1?.address != profile2?.address ||
+    profile1?.city != profile2?.city ||
+    profile1?.state != profile2?.state ||
+    profile1?.zip != profile2?.zip ||
+    profile1?.frppOptIn != profile2?.frppOptIn ||
+    profile1?.rmwOptIn != profile2?.rmwOptIn ||
+    profile1?.dzOptIn != profile2?.dzOptIn ||
+    profile1?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch != profile2?.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch;
 
   Future<AppUserProfile?> addOrUpdateUserProfile(
       String firstName,
@@ -107,7 +105,6 @@ class FirebaseDatabaseService {
       bool frppOptIn,
       bool rmwOptIn,
       bool dzOptIn,
-      List<String> roles,
       DateTime? dateUpdatedInGoogleSheets,
       Translations translations
   ) async {
@@ -136,7 +133,6 @@ class FirebaseDatabaseService {
         frppOptIn: frppOptIn,
         rmwOptIn: rmwOptIn,
         dzOptIn: dzOptIn,
-        roles: roles,
         dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets
     );
 
@@ -169,7 +165,6 @@ class FirebaseDatabaseService {
             'frppOptIn': frppOptIn,
             'rmwOptIn': rmwOptIn,
             'dzOptIn': dzOptIn,
-            'roles': roles,
             'dateUpdatedInGoogleSheets': DateTime.now()
           }
       );
@@ -196,11 +191,6 @@ class FirebaseDatabaseService {
     try {
 
       final dataMap = snapshot.data() as Map<String, dynamic>;
-      List<dynamic>? roles = dataMap['roles'];
-      List<String> resolvedRoles = <String>[];
-      if (roles != null) {
-        resolvedRoles = roles.cast<String>().toList();
-      }
 
       return AppUserProfile(
         snapshot.get('firstName')?.trim() ?? '',
@@ -216,7 +206,6 @@ class FirebaseDatabaseService {
         frppOptIn: snapshot.get('frppOptIn') ?? false,
         rmwOptIn: snapshot.get('rmwOptIn') ?? false,
         dzOptIn: snapshot.get('dzOptIn') ?? false,
-        roles: resolvedRoles,
         dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     } catch(e){
@@ -228,8 +217,6 @@ class FirebaseDatabaseService {
     return snapshot.docs.map((doc) {
 
       final dataMap = doc.data() as Map<String, dynamic>;
-      List<dynamic>? roles = dataMap['roles'];
-      List<String> resolvedRoles = roles == null || roles.isEmpty ? <String>[] : roles.cast<String>().toList();
 
       return AppUserProfile(
         dataMap['firstName']?.trim() ?? '',
@@ -245,7 +232,6 @@ class FirebaseDatabaseService {
         frppOptIn: dataMap['frppOptIn'] ?? false,
         rmwOptIn: dataMap['rmwOptIn'] ?? false,
         dzOptIn: dataMap['dzOptIn'] ?? false,
-        roles: resolvedRoles,
         dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     }).toList();

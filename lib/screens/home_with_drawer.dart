@@ -413,7 +413,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
               editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
               editedDzOptIn ?? userProfile?.dzOptIn ?? false,
-              userProfile?.roles ?? <String>[],
               userProfile?.dateUpdatedInGoogleSheets,
               translations
           );
@@ -771,7 +770,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           appUserProfile.frppOptIn,
           appUserProfile.rmwOptIn,
           appUserProfile.dzOptIn,
-          appUserProfile.roles,
           now,
           translations
       );

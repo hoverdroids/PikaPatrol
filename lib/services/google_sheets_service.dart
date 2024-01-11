@@ -47,7 +47,6 @@ class GoogleSheetsService {
   static const String USER_PROFILES_CITY_COLUMN_TITLE = "city";
   static const String USER_PROFILES_STATE_COLUMN_TITLE = "state";
   static const String USER_PROFILES_ZIP_COLUMN_TITLE = "zip";
-  static const String USER_PROFILES_ROLES_COLUMN_TITLE = "roles";
   static const String USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "dateUpdatedInGoogleSheets";
 
   static const List<String> USER_PROFILES_COLUMNS = [
@@ -61,7 +60,6 @@ class GoogleSheetsService {
     USER_PROFILES_CITY_COLUMN_TITLE,
     USER_PROFILES_STATE_COLUMN_TITLE,
     USER_PROFILES_ZIP_COLUMN_TITLE,
-    USER_PROFILES_ROLES_COLUMN_TITLE,
     USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE
   ];
 
@@ -76,10 +74,10 @@ class GoogleSheetsService {
     USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
     USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
     USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
-    USER_PROFILES_ROLES_COLUMN_TITLE: appUserProfile.roles.toString(),
     USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch
   };
 
+  //For non string fields, need to user jsonDecode(json[thekey])
   static AppUserProfile fromGoogleSheetsJson(Map<String, dynamic> json) => AppUserProfile(
     json[USER_PROFILES_FIRST_NAME_COLUMN_TITLE],
     json[USER_PROFILES_LAST_NAME_COLUMN_TITLE],
@@ -91,7 +89,6 @@ class GoogleSheetsService {
     city: json[USER_PROFILES_CITY_COLUMN_TITLE],
     state: json[USER_PROFILES_STATE_COLUMN_TITLE],
     zip: json[USER_PROFILES_ZIP_COLUMN_TITLE],
-    roles: jsonDecode(json[USER_PROFILES_ROLES_COLUMN_TITLE]),//For non string fields, need to user jsonDecode(json[thekey])
     dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(jsonDecode(json[USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
   );
 

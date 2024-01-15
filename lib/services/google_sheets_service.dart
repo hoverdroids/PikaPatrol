@@ -104,9 +104,9 @@ class GoogleSheetsService {
     USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
     USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
     USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
-    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc(),
-    USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc(),
-    USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc()
+    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString(),
+    USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc().toString(),
+    USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc().toString()
   };
 
   //For non string fields, need to user jsonDecode(json[thekey])
@@ -121,7 +121,7 @@ class GoogleSheetsService {
     city: json[USER_PROFILES_CITY_COLUMN_TITLE],
     state: json[USER_PROFILES_STATE_COLUMN_TITLE],
     zip: json[USER_PROFILES_ZIP_COLUMN_TITLE],
-    dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(jsonDecode(json[USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
+    dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
   );
   //NOTE: if we wanted to retrieve the utc times from google sheets and save to user profile, do the following:
   //            DateTime.parse('1969-07-20 20:18:04Z');

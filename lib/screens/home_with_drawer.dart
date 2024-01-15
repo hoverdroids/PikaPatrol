@@ -443,7 +443,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
             var profile = updatedUserProfile ?? userProfile;
             if (profile != null) {
-              GoogleSheetsService.addOrUpdateAppUserProfile(user, profile);
+              await GoogleSheetsService.addOrUpdateAppUserProfile(user, profile);
             }
           }
         }

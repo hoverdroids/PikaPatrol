@@ -34,7 +34,7 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
 
   Future<bool?> getIsAdmin() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(PREFERENCE_USER_ACK_GEO);
+    return prefs.getBool(PREFERENCE_IS_ADMIN);
   }
 
   Future setIsAdmin(bool isAdmin) async {

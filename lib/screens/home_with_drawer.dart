@@ -359,6 +359,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
+        // Resetting isAdmin after signing out because the user can have an admin and non admin account (e.g. the dev)
+        await Provider.of<SettingsService>(context, listen: false).setIsAdmin(false);
+
         var result = await firebaseAuthService.signOut();
         final message = result?.message;
         if (message != null) {
@@ -401,11 +404,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           }
         }
 
-
+        var isAdminChanged = false;
+        if (context.mounted && user != null) {
+          var settings = Provider.of<SettingsService>(context, listen: false);
+          var savedIsAdmin = await settings.getIsAdmin() ?? false;
+          isAdminChanged = savedIsAdmin != user.isAdmin;
+          if (isAdminChanged) {
+            settings.setIsAdmin(user.isAdmin);
+          }
+        }
 
         var profileUpdated = false;
+        AppUserProfile? updatedUserProfile;
         if (!hasError) {
-          var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
+          updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
               editedFirstName ?? userProfile?.firstName ?? "",
               editedLastName ?? userProfile?.lastName ?? "",
               userProfile?.uid,
@@ -424,14 +436,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           );
           profileUpdated = updatedUserProfile != null;
 
+          //Copying the uid because it won't be available in the returned userProfile if the profile was added
           var uid = userProfile?.uid;
-          if (profileUpdated && uid != null) {
-            GoogleSheetsService.addOrUpdateAppUserProfile(user, updatedUserProfile.copy(uid: uid));
+          updatedUserProfile = updatedUserProfile?.copy(uid: uid);
+
+          if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
+            var profile = updatedUserProfile ?? userProfile;
+            if (profile != null) {
+              GoogleSheetsService.addOrUpdateAppUserProfile(user, profile);
+            }
           }
         }
 
         if (!hasError) {
-          if (emailUpdated || passwordUpdated || profileUpdated) {
+          if (emailUpdated || passwordUpdated || profileUpdated || isAdminChanged) {
             showToast(translations.profileUpdated);
           } else {
             showToast(translations.profileIsAlreadyUpToDate);

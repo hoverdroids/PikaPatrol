@@ -6,6 +6,8 @@ import 'package:gsheets/gsheets.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'dart:developer' as developer;
 
+import '../model/app_user.dart';
+
 class GoogleSheetsService {
   static const _credentials = r''' 
   {
@@ -38,21 +40,27 @@ class GoogleSheetsService {
   static const int USER_PROFILES_WORKSHEET_COLUMN_HEADERS_ROW_NUMBER = 1;
   static const String USER_PROFILES_UID_COLUMN_TITLE = "uid";
   static const int USER_PROFILES_UID_COLUMN_NUMBER = 1;
-  static const String USER_PROFILES_FIRST_NAME_COLUMN_TITLE = "firstName";
-  static const String USER_PROFILES_LAST_NAME_COLUMN_TITLE = "lastName";
-  static const String USER_PROFILES_TAGLINE_COLUMN_TITLE = "tagline";
-  static const String USER_PROFILES_PRONOUNS_COLUMN_TITLE = "pronouns";
-  static const String USER_PROFILES_ORGANIZATION_COLUMN_TITLE = "organization";
-  static const String USER_PROFILES_ADDRESS_COLUMN_TITLE = "address";
-  static const String USER_PROFILES_CITY_COLUMN_TITLE = "city";
-  static const String USER_PROFILES_STATE_COLUMN_TITLE = "state";
-  static const String USER_PROFILES_ZIP_COLUMN_TITLE = "zip";
-  static const String USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "dateUpdatedInGoogleSheets";
+  static const String USER_PROFILES_IS_ADMIN_COLUMN_TITLE = "Is Admin";
+  static const String USER_PROFILES_FIRST_NAME_COLUMN_TITLE = "First Name";
+  static const String USER_PROFILES_LAST_NAME_COLUMN_TITLE = "Last Name";
+  static const String USER_PROFILES_EMAIL_COLUMN_TITLE = "Email";
+  static const String USER_PROFILES_TAGLINE_COLUMN_TITLE = "Tagline";
+  static const String USER_PROFILES_PRONOUNS_COLUMN_TITLE = "Pronouns";
+  static const String USER_PROFILES_ORGANIZATION_COLUMN_TITLE = "Organization";
+  static const String USER_PROFILES_ADDRESS_COLUMN_TITLE = "Address";
+  static const String USER_PROFILES_CITY_COLUMN_TITLE = "City";
+  static const String USER_PROFILES_STATE_COLUMN_TITLE = "State";
+  static const String USER_PROFILES_ZIP_COLUMN_TITLE = "Zip";
+  static const String USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "Date Updated In Google Sheets";
+  static const String USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE = "Account Created";
+  static const String USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE = "Last Signed In";
 
   static const List<String> USER_PROFILES_COLUMNS = [
     USER_PROFILES_UID_COLUMN_TITLE,
+    USER_PROFILES_IS_ADMIN_COLUMN_TITLE,
     USER_PROFILES_FIRST_NAME_COLUMN_TITLE,
     USER_PROFILES_LAST_NAME_COLUMN_TITLE,
+    USER_PROFILES_EMAIL_COLUMN_TITLE,
     USER_PROFILES_TAGLINE_COLUMN_TITLE,
     USER_PROFILES_PRONOUNS_COLUMN_TITLE,
     USER_PROFILES_ORGANIZATION_COLUMN_TITLE,
@@ -60,10 +68,15 @@ class GoogleSheetsService {
     USER_PROFILES_CITY_COLUMN_TITLE,
     USER_PROFILES_STATE_COLUMN_TITLE,
     USER_PROFILES_ZIP_COLUMN_TITLE,
-    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE
+    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE,
+    USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE,
+    USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE
   ];
 
-  static Map<String, dynamic> toGoogleSheetJson(AppUserProfile appUserProfile) => {
+  // There is no way to get all user emails and other credentials in bulk for Firebase Client SDK
+  // Consequently, those fields must be ignored when bulk exporting user profiles from Firebase to Google Sheets
+  // and then updated from a server with the Admin SDK
+  static Map<String, dynamic> toGoogleSheetJsonForBulkProfileExport(AppUserProfile appUserProfile) => {
     USER_PROFILES_UID_COLUMN_TITLE: appUserProfile.uid,
     USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
     USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
@@ -74,7 +87,26 @@ class GoogleSheetsService {
     USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
     USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
     USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
-    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.millisecondsSinceEpoch
+    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc()
+  };
+
+  // Since the user is logged in, their individual information is available for update
+  static Map<String, dynamic> toGoogleSheetJsonForLoggedInUser(AppUser appUser, AppUserProfile appUserProfile) => {
+    USER_PROFILES_UID_COLUMN_TITLE: appUserProfile.uid,
+    USER_PROFILES_IS_ADMIN_COLUMN_TITLE: appUser.isAdmin,
+    USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
+    USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
+    USER_PROFILES_EMAIL_COLUMN_TITLE: appUser.email,
+    USER_PROFILES_TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
+    USER_PROFILES_PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
+    USER_PROFILES_ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
+    USER_PROFILES_ADDRESS_COLUMN_TITLE: appUserProfile.address,
+    USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
+    USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
+    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
+    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc(),
+    USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc(),
+    USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc()
   };
 
   //For non string fields, need to user jsonDecode(json[thekey])
@@ -91,10 +123,15 @@ class GoogleSheetsService {
     zip: json[USER_PROFILES_ZIP_COLUMN_TITLE],
     dateUpdatedInGoogleSheets: DateTime.fromMillisecondsSinceEpoch(jsonDecode(json[USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
   );
+  //NOTE: if we wanted to retrieve the utc times from google sheets and save to user profile, do the following:
+  //            DateTime.parse('1969-07-20 20:18:04Z');
+  //      There is no need though, since that data is stored in Firebase and available in the AppUser
 
   static Worksheet? _observationsWorksheet;
 
-  static Future init() async {//TODO - CHRIS - do not init this when not an admin account; it will increase API usage without benefit
+  // Initializing for all users so that user profile and observation data will be updated when the owner updates them, to decrease the need
+  // for bulk exporting out of firebase.
+  static Future init() async {
     try {
       final spreadsheet = await _gsheets.spreadsheet(_spreadsheetId);
       _userProfilesWorksheet = await _getWorksheet(spreadsheet, USER_PROFILES_WORKSHEET_TITLE);
@@ -124,18 +161,29 @@ class GoogleSheetsService {
     return json != null ? fromGoogleSheetsJson(json) : null;
   }
 
+  static Future<void> addOrUpdateAppUserProfile(AppUser? appUser, AppUserProfile appUserProfile) async {
+    var uid = appUserProfile.uid;
+    if (uid != null) {
+      final index = await _userProfilesWorksheet?.values.rowIndexOf(uid, inColumn: USER_PROFILES_UID_COLUMN_NUMBER);
+
+      Map<String, dynamic> json;
+      if (appUser == null) {
+        json = toGoogleSheetJsonForBulkProfileExport(appUserProfile);
+      } else {
+        json = toGoogleSheetJsonForLoggedInUser(appUser, appUserProfile);
+      }
+
+      if (index == null || index == -1) {
+        await insertAppUserProfile(json);
+      } else {
+        await updateAppUserProfile(uid, json);
+      }
+    }
+  }
+
   static Future<void> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles) async {
     for (var appUserProfile in appUserProfiles) {
-      var uid = appUserProfile.uid;
-      if (uid != null) {
-        final index = await _userProfilesWorksheet?.values.rowIndexOf(uid, inColumn: USER_PROFILES_UID_COLUMN_NUMBER);
-        final json = toGoogleSheetJson(appUserProfile);
-        if (index == null || index == -1) {
-          await insertAppUserProfile(json);
-        } else {
-          await updateAppUserProfile(uid, json);
-        }
-      }
+      await addOrUpdateAppUserProfile(null, appUserProfile);
     }
   }
 

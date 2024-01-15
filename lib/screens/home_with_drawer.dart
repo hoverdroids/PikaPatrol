@@ -25,13 +25,11 @@ import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import '../l10n/translations.dart';
 import '../model/firebase_registration_result.dart';
 import '../services/settings_service.dart';
-import '../utils/constants.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
 
@@ -403,6 +401,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           }
         }
 
+
+
         var profileUpdated = false;
         if (!hasError) {
           var updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
@@ -426,7 +426,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
           var uid = userProfile?.uid;
           if (profileUpdated && uid != null) {
-            GoogleSheetsService.addOrUpdateAppUserProfiles([updatedUserProfile.copy(uid: uid)]);
+            GoogleSheetsService.addOrUpdateAppUserProfile(user, updatedUserProfile.copy(uid: uid));
           }
         }
 
@@ -697,8 +697,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   showGeoTrackingDialog(BuildContext context, AppUser? user) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userAcked = prefs.getBool(Constants.PREFERENCE_USER_ACK_GEO);
+    final userAcked = await Provider.of<SettingsService>(context, listen: false).getUserAcknowledgedGeo();
 
     if (userAcked != null && userAcked == true) {
       if (mounted) showObservationScreen(context, user);
@@ -709,9 +708,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           Navigator.pop(context, true);
 
           Permission.location.request();
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool(Constants.PREFERENCE_USER_ACK_GEO, true);
-
+          await Provider.of<SettingsService>(context, listen: false).setUserAcknowledgedGeo();
           if (mounted) showObservationScreen(context, user);
         },
       );

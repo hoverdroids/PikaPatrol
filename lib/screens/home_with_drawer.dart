@@ -114,6 +114,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scaffoldKey.currentState?.openEndDrawer();
       });
+    } else if (userProfile != null && userProfile.dateUpdatedInGoogleSheets == null){
+      //Save a user's profile to google sheets and update profile in Firebase if the user data isn't yet synced
+      FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context, listen: false);
+      FirebaseDatabaseService firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+      saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
     }
 
     return Scaffold(
@@ -375,91 +380,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       saveText: translations.save,
       onTapSave: () async {
-        setState(() => loading = true);
-
-        var hasError = false;
-        var emailUpdated = false;
-        var updatedEmail = editedEmail?.trim();
-        if (updatedEmail != null) {
-          FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserEmail(updatedEmail);
-          var message = exception?.message;
-          if (message != null) {
-            showToast(message);
-            hasError = true;
-          } else {
-            emailUpdated = true;
-          }
-        }
-
-        var passwordUpdated = false;
-        var updatedPassword = editedPassword?.trim();
-        if (updatedPassword != null && !hasError) {
-          FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserPassword(updatedPassword);
-          var message = exception?.message;
-          if (message != null) {
-            showToast(message);
-            hasError = true;
-          } else {
-            passwordUpdated = true;
-          }
-        }
-
-        var isAdminChanged = false;
-        if (context.mounted && user != null) {
-          var settings = Provider.of<SettingsService>(context, listen: false);
-          var savedIsAdmin = await settings.getIsAdmin() ?? false;
-          isAdminChanged = savedIsAdmin != user.isAdmin;
-          if (isAdminChanged) {
-            settings.setIsAdmin(user.isAdmin);
-          }
-        }
-
-        var profileUpdated = false;
-        AppUserProfile? updatedUserProfile;
-        if (!hasError) {
-          updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
-              editedFirstName ?? userProfile?.firstName ?? "",
-              editedLastName ?? userProfile?.lastName ?? "",
-              userProfile?.uid,
-              editedTagline ?? userProfile?.tagline ?? "",
-              editedPronouns ?? userProfile?.pronouns ?? "",
-              editedOrganization ?? userProfile?.organization ?? "",
-              editedAddress ?? userProfile?.address ?? "",
-              editedCity ?? userProfile?.city ?? "",
-              editedState ?? userProfile?.state ?? "",
-              editedZip ?? userProfile?.zip ?? "",
-              editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
-              editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
-              editedDzOptIn ?? userProfile?.dzOptIn ?? false,
-              userProfile?.dateUpdatedInGoogleSheets,
-              translations
-          );
-          profileUpdated = updatedUserProfile != null;
-
-          //Copying the uid because it won't be available in the returned userProfile if the profile was added
-          var uid = userProfile?.uid;
-          updatedUserProfile = updatedUserProfile?.copy(uid: uid);
-
-          if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
-            var profile = updatedUserProfile ?? userProfile;
-            if (profile != null && context.mounted) {
-              var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-              await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
-            }
-          }
-        }
-
-        if (!hasError) {
-          if (emailUpdated || passwordUpdated || profileUpdated || isAdminChanged) {
-            showToast(translations.profileUpdated);
-          } else {
-            showToast(translations.profileIsAlreadyUpToDate);
-          }
-        }
-
-        resetEditedUserProfileFields();
-        setState(() => isEditingProfile = false);
-        setState(() => loading = false);
+        saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, userProfile?.dateUpdatedInGoogleSheets);
       },
       deleteAccount: translations.deleteAccount,
       onTapDeleteAccount: () async {
@@ -827,5 +748,104 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     editedFrppOptIn = null;
     editedRmwOptIn = null;
     editedDzOptIn = null;
+  }
+
+  saveProfile(
+      FirebaseAuthService firebaseAuthService,
+      FirebaseDatabaseService firebaseDatabaseService,
+      AppUser? user,
+      AppUserProfile? userProfile,
+      DateTime? dateUpdatedInGoogleSheets
+  ) async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    var hasError = false;
+    var emailUpdated = false;
+    var updatedEmail = editedEmail?.trim();
+    if (updatedEmail != null) {
+      FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserEmail(updatedEmail);
+      var message = exception?.message;
+      if (message != null) {
+        showToast(message);
+        hasError = true;
+      } else {
+        emailUpdated = true;
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var passwordUpdated = false;
+    var updatedPassword = editedPassword?.trim();
+    if (updatedPassword != null && !hasError) {
+      FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserPassword(updatedPassword);
+      var message = exception?.message;
+      if (message != null) {
+        showToast(message);
+        hasError = true;
+      } else {
+        passwordUpdated = true;
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var isAdminChanged = false;
+    if (context.mounted && user != null) {
+      var settings = Provider.of<SettingsService>(context, listen: false);
+      var savedIsAdmin = await settings.getIsAdmin() ?? false;
+      isAdminChanged = savedIsAdmin != user.isAdmin;
+      if (isAdminChanged) {
+        settings.setIsAdmin(user.isAdmin);
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var profileUpdated = false;
+    AppUserProfile? updatedUserProfile;
+    if (!hasError) {
+      updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
+          editedFirstName ?? userProfile?.firstName ?? "",
+          editedLastName ?? userProfile?.lastName ?? "",
+          userProfile?.uid,
+          editedTagline ?? userProfile?.tagline ?? "",
+          editedPronouns ?? userProfile?.pronouns ?? "",
+          editedOrganization ?? userProfile?.organization ?? "",
+          editedAddress ?? userProfile?.address ?? "",
+          editedCity ?? userProfile?.city ?? "",
+          editedState ?? userProfile?.state ?? "",
+          editedZip ?? userProfile?.zip ?? "",
+          editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
+          editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
+          editedDzOptIn ?? userProfile?.dzOptIn ?? false,
+          dateUpdatedInGoogleSheets ?? userProfile?.dateUpdatedInGoogleSheets,
+          translations
+      );
+      profileUpdated = updatedUserProfile != null;
+
+      //Copying the uid because it won't be available in the returned userProfile if the profile was added
+      var uid = userProfile?.uid;
+      updatedUserProfile = updatedUserProfile?.copy(uid: uid);
+
+      if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
+        var profile = updatedUserProfile ?? userProfile;
+        if (profile != null && context.mounted) {
+          var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+          await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
+        }
+      }
+    }
+
+    if (!hasError) {
+      if (emailUpdated || passwordUpdated || profileUpdated || isAdminChanged) {
+        showToast(translations.profileUpdated);
+      } else {
+        showToast(translations.profileIsAlreadyUpToDate);
+      }
+    }
+
+    resetEditedUserProfileFields();
+    setState(() => isEditingProfile = false);
+    setState(() => loading = false);
   }
 }

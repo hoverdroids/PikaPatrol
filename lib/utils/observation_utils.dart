@@ -3,6 +3,7 @@ import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/data/pika_species.dart';
 import 'package:pika_patrol/main.dart';
+import 'package:pika_patrol/services/firebase_observations_service.dart';
 
 import '../l10n/translations.dart';
 import '../model/local_observation.dart';
@@ -36,7 +37,7 @@ Future saveObservation(Observation observation) async {
 }
 
 Future<LocalObservation?> saveLocalObservation(Observation observation) async {
-  var box = Hive.box<LocalObservation>('observations');
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
 
   //The observation screen can be opened from an online observation, which means that the dbId can be null.
   //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
@@ -97,7 +98,7 @@ Future<FirebaseException?> deleteObservation(Observation observation, bool delet
 }
 
 Future deleteLocalObservation(Observation observation) async {
-  var box = Hive.box<LocalObservation>('observations');
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
   if (observation.dbId != null) {
     // Deleting from cached observations, the observation will have a dbId, but might not have a uid
     await box.delete(observation.dbId);

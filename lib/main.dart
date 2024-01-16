@@ -1,6 +1,7 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
 import 'package:pika_patrol/services/settings_service.dart';
@@ -25,7 +26,7 @@ Future<void> main() async {
   //debugPrintGestureArenaDiagnostics = true;
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
-  await Hive.openBox<LocalObservation>('observations');
+  await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();

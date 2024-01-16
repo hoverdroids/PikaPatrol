@@ -12,6 +12,7 @@ import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../primitives/card_layout.dart';
+import '../services/firebase_observations_service.dart';
 import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
@@ -62,7 +63,7 @@ class ObservationsPageState extends State<ObservationsPage> {
     translations = Provider.of<Translations>(context);
 
     return ValueListenableBuilder(
-      valueListenable: Hive.box<LocalObservation>('observations').listenable(),
+      valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
       builder: (context, box, widget2){
 
         //Get all locally saved observations

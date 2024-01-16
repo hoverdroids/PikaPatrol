@@ -153,6 +153,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String ifThen = ERROR;
   String ifThenUrl = ERROR;
   String ok = ERROR;
+  String cancel = ERROR;
   String couldNotSignInWithThoseCredentials = ERROR;
   String cannotSignInNoConnection = ERROR;
   String successfullyLoggedIn = ERROR;
@@ -221,6 +222,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatPileOnboardingDetails = ERROR;
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
+  String deleteObservationDialogTitle = ERROR;
+  String deleteObservationDialogDescription = ERROR;
 
   String unsureMoreThanOne = ERROR;
   late List<String> pikasDetectedKeys;
@@ -270,7 +273,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String couldNotRetrieveLocationFromGps = ERROR;
   String profileUpdated = ERROR;
 
-
+  String observationDeleted = ERROR;
+  String observationNotDeleted = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -429,6 +433,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     ifThen =  AppLocalizations.of(context)?.ifThen ?? ifThen;
     ifThenUrl =  AppLocalizations.of(context)?.ifThenUrl ?? ifThenUrl;
     ok =  AppLocalizations.of(context)?.ok ?? ok;
+    cancel = AppLocalizations.of(context)?.cancel ?? cancel;
     couldNotSignInWithThoseCredentials =  AppLocalizations.of(context)?.couldNotSignInWithThoseCredentials ?? couldNotSignInWithThoseCredentials;
     cannotSignInNoConnection =  AppLocalizations.of(context)?.cannotSignInNoConnection ?? cannotSignInNoConnection;
     successfullyLoggedIn =  AppLocalizations.of(context)?.successfullyLoggedIn ?? successfullyLoggedIn;
@@ -535,6 +540,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     invalidLastName = AppLocalizations.of(context)?.invalidLastName ?? invalidLastName;
     invalidZip = AppLocalizations.of(context)?.invalidZip ?? invalidZip;
     save = AppLocalizations.of(context)?.save ?? save;
+    deleteObservationDialogTitle = AppLocalizations.of(context)?.deleteObservationDialogTitle ?? deleteObservationDialogTitle;
+    deleteObservationDialogDescription = AppLocalizations.of(context)?.deleteObservationDialogDescription ?? deleteObservationDialogDescription;
+    observationDeleted = AppLocalizations.of(context)?.observationDeleted ?? observationDeleted;
+    observationNotDeleted = AppLocalizations.of(context)?.observationNotDeleted ?? observationNotDeleted;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -660,6 +669,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "ifThen": return ifThen;
       case "ifThenUrl": return ifThenUrl;
       case "ok": return ok;
+      case "cancel": return cancel;
       case "couldNotSignInWithThoseCredentials": return couldNotSignInWithThoseCredentials;
       case "cannotSignInNoConnection": return cannotSignInNoConnection;
       case "successfullyLoggedIn": return successfullyLoggedIn;
@@ -766,6 +776,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "invalidLastName": return invalidLastName;
       case "invalidZip": return invalidZip;
       case "save": return save;
+      case "deleteObservationDialogTitle": return deleteObservationDialogTitle;
+      case "deleteObservationDialogDescription": return deleteObservationDialogDescription;
+      case "observationDeleted": return observationDeleted;
+      case "observationNotDeleted": return observationNotDeleted;
       default: return key;
     }
   }

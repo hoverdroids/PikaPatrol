@@ -223,5 +223,10 @@
     "invalidFirstName": "Se requiere el primer nombre",
     "invalidLastName": "Se requiere apellido",
     "invalidZip": "Se requiere código postal",
-    "save": "Ahorrar"
+    "save": "Ahorrar",
+    "deleteObservationDialogTitle": "¿Eliminar observación?",
+    "deleteObservationDialogDescription": "¿Está seguro de que desea eliminar esta observación y todos los datos asociados, incluidas imágenes y archivos de audio?",
+    "cancel": "Cancelar",
+    "observationDeleted": "Observación eliminada",
+    "observationNotDeleted": "Observación no eliminada"
 }

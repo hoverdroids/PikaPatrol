@@ -97,6 +97,33 @@ class FirebaseObservationsService {
     developer.log("Update Observation id:${observation.uid}");
   }
 
+  Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
+    // var exception = deleteImages ? await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls) : null;
+    // if (exception != null) {
+    //   return exception;
+    // }
+    //
+    // exception = deleteAudio ? await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls) : null;
+    // if (exception != null) {
+    //   return exception;
+    // }
+
+    var docUid = observation.uid;
+    if (docUid != null) {
+      try {
+        await observationsCollection.doc(docUid).delete();
+        developer.log("Observation deleted:$docUid");
+        return null;
+      } on FirebaseException catch (e) {
+        developer.log("Error deleting observation $docUid :$e.message");
+        return e;
+      }
+    } else {
+      developer.log("Observation not deleted, no uid");
+      return null;
+    }
+  }
+
   List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {
 
@@ -183,5 +210,22 @@ class FirebaseObservationsService {
     });
 
     return uploadUrls;
+  }
+
+  Future<FirebaseException?> deleteFiles(String folderName, List<String>? fileUrls) async {
+    if (fileUrls == null || fileUrls.isEmpty) return null;
+
+    FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
+    for (var fileUrl in fileUrls) {
+      try {
+        await storage.refFromURL(fileUrl).delete();// .ref().child("$folderName/${basename(fileUrl)}").delete();
+        developer.log("File deleted:$fileUrl");
+      } on FirebaseException catch (e) {
+        developer.log("Error deleting file:$e.message");
+        return e;
+      }
+    }
+
+    return null;
   }
 }

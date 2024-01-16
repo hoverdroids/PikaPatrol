@@ -223,5 +223,10 @@
     "invalidFirstName": "First name is required",
     "invalidLastName": "Last name is required",
     "invalidZip": "Zip is required",
-    "save": "Save"
+    "save": "Save",
+    "deleteObservationDialogTitle": "Delete observation?",
+    "deleteObservationDialogDescription": "Are you sure you want to delete this observation and all associated data, including images and audio files?",
+    "cancel": "Cancel",
+    "observationDeleted": "Observation deleted",
+    "observationNotDeleted": "Observation not deleted"
 }

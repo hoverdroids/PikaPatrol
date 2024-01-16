@@ -41,6 +41,7 @@ import 'dart:developer' as developer;
 import '../data/pika_species.dart';
 import '../l10n/translations.dart';
 import '../utils/observation_utils.dart';
+import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
@@ -110,6 +111,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         end: context.watch<MaterialThemesManager>().colorPalette().secondary)
         .animate(_colorAnimationController);
 
+    // Show delete button even when not editing
+    var showDeleteButton = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
       body: NotificationListener<ScrollNotification>(
@@ -132,6 +136,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     ),
                     smallTransparentDivider,
                     _buildAudioRecordings(),
+                    if (showDeleteButton) ... [
+                      _buildDeleteButtonForForm()
+                    ],
                   ],
                 ),
               ),
@@ -1412,6 +1419,66 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       setState((){
         widget.observation.date = picked;
       });
+    }
+  }
+
+  Widget _buildDeleteButtonForForm() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+    child: Center(
+      child: _buildDeleteButton(false)
+    )
+  );
+
+  Widget _buildDeleteButton(bool userConfirmedDelete) => ElevatedButton(
+    onPressed: () async {
+      if (userConfirmedDelete) {
+        var exception = await deleteObservation(widget.observation, true, true);
+        if (exception == null) {
+          showToast(translations.observationDeleted);
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+            );
+          }
+        } else {
+          showToast("${translations.observationNotDeleted} : $exception");
+          if (context.mounted) {
+            Navigator.pop(context, true);
+          }
+        }
+      } else {
+        _showDeleteObservationVerificationDialog();
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      backgroundColor: Colors.red,
+      shape: const StadiumBorder(),
+    ),
+    child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
+  );
+
+  Widget _buildCancelButton() => TextButton(
+    child: Text(translations.cancel),
+    onPressed: () async {
+      Navigator.pop(context, true);
+    },
+  );
+
+  _showDeleteObservationVerificationDialog() {
+    var user = Provider.of<AppUser>(context, listen: false);
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(translations.deleteObservationDialogTitle),
+          content: Text(translations.deleteObservationDialogDescription),
+          actions: [
+            _buildCancelButton(),
+            _buildDeleteButton(true)
+          ],
+        )
+      );
     }
   }
 }

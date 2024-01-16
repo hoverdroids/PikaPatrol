@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/data/pika_species.dart';
@@ -84,6 +85,11 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   }
 
   return box.get(observation.dbId);
+}
+
+Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
+  var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
+  return await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
 }
 
 //region OtherAnimalsPresent

@@ -161,6 +161,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildAppbar(AppUser? user) => AnimatedBuilder(
     animation: _colorAnimationController,
     builder: (context, child) {
+
+      var isUsersObservationOrAdmin = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+      var showRightIcon = widget.isEditMode || widget.observation.dbId != null || isUsersObservationOrAdmin;
+
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),
         backgroundColor: _colorTween.value,
@@ -170,7 +174,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         leftIconType: ThemeGroupType.MOS,
         leftIconClickedCallback: () => Navigator.pop(context),
         rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
-        showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),
+        showRightIcon: showRightIcon,
         //Widget will only be in edit mode if new observation
         rightIconType: ThemeGroupType.MOS,
         rightIconClickedCallback: () async {
@@ -182,7 +186,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
 
-              var localObservation = await saveLocalObservation(widget.observation);
+              if (user != null && user.uid == widget.observation.observerUid) {
+                var localObservation = await saveLocalObservation(widget.observation);
+              }
 
               //TODO - CHRIS - probably worth moving to the saveObservationon method
               var hasConnection = await DataConnectionChecker().hasConnection;
@@ -195,10 +201,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
                 //If the observation was made when the user was not logged in, then edited after logging in, the user
                 //id can be null. So update it now. This allows local observations to be uploaded when online.
-                widget.observation.observerUid = user.uid;
+                // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+                widget.observation.observerUid ??= user.uid;
 
                 //Share with others
-                await saveObservation(user, widget.observation);
+                await saveObservation(widget.observation);
 
                 setState(() {
                   _isUploading = false;
@@ -1466,7 +1473,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   );
 
   _showDeleteObservationVerificationDialog() {
-    var user = Provider.of<AppUser>(context, listen: false);
     if (mounted) {
       showDialog(
         context: context,

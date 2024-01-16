@@ -176,7 +176,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                           //vs the stored observation.
                                           var uid = observation.uid;
                                           if (uid == null || uid.isEmpty) {
-                                            saveObservation(user, observation);
+                                            saveObservation(observation);
                                           }
                                         }
                                       } else {

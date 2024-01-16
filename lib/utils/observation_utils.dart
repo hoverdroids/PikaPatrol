@@ -5,13 +5,13 @@ import 'package:pika_patrol/data/pika_species.dart';
 import 'package:pika_patrol/main.dart';
 
 import '../l10n/translations.dart';
-import '../model/app_user.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../services/firebase_database_service.dart';
 
-Future saveObservation(AppUser? user, Observation observation) async {
+Future saveObservation(Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
+    var needToSaveLocalObservation = observation.uid == null;
 
     var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
@@ -29,8 +29,10 @@ Future saveObservation(AppUser? user, Observation observation) async {
 
     await databaseService.observationsService.updateObservation(observation);
 
-    // Update local observation after successful upload because the uid will be non empty now
-    saveLocalObservation(observation);
+    if (needToSaveLocalObservation) {
+      // Update local observation after successful upload because the uid will be non empty now
+      saveLocalObservation(observation);
+    }
 }
 
 Future<LocalObservation?> saveLocalObservation(Observation observation) async {

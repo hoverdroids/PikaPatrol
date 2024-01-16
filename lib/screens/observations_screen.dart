@@ -230,6 +230,6 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   List<Observation> _createDefaultObservations() => [
-    Observation(name:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
+    Observation(location:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
   ];
 }

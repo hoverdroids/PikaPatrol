@@ -112,7 +112,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         .animate(_colorAnimationController);
 
     // Show delete button even when not editing
-    var showDeleteButton = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+    var canEdit = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+    var isNewObservation = widget.observation.uid == null && widget.observation.dbId == null;
+    var showDeleteButton = canEdit && !isNewObservation;
 
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,

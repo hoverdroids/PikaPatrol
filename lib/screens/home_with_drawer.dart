@@ -442,8 +442,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
           if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
             var profile = updatedUserProfile ?? userProfile;
-            if (profile != null) {
-              await GoogleSheetsService.addOrUpdateAppUserProfile(user, profile);
+            if (profile != null && context.mounted) {
+              var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+              await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
             }
           }
         }
@@ -805,7 +806,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       );
     }
 
-    await GoogleSheetsService.addOrUpdateAppUserProfiles(appUserProfiles);
+    if (context.mounted) {
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles);
+    }
   }
 
   resetEditedUserProfileFields() {

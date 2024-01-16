@@ -90,8 +90,26 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
 }
 
 Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
+  await deleteLocalObservation(observation);
+
   var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
   return await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+}
+
+Future deleteLocalObservation(Observation observation) async {
+  var box = Hive.box<LocalObservation>('observations');
+  if (observation.dbId != null) {
+    // Deleting from cached observations, the observation will have a dbId, but might not have a uid
+    await box.delete(observation.dbId);
+  } else {
+    // Deleting from shared observations, the observation will hava uid but not a dbId
+    for (var localObservation in box.values) {
+      if (localObservation.uid == observation.uid) {
+        await box.delete(localObservation.key);
+        return;
+      }
+    }
+  }
 }
 
 //region OtherAnimalsPresent

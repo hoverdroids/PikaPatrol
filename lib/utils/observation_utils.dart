@@ -16,17 +16,17 @@ Future saveObservation(AppUser? user, Observation observation) async {
 
     var imageUrls = observation.imageUrls;
     if (imageUrls != null && imageUrls.isNotEmpty) {
-      observation.imageUrls = await databaseService.uploadFiles(imageUrls, true);
+      observation.imageUrls = await databaseService.observationsService.uploadFiles(imageUrls, true);
     }
     //developer.log("ImageUrls: ${observation.imageUrls.toString()}");
 
     var audioUrls = observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
-      observation.audioUrls = await databaseService.uploadFiles(audioUrls, false);
+      observation.audioUrls = await databaseService.observationsService.uploadFiles(audioUrls, false);
     }
     //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
-    await databaseService.updateObservation(observation);
+    await databaseService.observationsService.updateObservation(observation);
 
     // Update local observation after successful upload because the uid will be non empty now
     saveLocalObservation(observation);

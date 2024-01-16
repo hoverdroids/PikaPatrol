@@ -92,7 +92,7 @@ Future<void> main() async {
             firebaseDatabaseService.uid = appUser?.uid;
 
             return StreamBuilder<AppUserProfile?>(
-              stream: firebaseDatabaseService.userProfile,
+              stream: firebaseDatabaseService.userProfilesService.userProfile,
               initialData: null,
               builder: (context, appUserProfileSnapshot) {
 

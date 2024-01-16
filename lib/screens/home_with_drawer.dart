@@ -178,7 +178,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             controller: pageController,
             itemCount: 1,
             itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-              stream: Provider.of<FirebaseDatabaseService>(context).observations,
+              stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
               builder: (context, snapshot) {
                 List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
                 if (observations != null) {
@@ -392,7 +392,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            await firebaseDatabaseService.deleteUserProfile();
+            await firebaseDatabaseService.userProfilesService.deleteUserProfile();
 
             var result = await firebaseAuthService.deleteUser();
             var message = result?.message;
@@ -606,7 +606,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
-      var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
+      var initializationException = await firebaseDatabaseService.userProfilesService.initializeUser(newlyRegisteredUid);
       if (initializationException == null) {
         showToast("${translations.initialized} ${registrationResult.email}");
       }
@@ -701,14 +701,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.getAllUserProfiles(limit: 1);
+    var appUserProfiles = await firebaseDatabaseService.userProfilesService.getAllUserProfiles(limit: 1);
 
     for (var appUserProfile in appUserProfiles) {
       var now = DateTime.now();
       appUserProfile.dateUpdatedInGoogleSheets = now;
 
       //Update Firebase so that the next query for profiles not in sheets, doesn't return these results
-      await firebaseDatabaseService.addOrUpdateUserProfile(
+      await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
           appUserProfile.firstName,
           appUserProfile.lastName,
           appUserProfile.uid,
@@ -804,7 +804,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var profileUpdated = false;
     AppUserProfile? updatedUserProfile;
     if (!hasError) {
-      updatedUserProfile = await firebaseDatabaseService.addOrUpdateUserProfile(
+      updatedUserProfile = await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
           editedFirstName ?? userProfile?.firstName ?? "",
           editedLastName ?? userProfile?.lastName ?? "",
           userProfile?.uid,

@@ -1,3 +1,4 @@
+// ignore_for_file: constant_identifier_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:developer' as developer;
@@ -11,39 +12,69 @@ import 'package:path/path.dart';
 
 class FirebaseObservationsService {
 
+  static const String STORAGE_BUCKET_NAME = "pikajoe-97c5c.appspot.com";
+  static const String STORAGE_BUCKET_URL = "gs://$STORAGE_BUCKET_NAME";
+  static const String IMAGES_FOLDER_NAME = "images";
+  static const String AUDIO_FOLDER_NAME = "audio";
+
+  static const String OBSERVATIONS_COLLECTION_NAME = "observations";
+
+  static const String OBSERVER_UID = "observerUid";
+  static const String NAME = "name";
+  static const String LOCATION = "location";
+  static const String DATE = "date";
+  static const String ALTITUDE = "altitude";
+  static const String LATITUDE = "latitude";
+  static const String LONGITUDE = "longitude";
+  static const String SPECIES = "species";
+  static const String SIGNS = "signs";
+  static const String PIKAS_DETECTED = "pikasDetected";
+  static const String DISTANCE_TO_CLOSEST_PIKA = "distanceToClosestPika";
+  static const String SEARCH_DURATION = "searchDuration";
+  static const String TALUS_AREA = "talusArea";
+  static const String TEMPERATURE = "temperature";
+  static const String SKIES = "skies";
+  static const String WIND = "wind";
+  static const String SITE_HISTORY = "siteHistory";
+  static const String COMMENTS = "comments";
+  static const String IMAGE_URLS = "imageUrls";
+  static const String AUDIO_URLS = "audioUrls";
+  static const String OTHER_ANIMALS_PRESENT = "otherAnimalsPresent";
+  static const String SHARED_WITH_PROJECTS = "sharedWithProjects";
+
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference observationsCollection;
 
   FirebaseObservationsService(this.firebaseFirestore) {
-    observationsCollection = firebaseFirestore.collection("observations");
+    observationsCollection = firebaseFirestore.collection(OBSERVATIONS_COLLECTION_NAME);
   }
 
   Future updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
 
     var observationObject = {
-      'observerUid': observation.observerUid,
-      'name': observation.name,
-      'location': observation.location,
-      'date': observation.date,
-      'altitude': observation.altitudeInMeters,
-      'latitude': observation.latitude,
-      'longitude': observation.longitude,
-      'species': observation.species,
-      'signs': observation.signs,
-      'pikasDetected': observation.pikasDetected,
-      'distanceToClosestPika': observation.distanceToClosestPika,
-      'searchDuration': observation.searchDuration,
-      'talusArea': observation.talusArea,
-      'temperature': observation.temperature,
-      'skies': observation.skies,
-      'wind': observation.wind,
-      'siteHistory': observation.siteHistory,
-      'comments': observation.comments,
-      'imageUrls': observation.imageUrls,
-      'audioUrls': observation.audioUrls,
-      'otherAnimalsPresent': observation.otherAnimalsPresent,
-      'sharedWithProjects': observation.sharedWithProjects
+      OBSERVER_UID: observation.observerUid,
+      NAME: observation.name,
+      LOCATION: observation.location,
+      DATE: observation.date,
+      ALTITUDE: observation.altitudeInMeters,
+      LATITUDE: observation.latitude,
+      LONGITUDE: observation.longitude,
+      SPECIES: observation.species,
+      SIGNS: observation.signs,
+      PIKAS_DETECTED: observation.pikasDetected,
+      DISTANCE_TO_CLOSEST_PIKA: observation.distanceToClosestPika,
+      SEARCH_DURATION: observation.searchDuration,
+      TALUS_AREA: observation.talusArea,
+      TEMPERATURE: observation.temperature,
+      SKIES: observation.skies,
+      WIND: observation.wind,
+      SITE_HISTORY: observation.siteHistory,
+      COMMENTS: observation.comments,
+      IMAGE_URLS: observation.imageUrls,
+      AUDIO_URLS: observation.audioUrls,
+      OTHER_ANIMALS_PRESENT: observation.otherAnimalsPresent,
+      SHARED_WITH_PROJECTS: observation.sharedWithProjects
     };
     DocumentReference doc;
     if (observation.uid == null || observation.uid?.isEmpty == true) {
@@ -71,42 +102,42 @@ class FirebaseObservationsService {
 
       final dataMap = doc.data() as Map<String, dynamic>;
 
-      List<dynamic>? data = dataMap['signs'];
+      List<dynamic>? data = dataMap[SIGNS];
       List<String> signs = data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
 
-      data = dataMap['otherAnimalsPresent'];
+      data = dataMap[OTHER_ANIMALS_PRESENT];
       List<String> otherAnimalsPresent = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
-      data = dataMap['imageUrls'];
+      data = dataMap[IMAGE_URLS];
       List<String> imageUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
-      data = dataMap['audioUrls'];
+      data = dataMap[AUDIO_URLS];
       List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
-      data = dataMap['sharedWithProjects'];
+      data = dataMap[SHARED_WITH_PROJECTS];
       List<String> sharedWithProjects = data == null || data.isEmpty ? PikaData.SHARED_WITH_PROJECTS_DEFAULT : data.cast<String>().toList();
 
       return Observation(
           uid: doc.id,
-          observerUid: dataMap['observerUid'] ?? '',
-          name: dataMap['name'] ?? '',
-          location: dataMap['location'] ?? '',
-          date: DateTime.fromMillisecondsSinceEpoch(dataMap['date']?.millisecondsSinceEpoch),//// parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
-          altitudeInMeters: dataMap['altitude'],
-          latitude: dataMap['latitude'],
-          longitude: dataMap['longitude'],
+          observerUid: dataMap[OBSERVER_UID] ?? '',
+          name: dataMap[NAME] ?? '',
+          location: dataMap[LOCATION] ?? '',
+          date: DateTime.fromMillisecondsSinceEpoch(dataMap[DATE]?.millisecondsSinceEpoch),//// parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          altitudeInMeters: dataMap[ALTITUDE],
+          latitude: dataMap[LATITUDE],
+          longitude: dataMap[LONGITUDE],
           signs: signs,
-          species: dataMap['species'] ?? SPECIES_DEFAULT,
-          pikasDetected: dataMap['pikasDetected'] ?? '',
-          distanceToClosestPika: dataMap['distanceToClosestPika'] ?? '',
-          searchDuration: dataMap['searchDuration'] ?? '',
-          talusArea: dataMap['talusArea'] ?? '',
-          temperature: dataMap['temperature'] ?? '',
-          skies: dataMap['skies'] ?? '',
-          wind: dataMap['wind'] ?? '',
-          siteHistory: dataMap['siteHistory'] ?? '',
+          species: dataMap[SPECIES] ?? SPECIES_DEFAULT,
+          pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
+          distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
+          searchDuration: dataMap[SEARCH_DURATION] ?? '',
+          talusArea: dataMap[TALUS_AREA] ?? '',
+          temperature: dataMap[TEMPERATURE] ?? '',
+          skies: dataMap[SKIES] ?? '',
+          wind: dataMap[WIND] ?? '',
+          siteHistory: dataMap[SITE_HISTORY] ?? '',
           otherAnimalsPresent: otherAnimalsPresent,
-          comments: dataMap['comments'] ?? '',
+          comments: dataMap[COMMENTS] ?? '',
           imageUrls: imageUrls,
           audioUrls: audioUrls,
           sharedWithProjects: sharedWithProjects
@@ -115,7 +146,7 @@ class FirebaseObservationsService {
   }
 
   Stream<List<Observation>> get observations {
-    return observationsCollection.orderBy('date', descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
+    return observationsCollection.orderBy(DATE, descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
   }
 
   Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {
@@ -126,12 +157,12 @@ class FirebaseObservationsService {
       /*String mimeStr = lookupMimeType(filepath);
       var fileType = mimeStr.split('/');
       developer.log('file type ${fileType}');*/
-      var folder = areImages ? "images" : "audio";
-      if(filepath.contains('pikajoe-97c5c.appspot.com')) {
+      var folder = areImages ? IMAGES_FOLDER_NAME : AUDIO_FOLDER_NAME;
+      if(filepath.contains(STORAGE_BUCKET_NAME)) {
         //Do not try to upload an image that has already been uploaded
         uploadUrls.add(filepath);
       } else {
-        FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: 'gs://pikajoe-97c5c.appspot.com');
+        FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
         UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
 
         try {

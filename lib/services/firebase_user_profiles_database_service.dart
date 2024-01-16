@@ -1,3 +1,4 @@
+// ignore_for_file: constant_identifier_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
@@ -9,13 +10,29 @@ import '../utils/date_time_utils.dart';
 
 class FirebaseUserProfilesDatabaseService {
 
+  static const String USER_PROFILES_COLLECTION_NAME = "userProfiles";
+
+  static const String FIRST_NAME = "firstName";
+  static const String LAST_NAME = "lastName";
+  static const String TAGLINE = "tagline";
+  static const String PRONOUNS = "pronouns";
+  static const String ORGANIZATION = "organization";
+  static const String ADDRESS = "address";
+  static const String CITY = "city";
+  static const String STATE = "state";
+  static const String ZIP = "zip";
+  static const String FRPP_OPT_IN = "frppOptIn";
+  static const String RMW_OPT_IN = "rmwOptIn";
+  static const String DZ_OPT_IN = "dzOptIn";
+  static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
+
   String? uid;
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference userProfilesCollection;
 
   FirebaseUserProfilesDatabaseService(this.firebaseFirestore, this.uid) {
-    userProfilesCollection = firebaseFirestore.collection("userProfiles");
+    userProfilesCollection = firebaseFirestore.collection(USER_PROFILES_COLLECTION_NAME);
   }
 
   Future<AppUserProfile?> getCurrentUserProfileFromCache() async {
@@ -31,19 +48,19 @@ class FirebaseUserProfilesDatabaseService {
     try {
       await userProfilesCollection.doc(newlyRegisteredUid).set(
           {
-            'firstName': "",
-            'lastName': "",
-            'tagline': "",
-            'pronouns': "",
-            'organization': "",
-            'address': "",
-            'city': "",
-            'state': "",
-            'zip': "",
-            'frppOptIn': false,
-            'rmwOptIn': false,
-            'dzOptIn': false,
-            'dateUpdatedInGoogleSheets': null
+            FIRST_NAME: "",
+            LAST_NAME: "",
+            TAGLINE: "",
+            PRONOUNS: "",
+            ORGANIZATION: "",
+            ADDRESS: "",
+            CITY: "",
+            STATE: "",
+            ZIP: "",
+            FRPP_OPT_IN: false,
+            RMW_OPT_IN: false,
+            DZ_OPT_IN: false,
+            DATE_UPDATED_IN_GOOGLE_SHEETS: null
           }
       );
       return null;
@@ -128,19 +145,19 @@ class FirebaseUserProfilesDatabaseService {
     try {
       await userProfilesCollection.doc(updatedUserProfile.uid).set(
           {
-            'firstName': trimmedFirstName,
-            'lastName': trimmedLastName,
-            'tagline': trimmedTagline,
-            'pronouns': trimmedPronouns,
-            'organization': trimmedOrganization,
-            'address': trimmedAddress,
-            'city': trimmedCity,
-            'state': trimmedState,
-            'zip': trimmedZip,
-            'frppOptIn': frppOptIn,
-            'rmwOptIn': rmwOptIn,
-            'dzOptIn': dzOptIn,
-            'dateUpdatedInGoogleSheets': DateTime.now()
+            FIRST_NAME: trimmedFirstName,
+            LAST_NAME: trimmedLastName,
+            TAGLINE: trimmedTagline,
+            PRONOUNS: trimmedPronouns,
+            ORGANIZATION: trimmedOrganization,
+            ADDRESS: trimmedAddress,
+            CITY: trimmedCity,
+            STATE: trimmedState,
+            ZIP: trimmedZip,
+            FRPP_OPT_IN: frppOptIn,
+            RMW_OPT_IN: rmwOptIn,
+            DZ_OPT_IN: dzOptIn,
+            DATE_UPDATED_IN_GOOGLE_SHEETS: DateTime.now()
           }
       );
     } catch(e) {
@@ -165,20 +182,20 @@ class FirebaseUserProfilesDatabaseService {
       final dataMap = snapshot.data() as Map<String, dynamic>;
 
       return AppUserProfile(
-          snapshot.get('firstName')?.trim() ?? '',
-          snapshot.get('lastName')?.trim() ?? '',
+          snapshot.get(FIRST_NAME)?.trim() ?? '',
+          snapshot.get(LAST_NAME)?.trim() ?? '',
           uid: uid?.trim(),
-          tagline: snapshot.get('tagline')?.trim() ?? '',
-          pronouns: snapshot.get('pronouns')?.trim() ?? '',
-          organization: snapshot.get('organization')?.trim() ?? '',
-          address: snapshot.get('address')?.trim() ?? '',
-          city: snapshot.get('city')?.trim() ?? '',
-          state: snapshot.get('state')?.trim() ?? '',
-          zip: snapshot.get('zip')?.trim() ?? '',
-          frppOptIn: snapshot.get('frppOptIn') ?? false,
-          rmwOptIn: snapshot.get('rmwOptIn') ?? false,
-          dzOptIn: snapshot.get('dzOptIn') ?? false,
-          dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          tagline: snapshot.get(TAGLINE)?.trim() ?? '',
+          pronouns: snapshot.get(PRONOUNS)?.trim() ?? '',
+          organization: snapshot.get(ORGANIZATION)?.trim() ?? '',
+          address: snapshot.get(ADDRESS)?.trim() ?? '',
+          city: snapshot.get(CITY)?.trim() ?? '',
+          state: snapshot.get(STATE)?.trim() ?? '',
+          zip: snapshot.get(ZIP)?.trim() ?? '',
+          frppOptIn: snapshot.get(FRPP_OPT_IN) ?? false,
+          rmwOptIn: snapshot.get(RMW_OPT_IN) ?? false,
+          dzOptIn: snapshot.get(DZ_OPT_IN) ?? false,
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     } catch(e){
       return null;
@@ -191,20 +208,20 @@ class FirebaseUserProfilesDatabaseService {
       final dataMap = doc.data() as Map<String, dynamic>;
 
       return AppUserProfile(
-          dataMap['firstName']?.trim() ?? '',
-          dataMap['lastName']?.trim() ?? '',
+          dataMap[FIRST_NAME]?.trim() ?? '',
+          dataMap[LAST_NAME]?.trim() ?? '',
           uid: doc.id.trim(),
-          tagline: dataMap['tagline']?.trim() ?? '',
-          pronouns: dataMap['pronouns']?.trim() ?? '',
-          organization: dataMap['organization']?.trim() ?? '',
-          address: dataMap['address']?.trim() ?? '',
-          city: dataMap['city']?.trim() ?? '',
-          state: dataMap['state']?.trim() ?? '',
-          zip: dataMap['zip']?.trim() ?? '',
-          frppOptIn: dataMap['frppOptIn'] ?? false,
-          rmwOptIn: dataMap['rmwOptIn'] ?? false,
-          dzOptIn: dataMap['dzOptIn'] ?? false,
-          dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          tagline: dataMap[TAGLINE]?.trim() ?? '',
+          pronouns: dataMap[PRONOUNS]?.trim() ?? '',
+          organization: dataMap[ORGANIZATION]?.trim() ?? '',
+          address: dataMap[ADDRESS]?.trim() ?? '',
+          city: dataMap[CITY]?.trim() ?? '',
+          state: dataMap[STATE]?.trim() ?? '',
+          zip: dataMap[ZIP]?.trim() ?? '',
+          frppOptIn: dataMap[FRPP_OPT_IN] ?? false,
+          rmwOptIn: dataMap[RMW_OPT_IN] ?? false,
+          dzOptIn: dataMap[DZ_OPT_IN] ?? false,
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
       );
     }).toList();
   }
@@ -223,7 +240,7 @@ class FirebaseUserProfilesDatabaseService {
   // https://stackoverflow.com/questions/49579693/how-do-i-get-documents-where-a-specific-field-exists-does-not-exists-in-firebase
   Future<List<AppUserProfile>> getUserProfilesNotInGoogleSheets({int? limit}) async {
     Query query = userProfilesCollection
-        .where('dateUpdatedInGoogleSheets', isEqualTo: null);
+        .where(DATE_UPDATED_IN_GOOGLE_SHEETS, isEqualTo: null);
     return await getUserProfiles(query, limit: limit);
   }
 

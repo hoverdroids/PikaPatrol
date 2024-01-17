@@ -734,8 +734,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
 
     if (context.mounted) {
+      //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-      await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles);
+      }
     }
   }
 
@@ -837,7 +840,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         var profile = updatedUserProfile ?? userProfile;
         if (profile != null && context.mounted) {
           var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-          await googleSheetsService.pikaPatrolSpreadsheetServices[0].userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
+          for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+            await service.userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
+          }
         }
       }
     }

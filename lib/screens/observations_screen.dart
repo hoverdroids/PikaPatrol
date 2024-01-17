@@ -149,7 +149,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                 onTapCard: (index) => {
                                   Navigator.push( context,
                                     MaterialPageRoute(
-                                      builder: (_) => ObservationScreen(widget.observations[index]),
+                                      builder: (_) => ObservationScreen(widget.observations[index].copy()),
                                     ),
                                   )
                                 }
@@ -211,7 +211,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                               onTapCard: (index) => {
                                 Navigator.push( context,
                                   MaterialPageRoute(
-                                    builder: (_) => ObservationScreen(localObservations[index]),
+                                    builder: (_) => ObservationScreen(localObservations[index].copy()),
                                   ),
                                 )
                               }

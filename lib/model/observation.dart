@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
+import '../primitives/card_layout.dart';
 import '../utils/observation_utils.dart';
 
 class Observation extends card.CardModel {
@@ -45,6 +46,8 @@ class Observation extends card.CardModel {
 
   List<String>? notSharedWithProjects;
 
+  DateTime? dateUpdatedInGoogleSheets;
+
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
     this.dbId,
@@ -72,6 +75,7 @@ class Observation extends card.CardModel {
     otherAnimalsPresent,
     sharedWithProjects,
     this.notSharedWithProjects,
+    this.dateUpdatedInGoogleSheets,
     super.buttonText,
     super.cardLayout,
     IconData? uploadedIcon = Icons.cloud_upload,
@@ -94,4 +98,70 @@ class Observation extends card.CardModel {
     if (imgUrls.isEmpty == true) return "";
     return imgUrls.elementAt(0);
   }
+
+  Observation copy(
+    {
+      int? dbId,
+      String? uid,
+      String? observerUid,
+      String? name,
+      String? location,
+      DateTime? date,
+      double? altitudeInMeters,
+      double? latitude,
+      double? longitude,
+      String? species,
+      List<String>? signs,
+      String? pikasDetected,
+      String? distanceToClosestPika,
+      String? searchDuration,
+      String? talusArea,
+      String? temperature,
+      String? skies,
+      String? wind,
+      String? siteHistory,
+      String? comments,
+      List<String>? imageUrls,
+      List<String>? audioUrls,
+      List<String>? otherAnimalsPresent,
+      List<String>? sharedWithProjects,
+      List<String>? notSharedWithProjects,
+      DateTime? dateUpdatedInGoogleSheets,
+      String? buttonText,
+      CardLayout? cardLayout,
+      IconData? uploadedIcon,
+      IconData? notUploadedIcon
+    }
+  ) => Observation(
+    dbId: dbId ?? this.dbId,
+    uid: uid ?? this.uid,
+    observerUid: observerUid ?? this.observerUid,
+    name: name ?? this.name,
+    location: location ?? this.location,
+    date: date ?? this.date,
+    altitudeInMeters: altitudeInMeters ?? this.altitudeInMeters,
+    latitude: latitude ?? this.latitude,
+    longitude: longitude ?? this.longitude,
+    species: species ?? this.species,
+    signs: signs ?? this.signs,
+    pikasDetected: pikasDetected ?? this.pikasDetected,
+    distanceToClosestPika: distanceToClosestPika ?? this.distanceToClosestPika,
+    searchDuration: searchDuration ?? this.searchDuration,
+    talusArea: talusArea ?? this.talusArea,
+    temperature: temperature ?? this.temperature,
+    skies: skies ?? this.skies,
+    wind: wind ?? this.wind,
+    siteHistory: siteHistory ?? this.siteHistory,
+    comments: comments ?? this.comments,
+    imageUrls: imageUrls ?? this.imageUrls,
+    audioUrls: audioUrls ?? this.audioUrls,
+    otherAnimalsPresent: otherAnimalsPresent ?? this.otherAnimalsPresent,
+    sharedWithProjects: sharedWithProjects ?? this.sharedWithProjects,
+    notSharedWithProjects: notSharedWithProjects ?? this.notSharedWithProjects,
+    dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets,
+    buttonText: buttonText ?? this.buttonText,
+    cardLayout: cardLayout ?? this.cardLayout,
+    uploadedIcon: uploadedIcon ?? Icons.cloud_upload,
+    notUploadedIcon: notUploadedIcon ?? Icons.access_time_filled
+  );
 }

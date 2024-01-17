@@ -41,6 +41,7 @@ class FirebaseObservationsService {
   static const String AUDIO_URLS = "audioUrls";
   static const String OTHER_ANIMALS_PRESENT = "otherAnimalsPresent";
   static const String SHARED_WITH_PROJECTS = "sharedWithProjects";
+  static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference observationsCollection;
@@ -74,7 +75,8 @@ class FirebaseObservationsService {
       IMAGE_URLS: observation.imageUrls,
       AUDIO_URLS: observation.audioUrls,
       OTHER_ANIMALS_PRESENT: observation.otherAnimalsPresent,
-      SHARED_WITH_PROJECTS: observation.sharedWithProjects
+      SHARED_WITH_PROJECTS: observation.sharedWithProjects,
+      NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects
     };
     DocumentReference doc;
     if (observation.uid == null || observation.uid?.isEmpty == true) {
@@ -142,7 +144,10 @@ class FirebaseObservationsService {
       List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
 
       data = dataMap[SHARED_WITH_PROJECTS];
-      List<String> sharedWithProjects = data == null || data.isEmpty ? PikaData.SHARED_WITH_PROJECTS_DEFAULT : data.cast<String>().toList();
+      List<String> sharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
+
+      data = dataMap[NOT_SHARED_WITH_PROJECTS];
+      List<String> notSharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
 
       return Observation(
           uid: doc.id,
@@ -167,7 +172,8 @@ class FirebaseObservationsService {
           comments: dataMap[COMMENTS] ?? '',
           imageUrls: imageUrls,
           audioUrls: audioUrls,
-          sharedWithProjects: sharedWithProjects
+          sharedWithProjects: sharedWithProjects,
+          notSharedWithProjects: notSharedWithProjects
       );
     }).toList();
   }

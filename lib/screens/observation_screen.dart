@@ -21,6 +21,7 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -40,6 +41,7 @@ import 'dart:developer' as developer;
 
 import '../data/pika_species.dart';
 import '../l10n/translations.dart';
+import '../services/google_sheets_service.dart';
 import '../utils/observation_utils.dart';
 import 'home_with_drawer.dart';
 
@@ -1294,36 +1296,60 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
-  Widget _buildSharedWithProjects() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      smallTransparentDivider,
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
-          // if (widget.isEditMode)...[
-          //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
-          // ]
-        ],
-      ),
-      ChipsChoice<String>.multiple(
-        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.sharedWithProjects ?? <String>[],
-        onChanged: (val) => {
-          if (widget.isEditMode) {
-            setState(() => widget.observation.sharedWithProjects = val)
-          }
-        },
-        choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSharedWithProjectsOptions(),
-          value: (i, v) => v,
-          label: (i, v) => v,
-          tooltip: (i, v) => v,
+  Widget _buildSharedWithProjects() {
+
+    var approvedOrganizations = Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+    var sharedWithProjects = widget.observation.sharedWithProjects ?? approvedOrganizations;
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
+
+    for (var approvedOrganization in approvedOrganizations) {
+      if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
+        //A new organization was added to the approved list on firebase, auto-opt into sending the data
+        sharedWithProjects.add(approvedOrganization);
+      }
+    }
+
+    widget.observation.sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
+    widget.observation.notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
+            // if (widget.isEditMode)...[
+            //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
+            // ]
+          ],
         ),
-      )
-    ],
-  );
+        ChipsChoice<String>.multiple(
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: widget.observation.sharedWithProjects ?? <String>[],
+          onChanged: (updatedSharedWithProjects) =>
+          {
+            if (widget.isEditMode) {
+              setState((){
+                widget.observation.sharedWithProjects = updatedSharedWithProjects;
+
+                var approvedSet = approvedOrganizations.toSet();
+                var selectedSet = updatedSharedWithProjects.toSet();
+                widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
+              })
+            }
+          },
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: approvedOrganizations,
+            value: (i, v) => v,
+            label: (i, v) => v,
+            tooltip: (i, v) => v,
+          ),
+        )
+      ],
+    );
+  }
 
   void _openSharedWithProjectsDialog() {
     if (!mounted) return;
@@ -1338,7 +1364,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          var sharedWithProjects = widget.observation.sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
+          var sharedWithProjects = widget.observation.sharedWithProjects ?? <String>[];
           sharedWithProjects.addAll(value.split(","));
           sharedWithProjects = sharedWithProjects.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
           widget.observation.sharedWithProjects = sharedWithProjects;

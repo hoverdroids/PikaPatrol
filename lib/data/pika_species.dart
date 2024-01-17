@@ -61,7 +61,7 @@ class PikaData {
     )*/
   ];
 
-  static const List<String> SHARED_WITH_PROJECTS = ["Colorado Pika Project", "Rocky Mountain Wild", "Denver Zoo", "IF/THEN", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)"];
+  // static const List<String> SHARED_WITH_PROJECTS = ["Colorado Pika Project", "Rocky Mountain Wild", "Denver Zoo", "IF/THEN", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)"];
 
-  static const List<String> SHARED_WITH_PROJECTS_DEFAULT = SHARED_WITH_PROJECTS;//Share with all sponsors by default
+  // static const List<String> SHARED_WITH_PROJECTS_DEFAULT = SHARED_WITH_PROJECTS;//Share with all sponsors by default
 }

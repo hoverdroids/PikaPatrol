@@ -641,7 +641,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now())),
+        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now()))
       ),
     );
   }

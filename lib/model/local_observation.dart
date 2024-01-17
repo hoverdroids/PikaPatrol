@@ -1,6 +1,4 @@
 import 'package:hive/hive.dart';
-
-import '../data/pika_species.dart';
 import '../utils/observation_utils.dart';
 
 @HiveType(typeId: 1)
@@ -74,6 +72,9 @@ class LocalObservation extends HiveObject {
   @HiveField(22)
   List<String> sharedWithProjects;
 
+  @HiveField(23)
+  List<String> notSharedWithProjects;
+
   LocalObservation(
     {
       this.uid = "",
@@ -98,7 +99,8 @@ class LocalObservation extends HiveObject {
       this.imageUrls = const <String>[],
       this.audioUrls = const <String>[],
       this.otherAnimalsPresent = const <String>[],
-      this.sharedWithProjects = PikaData.SHARED_WITH_PROJECTS_DEFAULT
+      this.sharedWithProjects = const <String>[],
+      this.notSharedWithProjects = const <String>[]
     }
   );
 }

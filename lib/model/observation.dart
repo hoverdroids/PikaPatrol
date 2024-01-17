@@ -44,6 +44,8 @@ class Observation extends card.CardModel {
     _sharedWithProjects = list?.toTrimmedUniqueList().sortList();
   }
 
+  List<String>? notSharedWithProjects;
+
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
     this.dbId,
@@ -70,6 +72,7 @@ class Observation extends card.CardModel {
     audioUrls,
     otherAnimalsPresent,
     sharedWithProjects,
+    this.notSharedWithProjects,
     super.buttonText,
     super.cardLayout,
     IconData? uploadedIcon = Icons.cloud_upload,
@@ -77,7 +80,7 @@ class Observation extends card.CardModel {
   }){
     this.signs = signs ?? <String>[];
     this.otherAnimalsPresent = otherAnimalsPresent ?? <String>[];
-    this.sharedWithProjects = sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
+    _sharedWithProjects = sharedWithProjects;
     this.imageUrls = imageUrls ?? <String>[];
     this.audioUrls = audioUrls ?? <String>[];
     super.icon = uid?.isNotEmpty == true ? uploadedIcon : notUploadedIcon;
@@ -91,11 +94,5 @@ class Observation extends card.CardModel {
     var imgUrls = imageUrls ?? [];
     if (imgUrls.isEmpty == true) return "";
     return imgUrls.elementAt(0);
-  }
-
-  List<String> getSharedWithProjectsOptions() {
-    var selectedProjects = sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT;
-    var defaultProjects = PikaData.SHARED_WITH_PROJECTS;
-    return (selectedProjects + defaultProjects).toTrimmedUniqueList();
   }
 }

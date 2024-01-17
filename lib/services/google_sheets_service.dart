@@ -12,5 +12,9 @@ class GoogleSheetsService {
 
   List<PikaPatrolSpreadsheetService> pikaPatrolSpreadsheetServices = [];
 
+  List<String> get organizations {
+    return pikaPatrolSpreadsheetServices.map((service) => service.organization).nonNulls.toList();
+  }
+
   GoogleSheetsService(this.pikaPatrolSpreadsheetServices);
 }

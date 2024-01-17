@@ -74,7 +74,8 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
       imageUrls: observation.imageUrls ?? <String>[],
       audioUrls: observation.audioUrls ?? <String>[],
       otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
-      sharedWithProjects: observation.sharedWithProjects ?? PikaData.SHARED_WITH_PROJECTS_DEFAULT
+      sharedWithProjects: observation.sharedWithProjects ?? <String>[],
+      notSharedWithProjects: observation.notSharedWithProjects ?? <String>[]
   );
 
   if(observation.dbId == null) {

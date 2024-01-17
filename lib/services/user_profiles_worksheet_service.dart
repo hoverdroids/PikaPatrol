@@ -1,7 +1,5 @@
 // ignore_for_file: constant_identifier_names
-
 import 'dart:convert';
-import 'dart:developer' as developer;
 
 import 'package:gsheets/gsheets.dart';
 import 'package:pika_patrol/services/worksheet_service.dart';
@@ -107,14 +105,14 @@ class UserProfilesWorksheetService extends WorksheetService {
       // lastSignInTime: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE])),     //No need; info is in Appuser
   );
 
-  Future<int> getRowCount() async {
-    var lastRow = await worksheet?.values.lastRow();
-    return int.tryParse(lastRow?.first ?? "0") ?? 0;
-  }
-
   Future<AppUserProfile?> getAppUserProfile(String uid) async {
     final json = await worksheet?.values.map.rowByKey(uid, fromColumn: WorksheetService.UID_COLUMN_NUMBER);
     return json != null ? fromGoogleSheetsJson(json) : null;
+  }
+
+  Future<List<AppUserProfile>> getAppUserProfiles() async {
+    final appUserProfiles = await worksheet?.values.map.allRows();
+    return appUserProfiles == null ? <AppUserProfile>[] : appUserProfiles.map(fromGoogleSheetsJson).toList();
   }
 
   Future<void> addOrUpdateAppUserProfile(AppUser? appUser, AppUserProfile appUserProfile) async {
@@ -130,9 +128,9 @@ class UserProfilesWorksheetService extends WorksheetService {
       }
 
       if (index == null || index == -1) {
-        await insertAppUserProfile(json);
+        await insertRow(json);
       } else {
-        await updateAppUserProfile(uid, json);
+        await updateRow(uid, json);
       }
     }
   }
@@ -141,40 +139,5 @@ class UserProfilesWorksheetService extends WorksheetService {
     for (var appUserProfile in appUserProfiles) {
       await addOrUpdateAppUserProfile(null, appUserProfile);
     }
-  }
-
-  Future insertAppUserProfile(Map<String, dynamic> row) async {
-    try {
-      await worksheet?.values.map.appendRow(row);
-    } catch (e) {
-      developer.log("Insert appUserProfile error:$e");
-    }
-  }
-
-  Future insertAppUserProfiles(List<Map<String, dynamic>> rowList) async {
-    try {
-      worksheet?.values.map.appendRows(rowList);
-    } catch(e) {
-      developer.log("Insert appUserProfiles error:$e");
-    }
-  }
-
-  Future<List<AppUserProfile>> getAppUserProfiles() async {
-    final appUserProfiles = await worksheet?.values.map.allRows();
-    return appUserProfiles == null ? <AppUserProfile>[] : appUserProfiles.map(fromGoogleSheetsJson).toList();
-  }
-
-  Future<bool> updateAppUserProfile(String uid, Map<String, dynamic> appUserProfile) async {
-    return await worksheet?.values.map.insertRowByKey(uid, appUserProfile) ?? false;
-  }
-
-  Future<bool> updateAppUserProfileCell(int id, String columnName, dynamic value) async {
-    return await worksheet?.values.insertValueByKeys(value, columnKey: columnName, rowKey: id) ?? false;
-  }
-
-  Future<bool> deleteAppUserProfileById(int id) async {
-    final index = await worksheet?.values.rowIndexOf(id);
-    if (index == null || index == -1) return false;
-    return await worksheet?.deleteRow(index) ?? false;
   }
 }

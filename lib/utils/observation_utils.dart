@@ -1,7 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
-import 'package:pika_patrol/data/pika_species.dart';
 import 'package:pika_patrol/main.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 

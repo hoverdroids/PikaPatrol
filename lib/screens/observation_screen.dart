@@ -211,6 +211,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 //Share with others
                 await saveObservation(widget.observation);
 
+                if (context.mounted) {
+                  var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+                  for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+                    await service.observationWorksheetService.addOrUpdateObservation(widget.observation);
+                  }
+                }
+
                 setState(() {
                   _isUploading = false;
                 });

@@ -22,7 +22,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 const useEmulators = false;
-const initSpreadsheets = false;
 
 Future<void> main() async {
 
@@ -107,7 +106,7 @@ Future<void> main() async {
 
                                 for (var credential in credentials) {
                                   credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                    var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, initSpreadsheets);
+                                    var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
                                     services.add(service);
                                   });
                                 }

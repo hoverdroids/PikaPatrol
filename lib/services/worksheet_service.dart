@@ -9,13 +9,15 @@ class WorksheetService {
   static const String UID_COLUMN_TITLE = "uid";
 
   Worksheet? worksheet;
+  List<String> columns;
+  int columnHeadersRowNumber;
 
   WorksheetService(
     Spreadsheet spreadsheet,
     String worksheetTitle,
-    List<String> columns,
+    this.columns,
     bool doInitHeaderRow,
-    {int columnHeadersRowNumber = DEFAULT_COLUMN_HEADER_ROW_NUMBER}
+    {this.columnHeadersRowNumber = DEFAULT_COLUMN_HEADER_ROW_NUMBER}
   ) {
     _init(spreadsheet, worksheetTitle, columns, doInitHeaderRow, columnHeadersRowNumber);
   }
@@ -23,12 +25,20 @@ class WorksheetService {
   _init(Spreadsheet spreadsheet, String worksheetTitle, List<String> columns, bool doInitHeaderRow, int columnHeadersRowNumber) async {
     try {
       worksheet = await getWorksheet(spreadsheet, worksheetTitle);
-
-      if (doInitHeaderRow) {
-        worksheet?.values.insertRow(columnHeadersRowNumber, columns);
-      }
     } catch(e) {
       developer.log("Google Sheets init error in $worksheetTitle :$e");
+    }
+
+    if (doInitHeaderRow) {
+      initHeaderRow();
+    }
+  }
+
+  initHeaderRow() {
+    try {
+      worksheet?.values.insertRow(columnHeadersRowNumber, columns);
+    } catch(e) {
+      developer.log("Google Sheets init error in ${worksheet?.title} :$e");
     }
   }
 

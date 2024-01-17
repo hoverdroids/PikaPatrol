@@ -19,7 +19,6 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
-import 'package:pika_patrol/model/google_sheets_credential.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
@@ -262,6 +261,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       }
     }
 
+    var canInitializeGoogleSheets = userProfile?.tagline == "initializer";
+
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
       widthPercent: .92,
@@ -295,6 +296,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             if (isAdmin)...[
               ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
               ListItemModel(title: translations.exportFirebaseToGoogleSheets, itemClickedCallback: () => showExportFirebaseToGoogleSheetsDialog(), margin: indentationLevel1),
+              if (canInitializeGoogleSheets) ... [
+                ListItemModel(title: translations.initializeGoogleSheets, itemClickedCallback: () => initializeGoogleSheets(), margin: indentationLevel1),
+              ]
               /*TODO - CHRIS - show user profiles so that they can be delted or have admin access granted. the later will require me interacting with node.js scripts locally*/
             ],
           ],
@@ -702,6 +706,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           return alert;
         },
       );
+    }
+  }
+
+  initializeGoogleSheets() async {
+    if (context.mounted) {
+      showToast("Starting initialization");
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.userProfilesWorksheetService.initHeaderRow();
+        showToast("Initialized ${service.organization}");
+        await Future.delayed(const Duration(seconds: 1));
+      }
+      showToast("Finished initialization");
     }
   }
 

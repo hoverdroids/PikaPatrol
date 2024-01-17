@@ -228,5 +228,6 @@
     "deleteObservationDialogDescription": "¿Está seguro de que desea eliminar esta observación y todos los datos asociados, incluidas imágenes y archivos de audio?",
     "cancel": "Cancelar",
     "observationDeleted": "Observación eliminada",
-    "observationNotDeleted": "Observación no eliminada"
+    "observationNotDeleted": "Observación no eliminada",
+    "initializeGoogleSheets": "Inicializar hojas de cálculo de Google"
 }

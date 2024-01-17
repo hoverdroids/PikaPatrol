@@ -22,6 +22,7 @@ import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
@@ -295,7 +296,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
             if (isAdmin)...[
               ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
-              ListItemModel(title: translations.exportFirebaseToGoogleSheets, itemClickedCallback: () => showExportFirebaseToGoogleSheetsDialog(), margin: indentationLevel1),
+              ListItemModel(title: translations.exportFirebaseUserProfilesToGoogleSheets, itemClickedCallback: () => showExportFirebaseUserProfilesToGoogleSheetsDialog(), margin: indentationLevel1),
+              ListItemModel(title: translations.exportFirebaseObservationsToGoogleSheets, itemClickedCallback: () => showExportFirebaseObservationsToGoogleSheetsDialog(), margin: indentationLevel1),
               if (canInitializeGoogleSheets) ... [
                 ListItemModel(title: translations.initializeGoogleSheets, itemClickedCallback: () => initializeGoogleSheets(), margin: indentationLevel1),
               ]
@@ -682,7 +684,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
   }
 
-  showExportFirebaseToGoogleSheetsDialog() {
+  showExportFirebaseUserProfilesToGoogleSheetsDialog() {
     Widget launchButton = TextButton(
       child: Text(translations.ok),
       onPressed: () async {
@@ -692,8 +694,35 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
     // set up the AlertDialog
     AlertDialog alert = AlertDialog(
-      title: Text(translations.exportFirebaseToGoogleSheetsDialogTitle),
-      content: Text(translations.exportFirebaseToGoogleSheetsDialogDescription),
+      title: Text(translations.exportFirebaseUserProfilesToGoogleSheetsDialogTitle),
+      content: Text(translations.exportFirebaseUserProfilesToGoogleSheetsDialogDescription),
+      actions: [
+        launchButton,
+      ],
+    );
+    // show the dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+  }
+
+  showExportFirebaseObservationsToGoogleSheetsDialog() {
+    Widget launchButton = TextButton(
+      child: Text(translations.ok),
+      onPressed: () async {
+        Navigator.pop(context, true);
+        exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(translations.exportFirebaseObservationsToGoogleSheetsDialogTitle),
+      content: Text(translations.exportFirebaseObservationsToGoogleSheetsDialogDescription),
       actions: [
         launchButton,
       ],
@@ -728,14 +757,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.userProfilesService.getAllUserProfiles(limit: 1);
+    var appUserProfiles = await firebaseDatabaseService.userProfilesService.getAllUserProfiles(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
 
     for (var appUserProfile in appUserProfiles) {
       var now = DateTime.now();
       appUserProfile.dateUpdatedInGoogleSheets = now;
 
       //Update Firebase so that the next query for profiles not in sheets, doesn't return these results
-      await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
+      /*await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
           appUserProfile.firstName,
           appUserProfile.lastName,
           appUserProfile.uid,
@@ -751,17 +780,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           appUserProfile.dzOptIn,
           now,
           translations
-      );
+      );*/
     }
 
     if (context.mounted) {
       //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        await service.userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles);
+        await service.userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles, service.organization);
       }
     }
   }
+
+  exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets(){}
 
   resetEditedUserProfileFields() {
     editedEmail = null;

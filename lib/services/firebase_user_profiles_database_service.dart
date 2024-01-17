@@ -26,6 +26,8 @@ class FirebaseUserProfilesDatabaseService {
   static const String DZ_OPT_IN = "dzOptIn";
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
 
+  static const int? NO_LIMIT = null;
+
   String? uid;
 
   final FirebaseFirestore firebaseFirestore;

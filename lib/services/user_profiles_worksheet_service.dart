@@ -2,10 +2,12 @@
 import 'dart:convert';
 
 import 'package:gsheets/gsheets.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/services/worksheet_service.dart';
 
 import '../model/app_user.dart';
 import '../model/app_user_profile.dart';
+import 'google_sheets_service.dart';
 
 class UserProfilesWorksheetService extends WorksheetService {
    
@@ -67,7 +69,7 @@ class UserProfilesWorksheetService extends WorksheetService {
     CITY_COLUMN_TITLE: appUserProfile.city,
     STATE_COLUMN_TITLE: appUserProfile.state,
     ZIP_COLUMN_TITLE: appUserProfile.zip,
-    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc()
+    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString()
   };
 
   // Since the user is logged in, their individual information is available for update
@@ -135,9 +137,11 @@ class UserProfilesWorksheetService extends WorksheetService {
     }
   }
 
-  Future<void> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles) async {
+  Future<void> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles, String organization) async {
     for (var appUserProfile in appUserProfiles) {
       await addOrUpdateAppUserProfile(null, appUserProfile);
+      showToast("Updated ${appUserProfile.firstName} ${appUserProfile.lastName} in $organization");
+      await Future.delayed(const Duration(milliseconds: GoogleSheetsService.MORE_THAN_60_WRITES_DELAY_MS), () {});
     }
   }
 }

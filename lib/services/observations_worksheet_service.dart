@@ -156,4 +156,8 @@ class ObservationsWorksheetService extends WorksheetService {
       await addOrUpdateObservation(observation);
     }
   }
+
+  Future<bool> deleteObservation(Observation observation) async {
+    return deleteRowByUid(observation.uid);
+  }
 }

@@ -1474,7 +1474,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildDeleteButton(bool userConfirmedDelete) => ElevatedButton(
     onPressed: () async {
       if (userConfirmedDelete) {
-        var exception = await deleteObservation(widget.observation, true, true);
+        var exception = await deleteObservation(context, widget.observation, true, true);
         if (exception == null) {
           showToast(translations.observationDeleted);
           if (context.mounted) {

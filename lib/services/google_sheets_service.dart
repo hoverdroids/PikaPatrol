@@ -10,6 +10,11 @@ class GoogleSheetsService {
   static const int GOOGLE_API_USAGE_LIMIT_WRITE_REQUESTS_PER_MINUTE_PER_PROJECT = 600;
   static const int GOOGLE_API_USAGE_LIMIT_WRITE_REQUESTS_PER_MINUTE_PER_USER_PER_PROJECT = 60;
 
+  static const int LESS_THAN_60_WRITES_DELAY_MS = 100;
+  static const int MORE_THAN_60_WRITES_DELAY_MS = 1000;
+  static const int WRITE_THEN_TOAST_DELAY_MS = 1000;
+
+
   List<PikaPatrolSpreadsheetService> pikaPatrolSpreadsheetServices = [];
 
   List<String> get organizations {

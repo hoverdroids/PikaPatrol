@@ -79,8 +79,18 @@ class WorksheetService {
     return await worksheet?.values.insertValueByKeys(value, columnKey: columnName, rowKey: id) ?? false;
   }
 
-  Future<bool> deleteValue(int id) async {
+  Future<bool> deleteRowByUid(String? uid) async {
+    if (uid == null) return false;
+    final index = await worksheet?.values.rowIndexOf(uid, inColumn: WorksheetService.UID_COLUMN_NUMBER);
+    return deleteValueByIndex(index);
+  }
+
+  Future<bool> deleteValueById(int id) async {
     final index = await worksheet?.values.rowIndexOf(id);
+    return await deleteValueByIndex(index);
+  }
+
+  Future<bool> deleteValueByIndex(int? index) async {
     if (index == null || index == -1) return false;
     return await worksheet?.deleteRow(index) ?? false;
   }

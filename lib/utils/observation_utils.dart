@@ -1,13 +1,21 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/main.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
+import 'package:pika_patrol/services/google_sheets_service.dart';
+import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../services/firebase_database_service.dart';
+
+//TODO - CHRIS - the UI and these methods should be split. However, this class isn't great.
+// Instead, there should be an observations manager/service and userProfiles manager/service.
+// Each of those provide a single interface for the UI so that the business logic is hidden away in the manager/service.
+// Each manager/service would have a list of providers, e.g. IObservationProvider with crud methods
 
 Future saveObservation(Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
@@ -90,11 +98,24 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   return box.get(observation.dbId);
 }
 
-Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
+Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio) async {
   await deleteLocalObservation(observation);
 
-  var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
-  return await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+  FirebaseException? firebaseException;
+  if (context.mounted) {
+    var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
+    firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+  }
+
+  if (context.mounted) {
+    var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+    for (var service in sheetsService.pikaPatrolSpreadsheetServices) {
+      service.observationWorksheetService.deleteObservation(observation);
+      await Future.delayed(const Duration(milliseconds: GoogleSheetsService.LESS_THAN_60_WRITES_DELAY_MS), () {});
+    }
+  }
+
+  return firebaseException;
 }
 
 Future deleteLocalObservation(Observation observation) async {

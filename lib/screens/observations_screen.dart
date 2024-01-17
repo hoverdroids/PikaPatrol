@@ -69,6 +69,7 @@ class ObservationsPageState extends State<ObservationsPage> {
         List list = raw.values.toList();
         localObservations = <Observation>[];
         for (var element in list) {
+          //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
           LocalObservation localObservation = element;
           var observation = Observation(
               dbId: localObservation.key,
@@ -76,7 +77,7 @@ class ObservationsPageState extends State<ObservationsPage> {
               observerUid: localObservation.observerUid,
               name: localObservation.name,
               location: localObservation.location,
-              date: DateTime.parse(localObservation.date),
+              date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
               altitudeInMeters: localObservation.altitudeInMeters,
               latitude: localObservation.latitude,
               longitude: localObservation.longitude,
@@ -96,6 +97,7 @@ class ObservationsPageState extends State<ObservationsPage> {
               otherAnimalsPresent: localObservation.otherAnimalsPresent,
               sharedWithProjects: localObservation.sharedWithProjects,
               notSharedWithProjects: localObservation.notSharedWithProjects,
+              dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
               buttonText: translations.viewObservation
           );
           localObservations.add(observation);

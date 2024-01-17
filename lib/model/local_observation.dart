@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 import '../utils/observation_utils.dart';
 
-@HiveType(typeId: 1)
+@HiveType(typeId: 7)
 class LocalObservation extends HiveObject {
   @HiveField(0)
   String uid;
@@ -75,6 +75,9 @@ class LocalObservation extends HiveObject {
   @HiveField(23)
   List<String> notSharedWithProjects;
 
+  @HiveField(24)
+  String dateUpdatedInGoogleSheets;
+
   LocalObservation(
     {
       this.uid = "",
@@ -100,7 +103,8 @@ class LocalObservation extends HiveObject {
       this.audioUrls = const <String>[],
       this.otherAnimalsPresent = const <String>[],
       this.sharedWithProjects = const <String>[],
-      this.notSharedWithProjects = const <String>[]
+      this.notSharedWithProjects = const <String>[],
+      this.dateUpdatedInGoogleSheets = ""
     }
   );
 }

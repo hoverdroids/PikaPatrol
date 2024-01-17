@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 
 import '../data/pika_species.dart';
 import '../model/observation.dart';
+import '../utils/date_time_utils.dart';
 import '../utils/observation_utils.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -42,6 +43,7 @@ class FirebaseObservationsService {
   static const String OTHER_ANIMALS_PRESENT = "otherAnimalsPresent";
   static const String SHARED_WITH_PROJECTS = "sharedWithProjects";
   static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
+  static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference observationsCollection;
@@ -76,7 +78,8 @@ class FirebaseObservationsService {
       AUDIO_URLS: observation.audioUrls,
       OTHER_ANIMALS_PRESENT: observation.otherAnimalsPresent,
       SHARED_WITH_PROJECTS: observation.sharedWithProjects,
-      NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects
+      NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
+      DATE_UPDATED_IN_GOOGLE_SHEETS: observation.dateUpdatedInGoogleSheets
     };
     DocumentReference doc;
     if (observation.uid == null || observation.uid?.isEmpty == true) {
@@ -173,7 +176,8 @@ class FirebaseObservationsService {
           imageUrls: imageUrls,
           audioUrls: audioUrls,
           sharedWithProjects: sharedWithProjects,
-          notSharedWithProjects: notSharedWithProjects
+          notSharedWithProjects: notSharedWithProjects,
+          dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])
       );
     }).toList();
   }

@@ -33,6 +33,7 @@ class ObservationsWorksheetService extends WorksheetService {
   static const String OTHER_ANIMALS_PRESENT_COLUMN_TITLE = "otherAnimalsPresent";
   static const String SHARED_WITH_PROJECTS_COLUMN_TITLE = "sharedWithProjects";
   static const String NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE = "notSharedWithProjects";
+  static const String DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "dateUpdatedInGoogleSheets";
 
   ObservationsWorksheetService(
     Spreadsheet spreadsheet,
@@ -65,7 +66,8 @@ class ObservationsWorksheetService extends WorksheetService {
       AUDIO_URLS_COLUMN_TITLE,
       OTHER_ANIMALS_PRESENT_COLUMN_TITLE,
       SHARED_WITH_PROJECTS_COLUMN_TITLE,
-      NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE
+      NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE,
+      DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE
     ],
     doInitHeaderRow,
     columnHeadersRowNumber: columnHeadersRowNumber
@@ -95,7 +97,8 @@ class ObservationsWorksheetService extends WorksheetService {
     AUDIO_URLS_COLUMN_TITLE: jsonEncode(observation.audioUrls),
     OTHER_ANIMALS_PRESENT_COLUMN_TITLE: jsonEncode(observation.otherAnimalsPresent),
     SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(observation.sharedWithProjects),
-    NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(observation.notSharedWithProjects)
+    NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(observation.notSharedWithProjects),
+    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: observation.dateUpdatedInGoogleSheets?.toUtc().toString()
   };
 
   Observation fromGoogleSheetsJson(Map<String, dynamic> json) => Observation(
@@ -122,7 +125,8 @@ class ObservationsWorksheetService extends WorksheetService {
     audioUrls: jsonDecode(json[AUDIO_URLS_COLUMN_TITLE]),
     otherAnimalsPresent: jsonDecode(json[OTHER_ANIMALS_PRESENT_COLUMN_TITLE]),
     sharedWithProjects: jsonDecode(json[SHARED_WITH_PROJECTS_COLUMN_TITLE]),
-    notSharedWithProjects: jsonDecode(json[NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE])
+    notSharedWithProjects: jsonDecode(json[NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE]),
+    dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
   );
 
   Future<Observation?> getObservation(String uid) async {

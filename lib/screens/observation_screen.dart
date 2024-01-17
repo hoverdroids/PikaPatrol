@@ -190,6 +190,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
 
+              widget.observation.dateUpdatedInGoogleSheets = DateTime.now();
+
               if (user != null && user.uid == widget.observation.observerUid) {
                 var localObservation = await saveLocalObservation(widget.observation);
               }
@@ -209,7 +211,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 widget.observation.observerUid ??= user.uid;
 
                 //Share with others
-                await saveObservation(context, widget.observation);
+                if (context.mounted) {
+                  await saveObservation(context, widget.observation);
+                }
 
                 setState(() {
                   _isUploading = false;

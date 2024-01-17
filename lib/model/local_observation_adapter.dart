@@ -31,7 +31,8 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
       audioUrls: reader.readStringList(),
       otherAnimalsPresent: reader.readStringList(),
       sharedWithProjects: reader.readStringList(),
-      notSharedWithProjects: reader.readStringList()
+      notSharedWithProjects: reader.readStringList(),
+      dateUpdatedInGoogleSheets: reader.readString()
   );
 
   @override
@@ -60,6 +61,7 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
       writer.writeStringList(observation.otherAnimalsPresent);
       writer.writeStringList(observation.sharedWithProjects);
       writer.writeStringList(observation.notSharedWithProjects);
+      writer.writeString(observation.dateUpdatedInGoogleSheets);
   }
 
 }

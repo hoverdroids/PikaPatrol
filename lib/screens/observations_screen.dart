@@ -16,8 +16,6 @@ import '../services/firebase_observations_service.dart';
 import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
-import 'dart:developer' as developer;
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
@@ -178,7 +176,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                           //vs the stored observation.
                                           var uid = observation.uid;
                                           if (uid == null || uid.isEmpty) {
-                                            saveObservation(observation);
+                                            saveObservation(context, observation);
                                           }
                                         }
                                       } else {

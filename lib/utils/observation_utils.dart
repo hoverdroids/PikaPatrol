@@ -17,7 +17,7 @@ import '../services/firebase_database_service.dart';
 // Each of those provide a single interface for the UI so that the business logic is hidden away in the manager/service.
 // Each manager/service would have a list of providers, e.g. IObservationProvider with crud methods
 
-Future saveObservation(Observation observation) async {
+Future saveObservation(BuildContext context, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
     var needToSaveLocalObservation = observation.uid == null;
 
@@ -36,6 +36,15 @@ Future saveObservation(Observation observation) async {
     //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
     await databaseService.observationsService.updateObservation(observation);
+
+    if (context.mounted) {
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        if (observation.sharedWithProjects?.contains(service.organization) == true) {
+          await service.observationWorksheetService.addOrUpdateObservation(observation);
+        }
+      }
+    }
 
     if (needToSaveLocalObservation) {
       // Update local observation after successful upload because the uid will be non empty now

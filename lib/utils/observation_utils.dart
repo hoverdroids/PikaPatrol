@@ -42,6 +42,8 @@ Future saveObservation(BuildContext context, Observation observation) async {
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
         if (observation.sharedWithProjects?.contains(service.organization) == true) {
           await service.observationWorksheetService.addOrUpdateObservation(observation);
+        } else {
+          await service.observationWorksheetService.deleteObservation(observation);
         }
       }
     }

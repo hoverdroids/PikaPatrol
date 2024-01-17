@@ -792,7 +792,23 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
   }
 
-  exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets(){}
+  exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets() async {
+    var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+    var observations = await firebaseDatabaseService.observationsService.getAllObservations(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
+
+    for (var observation in observations) {
+      var now = DateTime.now();
+      observation.dateUpdatedInGoogleSheets = now;
+    }
+
+    if (context.mounted) {
+      //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.observationWorksheetService.addOrUpdateObservations(observations, service.organization);
+      }
+    }
+  }
 
   resetEditedUserProfileFields() {
     editedEmail = null;

@@ -238,4 +238,28 @@ class FirebaseObservationsService {
 
     return null;
   }
+
+  Future<List<Observation>> getAllObservations({int? limit}) async {
+    Query query = observationsCollection;
+    return await getObservations(query, limit: limit);
+  }
+
+  Future<List<Observation>> getObservations(Query query, {int? limit}) async {
+    //https://stackoverflow.com/questions/50870652/flutter-firebase-basic-query-or-basic-search-code
+
+    if (limit != null) {
+      query = query.limit(limit);
+    }
+
+    var observations = <Observation>[];
+    await query
+        .get()
+        .then((QuerySnapshot snapshot){
+      observations = _observationsFromSnapshot(snapshot);
+    }).catchError((e){
+      developer.log("Observations query error:$e");
+    });
+
+    return observations;
+  }
 }

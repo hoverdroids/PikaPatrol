@@ -1,3 +1,5 @@
+// ignore_for_file: constant_identifier_names
+
 import 'dart:convert';
 import 'dart:developer' as developer;
 
@@ -9,21 +11,21 @@ import '../model/app_user_profile.dart';
 
 class UserProfilesWorksheetService extends WorksheetService {
    
-  static const String USER_PROFILES_WORKSHEET_TITLE = "User Profiles";
-  static const String USER_PROFILES_IS_ADMIN_COLUMN_TITLE = "Is Admin";
-  static const String USER_PROFILES_FIRST_NAME_COLUMN_TITLE = "First Name";
-  static const String USER_PROFILES_LAST_NAME_COLUMN_TITLE = "Last Name";
-  static const String USER_PROFILES_EMAIL_COLUMN_TITLE = "Email";
-  static const String USER_PROFILES_TAGLINE_COLUMN_TITLE = "Tagline";
-  static const String USER_PROFILES_PRONOUNS_COLUMN_TITLE = "Pronouns";
-  static const String USER_PROFILES_ORGANIZATION_COLUMN_TITLE = "Organization";
-  static const String USER_PROFILES_ADDRESS_COLUMN_TITLE = "Address";
-  static const String USER_PROFILES_CITY_COLUMN_TITLE = "City";
-  static const String USER_PROFILES_STATE_COLUMN_TITLE = "State";
-  static const String USER_PROFILES_ZIP_COLUMN_TITLE = "Zip";
-  static const String USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "Date Updated In Google Sheets";
-  static const String USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE = "Account Created";
-  static const String USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE = "Last Signed In";
+  static const String WORKSHEET_TITLE = "User Profiles";
+  static const String IS_ADMIN_COLUMN_TITLE = "Is Admin";
+  static const String FIRST_NAME_COLUMN_TITLE = "First Name";
+  static const String LAST_NAME_COLUMN_TITLE = "Last Name";
+  static const String EMAIL_COLUMN_TITLE = "Email";
+  static const String TAGLINE_COLUMN_TITLE = "Tagline";
+  static const String PRONOUNS_COLUMN_TITLE = "Pronouns";
+  static const String ORGANIZATION_COLUMN_TITLE = "Organization";
+  static const String ADDRESS_COLUMN_TITLE = "Address";
+  static const String CITY_COLUMN_TITLE = "City";
+  static const String STATE_COLUMN_TITLE = "State";
+  static const String ZIP_COLUMN_TITLE = "Zip";
+  static const String DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE = "Date Updated In Google Sheets";
+  static const String DATE_ACCOUNT_CREATED_TITLE = "Account Created";
+  static const String DATE_LAST_SIGNED_IN_TITLE = "Last Signed In";
 
   UserProfilesWorksheetService(
     Spreadsheet spreadsheet,
@@ -31,23 +33,23 @@ class UserProfilesWorksheetService extends WorksheetService {
     {int columnHeadersRowNumber = WorksheetService.DEFAULT_COLUMN_HEADER_ROW_NUMBER}
   ) : super(
     spreadsheet,
-    USER_PROFILES_WORKSHEET_TITLE,
+    WORKSHEET_TITLE,
     [
       WorksheetService.UID_COLUMN_TITLE,
-      USER_PROFILES_IS_ADMIN_COLUMN_TITLE,
-      USER_PROFILES_FIRST_NAME_COLUMN_TITLE,
-      USER_PROFILES_LAST_NAME_COLUMN_TITLE,
-      USER_PROFILES_EMAIL_COLUMN_TITLE,
-      USER_PROFILES_TAGLINE_COLUMN_TITLE,
-      USER_PROFILES_PRONOUNS_COLUMN_TITLE,
-      USER_PROFILES_ORGANIZATION_COLUMN_TITLE,
-      USER_PROFILES_ADDRESS_COLUMN_TITLE,
-      USER_PROFILES_CITY_COLUMN_TITLE,
-      USER_PROFILES_STATE_COLUMN_TITLE,
-      USER_PROFILES_ZIP_COLUMN_TITLE,
-      USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE,
-      USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE,
-      USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE
+      IS_ADMIN_COLUMN_TITLE,
+      FIRST_NAME_COLUMN_TITLE,
+      LAST_NAME_COLUMN_TITLE,
+      EMAIL_COLUMN_TITLE,
+      TAGLINE_COLUMN_TITLE,
+      PRONOUNS_COLUMN_TITLE,
+      ORGANIZATION_COLUMN_TITLE,
+      ADDRESS_COLUMN_TITLE,
+      CITY_COLUMN_TITLE,
+      STATE_COLUMN_TITLE,
+      ZIP_COLUMN_TITLE,
+      DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE,
+      DATE_ACCOUNT_CREATED_TITLE,
+      DATE_LAST_SIGNED_IN_TITLE
     ],
     doInitHeaderRow,
     columnHeadersRowNumber: columnHeadersRowNumber
@@ -58,49 +60,49 @@ class UserProfilesWorksheetService extends WorksheetService {
   // and then updated from a server with the Admin SDK
   Map<String, dynamic> toGoogleSheetJsonForBulkProfileExport(AppUserProfile appUserProfile) => {
     WorksheetService.UID_COLUMN_TITLE: appUserProfile.uid,
-    USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
-    USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
-    USER_PROFILES_TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
-    USER_PROFILES_PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
-    USER_PROFILES_ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
-    USER_PROFILES_ADDRESS_COLUMN_TITLE: appUserProfile.address,
-    USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
-    USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
-    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
-    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc()
+    FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
+    LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
+    TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
+    PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
+    ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
+    ADDRESS_COLUMN_TITLE: appUserProfile.address,
+    CITY_COLUMN_TITLE: appUserProfile.city,
+    STATE_COLUMN_TITLE: appUserProfile.state,
+    ZIP_COLUMN_TITLE: appUserProfile.zip,
+    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc()
   };
 
   // Since the user is logged in, their individual information is available for update
   Map<String, dynamic> toGoogleSheetJsonForLoggedInUser(AppUser appUser, AppUserProfile appUserProfile) => {
     WorksheetService.UID_COLUMN_TITLE: appUserProfile.uid,
-    USER_PROFILES_IS_ADMIN_COLUMN_TITLE: appUser.isAdmin,
-    USER_PROFILES_FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
-    USER_PROFILES_LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
-    USER_PROFILES_EMAIL_COLUMN_TITLE: appUser.email,
-    USER_PROFILES_TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
-    USER_PROFILES_PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
-    USER_PROFILES_ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
-    USER_PROFILES_ADDRESS_COLUMN_TITLE: appUserProfile.address,
-    USER_PROFILES_CITY_COLUMN_TITLE: appUserProfile.city,
-    USER_PROFILES_STATE_COLUMN_TITLE: appUserProfile.state,
-    USER_PROFILES_ZIP_COLUMN_TITLE: appUserProfile.zip,
-    USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString(),
-    USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc().toString(),
-    USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc().toString()
+    IS_ADMIN_COLUMN_TITLE: appUser.isAdmin,
+    FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
+    LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
+    EMAIL_COLUMN_TITLE: appUser.email,
+    TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
+    PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
+    ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
+    ADDRESS_COLUMN_TITLE: appUserProfile.address,
+    CITY_COLUMN_TITLE: appUserProfile.city,
+    STATE_COLUMN_TITLE: appUserProfile.state,
+    ZIP_COLUMN_TITLE: appUserProfile.zip,
+    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString(),
+    DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc().toString(),
+    DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc().toString()
   };
   
   AppUserProfile fromGoogleSheetsJson(Map<String, dynamic> json) => AppUserProfile(
-      json[USER_PROFILES_FIRST_NAME_COLUMN_TITLE],
-      json[USER_PROFILES_LAST_NAME_COLUMN_TITLE],
+      json[FIRST_NAME_COLUMN_TITLE],
+      json[LAST_NAME_COLUMN_TITLE],
       uid: json[WorksheetService.UID_COLUMN_TITLE],
-      tagline: json[USER_PROFILES_TAGLINE_COLUMN_TITLE],
-      pronouns: json[USER_PROFILES_PRONOUNS_COLUMN_TITLE],
-      organization: json[USER_PROFILES_ORGANIZATION_COLUMN_TITLE],
-      address: json[USER_PROFILES_ADDRESS_COLUMN_TITLE],
-      city: json[USER_PROFILES_CITY_COLUMN_TITLE],
-      state: json[USER_PROFILES_STATE_COLUMN_TITLE],
-      zip: json[USER_PROFILES_ZIP_COLUMN_TITLE],
-      dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE])),
+      tagline: json[TAGLINE_COLUMN_TITLE],
+      pronouns: json[PRONOUNS_COLUMN_TITLE],
+      organization: json[ORGANIZATION_COLUMN_TITLE],
+      address: json[ADDRESS_COLUMN_TITLE],
+      city: json[CITY_COLUMN_TITLE],
+      state: json[STATE_COLUMN_TITLE],
+      zip: json[ZIP_COLUMN_TITLE],
+      dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE])),
       // creationTimestamp: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE])), //No need; info is in AppUser
       // lastSignInTime: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE])),     //No need; info is in Appuser
   );

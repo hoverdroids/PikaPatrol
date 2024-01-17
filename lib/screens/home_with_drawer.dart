@@ -715,7 +715,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
         await service.userProfilesWorksheetService.initHeaderRow();
-        showToast("Initialized ${service.organization}");
+        showToast("Initialized ${service.organization} User Profiles");
+        await Future.delayed(const Duration(seconds: 1));
+
+        await service.observationWorksheetService.initHeaderRow();
+        showToast("Initialized ${service.organization} Observations");
         await Future.delayed(const Duration(seconds: 1));
       }
       showToast("Finished initialization");

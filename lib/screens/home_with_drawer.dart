@@ -105,7 +105,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     AppUser? user = Provider.of<AppUser?>(context);
     AppUserProfile? userProfile = Provider.of<AppUserProfile?>(context);
-    List<GoogleSheetsCredential> credentials = Provider.of<List<GoogleSheetsCredential>>(context);
 
     var forceProfileOpen = user != null && userProfile != null && !userProfile.areRequiredFieldsValid();
 
@@ -121,6 +120,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context, listen: false);
       FirebaseDatabaseService firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
       saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
+    }
+
+    if (user != null) {
+      GoogleSheetsService googleSheetsService = Provider.of<GoogleSheetsService>(context);
+      var bla = "";
     }
 
     return Scaffold(

@@ -19,6 +19,7 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
+import 'package:pika_patrol/model/google_sheets_credential.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
@@ -104,6 +105,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     AppUser? user = Provider.of<AppUser?>(context);
     AppUserProfile? userProfile = Provider.of<AppUserProfile?>(context);
+    List<GoogleSheetsCredential> credentials = Provider.of<List<GoogleSheetsCredential>>(context);
 
     var forceProfileOpen = user != null && userProfile != null && !userProfile.areRequiredFieldsValid();
 

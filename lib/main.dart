@@ -1,6 +1,8 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
+import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
@@ -13,6 +15,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'l10n/translations.dart';
 import 'model/app_user.dart';
 import 'model/app_user_profile.dart';
+import 'model/google_sheets_credential.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -27,6 +30,9 @@ Future<void> main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
   await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+
+  Hive.registerAdapter(GoogleSheetsCredentialAdapter());
+  await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
@@ -104,16 +110,28 @@ Future<void> main() async {
                 // for bulk exporting out of firebase.
                 var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
 
-                return MultiProvider(
-                  providers: [
-                    Provider<AppUser?>.value(
-                        value: appUser
-                    ),
-                    Provider<AppUserProfile?>.value(
-                        value: appUserProfile
-                    )
-                  ],
-                  child: const MyApp()
+                return StreamBuilder<List<GoogleSheetsCredential>>(
+                  stream: firebaseDatabaseService.googleSheetsService.credentials,
+                  initialData: null,
+                  builder: (context, googleSheetsCredentialsSnapshot) {
+
+                    List<GoogleSheetsCredential> credentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
+
+                    return MultiProvider(
+                        providers: [
+                          Provider<AppUser?>.value(
+                              value: appUser
+                          ),
+                          Provider<AppUserProfile?>.value(
+                              value: appUserProfile
+                          ),
+                          Provider<List<GoogleSheetsCredential>>.value(
+                              value: credentials
+                          )
+                        ],
+                        child: const MyApp()
+                    );
+                  }
                 );
               }
             );

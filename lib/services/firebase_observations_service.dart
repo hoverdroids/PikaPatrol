@@ -103,15 +103,15 @@ class FirebaseObservationsService {
   }
 
   Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
-    // var exception = deleteImages ? await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls) : null;
-    // if (exception != null) {
-    //   return exception;
-    // }
-    //
-    // exception = deleteAudio ? await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls) : null;
-    // if (exception != null) {
-    //   return exception;
-    // }
+    var exception = deleteImages ? await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls) : null;
+    if (exception != null) {
+      return exception;
+    }
+
+    exception = deleteAudio ? await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls) : null;
+    if (exception != null) {
+      return exception;
+    }
 
     var docUid = observation.uid;
     if (docUid != null) {

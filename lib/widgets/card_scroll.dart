@@ -5,11 +5,9 @@ import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'dart:developer' as developer;
 
 import '../primitives/card_layout.dart';
 
-// ignore: must_be_immutable
 class CardScrollWidget extends StatelessWidget {
 
   List<card.CardModel> cards = [];
@@ -41,7 +39,6 @@ class CardScrollWidget extends StatelessWidget {
       }
   ) {
     this.cardBorderRadius = cardBorderRadius ?? BorderRadius.circular(16);
-    //developer.log("CurrentCardPosition:$currentCardPosition");
     cardAspectRatio = 12.0 / 16.0;
     widgetAspectRatio = cardAspectRatio * 1.2;
   }
@@ -54,7 +51,6 @@ class CardScrollWidget extends StatelessWidget {
 
     child: LayoutBuilder(builder: (context, constraints) {
       var (primaryCardLeft, horizontalInset) = _calculateCardLeftAndHorizontalInset(constraints);
-      //developer.log("CurrentCardPosition:$currentCardPosition primaryCardLeft:$primaryCardLeft horzInset:$horizontalInset");
 
       List<Widget> cardList = <Widget>[];
 
@@ -116,7 +112,7 @@ class CardScrollWidget extends StatelessWidget {
       top: verticalDeltaBetweenCards,//should be called "from top"
       bottom: verticalDeltaBetweenCards,//should be called "from bottom"
       start: start,
-      textDirection: TextDirection.rtl,
+      textDirection: TextDirection.ltr,
       child: Container(
         decoration: _buildCardShadow(),
         child: ClipRRect(

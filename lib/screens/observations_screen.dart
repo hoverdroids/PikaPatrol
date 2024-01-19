@@ -2,6 +2,7 @@
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
@@ -40,6 +41,11 @@ class ObservationsPageState extends State<ObservationsPage> {
   late PageController localObservationsPageController;
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
+
+  final Key _sharedObservationsScrollerKey = UniqueKey();
+  final Key _emptySharedObservationsScrollerKey = UniqueKey();
+  final Key _localObservationsScrollerKey = UniqueKey();
+  final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool localObservationsNeedUploaded() {
     return localObservations.isNotEmpty && localObservations.any((Observation observation) => observation.uid == null || observation.uid?.isEmpty == true);
@@ -145,17 +151,21 @@ class ObservationsPageState extends State<ObservationsPage> {
                           ),
                           if (widget.observations.isNotEmpty) ... [
                             CardScroller(
-                                widget.observations,
-                                onTapCard: (index) => {
-                                  Navigator.push( context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ObservationScreen(widget.observations[index].copy()),
-                                    ),
-                                  )
-                                }
+                              widget.observations,
+                              key: _sharedObservationsScrollerKey,
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(widget.observations[index].copy()),
+                                  ),
+                                )
+                              }
                             ),
                           ] else ...[
-                            CardScroller(_createDefaultObservations()),
+                            CardScroller(
+                              _createDefaultObservations(),
+                              key: _emptySharedObservationsScrollerKey,
+                            ),
                           ],
                           ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
@@ -208,6 +218,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                           if (localObservations.isNotEmpty) ... [
                             CardScroller(
                               localObservations,
+                              key: _localObservationsScrollerKey,
                               onTapCard: (index) => {
                                 Navigator.push( context,
                                   MaterialPageRoute(
@@ -217,7 +228,10 @@ class ObservationsPageState extends State<ObservationsPage> {
                               }
                             ),
                           ] else ...[
-                            CardScroller(_createDefaultObservations()),
+                            CardScroller(
+                              _createDefaultObservations(),
+                              key: _emptyLocalObservationsScrollerKey,
+                            ),
                           ],
                         ],
                       ),

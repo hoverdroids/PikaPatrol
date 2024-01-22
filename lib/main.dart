@@ -20,6 +20,7 @@ import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'dart:developer' as developer;
 
 const useEmulators = false;
 
@@ -28,9 +29,9 @@ Future<void> main() async {
   //debugPrintGestureArenaDiagnostics = true;
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
-  await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
-
   Hive.registerAdapter(GoogleSheetsCredentialAdapter());
+
+  await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/

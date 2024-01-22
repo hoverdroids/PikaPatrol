@@ -30,39 +30,46 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
 
   @override
   read(BinaryReader reader) {
-    // Retrieve the observation data consistent across all versions of LocalObservation
-    var localObservation = LocalObservation(
-        uid: reader.readString(),
-        observerUid: reader.readString(),
-        altitudeInMeters: reader.readDouble(),
-        longitude: reader.readDouble(),
-        latitude: reader.readDouble(),
-        name: reader.readString(),
-        location: reader.readString(),
-        date: reader.readString(),
-        signs: reader.readStringList(),
-        pikasDetected: reader.readString(),
-        distanceToClosestPika: reader.readString(),
-        searchDuration: reader.readString(),
-        talusArea: reader.readString(),
-        temperature: reader.readString(),
-        skies: reader.readString(),
-        wind: reader.readString(),
-        otherAnimalsPresent: reader.readStringList(),
-        siteHistory: reader.readString(),
-        comments: reader.readString(),
-        imageUrls: reader.readStringList(),
-        audioUrls: reader.readStringList(),
-    );
-
-    // If the observation is older, there won't be any more bytes to read.
-    // Trying to do so will throw the error "Not enough bytes available"
+    
+    var localObservation = LocalObservation();
+    
     if (reader.availableBytes > 0) {
-      // There are more bytes, so we know this is a newer observation with more bytes
-      localObservation.species = reader.readString();
-      localObservation.sharedWithProjects = reader.readStringList();
-      localObservation.notSharedWithProjects = reader.readStringList();
-      localObservation.dateUpdatedInGoogleSheets = reader.readString();
+      try {
+        // Retrieve the observation data consistent across all versions of LocalObservation
+        localObservation.uid = reader.readString();
+        localObservation.observerUid = reader.readString();
+        localObservation.altitudeInMeters = reader.readDouble();
+        localObservation.longitude = reader.readDouble();
+        localObservation.latitude = reader.readDouble();
+        localObservation.name = reader.readString();
+        localObservation.location = reader.readString();
+        localObservation.date = reader.readString();
+        localObservation.signs = reader.readStringList();
+        localObservation.pikasDetected = reader.readString();
+        localObservation.distanceToClosestPika = reader.readString();
+        localObservation.searchDuration = reader.readString();
+        localObservation.talusArea = reader.readString();
+        localObservation.temperature = reader.readString();
+        localObservation.skies = reader.readString();
+        localObservation.wind = reader.readString();
+        localObservation.otherAnimalsPresent = reader.readStringList();
+        localObservation.siteHistory = reader.readString();
+        localObservation.comments = reader.readString();
+        localObservation.imageUrls = reader.readStringList();
+        localObservation.audioUrls = reader.readStringList();
+
+        // If the observation is older, there won't be any more bytes to read.
+        // Trying to do so will throw the error "Not enough bytes available"
+
+
+        // There are more bytes, so we know this is a newer observation with more bytes
+        localObservation.species = reader.readString();
+        localObservation.sharedWithProjects = reader.readStringList();
+        localObservation.notSharedWithProjects = reader.readStringList();
+        localObservation.dateUpdatedInGoogleSheets = reader.readString();
+      } catch(e) {
+        developer.log("Reader error: $e");
+      }
     }
 
 
@@ -71,30 +78,30 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
 
   @override
   void write(BinaryWriter writer, LocalObservation observation) {
-      writer.write(observation.uid);
-      writer.write(observation.observerUid);
-      writer.write(observation.altitudeInMeters);
-      writer.write(observation.longitude);
-      writer.write(observation.latitude);
-      writer.write(observation.name);
-      writer.write(observation.location);
-      writer.write(observation.date);
-      writer.write(observation.signs);
-      writer.write(observation.pikasDetected);
-      writer.write(observation.distanceToClosestPika);
-      writer.write(observation.searchDuration);
-      writer.write(observation.talusArea);
-      writer.write(observation.temperature);
-      writer.write(observation.skies);
-      writer.write(observation.wind);
-      writer.write(observation.otherAnimalsPresent);
-      writer.write(observation.siteHistory);
-      writer.write(observation.comments);
-      writer.write(observation.imageUrls);
-      writer.write(observation.audioUrls);
-      writer.write(observation.species);
-      writer.write(observation.sharedWithProjects);
-      writer.write(observation.notSharedWithProjects);
-      writer.write(observation.dateUpdatedInGoogleSheets);
+      writer.writeString(observation.uid);
+      writer.writeString(observation.observerUid);
+      writer.writeDouble(observation.altitudeInMeters);
+      writer.writeDouble(observation.longitude);
+      writer.writeDouble(observation.latitude);
+      writer.writeString(observation.name);
+      writer.writeString(observation.location);
+      writer.writeString(observation.date);
+      writer.writeStringList(observation.signs);
+      writer.writeString(observation.pikasDetected);
+      writer.writeString(observation.distanceToClosestPika);
+      writer.writeString(observation.searchDuration);
+      writer.writeString(observation.talusArea);
+      writer.writeString(observation.temperature);
+      writer.writeString(observation.skies);
+      writer.writeString(observation.wind);
+      writer.writeStringList(observation.otherAnimalsPresent);
+      writer.writeString(observation.siteHistory);
+      writer.writeString(observation.comments);
+      writer.writeStringList(observation.imageUrls);
+      writer.writeStringList(observation.audioUrls);
+      writer.writeString(observation.species);
+      writer.writeStringList(observation.sharedWithProjects);
+      writer.writeStringList(observation.notSharedWithProjects);
+      writer.writeString(observation.dateUpdatedInGoogleSheets);
   }
 }

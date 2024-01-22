@@ -58,20 +58,26 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
         localObservation.imageUrls = reader.readStringList();
         localObservation.audioUrls = reader.readStringList();
 
-        // If the observation is older, there won't be any more bytes to read.
-        // Trying to do so will throw the error "Not enough bytes available"
-
-
-        // There are more bytes, so we know this is a newer observation with more bytes
-        localObservation.species = reader.readString();
-        localObservation.sharedWithProjects = reader.readStringList();
-        localObservation.notSharedWithProjects = reader.readStringList();
-        localObservation.dateUpdatedInGoogleSheets = reader.readString();
+        if (reader.availableBytes > 0) {
+          // There are more bytes, so we know this is a newer observation with more bytes
+          localObservation.species = reader.readString();
+          localObservation.sharedWithProjects = reader.readStringList();
+          localObservation.notSharedWithProjects = reader.readStringList();
+          localObservation.dateUpdatedInGoogleSheets = reader.readString();
+        } else {
+          // If the observation is older, there won't be any more bytes to read.
+          // Trying to do so will throw the error "Not enough bytes available"
+          // The fields need to be initialized still, or else Flutter throws an error
+          // for "unmodifiable list"
+          localObservation.species = "";
+          localObservation.sharedWithProjects = <String>[];
+          localObservation.notSharedWithProjects = <String>[];
+          localObservation.dateUpdatedInGoogleSheets = "";
+        }
       } catch(e) {
         developer.log("Reader error: $e");
       }
     }
-
 
     return localObservation;
   }

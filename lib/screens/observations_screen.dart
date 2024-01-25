@@ -48,7 +48,7 @@ class ObservationsPageState extends State<ObservationsPage> {
   final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool localObservationsNeedUploaded() {
-    return localObservations.isNotEmpty && localObservations.any((Observation observation) => observation.uid == null || observation.uid?.isEmpty == true);
+    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
   @override

@@ -78,6 +78,9 @@ class LocalObservation extends HiveObject {
   @HiveField(24, defaultValue: "")
   String dateUpdatedInGoogleSheets;
 
+  @HiveField(25, defaultValue: false)
+  bool isUploaded;
+
   LocalObservation(
     {
       this.uid = "",
@@ -104,7 +107,8 @@ class LocalObservation extends HiveObject {
       this.otherAnimalsPresent = const <String>[],
       this.sharedWithProjects = const <String>[],
       this.notSharedWithProjects = const <String>[],
-      this.dateUpdatedInGoogleSheets = ""
+      this.dateUpdatedInGoogleSheets = "",
+      this.isUploaded = false
     }
   );
 }

@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/main.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -19,8 +20,6 @@ import '../services/firebase_database_service.dart';
 
 Future saveObservation(BuildContext context, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
-    var needToSaveLocalObservation = observation.uid == null;
-
     var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
     var imageUrls = observation.imageUrls;
@@ -35,7 +34,12 @@ Future saveObservation(BuildContext context, Observation observation) async {
     }
     //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
-    await databaseService.observationsService.updateObservation(observation);
+    var isUploaded = true;
+    var exception = await databaseService.observationsService.updateObservation(observation);
+    if (exception != null) {
+      showToast("Exception: ${exception.message}");
+      isUploaded = false;
+    }
 
     if (context.mounted) {
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
@@ -48,24 +52,31 @@ Future saveObservation(BuildContext context, Observation observation) async {
       }
     }
 
-    if (needToSaveLocalObservation) {
-      // Update local observation after successful upload because the uid will be non empty now
-      saveLocalObservation(observation);
-    }
+
+    // Update local observation after successful upload because the uid will be non empty now.
+    // Also, if the user was offline and editing an already created observation, isUploaded will be false
+    // because firebase will throw an exception of being offline.
+    // In that case, track that the updates are no longer uploaded and will need to be the next time internet
+    // is available
+    saveLocalObservation(observation, isUploaded: isUploaded);
 }
 
-Future<LocalObservation?> saveLocalObservation(Observation observation) async {
+Future<LocalObservation?> saveLocalObservation(Observation observation, {bool? isUploaded}) async {
   var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
 
-  //The observation screen can be opened from an online observation, which means that the dbId can be null.
-  //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
-  Map<dynamic, dynamic> raw = box.toMap();
-  List list = raw.values.toList();
+  LocalObservation? currentLocalObservation = box.get(observation.dbId);
+  if (currentLocalObservation == null) {
+    //The observation screen can be opened from an online observation, which means that the dbId can be null.
+    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
+    Map<dynamic, dynamic> raw = box.toMap();
+    List list = raw.values.toList();
 
-  for (var element in list) {
-    LocalObservation localObservation = element;
-    if(localObservation.uid == observation.uid) {
-      observation.dbId = localObservation.key;
+    for (var element in list) {
+      LocalObservation localObservation = element;
+      if (localObservation.uid == observation.uid) {
+        currentLocalObservation = localObservation;
+        break;
+      }
     }
   }
 
@@ -93,10 +104,11 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
       audioUrls: observation.audioUrls ?? <String>[],
       otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
       sharedWithProjects: observation.sharedWithProjects ?? <String>[],
-      notSharedWithProjects: observation.notSharedWithProjects ?? <String>[]
+      notSharedWithProjects: observation.notSharedWithProjects ?? <String>[],
+      isUploaded: isUploaded ?? currentLocalObservation?.isUploaded ?? false
   );
 
-  if(observation.dbId == null) {
+  if(currentLocalObservation == null) {
     int? key = await box.add(localObservation);
 
     //If the user remains on the observation page, they can edit/save again. In that case, they need
@@ -104,6 +116,7 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
     observation.dbId = key;
   } else {
     await box.put(observation.dbId, localObservation);
+    observation.dbId = currentLocalObservation.key;
   }
 
   return box.get(observation.dbId);

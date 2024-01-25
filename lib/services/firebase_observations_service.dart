@@ -52,7 +52,7 @@ class FirebaseObservationsService {
     observationsCollection = firebaseFirestore.collection(OBSERVATIONS_COLLECTION_NAME);
   }
 
-  Future updateObservation(Observation observation) async {
+  Future<FirebaseException?> updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
 
     var observationObject = {
@@ -81,25 +81,29 @@ class FirebaseObservationsService {
       NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
       DATE_UPDATED_IN_GOOGLE_SHEETS: observation.dateUpdatedInGoogleSheets
     };
+
     DocumentReference doc;
-    if (observation.uid == null || observation.uid?.isEmpty == true) {
+    var isUidNullOrEmpty = observation.uid == null || observation.uid?.isEmpty == true;
+    if (isUidNullOrEmpty) {
       doc = observationsCollection.doc();
       observation.uid = doc.id;
-      try {
-        await doc.set(observationObject);
-      } catch (e) {
-        developer.log("Firebase doc.set error:$e");
-      }
     } else {
       doc = observationsCollection.doc(observation.uid);
-      try {
-        await doc.update(observationObject);
-      } catch(e) {
-        developer.log("Firebase doc.update error:$e");
-      }
     }
 
-    developer.log("Update Observation id:${observation.uid}");
+    try {
+      // Calling set when a doc with the Id doesn't exist will create it.
+      // If the doc exists, it will be updated
+      await doc.set(observationObject);
+    } on FirebaseException catch (e) {
+      if (isUidNullOrEmpty) {
+        // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existant
+        observation.uid = null;
+      }
+
+      return e;
+    }
+    return null;
   }
 
   Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {

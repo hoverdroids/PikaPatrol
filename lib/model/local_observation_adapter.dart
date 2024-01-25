@@ -64,6 +64,7 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
           localObservation.sharedWithProjects = reader.readStringList();
           localObservation.notSharedWithProjects = reader.readStringList();
           localObservation.dateUpdatedInGoogleSheets = reader.readString();
+          localObservation.isUploaded = reader.readBool();
         } else {
           // If the observation is older, there won't be any more bytes to read.
           // Trying to do so will throw the error "Not enough bytes available"
@@ -73,6 +74,7 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
           localObservation.sharedWithProjects = <String>[];
           localObservation.notSharedWithProjects = <String>[];
           localObservation.dateUpdatedInGoogleSheets = "";
+          localObservation.isUploaded = false;
         }
       } catch(e) {
         developer.log("Reader error: $e");
@@ -109,5 +111,6 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
       writer.writeStringList(observation.sharedWithProjects);
       writer.writeStringList(observation.notSharedWithProjects);
       writer.writeString(observation.dateUpdatedInGoogleSheets);
+      writer.writeBool(observation.isUploaded);
   }
 }

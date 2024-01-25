@@ -305,9 +305,6 @@ class ObservationsPageState extends State<ObservationsPage> {
     Navigator.pop(context, true);
     _isLocalObservationsDialogShowing = false;
 
-    final settingsService = Provider.of<SettingsService>(context, listen: false);
-    settingsService.setLocalObservationNames(localObservations.map((observation) => observation.location).join(","));
-
     if (uploadLocalObservationsNow) {
       await _uploadLocalObservations();
     }

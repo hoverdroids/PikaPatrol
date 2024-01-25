@@ -48,6 +48,8 @@ class Observation extends card.CardModel {
 
   DateTime? dateUpdatedInGoogleSheets;
 
+  bool isUploaded;
+
   //TODO - image descriptions including isHayPile, isHayPile fresh/old/not sure, is scat...is fresh/old/not sure
   Observation({
     this.dbId,
@@ -76,6 +78,7 @@ class Observation extends card.CardModel {
     sharedWithProjects,
     this.notSharedWithProjects,
     this.dateUpdatedInGoogleSheets,
+    this.isUploaded = false,
     super.buttonText,
     super.cardLayout,
     IconData? uploadedIcon = Icons.cloud_upload,
@@ -127,6 +130,7 @@ class Observation extends card.CardModel {
       List<String>? sharedWithProjects,
       List<String>? notSharedWithProjects,
       DateTime? dateUpdatedInGoogleSheets,
+      bool? isUploaded,
       String? buttonText,
       CardLayout? cardLayout,
       IconData? uploadedIcon,
@@ -159,6 +163,7 @@ class Observation extends card.CardModel {
     sharedWithProjects: sharedWithProjects ?? this.sharedWithProjects,
     notSharedWithProjects: notSharedWithProjects ?? this.notSharedWithProjects,
     dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets,
+    isUploaded: isUploaded ?? this.isUploaded,
     buttonText: buttonText ?? this.buttonText,
     cardLayout: cardLayout ?? this.cardLayout,
     uploadedIcon: uploadedIcon ?? Icons.cloud_upload,

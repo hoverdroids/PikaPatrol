@@ -104,14 +104,13 @@ class ObservationsPageState extends State<ObservationsPage> {
               sharedWithProjects: localObservation.sharedWithProjects,
               notSharedWithProjects: localObservation.notSharedWithProjects,
               dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
+              isUploaded: localObservation.isUploaded,
               buttonText: translations.viewObservation
           );
           localObservations.add(observation);
         }
 
         var user = Provider.of<AppUser?>(context);
-
-        //developer.log("widget.currentPage ${widget.currentPage}");
 
         return SizedBox(
             width: double.infinity,

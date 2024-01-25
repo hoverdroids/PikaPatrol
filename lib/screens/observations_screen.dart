@@ -1,4 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:async';
+
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -55,15 +57,42 @@ class ObservationsPageState extends State<ObservationsPage> {
     return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
+  late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
+
   @override
   void initState() {
     super.initState();
+
+    //TODO - CHRIS - the following controller should be migrated in the same was as shared observations
     localObservationsPageController = PageController(initialPage: localObservationsCurrentPage.toInt());
     localObservationsPageController.addListener(() {
       setState(() {
         localObservationsCurrentPage = localObservationsPageController.page ?? localObservationsCurrentPage;
       });
     });
+
+    // actively listen for status updates
+    // this will cause DataConnectionChecker to check periodically
+    // with the interval specified in DataConnectionChecker().checkInterval
+    // until listener.cancel() is called
+    _dataConnectionStatusListener = DataConnectionChecker().onStatusChange.listen((status) {
+      switch (status) {
+        case DataConnectionStatus.connected:
+          _onDataConnectionConnected();
+          break;
+        case DataConnectionStatus.disconnected:
+          //TODO - CHRIS - instead of checking for network availability when making an observation, we should just have a service that streams this value
+          break;
+      }
+    });
+
+  }
+
+
+  @override
+  void dispose() {
+    _dataConnectionStatusListener.cancel();
+    super.dispose();
   }
 
   @override
@@ -117,9 +146,6 @@ class ObservationsPageState extends State<ObservationsPage> {
         var user = Provider.of<AppUser?>(context);
 
         var needUploaded = user != null && localObservationsNeedUploaded();
-        if (needUploaded) {
-          Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context));
-        }
 
         return SizedBox(
             width: double.infinity,
@@ -242,10 +268,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   ];
 
   void _openLocalObservationsNeedUploadedDialog(BuildContext context) async {
-    final savedObservationNames = await Provider.of<SettingsService>(context, listen: false).getLocalObservationNames();
-    final currentObservationNames = localObservations.map((observation) => observation.location).join(",");
 
-    if (!context.mounted || _isLocalObservationsDialogShowing || savedObservationNames == currentObservationNames) return;
+    if (!context.mounted || _isLocalObservationsDialogShowing) return;
 
     _isLocalObservationsDialogShowing = true;
 
@@ -279,6 +303,7 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   Future _closeLocalObservationsNeedUploadedDialog(BuildContext context, bool uploadLocalObservationsNow) async {
     Navigator.pop(context, true);
+    _isLocalObservationsDialogShowing = false;
 
     final settingsService = Provider.of<SettingsService>(context, listen: false);
     settingsService.setLocalObservationNames(localObservations.map((observation) => observation.location).join(","));
@@ -308,4 +333,14 @@ class ObservationsPageState extends State<ObservationsPage> {
     }
   }
 
+
+  _onDataConnectionConnected() {
+    if (mounted) {
+      var user = Provider.of<AppUser?>(context, listen: false);
+      var needUploaded = user != null && localObservationsNeedUploaded();
+      if (needUploaded) {
+        Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context));
+      }
+    }
+  }
 }

@@ -280,6 +280,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String observationNotDeleted = ERROR;
   String initializeGoogleSheets = ERROR;
 
+  String localObservationsNeedUploadedDialogTitle = ERROR;
+  String localObservationsNeedUploadedDialogDescription = ERROR;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
@@ -552,6 +555,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     observationDeleted = AppLocalizations.of(context)?.observationDeleted ?? observationDeleted;
     observationNotDeleted = AppLocalizations.of(context)?.observationNotDeleted ?? observationNotDeleted;
     initializeGoogleSheets = AppLocalizations.of(context)?.initializeGoogleSheets ?? initializeGoogleSheets;
+    localObservationsNeedUploadedDialogTitle = AppLocalizations.of(context)?.localObservationsNeedUploadedDialogTitle ?? localObservationsNeedUploadedDialogTitle;
+    localObservationsNeedUploadedDialogDescription = AppLocalizations.of(context)?.localObservationsNeedUploadedDialogDescription ?? localObservationsNeedUploadedDialogDescription;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -792,6 +797,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "observationDeleted": return observationDeleted;
       case "observationNotDeleted": return observationNotDeleted;
       case "initializeGoogleSheets": return initializeGoogleSheets;
+      case "localObservationsNeedUploadedDialogTitle": return localObservationsNeedUploadedDialogTitle;
+      case "localObservationsNeedUploadedDialogDescription": return localObservationsNeedUploadedDialogDescription;
       default: return key;
     }
   }

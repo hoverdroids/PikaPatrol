@@ -232,5 +232,7 @@
     "cancel": "Cancel",
     "observationDeleted": "Observation deleted",
     "observationNotDeleted": "Observation not deleted",
-    "initializeGoogleSheets": "Initialize Google Sheets"
+    "initializeGoogleSheets": "Initialize Google Sheets",
+    "localObservationsNeedUploadedDialogTitle": "Offline observations need uploaded",
+    "localObservationsNeedUploadedDialogDescription": "Observations that were made offline have not been uploaded yet. Upload now?"
 }

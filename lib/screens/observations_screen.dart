@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
@@ -14,6 +15,7 @@ import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../primitives/card_layout.dart';
 import '../services/firebase_observations_service.dart';
+import '../services/settings_service.dart';
 import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
@@ -46,6 +48,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   final Key _emptySharedObservationsScrollerKey = UniqueKey();
   final Key _localObservationsScrollerKey = UniqueKey();
   final Key _emptyLocalObservationsScrollerKey = UniqueKey();
+
+  bool _isLocalObservationsDialogShowing = false;
 
   bool localObservationsNeedUploaded() {
     return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
@@ -112,6 +116,11 @@ class ObservationsPageState extends State<ObservationsPage> {
 
         var user = Provider.of<AppUser?>(context);
 
+        var needUploaded = user != null && localObservationsNeedUploaded();
+        if (needUploaded) {
+          Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context));
+        }
+
         return SizedBox(
             width: double.infinity,
             height: double.infinity,
@@ -171,28 +180,12 @@ class ObservationsPageState extends State<ObservationsPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               ThemedH4(translations.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              if(user != null && localObservationsNeedUploaded()) ... [
+                              if(needUploaded) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
                                     onPressedCallback: () async {
-                                      var hasConnection = await DataConnectionChecker().hasConnection;
-                                      if(hasConnection && context.mounted) {
-                                        showToast(translations.uploadingObservations);
-
-                                        for (var observation in localObservations) {
-                                          //TODO - CHRIS - if the user updated an observation when offline,
-                                          //the UID won't be null or empty, so those updates will never get pushed
-                                          //in the bulk upload. This will get fixed when we compare current observations
-                                          //vs the stored observation.
-                                          var uid = observation.uid;
-                                          if (uid == null || uid.isEmpty) {
-                                            saveObservation(context, observation);
-                                          }
-                                        }
-                                      } else {
-                                        showToast(translations.couldNotUploadObservationsNoDataConnection);
-                                      }
+                                      await _uploadLocalObservations();
                                     }
                                 )
                               ],
@@ -247,4 +240,72 @@ class ObservationsPageState extends State<ObservationsPage> {
   List<Observation> _createDefaultObservations() => [
     Observation(location:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
   ];
+
+  void _openLocalObservationsNeedUploadedDialog(BuildContext context) async {
+    final savedObservationNames = await Provider.of<SettingsService>(context, listen: false).getLocalObservationNames();
+    final currentObservationNames = localObservations.map((observation) => observation.location).join(",");
+
+    if (!context.mounted || _isLocalObservationsDialogShowing || savedObservationNames == currentObservationNames) return;
+
+    _isLocalObservationsDialogShowing = true;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(translations.localObservationsNeedUploadedDialogTitle),
+          content: Text(translations.localObservationsNeedUploadedDialogDescription),
+          actions: [
+            TextButton(
+              child: Text(translations.cancel),
+              onPressed: () async {
+                await _closeLocalObservationsNeedUploadedDialog(context, false);
+              },
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await _closeLocalObservationsNeedUploadedDialog(context, true);
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
+                shape: const StadiumBorder(),
+              ),
+              child: ThemedTitle(translations.ok, type: ThemeGroupType.MOP),
+            )
+          ],
+        )
+    );
+  }
+
+  Future _closeLocalObservationsNeedUploadedDialog(BuildContext context, bool uploadLocalObservationsNow) async {
+    Navigator.pop(context, true);
+
+    final settingsService = Provider.of<SettingsService>(context, listen: false);
+    settingsService.setLocalObservationNames(localObservations.map((observation) => observation.location).join(","));
+
+    if (uploadLocalObservationsNow) {
+      await _uploadLocalObservations();
+    }
+  }
+
+  Future _uploadLocalObservations() async {
+    var hasConnection = await DataConnectionChecker().hasConnection;
+    if(hasConnection && context.mounted) {
+      showToast(translations.uploadingObservations);
+
+      for (var observation in localObservations) {
+        //TODO - CHRIS - if the user updated an observation when offline,
+        //the UID won't be null or empty, so those updates will never get pushed
+        //in the bulk upload. This will get fixed when we compare current observations
+        //vs the stored observation.
+        var uid = observation.uid;
+        if (uid == null || uid.isEmpty) {
+          saveObservation(context, observation);
+        }
+      }
+    } else {
+      showToast(translations.couldNotUploadObservationsNoDataConnection);
+    }
+  }
+
 }

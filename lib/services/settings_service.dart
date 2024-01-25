@@ -10,6 +10,7 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
   static const String PREFERENCE_USER_ACK_GEO = "userAckGeo";
   static const String PREFERENCE_LANGUAGE_CODE = "languageCode";
   static const String PREFERENCE_IS_ADMIN = "isAdmin";
+  static const String PREFERENCE_LOCAL_OBSERVATION_NAMES = "localObservationNames";
   
   SettingsService() {
     init();
@@ -40,6 +41,16 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
   Future setIsAdmin(bool isAdmin) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(PREFERENCE_IS_ADMIN, isAdmin);
+  }
+
+  Future<String?> getLocalObservationNames() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(PREFERENCE_LOCAL_OBSERVATION_NAMES);
+  }
+
+  Future setLocalObservationNames(String names) async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.setString(PREFERENCE_LOCAL_OBSERVATION_NAMES, names);
   }
 
   updateLocale(Locale locale) async {

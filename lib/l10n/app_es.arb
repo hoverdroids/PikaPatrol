@@ -232,5 +232,7 @@
     "cancel": "Cancelar",
     "observationDeleted": "Observación eliminada",
     "observationNotDeleted": "Observación no eliminada",
-    "initializeGoogleSheets": "Inicializar hojas de cálculo de Google"
+    "initializeGoogleSheets": "Inicializar hojas de cálculo de Google",
+    "localObservationsNeedUploadedDialogTitle": "Es necesario cargar las observaciones fuera de línea.",
+    "localObservationsNeedUploadedDialogDescription": "Las observaciones que se realizaron fuera de línea aún no se han cargado. ¿Cargar ahora?"
 }

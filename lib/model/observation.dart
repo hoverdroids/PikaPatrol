@@ -89,7 +89,7 @@ class Observation extends card.CardModel {
     _sharedWithProjects = sharedWithProjects;
     this.imageUrls = imageUrls ?? <String>[];
     this.audioUrls = audioUrls ?? <String>[];
-    super.icon = uid?.isNotEmpty == true ? uploadedIcon : notUploadedIcon;
+    super.icon = isUploaded ? uploadedIcon : notUploadedIcon;
   }
 
   @override

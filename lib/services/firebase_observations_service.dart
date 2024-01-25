@@ -44,6 +44,7 @@ class FirebaseObservationsService {
   static const String SHARED_WITH_PROJECTS = "sharedWithProjects";
   static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
+  static const String IS_UPLOADED = "isUploaded";
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference observationsCollection;
@@ -79,7 +80,8 @@ class FirebaseObservationsService {
       OTHER_ANIMALS_PRESENT: observation.otherAnimalsPresent,
       SHARED_WITH_PROJECTS: observation.sharedWithProjects,
       NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
-      DATE_UPDATED_IN_GOOGLE_SHEETS: observation.dateUpdatedInGoogleSheets
+      DATE_UPDATED_IN_GOOGLE_SHEETS: observation.dateUpdatedInGoogleSheets,
+      IS_UPLOADED: observation.isUploaded
     };
 
     DocumentReference doc;
@@ -97,7 +99,7 @@ class FirebaseObservationsService {
       await doc.set(observationObject);
     } on FirebaseException catch (e) {
       if (isUidNullOrEmpty) {
-        // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existant
+        // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
         observation.uid = null;
       }
 
@@ -181,7 +183,9 @@ class FirebaseObservationsService {
           audioUrls: audioUrls,
           sharedWithProjects: sharedWithProjects,
           notSharedWithProjects: notSharedWithProjects,
-          dateUpdatedInGoogleSheets: parseTime(dataMap['dateUpdatedInGoogleSheets'])
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS]),
+          isUploaded: dataMap[IS_UPLOADED] ?? true
+
       );
     }).toList();
   }

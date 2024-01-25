@@ -193,7 +193,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               widget.observation.dateUpdatedInGoogleSheets = DateTime.now();
 
               if (user != null && user.uid == widget.observation.observerUid) {
-                var localObservation = await saveLocalObservation(widget.observation);
+                widget.observation.isUploaded = false;//The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
+                var localObservation = await saveLocalObservation(widget.observation);//TODO - CHRIS - I don't like the save local, save, save local approach
               }
 
               //TODO - CHRIS - probably worth moving to the saveObservationon method

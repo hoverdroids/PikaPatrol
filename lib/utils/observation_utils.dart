@@ -34,34 +34,31 @@ Future saveObservation(BuildContext context, Observation observation) async {
     }
     //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
-    var isUploaded = true;
+    observation.isUploaded = true;//set this before attempting upload so that it's saved to firebase on success
     var exception = await databaseService.observationsService.updateObservation(observation);
     if (exception != null) {
       showToast("Exception: ${exception.message}");
-      isUploaded = false;
-    }
-
-    if (context.mounted) {
-      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      observation.isUploaded = false;
+    } else if (context.mounted) {
+      /*var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
         if (observation.sharedWithProjects?.contains(service.organization) == true) {
           await service.observationWorksheetService.addOrUpdateObservation(observation);
         } else {
           await service.observationWorksheetService.deleteObservation(observation);
         }
-      }
+      }*/
     }
-
 
     // Update local observation after successful upload because the uid will be non empty now.
     // Also, if the user was offline and editing an already created observation, isUploaded will be false
     // because firebase will throw an exception of being offline.
     // In that case, track that the updates are no longer uploaded and will need to be the next time internet
     // is available
-    saveLocalObservation(observation, isUploaded: isUploaded);
+    await saveLocalObservation(observation);
 }
 
-Future<LocalObservation?> saveLocalObservation(Observation observation, {bool? isUploaded}) async {
+Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
 
   LocalObservation? currentLocalObservation = box.get(observation.dbId);
@@ -105,7 +102,7 @@ Future<LocalObservation?> saveLocalObservation(Observation observation, {bool? i
       otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
       sharedWithProjects: observation.sharedWithProjects ?? <String>[],
       notSharedWithProjects: observation.notSharedWithProjects ?? <String>[],
-      isUploaded: isUploaded ?? currentLocalObservation?.isUploaded ?? false
+      isUploaded: observation.isUploaded ?? false
   );
 
   if(currentLocalObservation == null) {
@@ -115,8 +112,8 @@ Future<LocalObservation?> saveLocalObservation(Observation observation, {bool? i
     //to use the same database ID instead of adding a new entry each time
     observation.dbId = key;
   } else {
-    await box.put(observation.dbId, localObservation);
     observation.dbId = currentLocalObservation.key;
+    await box.put(observation.dbId, localObservation);
   }
 
   return box.get(observation.dbId);

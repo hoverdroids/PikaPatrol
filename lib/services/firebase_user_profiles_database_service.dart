@@ -197,7 +197,7 @@ class FirebaseUserProfilesDatabaseService {
           frppOptIn: snapshot.get(FRPP_OPT_IN) ?? false,
           rmwOptIn: snapshot.get(RMW_OPT_IN) ?? false,
           dzOptIn: snapshot.get(DZ_OPT_IN) ?? false,
-          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])
       );
     } catch(e){
       return null;
@@ -223,7 +223,7 @@ class FirebaseUserProfilesDatabaseService {
           frppOptIn: dataMap[FRPP_OPT_IN] ?? false,
           rmwOptIn: dataMap[RMW_OPT_IN] ?? false,
           dzOptIn: dataMap[DZ_OPT_IN] ?? false,
-          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS])
       );
     }).toList();
   }

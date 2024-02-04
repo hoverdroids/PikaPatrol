@@ -163,7 +163,7 @@ class FirebaseObservationsService {
           observerUid: dataMap[OBSERVER_UID] ?? '',
           name: dataMap[NAME] ?? '',
           location: dataMap[LOCATION] ?? '',
-          date: DateTime.fromMillisecondsSinceEpoch(dataMap[DATE]?.millisecondsSinceEpoch),//// parseTime(dataMap['dateUpdatedInGoogleSheets'])//TODO - CHRIS - verify this works in Android and then check other timestamps/dates
+          date: parseTime(dataMap[DATE]),
           altitudeInMeters: dataMap[ALTITUDE],
           latitude: dataMap[LATITUDE],
           longitude: dataMap[LONGITUDE],

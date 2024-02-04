@@ -750,9 +750,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   void _openAudioRecorder() async {
     try {
       //Always check for permission. It will ask for permission if not already granted
-      //NOTE: FlutterAudioRecorder3.hasPermissions requests the permission by showing the dialog to the user,
+      //NOTE: FlutterAudioRecorder4.hasPermissions requests the permission by showing the dialog to the user,
       //but hasPermissions is always false. So, don't use it. Keeping this here as a reminder.
-      //bool hasPermission = await FlutterAudioRecorder3.hasPermissions ?? false;
+      //bool hasPermission = await FlutterAudioRecorder4.hasPermissions ?? false;
 
       if (await Permission.microphone.request().isGranted) {
         showAudioRecorderDialog();

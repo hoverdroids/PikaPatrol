@@ -1304,6 +1304,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildSharedWithProjects() {
 
     var approvedOrganizations = Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+
+    //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
+    //is still empty after logging in, until user restarts app
+    //This list needs to be available offlline as well.
+    if (approvedOrganizations.isEmpty) {
+      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "Denver Zoo", "IF/THEN", "Pika Patrol", "PikaNET (Mountain Studies Institute)", "Rocky Mountain Wild"];
+    }
+
     var sharedWithProjects = widget.observation.sharedWithProjects ?? approvedOrganizations;
     var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
 
@@ -1314,8 +1322,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       }
     }
 
-    widget.observation.sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
-    widget.observation.notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
+    sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
+    widget.observation.sharedWithProjects = sharedWithProjects;
+
+    notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
+    widget.observation.notSharedWithProjects = notSharedWithProjects;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1330,28 +1341,30 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             // ]
           ],
         ),
-        ChipsChoice<String>.multiple(
-          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.sharedWithProjects ?? <String>[],
-          onChanged: (updatedSharedWithProjects) =>
-          {
-            if (widget.isEditMode) {
-              setState((){
-                widget.observation.sharedWithProjects = updatedSharedWithProjects;
+        if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
+          ChipsChoice<String>.multiple(
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: widget.observation.sharedWithProjects ?? <String>[],
+            onChanged: (updatedSharedWithProjects) =>
+            {
+              if (widget.isEditMode) {
+                setState((){
+                  widget.observation.sharedWithProjects = updatedSharedWithProjects;
 
-                var approvedSet = approvedOrganizations.toSet();
-                var selectedSet = updatedSharedWithProjects.toSet();
-                widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
-              })
-            }
-          },
-          choiceItems: C2Choice.listFrom<String, String>(
-            source: approvedOrganizations,
-            value: (i, v) => v,
-            label: (i, v) => v,
-            tooltip: (i, v) => v,
-          ),
-        )
+                  var approvedSet = approvedOrganizations.toSet();
+                  var selectedSet = updatedSharedWithProjects.toSet();
+                  widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
+                })
+              }
+            },
+            choiceItems: C2Choice.listFrom<String, String>(
+              source: approvedOrganizations,
+              value: (i, v) => v,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            ),
+          )
+        ]
       ],
     );
   }

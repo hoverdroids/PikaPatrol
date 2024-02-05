@@ -4,8 +4,8 @@ import 'observations_worksheet_service.dart';
 
 class PikaPatrolSpreadsheetService extends SpreadsheetService {
 
-  late ObservationsWorksheetService observationWorksheetService;
-  late UserProfilesWorksheetService userProfilesWorksheetService;
+  ObservationsWorksheetService? observationWorksheetService;
+  UserProfilesWorksheetService? userProfilesWorksheetService;
 
   PikaPatrolSpreadsheetService(
     super.organization,
@@ -17,9 +17,9 @@ class PikaPatrolSpreadsheetService extends SpreadsheetService {
   @override
   void initWorksheetServices(bool doInitHeaderRow, int columnHeadersRowNumber) {
     userProfilesWorksheetService = UserProfilesWorksheetService(spreadsheet, doInitHeaderRow, columnHeadersRowNumber: columnHeadersRowNumber);
-    worksheetServices.add(userProfilesWorksheetService);
+    worksheetServices.add(userProfilesWorksheetService!);
 
     observationWorksheetService = ObservationsWorksheetService(spreadsheet, doInitHeaderRow, columnHeadersRowNumber: columnHeadersRowNumber);
-    worksheetServices.add(observationWorksheetService);
+    worksheetServices.add(observationWorksheetService!);
   }
 }

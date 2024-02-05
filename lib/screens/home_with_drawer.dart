@@ -743,11 +743,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       showToast("Starting initialization");
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        await service.userProfilesWorksheetService.initHeaderRow();
+        await service.userProfilesWorksheetService?.initHeaderRow();
         showToast("Initialized ${service.organization} User Profiles");
         await Future.delayed(const Duration(milliseconds: GoogleSheetsService.WRITE_THEN_TOAST_DELAY_MS));
 
-        await service.observationWorksheetService.initHeaderRow();
+        await service.observationWorksheetService?.initHeaderRow();
         showToast("Initialized ${service.organization} Observations");
         await Future.delayed(const Duration(milliseconds: GoogleSheetsService.WRITE_THEN_TOAST_DELAY_MS));
       }
@@ -787,7 +787,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        await service.userProfilesWorksheetService.addOrUpdateAppUserProfiles(appUserProfiles, service.organization);
+        await service.userProfilesWorksheetService?.addOrUpdateAppUserProfiles(appUserProfiles, service.organization);
       }
     }
   }
@@ -805,7 +805,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        await service.observationWorksheetService.addOrUpdateObservations(observations, service.organization);
+        await service.observationWorksheetService?.addOrUpdateObservations(observations, service.organization);
       }
     }
   }
@@ -909,7 +909,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         if (profile != null && context.mounted) {
           var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
           for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-            await service.userProfilesWorksheetService.addOrUpdateAppUserProfile(user, profile);
+            await service.userProfilesWorksheetService?.addOrUpdateAppUserProfile(user, profile);
           }
         }
       }

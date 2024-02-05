@@ -131,7 +131,7 @@ Future<FirebaseException?> deleteObservation(BuildContext context, Observation o
   if (context.mounted) {
     var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
     for (var service in sheetsService.pikaPatrolSpreadsheetServices) {
-        service.observationWorksheetService.deleteObservation(observation);
+        service.observationWorksheetService?.deleteObservation(observation);
         await Future.delayed(const Duration(milliseconds: GoogleSheetsService.LESS_THAN_60_WRITES_DELAY_MS), () {});
     }
   }

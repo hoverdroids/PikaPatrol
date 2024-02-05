@@ -40,14 +40,14 @@ Future saveObservation(BuildContext context, Observation observation) async {
       showToast("Exception: ${exception.message}");
       observation.isUploaded = false;
     } else if (context.mounted) {
-      /*var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
         if (observation.sharedWithProjects?.contains(service.organization) == true) {
-          await service.observationWorksheetService.addOrUpdateObservation(observation);
+          await service.observationWorksheetService?.addOrUpdateObservation(observation);
         } else {
-          await service.observationWorksheetService.deleteObservation(observation);
+          await service.observationWorksheetService?.deleteObservation(observation);
         }
-      }*/
+      }
     }
 
     // Update local observation after successful upload because the uid will be non empty now.

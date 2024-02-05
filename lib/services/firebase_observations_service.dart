@@ -120,19 +120,15 @@ class FirebaseObservationsService {
     }
 
     var docUid = observation.uid;
-    if (docUid != null) {
+    if (docUid?.isNotEmpty == true) {
       try {
         await observationsCollection.doc(docUid).delete();
-        developer.log("Observation deleted:$docUid");
-        return null;
       } on FirebaseException catch (e) {
-        developer.log("Error deleting observation $docUid :$e.message");
         return e;
       }
-    } else {
-      developer.log("Observation not deleted, no uid");
-      return null;
     }
+
+    return null;
   }
 
   List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {
@@ -207,25 +203,20 @@ class FirebaseObservationsService {
         //Do not try to upload an image that has already been uploaded
         uploadUrls.add(filepath);
       } else {
-        FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
-        UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
-
         try {
+          FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
+          UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
+
           var snapshot = await uploadTask;
 
           var storageTaskSnapshot = snapshot;
           final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
           uploadUrls.add(downloadUrl);
-
-          developer.log('Upload success');
         } on FirebaseException catch (e) {
-          developer.log('Error from image repo ${e.message}');
           throw ('This file is not an image');
         }
       }
-    }), eagerError: true, cleanUp: (_) {
-      developer.log('eager cleaned up');
-    });
+    }), eagerError: true, cleanUp: (_) {});
 
     return uploadUrls;
   }
@@ -233,15 +224,13 @@ class FirebaseObservationsService {
   Future<FirebaseException?> deleteFiles(String folderName, List<String>? fileUrls) async {
     if (fileUrls == null || fileUrls.isEmpty) return null;
 
-    FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
-    for (var fileUrl in fileUrls) {
-      try {
-        await storage.refFromURL(fileUrl).delete();// .ref().child("$folderName/${basename(fileUrl)}").delete();
-        developer.log("File deleted:$fileUrl");
-      } on FirebaseException catch (e) {
-        developer.log("Error deleting file:$e.message");
-        return e;
+    try {
+      FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
+      for (var fileUrl in fileUrls) {
+          await storage.refFromURL(fileUrl).delete();// .ref().child("$folderName/${basename(fileUrl)}").delete();
       }
+    } on FirebaseException catch(e) {
+      return e;
     }
 
     return null;

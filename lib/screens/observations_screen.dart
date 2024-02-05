@@ -211,7 +211,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
                                     onPressedCallback: () async {
-                                      await _uploadLocalObservations();
+                                      await _uploadLocalObservations(user);
                                     }
                                 )
                               ],
@@ -267,7 +267,7 @@ class ObservationsPageState extends State<ObservationsPage> {
     Observation(location:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
   ];
 
-  void _openLocalObservationsNeedUploadedDialog(BuildContext context) async {
+  void _openLocalObservationsNeedUploadedDialog(BuildContext context, AppUser user) async {
 
     if (!context.mounted || _isLocalObservationsDialogShowing) return;
 
@@ -282,12 +282,12 @@ class ObservationsPageState extends State<ObservationsPage> {
             TextButton(
               child: Text(translations.cancel),
               onPressed: () async {
-                await _closeLocalObservationsNeedUploadedDialog(context, false);
+                await _closeLocalObservationsNeedUploadedDialog(context, false, user);
               },
             ),
             ElevatedButton(
               onPressed: () async {
-                await _closeLocalObservationsNeedUploadedDialog(context, true);
+                await _closeLocalObservationsNeedUploadedDialog(context, true, user);
               },
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -301,16 +301,16 @@ class ObservationsPageState extends State<ObservationsPage> {
     );
   }
 
-  Future _closeLocalObservationsNeedUploadedDialog(BuildContext context, bool uploadLocalObservationsNow) async {
+  Future _closeLocalObservationsNeedUploadedDialog(BuildContext context, bool uploadLocalObservationsNow, AppUser user) async {
     Navigator.pop(context, true);
     _isLocalObservationsDialogShowing = false;
 
     if (uploadLocalObservationsNow) {
-      await _uploadLocalObservations();
+      await _uploadLocalObservations(user);
     }
   }
 
-  Future _uploadLocalObservations() async {
+  Future _uploadLocalObservations(AppUser user) async {
     var hasConnection = await DataConnectionChecker().hasConnection;
     if(hasConnection && context.mounted) {
       showToast(translations.uploadingObservations);
@@ -322,6 +322,10 @@ class ObservationsPageState extends State<ObservationsPage> {
         //vs the stored observation.
         var uid = observation.uid;
         if (uid == null || uid.isEmpty) {
+          //If the observation was made when the user was not logged in, then edited after logging in, the user
+          //id can be null. So update it now. This allows local observations to be uploaded when online.
+          // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+          observation.observerUid = user.uid ?? observation.observerUid;
           saveObservation(context, observation);
         }
       }
@@ -336,7 +340,7 @@ class ObservationsPageState extends State<ObservationsPage> {
       var user = Provider.of<AppUser?>(context, listen: false);
       var needUploaded = user != null && localObservationsNeedUploaded();
       if (needUploaded) {
-        Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context));
+        Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context, user));
       }
     }
   }

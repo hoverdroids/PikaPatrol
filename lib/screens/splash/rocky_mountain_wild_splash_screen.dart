@@ -19,22 +19,22 @@ class RockyMountainWildSplashScreen extends Container {
           alignment: Alignment.center,
           children: [
             Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  child: Image.asset("assets/images/rocky_mountain_wild_logo.png"),
-                )
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                child: Image.asset("assets/images/rocky_mountain_wild_logo.png"),
+              )
             ),
             Align(
-                alignment: Alignment.topRight,
-                child: ThemedIconButton(
-                    Icons.highlight_off,
-                    iconSize: IconSize.MEDIUM,
-                    onPressedCallback: () => {
-                      Navigator.of(context).pushReplacement(
-                          MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                      )
-                    }
-                )
+              alignment: Alignment.topRight,
+              child: ThemedIconButton(
+                Icons.highlight_off,
+                iconSize: IconSize.MEDIUM,
+                onPressedCallback: () => {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+                  )
+                }
+              )
             ),
           ],
         )

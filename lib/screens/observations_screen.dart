@@ -1,30 +1,37 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:async';
+
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
+import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
-import 'package:pika_patrol/widgets/card_scroll.dart';
 import 'package:provider/provider.dart';
+import '../l10n/translations.dart';
 import '../model/app_user.dart';
+import '../primitives/card_layout.dart';
+import '../services/firebase_observations_service.dart';
+import '../services/settings_service.dart';
 import '../utils/observation_utils.dart';
+import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
-import 'dart:developer' as developer;
 
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
 
   late List<Observation> observations;
-  double currentPage = 0;
+  late bool observationsNotNull;
 
   ObservationsPage(List<Observation>? observations, {super.key}) {
-    this.observations = observations == null ? <Observation>[] : List.from(observations.reversed);
-    currentPage = this.observations.isEmpty ? 0.0 : this.observations.length - 1.0;
-    developer.log("CurrentPage:$currentPage");
+    List<Observation> resolvedObservations = observations ?? <Observation>[];
+    this.observations = List.from(resolvedObservations.reversed);
+    //developer.log("ObservationsPage ctor observations length:${observations?.length}");
   }
 
   @override
@@ -33,36 +40,67 @@ class ObservationsPage extends StatefulWidget {
 
 class ObservationsPageState extends State<ObservationsPage> {
 
+  late Translations translations;
+
+  late PageController localObservationsPageController;
   List<Observation> localObservations = <Observation>[];
   double localObservationsCurrentPage = 0.0;
 
+  final Key _sharedObservationsScrollerKey = UniqueKey();
+  final Key _emptySharedObservationsScrollerKey = UniqueKey();
+  final Key _localObservationsScrollerKey = UniqueKey();
+  final Key _emptyLocalObservationsScrollerKey = UniqueKey();
+
+  bool _isLocalObservationsDialogShowing = false;
+
   bool localObservationsNeedUploaded() {
-    return localObservations.isNotEmpty && localObservations.any((Observation observation) => observation.uid == null || observation.uid?.isEmpty == true);
+    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
+  }
+
+  late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
+
+  @override
+  void initState() {
+    super.initState();
+
+    //TODO - CHRIS - the following controller should be migrated in the same was as shared observations
+    localObservationsPageController = PageController(initialPage: localObservationsCurrentPage.toInt());
+    localObservationsPageController.addListener(() {
+      setState(() {
+        localObservationsCurrentPage = localObservationsPageController.page ?? localObservationsCurrentPage;
+      });
+    });
+
+    // actively listen for status updates
+    // this will cause DataConnectionChecker to check periodically
+    // with the interval specified in DataConnectionChecker().checkInterval
+    // until listener.cancel() is called
+    _dataConnectionStatusListener = DataConnectionChecker().onStatusChange.listen((status) {
+      switch (status) {
+        case DataConnectionStatus.connected:
+          _onDataConnectionConnected();
+          break;
+        case DataConnectionStatus.disconnected:
+          //TODO - CHRIS - instead of checking for network availability when making an observation, we should just have a service that streams this value
+          break;
+      }
+    });
+
+  }
+
+
+  @override
+  void dispose() {
+    _dataConnectionStatusListener.cancel();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    //TODO - for some reason this page number is zero instead of the latest page nuber
-    developer.log("Current Page ${widget.currentPage} init");
-    PageController controller = PageController(initialPage: widget.currentPage.toInt());
-
-    controller.addListener(() {
-      setState(() {
-        widget.currentPage = controller.page ?? 0;
-      });
-    });
-
-    PageController localObservationsController = PageController(initialPage: localObservationsCurrentPage.toInt());
-
-    localObservationsController.addListener(() {
-      setState(() {
-        localObservationsCurrentPage = localObservationsController.page ?? 0;
-      });
-    });
+    translations = Provider.of<Translations>(context);
 
     return ValueListenableBuilder(
-      valueListenable: Hive.box<LocalObservation>('observations').listenable(),
+      valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
       builder: (context, box, widget2){
 
         //Get all locally saved observations
@@ -70,17 +108,19 @@ class ObservationsPageState extends State<ObservationsPage> {
         List list = raw.values.toList();
         localObservations = <Observation>[];
         for (var element in list) {
+          //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
           LocalObservation localObservation = element;
           var observation = Observation(
               dbId: localObservation.key,
               uid: localObservation.uid,
               observerUid: localObservation.observerUid,
-              altitude: localObservation.altitude,
-              longitude: localObservation.longitude,
-              latitude: localObservation.latitude,
               name: localObservation.name,
               location: localObservation.location,
-              date: DateTime.parse(localObservation.date),
+              date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
+              altitudeInMeters: localObservation.altitudeInMeters,
+              latitude: localObservation.latitude,
+              longitude: localObservation.longitude,
+              species: localObservation.species,
               signs: localObservation.signs,
               pikasDetected: localObservation.pikasDetected,
               distanceToClosestPika: localObservation.distanceToClosestPika,
@@ -89,16 +129,23 @@ class ObservationsPageState extends State<ObservationsPage> {
               temperature: localObservation.temperature,
               skies: localObservation.skies,
               wind: localObservation.wind,
-              otherAnimalsPresent: localObservation.otherAnimalsPresent,
               siteHistory: localObservation.siteHistory,
               comments: localObservation.comments,
               imageUrls: localObservation.imageUrls,
-              audioUrls: localObservation.audioUrls
+              audioUrls: localObservation.audioUrls,
+              otherAnimalsPresent: localObservation.otherAnimalsPresent,
+              sharedWithProjects: localObservation.sharedWithProjects,
+              notSharedWithProjects: localObservation.notSharedWithProjects,
+              dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
+              isUploaded: localObservation.isUploaded,
+              buttonText: translations.viewObservation
           );
           localObservations.add(observation);
         }
 
         var user = Provider.of<AppUser?>(context);
+
+        var needUploaded = user != null && localObservationsNeedUploaded();
 
         return SizedBox(
             width: double.infinity,
@@ -113,104 +160,97 @@ class ObservationsPageState extends State<ObservationsPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
-                          ThemedH4("Shared", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          Stack(
-                            children: <Widget>[
-                              /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(widget.observations, currentPage: widget.currentPage),
-                              /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
-                              Positioned.fill(
-                                child: PageView.builder(
-                                  itemCount: widget.observations.length,
-                                  controller: controller,
-                                  reverse: true,
-                                  scrollDirection: Axis.horizontal,
-                                  allowImplicitScrolling: true,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () => {
-                                        Navigator.push(context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ObservationScreen(widget.observations[index]),
-                                          ),
-                                        )
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
-                          ThemedH4("Cached", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedH4(translations.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              ThemedH4("Observations", type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              if(user != null && localObservationsNeedUploaded()) ... [
+                              ThemedH4(translations.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              ThemedIconButton(
+                                Icons.info,
+                                type: ThemeGroupType.MOP,
+                                onPressedCallback: () async {
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text(translations.sharedObservationsDialogTitle),
+                                    content: Text(translations.sharedObservationsDialogDetails),
+                                  );
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return alert;
+                                    },
+                                  );
+                                }
+                              )
+                            ],
+                          ),
+                          if (widget.observations.isNotEmpty) ... [
+                            CardScroller(
+                              widget.observations,
+                              key: _sharedObservationsScrollerKey,
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(widget.observations[index].copy()),
+                                  ),
+                                )
+                              }
+                            ),
+                          ] else ...[
+                            CardScroller(
+                              _createDefaultObservations(),
+                              key: _emptySharedObservationsScrollerKey,
+                            ),
+                          ],
+                          ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ThemedH4(translations.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                              if(needUploaded) ... [
                                 ThemedIconButton(
                                     Icons.upload_file,
                                     type: ThemeGroupType.MOP,
                                     onPressedCallback: () async {
-                                      var hasConnection = await DataConnectionChecker().hasConnection;
-                                      if(hasConnection && context.mounted) {
-                                        showToast("Uploading observations");
-
-                                        for (var observation in localObservations) {
-                                          //TODO - CHRIS - if the user updated an observation when offline,
-                                          //the UID won't be null or empty, so those updates will never get pushed
-                                          //in the bulk upload. This will get fixed when we compare current observations
-                                          //vs the stored observation.
-                                          var uid = observation.uid;
-                                          if (uid == null || uid.isEmpty) {
-                                            saveObservation(user, observation);
-                                          }
-                                        }
-                                      } else {
-                                        showToast("Could not upload observations. No data connection.");
-                                      }
+                                      await _uploadLocalObservations(user);
                                     }
                                 )
-                              ]
+                              ],
+                              ThemedIconButton(
+                                Icons.info,
+                                type: ThemeGroupType.MOP,
+                                onPressedCallback: () async {
+                                  AlertDialog alert = AlertDialog(
+                                    title: Text(translations.cachedObservationsDialogTitle),
+                                    content: Text(translations.cachedObservationsDialogDetails),
+                                  );
+                                  showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return alert;
+                                    },
+                                  );
+                                }
+                              )
                             ],
                           ),
-                          Stack(
-                            children: <Widget>[
-                              /*------------------ The visual cards overlapping one another -------------------------------------------------------*/
-                              CardScrollWidget(localObservations, currentPage: localObservationsCurrentPage),
-                              /*------------------ Invisible pager the intercepts touches and passes paging input from user to visual cards ------- */
-                              Positioned.fill(
-                                child: PageView.builder(
-                                  itemCount: localObservations.length,
-                                  controller: localObservationsController,
-                                  reverse: true,
-                                  scrollDirection: Axis.horizontal,
-                                  allowImplicitScrolling: true,
-                                  itemBuilder: (context, index) {
-                                    return GestureDetector(
-                                      onTap: () => {
-                                        Navigator.push(context,
-                                          MaterialPageRoute(
-                                            builder: (_) => ObservationScreen(localObservations[index]),
-                                          ),
-                                        )
-                                      },
-                                      child: Container(
-                                        width: double.infinity,
-                                        height: double.infinity,
-                                        color: Color.fromARGB(1, 255-index*25, 255-index*10, 255-index*50),
-                                      ),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ],
-                          ),
+                          if (localObservations.isNotEmpty) ... [
+                            CardScroller(
+                              localObservations,
+                              key: _localObservationsScrollerKey,
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                  ),
+                                )
+                              }
+                            ),
+                          ] else ...[
+                            CardScroller(
+                              _createDefaultObservations(),
+                              key: _emptyLocalObservationsScrollerKey,
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -223,4 +263,85 @@ class ObservationsPageState extends State<ObservationsPage> {
     );
   }
 
+  List<Observation> _createDefaultObservations() => [
+    Observation(location:translations.noObservationsFound, buttonText: null, notUploadedIcon: null, cardLayout: CardLayout.centered)
+  ];
+
+  void _openLocalObservationsNeedUploadedDialog(BuildContext context, AppUser user) async {
+
+    if (!context.mounted || _isLocalObservationsDialogShowing) return;
+
+    _isLocalObservationsDialogShowing = true;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(translations.localObservationsNeedUploadedDialogTitle),
+          content: Text(translations.localObservationsNeedUploadedDialogDescription),
+          actions: [
+            TextButton(
+              child: Text(translations.cancel),
+              onPressed: () async {
+                await _closeLocalObservationsNeedUploadedDialog(context, false, user);
+              },
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await _closeLocalObservationsNeedUploadedDialog(context, true, user);
+              },
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
+                shape: const StadiumBorder(),
+              ),
+              child: ThemedTitle(translations.ok, type: ThemeGroupType.MOP),
+            )
+          ],
+        )
+    );
+  }
+
+  Future _closeLocalObservationsNeedUploadedDialog(BuildContext context, bool uploadLocalObservationsNow, AppUser user) async {
+    Navigator.pop(context, true);
+    _isLocalObservationsDialogShowing = false;
+
+    if (uploadLocalObservationsNow) {
+      await _uploadLocalObservations(user);
+    }
+  }
+
+  Future _uploadLocalObservations(AppUser user) async {
+    var hasConnection = await DataConnectionChecker().hasConnection;
+    if(hasConnection && context.mounted) {
+      showToast(translations.uploadingObservations);
+
+      for (var observation in localObservations) {
+        //TODO - CHRIS - if the user updated an observation when offline,
+        //the UID won't be null or empty, so those updates will never get pushed
+        //in the bulk upload. This will get fixed when we compare current observations
+        //vs the stored observation.
+        var uid = observation.uid;
+        if (uid == null || uid.isEmpty) {
+          //If the observation was made when the user was not logged in, then edited after logging in, the user
+          //id can be null. So update it now. This allows local observations to be uploaded when online.
+          // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+          observation.observerUid = user.uid ?? observation.observerUid;
+          saveObservation(context, observation);
+        }
+      }
+    } else {
+      showToast(translations.couldNotUploadObservationsNoDataConnection);
+    }
+  }
+
+
+  _onDataConnectionConnected() {
+    if (mounted) {
+      var user = Provider.of<AppUser?>(context, listen: false);
+      var needUploaded = user != null && localObservationsNeedUploaded();
+      if (needUploaded) {
+        Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context, user));
+      }
+    }
+  }
 }

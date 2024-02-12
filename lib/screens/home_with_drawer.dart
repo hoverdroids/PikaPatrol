@@ -1,32 +1,38 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:language_code_icons/language_code_icons.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/appbars/icon_title_icon_appbar.dart';
+import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
-import 'package:material_themes_widgets/drawers/simple_clith_path_drawer.dart';
+import 'package:material_themes_widgets/defaults/dimens.dart';
+import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
+import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
+import '../l10n/translations.dart';
 import '../model/firebase_registration_result.dart';
+import '../services/settings_service.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
-import 'dart:developer' as developer;
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -83,8 +89,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool? editedRmwOptIn;
   bool? editedDzOptIn;
 
+  late Translations translations;
+
   @override
   Widget build(BuildContext context) {
+    translations = Provider.of<Translations>(context);
+    translations.update(context);
 
     MediaQueryData mediaQuery = MediaQuery.of(context);
     Size size = mediaQuery.size;
@@ -105,6 +115,16 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _scaffoldKey.currentState?.openEndDrawer();
       });
+    } else if (userProfile != null && userProfile.dateUpdatedInGoogleSheets == null){
+      //Save a user's profile to google sheets and update profile in Firebase if the user data isn't yet synced
+      FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context, listen: false);
+      FirebaseDatabaseService firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+      saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
+    }
+
+    if (user != null) {
+      GoogleSheetsService googleSheetsService = Provider.of<GoogleSheetsService>(context);
+      var bla = "";
     }
 
     return Scaffold(
@@ -126,21 +146,33 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           } else if (forceProfileOpen && !isOpen) {
             // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
-            showToast("You must enter the required fields");
+            showToast(translations.enterRequiredFields);
           }
         },
     );
   }
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
-    return IconTitleIconAppBar(
-      title: 'Pika Patrol',
+    var locale = Provider.of<SettingsService>(context, listen: true).locale;
+    var localeIcon = locale == L10n.ENGLISH ? LanguageCodeIcons.EN : LanguageCodeIcons.ES;
+
+    return IconTitleIconIconAppBar(
+      title: translations.appName,
       titleType: ThemeGroupType.MOP,
       leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
       leftIconType: ThemeGroupType.MOP,
       rightIconClickedCallback: (){ _scaffoldKey.currentState?.openEndDrawer(); },
       rightIconType: ThemeGroupType.MOP,
+      rightIcon2: localeIcon,
+      rightIcon2ClickedCallback: (){ _toggleLanguage(); },
+      rightIcon2Type: ThemeGroupType.MOP,
     );
+  }
+
+  _toggleLanguage() async {
+    var settingsService = Provider.of<SettingsService>(context, listen: false);
+    var locale = settingsService.locale;
+    settingsService.updateLocale(locale == L10n.ENGLISH ? L10n.SPANISH : L10n.ENGLISH);
   }
 
   Widget buildBody(BuildContext context, double width) {
@@ -149,14 +181,21 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       child: Stack(
         children: <Widget>[
           PageView.builder(
-              controller: pageController,
-              itemCount: 1,
-              itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-                  stream: Provider.of<FirebaseDatabaseService>(context).observations,
-                  builder: (context, snapshot) {
-                    List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
-                    return ObservationsPage(observations ?? <Observation>[]);
-                  })
+            controller: pageController,
+            itemCount: 1,
+            itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
+              stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+              builder: (context, snapshot) {
+                List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
+                if (observations != null) {
+                  for (var observation in  observations) {
+                    observation.buttonText = translations.viewObservation;
+                  }
+                }
+
+                return ObservationsPage(observations ?? <Observation>[]);
+              }
+            )
           )
           /*LiquidSwipe(
               pages: <Container>[
@@ -209,12 +248,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   Widget buildDrawer(BuildContext context, AppUser? user, AppUserProfile? userProfile, double bottom) {
 
-    var avatarTitle = "Login";
+    var avatarTitle = translations.login;
     var avatarSubtitle = "";
+    var isAdmin = user?.isAdmin ?? false;
     if (user != null) {
       if (userProfile == null) {
         //A profile has not been initialized
-        avatarTitle = "Empty User Profile";
+        avatarTitle = translations.emptyUserProfile;
       } else {
         //A profile has been initialized
         avatarTitle = "${userProfile.firstName} ${userProfile.lastName}";
@@ -222,8 +262,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       }
     }
 
+    var canInitializeGoogleSheets = userProfile?.tagline == "initializer";
+
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
+      widthPercent: .92,
       leftIconType: ThemeGroupType.MOP,
       leftIconClickedCallback: () => Navigator.pop(context),
       rightIconType: ThemeGroupType.MOP,
@@ -232,23 +275,34 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       backgroundGradientType: BackgroundGradientType.MAIN_BG,
       child: HeaderList(
           [
-            ListItemModel(title: "Colorado Pika Project", itemClickedCallback: () => launchInBrowser("http://www.pikapartners.org/")),
-            ListItemModel(title: "Denver Zoo", itemClickedCallback: () => launchInBrowser("https://denverzoo.org/")),
-            ListItemModel(title: "Rocky Mountain Wild", itemClickedCallback: () => launchInBrowser("https://rockymountainwild.org/")),
-            ListItemModel(title: "If/Then", itemClickedCallback: () => launchInBrowser("http://www.ifthenshecan.org/")),
-            ListItemModel(title: "Take Climate Action", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/carbon/")),
-            ListItemModel(title: "App Help and Info", itemClickedCallback: () => launchInBrowser("https://pikapartners.org/pika-patrol-tutorials/")),
-            ListItemModel(title: "Identifying Pikas and Their Signs", itemClickedCallback: () => {
+            ListItemModel(title: translations.appHelpAndInfo, itemClickedCallback: () => launchInBrowser(translations.appHelpAndInfoUrl)),
+            ListItemModel(title: translations.identifyingPikasAndTheirSigns, itemClickedCallback: () => {
               Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (BuildContext context) =>
-                      TrainingScreensPager(backClickedCallback: () => {
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                        )
-                      })
-                  )
+                MaterialPageRoute(builder: (BuildContext context) =>
+                  TrainingScreensPager(backClickedCallback: () => {
+                    Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+                    )
+                  })
+                )
               )
-            })
+            }),
+            ListItemModel(title: translations.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(translations.mapOfPikaObservationsUrl ?? "")),
+            ListItemModel(title: translations.takeClimateAction, itemClickedCallback: () => launchInBrowser(translations.takeClimateActionUrl ?? "")),
+            ListItemModel(title: translations.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
+            ListItemModel(title: translations.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(translations.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.denverZoo, itemClickedCallback: () => launchInBrowser(translations.denverZooUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
+            if (isAdmin)...[
+              ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
+              ListItemModel(title: translations.exportFirebaseUserProfilesToGoogleSheets, itemClickedCallback: () => showExportFirebaseUserProfilesToGoogleSheetsDialog(), margin: indentationLevel1),
+              ListItemModel(title: translations.exportFirebaseObservationsToGoogleSheets, itemClickedCallback: () => showExportFirebaseObservationsToGoogleSheetsDialog(), margin: indentationLevel1),
+              if (canInitializeGoogleSheets) ... [
+                ListItemModel(title: translations.initializeGoogleSheets, itemClickedCallback: () => initializeGoogleSheets(), margin: indentationLevel1),
+              ]
+              /*TODO - CHRIS - show user profiles so that they can be delted or have admin access granted. the later will require me interacting with node.js scripts locally*/
+            ],
           ],
           key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
           imageUrl: "assets/images/pika3.jpg",
@@ -256,7 +310,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           avatarTitle: avatarTitle,
           avatarSubtitle: avatarSubtitle,
           avatarClickedCallback: () => _scaffoldKey.currentState?.openEndDrawer(),
-          cardElevationLevel: ElevationLevel.LOW,
+          cardElevationLevel: ElevationLevel.FLAT,
           usePolygonAvatar: true,
           headerGradientType: BackgroundGradientType.PRIMARY,
           isHeaderSticky: false
@@ -316,9 +370,14 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       //also, one key for null and one for not null because, without the distinction, and if we use a new uniqueKey each time, the keyboard
       //pops up and then immediately pops back down when trying to type text
       key: isEditingProfile ? editProfileKey : viewProfileKey,
+      screenTitle: translations.profile,
       isEditMode: isEditingProfile,
+      logoutText: translations.logout,
       onTapLogout: () async {
         setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
+
+        // Resetting isAdmin after signing out because the user can have an admin and non admin account (e.g. the dev)
+        await Provider.of<SettingsService>(context, listen: false).setIsAdmin(false);
 
         var result = await firebaseAuthService.signOut();
         final message = result?.message;
@@ -326,41 +385,26 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           showToast(message);
         }
       },
+      editText: translations.edit,
       onTapEdit: () {
         resetEditedUserProfileFields();
         setState(() => isEditingProfile = true);
       },
+      saveText: translations.save,
       onTapSave: () async {
-        setState(() => loading = true);
-
-        await firebaseDatabaseService.addOrUpdateUserProfile(
-            editedFirstName ?? userProfile?.firstName ?? "",
-            editedLastName ?? userProfile?.lastName ?? "",
-            editedTagline ?? userProfile?.tagline ?? "",
-            editedPronouns ?? userProfile?.pronouns ?? "",
-            editedOrganization ?? userProfile?.organization ?? "",
-            editedAddress ?? userProfile?.address ?? "",
-            editedCity ?? userProfile?.city ?? "",
-            editedState ?? userProfile?.state ?? "",
-            editedZip ?? userProfile?.zip ?? "",
-            editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
-            editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
-            editedDzOptIn ?? userProfile?.dzOptIn ?? false
-        );
-        resetEditedUserProfileFields();
-        setState(() => isEditingProfile = false);
-        setState(() => loading = false);
+        saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, userProfile?.dateUpdatedInGoogleSheets);
       },
-      onTapDelete: () async {
+      deleteAccount: translations.deleteAccount,
+      onTapDeleteAccount: () async {
         Widget okButton = TextButton(
-          child: const Text("OK"),
+          child: Text(translations.ok),
           onPressed:  () async {
             //Hide the alert
             Navigator.pop(context, true);
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            await firebaseDatabaseService.deleteUserProfile();
+            await firebaseDatabaseService.userProfilesService.deleteUserProfile();
 
             var result = await firebaseAuthService.deleteUser();
             var message = result?.message;
@@ -369,14 +413,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               showToast(message);
               return;
             }
-
-            showToast("Account Deleted");
-          },
+              showToast(translations.accountDeleted);
+            },
         );
 
         AlertDialog alert = AlertDialog(
-          title: const Text("Delete Account"),
-          content: const Text("Are you sure you want to delete your account.? This cannot be undone. Your uploaded observations will remain on the server. Local observations that have not been uploaded will be removed from your device."),
+          title: Text(translations.deleteAccountDialogTitle),
+          content: Text(translations.deleteAccountDialogDetails),
           actions: [
             okButton,
           ],
@@ -389,17 +432,37 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           },
         );
       },
-      showEmail: false, //TODO - need to wait until we allow the user to change their email
-      showPassword: false, //TODO - need to wait until we allow the user to change their password
+      email: user?.email ?? "",
+      emailLabel: translations.email,
+      emailHint: translations.email,
+      invalidEmailText: translations.invalidEmail,
+      password: isEditingProfile ? "" : "**********",//Auth doesn't provide password, so just show hint
+      showPasswordHint: true,
+      passwordHint: "**********",
+      passwordLabel: translations.password,
+      invalidPasswordText: translations.invalidPassword,
+      validatePassword: editedPassword != null,
       firstName: userProfile?.firstName ?? "" ,
+      firstNameLabel: translations.firstName,
+      invalidFirstNameText: translations.invalidFirstName,
       lastName: userProfile?.lastName ?? "",
+      lastNameLabel: translations.lastName,
+      invalidLastNameText: translations.invalidLastName,
       tagline: userProfile?.tagline ?? "",
+      taglineLabel: translations.tagline,
       pronouns: userProfile?.pronouns ?? "",
+      pronounsLabel: translations.pronouns,
       organization: userProfile?.organization ?? "",
+      organizationLabel: translations.organization,
       address: userProfile?.address ?? "",
+      addressLabel: translations.address,
       city: userProfile?.city ?? "",
+      cityLabel: translations.city,
       state: userProfile?.state ?? "",
+      stateLabel: translations.state,
       zip: userProfile?.zip ?? "",
+      zipLabel: translations.zip,
+      invalidZipText: translations.invalidZip,
       onEmailChangedCallback: (value) => { editedEmail = value },
       onPasswordChangedCallback: (value) => { editedPassword = value },
       onFirstNameChangedCallback: (value) => { editedFirstName = value },
@@ -417,74 +480,89 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
-  Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) {
-    return LoginRegisterScreen(
-      key: _loginKey,
-      isLogin: true,
-      showLabels: false,
-      onPasswordChangedCallback: (value) => { editedPassword = value },
-      onEmailChangedCallback: (value) => { editedEmail = value },
-      onTapLogin: () async {
+  Widget buildLoginScreen(BuildContext context, FirebaseAuthService firebaseAuthService) => LoginRegisterScreen(
+    key: _loginKey,
+    isLogin: true,
+    showLabels: false,
+    passwordLabel: translations.password,
+    passwordHint: translations.password,
+    invalidPasswordText: translations.invalidPassword,
+    onPasswordChangedCallback: (value) => { editedPassword = value },
+    emailLabel: translations.email,
+    emailHint: translations.email,
+    invalidEmailText: translations.invalidEmail,
+    onEmailChangedCallback: (value) => { editedEmail = value },
+    loginText: translations.login,
+    onTapLogin: () async {
 
-        var trimmedEmail = editedEmail?.trim() ?? "";
-        var trimmedPassword = editedPassword?.trim() ?? "";
+      var trimmedEmail = editedEmail?.trim() ?? "";
+      var trimmedPassword = editedPassword?.trim() ?? "";
 
-        if (trimmedEmail.isEmpty) {
-          showToast("Email cannot be empty");
-          return;
-        } else if (trimmedPassword.isEmpty) {
-          showToast("Password cannot be empty");
-          return;
-        }
+      if (trimmedEmail.isEmpty) {
+        showToast(translations.emailCannotBeEmpty);
+        return;
+      } else if (trimmedPassword.isEmpty) {
+        showToast(translations.passwordCannotBeEmpty);
+        return;
+      }
 
-        setState(() => loading = true);
+      setState(() => loading = true);
 
-        dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
-        //dynamic result = await _auth.signInWithGoogle();
+      dynamic result = await firebaseAuthService.signInWithEmailAndPassword(trimmedEmail, trimmedPassword);
+      //dynamic result = await _auth.signInWithGoogle();
 
-        if(result == null) {
-          // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
-          try {
-            final result = await InternetAddress.lookup('google.com');
-            if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-              showToast("Could not sign in with those credentials");
-            }
-          } on SocketException catch (_) {
-            showToast("Can not sign in. Not connected to internet.");
+      if(result == null) {
+        // Need to determine if this was because there is no internet or if the sign in really wasn't accepted
+        try {
+          final result = await InternetAddress.lookup('google.com');
+          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+            showToast(translations.couldNotSignInWithThoseCredentials);
           }
-        } else {
-          showToast("Successfully Logged In");
+        } on SocketException catch (_) {
+          showToast(translations.cannotSignInNoConnection);
         }
+      } else {
+        showToast(translations.successfullyLoggedIn);
+      }
 
-        setState((){ loading = false; });
-      },
-      onTapForgotPassword: () async {
-        var trimmedEmail = editedEmail?.trim() ?? "";
-        if (trimmedEmail.isEmpty) {
-          showToast("Invalid email; cannot send password reset email");
+      setState((){ loading = false; });
+    },
+    forgotPasswordText: translations.forgotPassword,
+    onTapForgotPassword: () async {
+      var trimmedEmail = editedEmail?.trim() ?? "";
+      if (trimmedEmail.isEmpty) {
+        showToast(translations.invalidEmailCannotSendPasswordResetEmail);
+      } else {
+        var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
+        if (result == null) {
+          showToast(translations.passwordResetEmailSent);
         } else {
-          var result = await firebaseAuthService.requestPasswordReset(trimmedEmail);
-          if (result == null) {
-            showToast("Password reset email sent");
-          } else {
-            showToast("Password reset email could not be sent");
-          }
+          showToast(translations.passwordResetEmailCouldNotBeSent);
         }
-      },
-      onTapRegister: () => {
-        setState(() => showSignIn = false)
-      },
-    );
-  }
+      }
+    },
+    registerText: translations.register,
+    onTapRegister: () => {
+      setState(() => showSignIn = false)
+    },
+  );
 
   Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService, FirebaseDatabaseService firebaseDatabaseService) {
     return LoginRegisterScreen(
       key: _registerKey,
       isLogin: false,
       showLabels: false,
+      passwordLabel: translations.password,
+      passwordHint: translations.password,
+      invalidPasswordText: translations.invalidPassword,
       onPasswordChangedCallback: (value) => { editedPassword = value },
+      emailLabel: translations.email,
+      emailHint: translations.email,
+      invalidEmailText: translations.invalidEmail,
       onEmailChangedCallback: (value) => { editedEmail = value },
+      loginText: translations.login,
       onTapLogin: () => { setState(() => showSignIn = true) },
+      registerText: translations.register,
       onTapRegister: () async {
 
         var trimmedEmail = editedEmail?.trim() ?? "";
@@ -536,13 +614,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   }
 
   onRegistrationSuccess(FirebaseDatabaseService firebaseDatabaseService, FirebaseRegistrationResult registrationResult) async {
-    showToast("Registered ${registrationResult.email}");
+    showToast("${translations.registered} ${registrationResult.email}");
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
-      var initializationException = await firebaseDatabaseService.initializeUser(newlyRegisteredUid);
+      var initializationException = await firebaseDatabaseService.userProfilesService.initializeUser(newlyRegisteredUid);
       if (initializationException == null) {
-        showToast("Initialized ${registrationResult.email}");
+        showToast("${translations.initialized} ${registrationResult.email}");
       }
     }
   }
@@ -557,42 +635,39 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       width: double.infinity,
       height: double.infinity,
       color: Colors.white.withOpacity(0.70),
-      child: Loading(),
+      child: const Loading(),
     );
   }
 
-  showObservationScreen(BuildContext contxt, AppUser? user) {
+  showObservationScreen(BuildContext context, AppUser? user) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now())),
+        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now()))
       ),
     );
   }
 
   showGeoTrackingDialog(BuildContext context, AppUser? user) async {
-    final prefs = await SharedPreferences.getInstance();
-    final userAcked = prefs.getBool('userAckGeo');
+    final userAcked = await Provider.of<SettingsService>(context, listen: false).getUserAcknowledgedGeo();
 
     if (userAcked != null && userAcked == true) {
       if (mounted) showObservationScreen(context, user);
     } else {
       Widget launchButton = TextButton(
-        child: const Text("OK"),
+        child: Text(translations.ok),
         onPressed:  () async {
           Navigator.pop(context, true);
 
           Permission.location.request();
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('userAckGeo', true);
-
+          await Provider.of<SettingsService>(context, listen: false).setUserAcknowledgedGeo();
           if (mounted) showObservationScreen(context, user);
         },
       );
       // set up the AlertDialog
       AlertDialog alert = AlertDialog(
-        title: const Text("Location Tracking"),
-        content: const Text("Pika Patrol records the current location when an observation is recorded in order to determine where the observation occurred. The observation, including the saved location, is sent in the background to our servers when WiFi is available."),
+        title: Text(translations.locationTrackingDialogTitle),
+        content: Text(translations.locationTrackingDialogDescription),
         actions: [
           launchButton,
         ],
@@ -605,6 +680,132 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             return alert;
           },
         );
+      }
+    }
+  }
+
+  showExportFirebaseUserProfilesToGoogleSheetsDialog() {
+    Widget launchButton = TextButton(
+      child: Text(translations.ok),
+      onPressed: () async {
+        Navigator.pop(context, true);
+        exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(translations.exportFirebaseUserProfilesToGoogleSheetsDialogTitle),
+      content: Text(translations.exportFirebaseUserProfilesToGoogleSheetsDialogDescription),
+      actions: [
+        launchButton,
+      ],
+    );
+    // show the dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+  }
+
+  showExportFirebaseObservationsToGoogleSheetsDialog() {
+    Widget launchButton = TextButton(
+      child: Text(translations.ok),
+      onPressed: () async {
+        Navigator.pop(context, true);
+        exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets();
+      },
+    );
+    // set up the AlertDialog
+    AlertDialog alert = AlertDialog(
+      title: Text(translations.exportFirebaseObservationsToGoogleSheetsDialogTitle),
+      content: Text(translations.exportFirebaseObservationsToGoogleSheetsDialogDescription),
+      actions: [
+        launchButton,
+      ],
+    );
+    // show the dialog
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return alert;
+        },
+      );
+    }
+  }
+
+  initializeGoogleSheets() async {
+    if (context.mounted) {
+      showToast("Starting initialization");
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.userProfilesWorksheetService?.initHeaderRow();
+        showToast("Initialized ${service.organization} User Profiles");
+        await Future.delayed(const Duration(milliseconds: GoogleSheetsService.WRITE_THEN_TOAST_DELAY_MS));
+
+        await service.observationWorksheetService?.initHeaderRow();
+        showToast("Initialized ${service.organization} Observations");
+        await Future.delayed(const Duration(milliseconds: GoogleSheetsService.WRITE_THEN_TOAST_DELAY_MS));
+      }
+      showToast("Finished initialization");
+    }
+  }
+
+  exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
+    var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+    var appUserProfiles = await firebaseDatabaseService.userProfilesService.getAllUserProfiles(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
+
+    for (var appUserProfile in appUserProfiles) {
+      var now = DateTime.now();
+      appUserProfile.dateUpdatedInGoogleSheets = now;
+
+      //Update Firebase so that the next query for profiles not in sheets, doesn't return these results
+      /*await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
+          appUserProfile.firstName,
+          appUserProfile.lastName,
+          appUserProfile.uid,
+          appUserProfile.tagline,
+          appUserProfile.pronouns,
+          appUserProfile.organization,
+          appUserProfile.address,
+          appUserProfile.city,
+          appUserProfile.state,
+          appUserProfile.zip,
+          appUserProfile.frppOptIn,
+          appUserProfile.rmwOptIn,
+          appUserProfile.dzOptIn,
+          now,
+          translations
+      );*/
+    }
+
+    if (context.mounted) {
+      //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.userProfilesWorksheetService?.addOrUpdateAppUserProfiles(appUserProfiles, service.organization);
+      }
+    }
+  }
+
+  exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets() async {
+    var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+    var observations = await firebaseDatabaseService.observationsService.getAllObservations(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
+
+    for (var observation in observations) {
+      var now = DateTime.now();
+      observation.dateUpdatedInGoogleSheets = now;
+    }
+
+    if (context.mounted) {
+      //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        await service.observationWorksheetService?.addOrUpdateObservations(observations, service.organization);
       }
     }
   }
@@ -624,5 +825,106 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     editedFrppOptIn = null;
     editedRmwOptIn = null;
     editedDzOptIn = null;
+  }
+
+  saveProfile(
+      FirebaseAuthService firebaseAuthService,
+      FirebaseDatabaseService firebaseDatabaseService,
+      AppUser? user,
+      AppUserProfile? userProfile,
+      DateTime? dateUpdatedInGoogleSheets
+  ) async {
+    if (loading) return;
+
+    setState(() => loading = true);
+
+    var hasError = false;
+    var emailUpdated = false;
+    var updatedEmail = editedEmail?.trim();
+    if (updatedEmail != null) {
+      FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserEmail(updatedEmail);
+      var message = exception?.message;
+      if (message != null) {
+        showToast(message);
+        hasError = true;
+      } else {
+        emailUpdated = true;
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var passwordUpdated = false;
+    var updatedPassword = editedPassword?.trim();
+    if (updatedPassword != null && !hasError) {
+      FirebaseAuthException? exception = await firebaseAuthService.changeCurrentUserPassword(updatedPassword);
+      var message = exception?.message;
+      if (message != null) {
+        showToast(message);
+        hasError = true;
+      } else {
+        passwordUpdated = true;
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var isAdminChanged = false;
+    if (context.mounted && user != null) {
+      var settings = Provider.of<SettingsService>(context, listen: false);
+      var savedIsAdmin = await settings.getIsAdmin() ?? false;
+      isAdminChanged = savedIsAdmin != user.isAdmin;
+      if (isAdminChanged) {
+        settings.setIsAdmin(user.isAdmin);
+        dateUpdatedInGoogleSheets = DateTime.now();
+      }
+    }
+
+    var profileUpdated = false;
+    AppUserProfile? updatedUserProfile;
+    if (!hasError) {
+      updatedUserProfile = await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
+          editedFirstName ?? userProfile?.firstName ?? "",
+          editedLastName ?? userProfile?.lastName ?? "",
+          userProfile?.uid,
+          editedTagline ?? userProfile?.tagline ?? "",
+          editedPronouns ?? userProfile?.pronouns ?? "",
+          editedOrganization ?? userProfile?.organization ?? "",
+          editedAddress ?? userProfile?.address ?? "",
+          editedCity ?? userProfile?.city ?? "",
+          editedState ?? userProfile?.state ?? "",
+          editedZip ?? userProfile?.zip ?? "",
+          editedFrppOptIn ?? userProfile?.frppOptIn ?? false,
+          editedRmwOptIn ?? userProfile?.rmwOptIn ?? false,
+          editedDzOptIn ?? userProfile?.dzOptIn ?? false,
+          dateUpdatedInGoogleSheets ?? userProfile?.dateUpdatedInGoogleSheets,
+          translations
+      );
+      profileUpdated = updatedUserProfile != null;
+
+      //Copying the uid because it won't be available in the returned userProfile if the profile was added
+      var uid = userProfile?.uid;
+      updatedUserProfile = updatedUserProfile?.copy(uid: uid);
+
+      if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
+        var profile = updatedUserProfile ?? userProfile;
+        if (profile != null && context.mounted) {
+          var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+          for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+            await service.userProfilesWorksheetService?.addOrUpdateAppUserProfile(user, profile);
+          }
+        }
+      }
+    }
+
+    if (!hasError) {
+      if (emailUpdated || passwordUpdated || profileUpdated || isAdminChanged) {
+        showToast(translations.profileUpdated);
+      } else {
+        showToast(translations.profileIsAlreadyUpToDate);
+      }
+    }
+
+    resetEditedUserProfileFields();
+    setState(() => isEditingProfile = false);
+    setState(() => loading = false);
   }
 }

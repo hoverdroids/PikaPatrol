@@ -7,6 +7,8 @@ import 'package:pika_patrol/screens/splash/pika_patrol_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/rocky_mountain_wild_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/partnering_with_splash_screen.dart';
 import 'package:pika_patrol/screens/splash/if_then_splash_screen.dart';
+import 'package:provider/provider.dart';
+import '../../l10n/translations.dart';
 import '../home_with_drawer.dart';
 
 class PartnersSplashScreensPager extends StatefulWidget {
@@ -29,37 +31,17 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
   @override
   void initState() {
     super.initState();
-
     _showNextSplashScreen().then((value) {
       liquidController.animateToPage(page: 1);
-
-      _showNextSplashScreen().then((value) {
-        liquidController.animateToPage(page: 2);
-
-        _showNextSplashScreen().then((value) {
-          liquidController.animateToPage(page: 3);
-
-          _showNextSplashScreen().then((value) {
-            liquidController.animateToPage(page: 4);
-
-            _showNextSplashScreen().then((value) {
-              liquidController.animateToPage(page: 5);
-
-              _showNextSplashScreen().then((value) {
-                Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                );
-              });
-            });
-          });
-        });
-      });
-    }
-    );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+
+    var translations = Provider.of<Translations>(context);
+    translations.update(context);
+
     return Scaffold(
       body: LiquidSwipe(
         pages: <Container>[
@@ -77,7 +59,17 @@ class PartnersSplashScreensPagerState extends State<PartnersSplashScreensPager> 
         liquidController: liquidController,
         ignoreUserGestureWhileAnimating: true,
         disableUserGesture: true,
-        //TODO - onPageChangeCallback: pageChangeCallback,
+        onPageChangeCallback: (page) => {
+          _showNextSplashScreen().then((value){
+            if (page < 5) {
+              liquidController.animateToPage(page: page + 1);
+            } else {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+              );
+            }
+          })
+        },
       ),
     );
   }

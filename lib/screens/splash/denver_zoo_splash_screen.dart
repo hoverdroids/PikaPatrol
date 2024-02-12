@@ -16,27 +16,27 @@ class DenverZooSplashScreen extends Container {
       height: double.infinity,
       child: SafeArea(
         child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                  child: Image.asset("assets/images/denver_zoo_logo.png"),
-                ),
+          alignment: Alignment.center,
+          children: [
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                child: Image.asset("assets/images/denver_zoo_logo.png"),
               ),
-              Align(
-                  alignment: Alignment.topRight,
-                  child: ThemedIconButton(
-                      Icons.highlight_off,
-                      iconSize: IconSize.MEDIUM,
-                      onPressedCallback: () => {
-                        Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-                        )
-                      }
+            ),
+            Align(
+              alignment: Alignment.topRight,
+              child: ThemedIconButton(
+                Icons.highlight_off,
+                iconSize: IconSize.MEDIUM,
+                onPressedCallback: () => {
+                  Navigator.of(context).pushReplacement(
+                      MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
                   )
-              ),
-            ]
+                }
+              )
+            ),
+          ]
         )
       ),
     );

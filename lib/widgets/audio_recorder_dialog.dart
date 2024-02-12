@@ -2,7 +2,9 @@
 import 'dart:io';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
+import 'package:flutter_audio_recorder4/flutter_audio_recorder4.dart';
+import 'package:flutter_audio_recorder4/recorder_state.dart';
+import 'package:flutter_audio_recorder4/recording.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
@@ -25,8 +27,8 @@ class AudioRecorderDialog extends StatefulWidget {
 class AudioRecorderDialogState extends State<AudioRecorderDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  late FlutterAudioRecorder3 _recorder;
-  RecordingStatus _recordingStatus = RecordingStatus.Unset;
+  late FlutterAudioRecorder4 _recorder;
+  RecorderState _recordingStatus = RecorderState.UNSET;
   Directory? _directory;
   String? recordingName;
 
@@ -50,7 +52,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                 if (_recordingStatus == RecordingStatus.Recording) ... [
+                 if (_recordingStatus == RecorderState.RECORDING) ... [
                   Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ThemedIconButton(Icons.pause, onPressedCallback: () => setState(() => _pause()
@@ -85,7 +87,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                           _quitWithoutSaving();
                         },
                       ),
-                      if (_recordingStatus == RecordingStatus.Recording || _recordingStatus == RecordingStatus.Paused || _recordingStatus == RecordingStatus.Stopped) ... [
+                      if (_recordingStatus == RecorderState.RECORDING || _recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.STOPPED) ... [
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ElevatedButton(
@@ -136,7 +138,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
         developer.log(e.toString());
       }
 
-      _recorder = FlutterAudioRecorder3(tempPath);
+      _recorder = FlutterAudioRecorder4(tempPath);
       await _recorder.initialized;
       var recording = await _recorder.current(channel: 0);
       setRecordingStatus(recording);
@@ -151,7 +153,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   }
 
   void _record() async {
-    _recordingStatus == RecordingStatus.Paused
+    _recordingStatus == RecorderState.PAUSED
         ? await _recorder.resume()
         : await _recorder.start();
 
@@ -160,7 +162,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   }
 
   void _quitWithoutSaving() async {
-    if (_recordingStatus != RecordingStatus.Stopped) {
+    if (_recordingStatus != RecorderState.STOPPED) {
       await _recorder.stop();
     }
 
@@ -175,7 +177,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     var recording = await _recorder.current(channel: 0);
     setRecordingStatus(recording);
 
-    String? resultPath = result?.path;
+    String? resultPath = result.filepath;
     if (resultPath != null && recordingName != null) {
       String ext = path.extension(resultPath).substring(1);//Need to string dot from .extension
       String dir = path.dirname(resultPath);
@@ -193,7 +195,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   }
 
   void setRecordingStatus(Recording? recording) {
-    var recordingStatus = recording?.status;
+    var recordingStatus = recording?.recorderState;
     if (recordingStatus != null) {
       setState(() { _recordingStatus = recordingStatus; });
     }

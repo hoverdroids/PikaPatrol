@@ -2,13 +2,11 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
-import 'package:charcode/charcode.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:hive/hive.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -18,31 +16,34 @@ import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
+import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
+import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
-import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
-import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
-// import 'package:flutter_audio_recorder3/flutter_audio_recorder3.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
+import '../data/pika_species.dart';
+import '../l10n/translations.dart';
+import '../services/google_sheets_service.dart';
 import '../utils/observation_utils.dart';
+import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
@@ -91,6 +92,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
+  late Translations translations;
+
   @override
   void initState() {
     _scrollController = ScrollController();
@@ -101,6 +104,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   @override
   Widget build(BuildContext context) {
+    translations = Provider.of<Translations>(context);
 
     final user = Provider.of<AppUser?>(context);
 
@@ -108,6 +112,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         begin: context.watch<MaterialThemesManager>().colorPalette().secondary, //Colors.transparent,
         end: context.watch<MaterialThemesManager>().colorPalette().secondary)
         .animate(_colorAnimationController);
+
+    // Show delete button even when not editing
+    var canEdit = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+    var isNewObservation = widget.observation.uid == null && widget.observation.dbId == null;
+    var showDeleteButton = canEdit && !isNewObservation;
 
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
@@ -121,7 +130,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 key: _formKey,
                 child: Column(
                   children: [
-                    _buildHeaderImage(),
+                    _buildHeaderImage(context),
                     _buildHeader(),
                     _buildFields(),
                     smallTransparentDivider,
@@ -131,6 +140,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     ),
                     smallTransparentDivider,
                     _buildAudioRecordings(),
+                    if (showDeleteButton) ... [
+                      _buildDeleteButtonForForm()
+                    ],
                   ],
                 ),
               ),
@@ -141,7 +153,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 width: double.infinity,
                 height: double.infinity,
                 color: Colors.white.withOpacity(0.70),
-                child: Loading(),
+                child: const Loading(),
               )
             ]
           ],
@@ -150,64 +162,77 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  Widget _buildAppbar(AppUser? user) {
-    return AnimatedBuilder(
-        animation: _colorAnimationController,
-        builder: (context, child) =>
-            IconTitleIconFakeAppBar(
-              shape: const StadiumBorder(),
-              backgroundColor: _colorTween.value,
-              title: 'Make Observation',
-              titleType: ThemeGroupType.MOS,
-              leftIcon: Icons.arrow_back,
-              leftIconType: ThemeGroupType.MOS,
-              leftIconClickedCallback: () => Navigator.pop(context),
-              rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
-              showRightIcon: widget.isEditMode || widget.observation.dbId != null || (user != null && widget.observation.observerUid == user.uid),//Widget will only be in edit mode if new observation
-              rightIconType: ThemeGroupType.MOS,
-              rightIconClickedCallback: () async {
-                if(!widget.isEditMode) {
-                  setState(() {
-                    widget.isEditMode = true;
-                  });
-                } else {
-                  if (_formKey.currentState?.validate() == true) {
-                    _formKey.currentState?.save();
+  Widget _buildAppbar(AppUser? user) => AnimatedBuilder(
+    animation: _colorAnimationController,
+    builder: (context, child) {
 
-                    await saveLocalObservation(widget.observation);
+      var isUsersObservationOrAdmin = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
+      var showRightIcon = widget.isEditMode || widget.observation.dbId != null || isUsersObservationOrAdmin;
 
-                    //TODO - CHRIS - probably worth moving to the saveObservationon method
-                    var hasConnection = await DataConnectionChecker().hasConnection;
-                    if(!hasConnection) {
-                      showToast("No connection found.\nObservation saved locally.");
-                    } else if (user != null) {
-                      setState((){
-                        _isUploading = true;
-                      });
+      return IconTitleIconFakeAppBar(
+        shape: const StadiumBorder(),
+        backgroundColor: _colorTween.value,
+        title: translations.makeObservation,
+        titleType: ThemeGroupType.MOS,
+        leftIcon: Icons.arrow_back,
+        leftIconType: ThemeGroupType.MOS,
+        leftIconClickedCallback: () => Navigator.pop(context),
+        rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
+        showRightIcon: showRightIcon,
+        //Widget will only be in edit mode if new observation
+        rightIconType: ThemeGroupType.MOS,
+        rightIconClickedCallback: () async {
+          if (!widget.isEditMode) {
+            setState(() {
+              widget.isEditMode = true;
+            });
+          } else {
+            if (_formKey.currentState?.validate() == true) {
+              _formKey.currentState?.save();
 
-                      //If the observation was made when the user was not logged in, then edited after logging in, the user
-                      //id can be null. So update it now. This allows local observations to be uploaded when online.
-                      widget.observation.observerUid = user.uid;
+              widget.observation.dateUpdatedInGoogleSheets = DateTime.now();
 
-                      //Share with others
-                      await saveObservation(user, widget.observation);
+              var isInitialObservation = widget.observation.uid == null;//always save a new observation locally
+              var isUsersObservation = user != null && user.uid == widget.observation.observerUid;//don't save another user's observations locally; can happen when admin edits
+              if (isInitialObservation || isUsersObservation) {
+                widget.observation.isUploaded = false;//The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
+                var localObservation = await saveLocalObservation(widget.observation);//TODO - CHRIS - I don't like the save local, save, save local approach
+              }
 
-                      setState(() {
-                        _isUploading = false;
-                        widget.isEditMode = false;
-                      });
-                    } else {
-                      setState((){
-                        widget.isEditMode = false;
-                      });
-                      showToast("You must login to upload an observation.\nObservation saved locally.");
-                    }
-                  }
+              //TODO - CHRIS - probably worth moving to the saveObservationon method
+              var hasConnection = await DataConnectionChecker().hasConnection;
+              if (!hasConnection) {
+                showToast(translations.noConnectionFoundObservationSavedLocally);
+              } else if (user != null) {
+                setState(() {
+                  _isUploading = true;
+                });
+
+                //If the observation was made when the user was not logged in, then edited after logging in, the user
+                //id can be null. So update it now. This allows local observations to be uploaded when online.
+                // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+                widget.observation.observerUid ??= user.uid;
+
+                //Share with others
+                if (context.mounted) {
+                  await saveObservation(context, widget.observation);
                 }
-              },
-            )
-    );
-  }
+
+                setState(() {
+                  _isUploading = false;
+                });
+              } else {
+                showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
+              }
+              setState(() {
+                widget.isEditMode = false;
+              });
+            }
+          }
+        },
+      );
+    }
+  );
 
   Box? box;
   Future openBox() async {
@@ -221,106 +246,102 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     await openBox();
   }
 
-  Widget _buildHeaderImage() {
-    return GestureDetector(
-      onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
-      child: SizedBox(
-        height: 330,
-        child: Stack(
-          children: <Widget>[
-            Hero(
-              tag: "observationCoverImage",
-              child: ClipShadowPath(
-                clipper: SimpleClipPath(
-                    type: ClipPathType.ROUNDED_DOWN,
-                    bottomLeftPercentOfHeight: 80,
-                    bottomRightPercentOfHeight: 80
-                ),
-                shadow: const Shadow(blurRadius: 20.0),
-                child: _buildImage(),
+  Widget _buildHeaderImage(BuildContext context) => GestureDetector(
+    onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
+    child: SizedBox(
+      height: 330,
+      child: Stack(
+        children: <Widget>[
+          Hero(
+            tag: "observationCoverImage",
+            child: ClipShadowPath(
+              clipper: const SimpleClipPath(
+                  type: ClipPathType.ROUNDED_DOWN,
+                  bottomLeftPercentOfHeight: 80,
+                  bottomRightPercentOfHeight: 80
+              ),
+              shadow: const Shadow(blurRadius: 20.0),
+              child: _buildImage(),
+            ),
+          ),
+          Positioned.fill(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: RawMaterialButton(
+                //padding: EdgeInsets.all(0.0),
+                //elevation: 12.0,
+                onPressed: () => developer.log('Play Video'),
+                shape: const CircleBorder(),
+                fillColor: Colors.white,
+                child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
               ),
             ),
-            Positioned.fill(
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: RawMaterialButton(
-                  //padding: EdgeInsets.all(0.0),
-                  //elevation: 12.0,
-                  onPressed: () => developer.log('Play Video'),
-                  shape: const CircleBorder(),
-                  fillColor: Colors.white,
-                  child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
-                ),
-              ),
-            ),
-            /*Positioned( //TODO
+          ),
+          /*Positioned( //TODO
+            bottom: 10.0,
+            left: 10.0,
+            child: ThemedIconButton(
+              Icons.add_location,
+              iconSize: IconSize.MEDIUM,
+              onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
+            )
+        ),*/
+          if(widget.isEditMode) ... [
+            Positioned(
               bottom: 10.0,
               left: 10.0,
               child: ThemedIconButton(
-                Icons.add_location,
-                iconSize: IconSize.MEDIUM,
-                onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
-              )
-          ),*/
-            if(widget.isEditMode) ... [
-              Positioned(
-                bottom: 10.0,
-                left: 10.0,
-                child: ThemedIconButton(
-                    Icons.my_location,
-                    iconSize: IconSize.MEDIUM,
-                    onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
-                    type: ThemeGroupType.SOM,
-                ),
-              ),
-            ],
-            Positioned(
-              bottom: 10.0,
-              right: 10.0,
-              child: ThemedIconButton(
-                  Icons.help,
+                  Icons.my_location,
                   iconSize: IconSize.MEDIUM,
+                  onPressedCallback: () => { _getCurrentPositionAndUpdateUi() },
                   type: ThemeGroupType.SOM,
-                  onPressedCallback: () => {
-                    Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (BuildContext context) =>
-                            TrainingScreensPager(
-                                backClickedCallback: () =>
-                                    Navigator.of(context).pushReplacement(
-                                        MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
-                                    )
-                            )
-                        )
-                    )
-                  }
               ),
             ),
           ],
-        ),
+          Positioned(
+            bottom: 10.0,
+            right: 10.0,
+            child: ThemedIconButton(
+              Icons.help,
+              iconSize: IconSize.MEDIUM,
+              type: ThemeGroupType.SOM,
+              onPressedCallback: () => {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (BuildContext context) =>
+                    TrainingScreensPager(
+                      backClickedCallback: () =>
+                        Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
+                        )
+                    )
+                  )
+                )
+              }
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
 
-  Widget _buildPlayButton() {
-    return ThemedPlayButton(
-      isPlaying: _playerState == PlayerState.play,
-      pauseIcon: Icon(
-          Icons.pause,
-          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
-          size: 48),
-      playIcon: Icon(Icons.play_arrow,
-          color: context.watch<MaterialThemesManager>().colorPalette().secondary,
-          size: 48),
-      onPressed: () {
-        var audioUrls = widget.observation.audioUrls;
-        if (audioUrls != null && audioUrls.isNotEmpty) {
-          _playAudio(audioUrls[0]);
-        } else {
-          showToast("No recordings to play");
-        }
-      },
-    );
-  }
+  Widget _buildPlayButton() => ThemedPlayButton(
+    isPlaying: _playerState == PlayerState.play,
+    pauseIcon: Icon(
+        Icons.pause,
+        color: context.watch<MaterialThemesManager>().colorPalette().secondary,
+        size: 48),
+    playIcon: Icon(Icons.play_arrow,
+        color: context.watch<MaterialThemesManager>().colorPalette().secondary,
+        size: 48),
+    onPressed: () {
+      var audioUrls = widget.observation.audioUrls;
+      if (audioUrls != null && audioUrls.isNotEmpty) {
+        _playAudio(audioUrls[0]);
+      } else {
+        showToast(translations.noRecordingsToPlay);
+      }
+    },
+  );
 
   Widget _buildRecordButton() {
     return ThemedPlayButton(
@@ -390,8 +411,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     String editLatitude = widget.observation.latitude?.toString() ?? "";
     String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
     String editLongitude = widget.observation.longitude?.toString() ?? "";
-    String altitude = widget.observation.altitude?.toStringAsFixed(2) ?? "";
-    String editAltitude = widget.observation.altitude?.toString() ?? "";
+
+    double? altMeters = widget.observation.altitudeInMeters;
+    String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
+    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toString() : "";    //Editable altitude is full length
 
     return Row(
       children: <Widget>[
@@ -401,7 +424,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerRight,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle("Latitude", type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.latitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
@@ -415,7 +438,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, "Latitude"),
+                    validator: (value) => isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -430,7 +453,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.center,
             child: Column(
               children: <Widget>[
-                ThemedSubTitle("Longitude", type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.longitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
@@ -443,7 +466,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, "Longitude"),
+                    validator: (value) => isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -458,23 +481,26 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerLeft,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle("Altitude", type: ThemeGroupType.POM),
+                ThemedSubTitle(translations.altitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: editAltitude,
+                    text: editAltitudeInMeters,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observation.altitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, "Altitude"),
+                    onStringChangedCallback: (value) {
+                      var altitudeInFeet = double.parse(value);
+                      widget.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
+                    },
+                    validator: (value) => isValidGeo(value, translations.altitude),
                   )
                 ] else ...[
-                  ThemedTitle(altitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
               ],
             ),
@@ -485,19 +511,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   _getCurrentPositionAndUpdateUi() async {
-    showToast("Fetching location ...");
+    showToast(translations.fetchingLocation);
 
-    await checkPermissionsAndGetCurrentPosition()
+    await checkPermissionsAndGetCurrentPosition(translations)
       .then((Position position) {
         String lat = position.latitude.toStringAsFixed(2);
         String lon = position.longitude.toStringAsFixed(2);
         String alt = position.altitude.toStringAsFixed(2);
-        showToast("Location:\n$lat $lon $alt");
+        showToast("${translations.location}:\n$lat $lon $alt");
 
         setState(() {
           widget.observation.latitude = position.latitude;
           widget.observation.longitude = position.longitude;
-          widget.observation.altitude = position.altitude;
+          widget.observation.altitudeInMeters = position.altitude;
 
           _hideGeoFields = true;
           resetHideGeoFields();
@@ -532,27 +558,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.name?.toUpperCase() ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Observation Name",
-              onStringChangedCallback: (value) => { widget.observation.name = value.toUpperCase() },
-              validator: (value) => nonEmptyValidator(value, "Observation Name", true),
-            )
-          ] else ... [
-            ThemedH5(widget.observation.name?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
-          ],
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
               text: widget.observation.location ?? "",
               textType: ThemeGroupType.POM,
-              hintText: "Site Location Name",
+              hintText: translations.siteName,
               onStringChangedCallback: (value) => { widget.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, "Site Location Name", true),
+              validator: (value) => nonEmptyValidator(value, translations.siteName, true),
             )
           ] else ... [
-            ThemedSubTitle(widget.observation.location, type: ThemeGroupType.MOM),
+            ThemedH5(widget.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
@@ -573,7 +586,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   alignment: Alignment.centerRight,
                   child:Column(
                     children: <Widget>[
-                      ThemedSubTitle("Month", type: ThemeGroupType.POM),
+                      ThemedSubTitle(translations.month, type: ThemeGroupType.POM),
                       tinyTransparentDivider,
                       if (_hideDateFields) ... [
                         //A hack state because geo fields not updating from self location button
@@ -591,7 +604,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     alignment: Alignment.center,
                     child: Column(
                       children: <Widget>[
-                        ThemedSubTitle("Day", type: ThemeGroupType.POM),
+                        ThemedSubTitle(translations.day, type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
@@ -609,7 +622,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     alignment: Alignment.centerLeft,
                     child:Column(
                       children: <Widget>[
-                        ThemedSubTitle("Year", type: ThemeGroupType.POM),
+                        ThemedSubTitle(translations.year, type: ThemeGroupType.POM),
                         tinyTransparentDivider,
                         if (_hideDateFields) ... [
                           //A hack state because geo fields not updating from self location button
@@ -641,6 +654,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
+          _buildPikaSpecies(),
           _buildSignsChoices(),
           _buildCountChoices(),
           _buildDistanceChoices(),
@@ -650,8 +664,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildSkiesChoices(),
           _buildWindChoices(),
           _buildOtherAnimalsPresent(),
+          _buildSharedWithProjects(),
           _buildSiteHistory(),
-          _buildComments()
+          _buildComments(),
         ],
       ),
     );
@@ -680,8 +695,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     return ContentScroll(
       images: widget.observation.imageUrls ?? <String>[],
-      title: 'Images',
-      emptyListMessage: "No Images",
+      title: translations.images,
+      emptyListMessage: translations.noImages,
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
@@ -697,20 +712,20 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       needsUpdated = true;
     });
 
-    showToast("Delete $path");
+    showToast("${translations.delete} $path");
   }
 
   Widget _buildAudioRecordings() {
 
     var icons = !widget.isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.custom, ['3gp','aa','aac','aax','act','aiff','alac','amr','ape','au','awb','dss','dvf','flac','gsm','iklax','kvs','m4a','m4b','m4p','mmf','movpkg','mp3','mpc','msv','nmf','ogg','oga','mogg','opus','ra','rm','raw','rf64','sln','tta','voc','vox','wav','wma','wv','webm','8svx','cda'], false)),
-      ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder() })
+      ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder()})
     ];
 
     return AudioContentScroll(
       urls: widget.observation.audioUrls ?? <String>[],
-      title: 'Audio Recordings',
-      emptyListMessage: "No Audio Recordings",
+      title: translations.audioRecordings,
+      emptyListMessage: translations.noAudioRecordings,
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
@@ -722,18 +737,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        developer.log("AudioUrl...");
-        return const AudioRecorderDialog();
-      },
+      builder: (BuildContext context) => const AudioRecorderDialog(),
       barrierDismissible: false
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          developer.log("AudioUrls value: $value");
           widget.observation.audioUrls?.add(value);
           justKeepToggling = !justKeepToggling;
-          developer.log("AudioUrls: ${widget.observation.audioUrls}");
         }
       })
     });
@@ -742,14 +752,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   void _openAudioRecorder() async {
     try {
       //Always check for permission. It will ask for permission if not already granted
-      //NOTE: FlutterAudioRecorder3.hasPermissions requests the permission by showing the dialog to the user,
+      //NOTE: FlutterAudioRecorder4.hasPermissions requests the permission by showing the dialog to the user,
       //but hasPermissions is always false. So, don't use it. Keeping this here as a reminder.
-      //bool hasPermission = await FlutterAudioRecorder3.hasPermissions ?? false;
+      //bool hasPermission = await FlutterAudioRecorder4.hasPermissions ?? false;
 
       if (await Permission.microphone.request().isGranted) {
         showAudioRecorderDialog();
       } else {
-        showToast("Could not open recorder.\nYou must accept audio permissions.");
+        showToast(translations.couldNotOpenRecorder);
       }
     } catch (e) {
       developer.log(e.toString());
@@ -761,12 +771,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       for (var filePath in filePaths) {
         if (addImages) {
           if (widget.observation.imageUrls?.contains(filePath) == true) {
-            showToast("Did not add image. It is already in list.");
+            showToast(translations.didNotAddImage);
           } else {
             widget.observation.imageUrls?.add(filePath);
           }
         } else if (widget.observation.audioUrls?.contains(filePath) == true) {
-          showToast("Did not add audio. It is already in list.");
+          showToast(translations.didNotAddAudio);
         } else {
           widget.observation.audioUrls?.add(filePath);
         }
@@ -776,7 +786,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
-  Future<void> _pickMultipleFiles(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
+  Future<void> _pickMultipleFiles(
+    FileType pickingType,
+    List<String> allowedExtensions,
+    bool addImages
+  ) async {
 
     FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: pickingType,
@@ -823,18 +837,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isAndroid || isIos) {
         var isCameraPermissionGranted = await Permission.camera.request().isGranted;
         if (!isCameraPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept camera permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
           return;
         }
         var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
         if (!isPhotosPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept photos permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
           return;
         }
 
         var isStoragePermissionGranted = await Permission.storage.request().isGranted;
         if (!isStoragePermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept storage permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
           return;
         }
       }
@@ -842,19 +856,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isAndroid) {
         var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
         if (!isMediaLocationPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept media location permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
           return;
         }
 
         var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
         if (!isManageExternalStoragePermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept external storage permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
           return;
         }
 
         var isVideosPermissionGranted = await Permission.videos.request().isGranted;
         if (!isVideosPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept videos permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
           return;
         }
       }
@@ -862,7 +876,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (isIos) {
         var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
         if (!isMediaLibraryPermissionGranted) {
-          showToast("Could not open file picker.\nYou must accept media library permissions.");
+          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
           return;
         }
       }
@@ -873,7 +887,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         await _pickSingleFile(pickingType, allowedExtensions, addImages);
       }
     } on PlatformException catch (e) {
-      developer.log("Unsupported operation$e");
+      developer.log("${translations.unsupportedOperation}: $e");
     }
   }
 
@@ -914,7 +928,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var croppedPath = cropped?.path;
     
     if (croppedPath == null) {
-      showToast("Error when trying to crop image");
+      showToast(translations.errorWhenTryingToCropImage);
     }
 
     setState(() {
@@ -938,7 +952,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     var isPermissionGranted = await Permission.camera.request().isGranted;
     if (!isPermissionGranted) {
-      showToast("Could not open camera.\nYou must accept camera permissions.");
+      showToast(translations.couldNotOpenCameraAcceptCameraPermissions);
       return;
     }
 
@@ -949,7 +963,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     var selectedPath = selected?.path;
     
     if (selectedPath == null) {
-      showToast("Error when trying to take picture");
+      showToast(translations.errorWhenTryingToTakePicture);
     } else {
       _cropImage(
           selectedPath,
@@ -968,12 +982,62 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
+  Widget _buildPikaSpecies() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
+          /*if (widget.isEditMode)...[
+            ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
+          ]*/
+        ],
+      ),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.species,
+        onChanged: (value) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.species = value)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getSpeciesValues(translations),
+          value: (i, v) => v,
+          label: (i, v) => getSpeciesLabel(i, v, translations),
+          tooltip: (i, v) => v,
+        ),
+      )
+    ],
+  );
+
+  void _openAddOtherSpeciesDialog() {
+    if (!mounted) return;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => TextEntryDialog(
+          title: translations.addAnotherSpeciesDialogTitle,
+          description: translations.addAnotherSpeciesDialogDescription,
+        ),
+        barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          widget.observation.species = value.trim();
+        }
+      })
+    });
+  }
+
   Widget _buildSignsChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Signs", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.signs, type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           value: widget.observation.signs ?? <String>[],
@@ -983,9 +1047,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Saw Pika", "Heard Pika Calls", "HayPile: Old", "HayPile: New", "HayPile: Other", "Scat: Old", "Scat: New", "Scat: Other"],
+            source: widget.observation.getSignsValues(translations),
             value: (i, v) => v,
-            label: (i, v) => v,
+            label: (i, v) => getSignsLabel(i, v, translations),
             tooltip: (i, v) => v,
           ),
         )
@@ -994,23 +1058,28 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildCountChoices() {
+    String? pikasDetected = widget.observation.pikasDetected;
+    bool pikasDetectedEmpty = pikasDetected != null && pikasDetected.isEmpty;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Pikas Detected", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.pikasDetected, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.pikasDetected,
+            value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => widget.observation.pikasDetected = val)
+                setState(() {
+                  //If selected the same value as before, unset the value
+                  widget.observation.pikasDetected = widget.observation.pikasDetected == val ? null : val;
+                })
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["0", "1", "2", "3", "4", "5", ">5", ">10", "Unsure. More than 1"],
+              source: widget.observation.getPikasDetectedValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getPikasDetectedLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )
@@ -1023,7 +1092,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Distance to Closest Pika", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.distanceToClosestPika, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.distanceToClosestPika,
@@ -1033,9 +1102,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<10ft", "10 - 30 ft", "30 - 100 ft", ">100 ft"],
+              source: widget.observation.getDistanceToClosestPikaValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getDistanceToClosestPikaLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )
@@ -1048,7 +1117,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Search Duration", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.searchDuration, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             value: widget.observation.searchDuration,
@@ -1058,9 +1127,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: ["<5 min", "5 - 10 min", "10 - 20 min", "20 - 30 min", ">30 min"],
+              source: widget.observation.getSearchDurationValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
+              label: (i, v) => getSearchDurationLabel(i, v, translations),
               tooltip: (i, v) => v,
             )
         )
@@ -1070,18 +1139,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   bool showTalusAreaHints = false;
   Widget _buildTalusAreaChoices() {
-    var hints = ["Smaller than Tennis Court", "Tennis Court to Baseball Infield", "Baseball Infield to Football Field", "Larger than Football Field"];
-    var areas = ["<3,000 ft\u00B2", "3,000 - 10,000 ft\u00B2", "10,000 - 50,000 ft\u00B2", "> 1 acre"];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         //smallTransparentDivider, //TODO - add this after fixing the ThemedIconButton styling in ThemesManager
         Row(
           children: [
-            ThemedSubTitle(showTalusAreaHints ? "Search Area" : "Talus Area", type: ThemeGroupType.POM),
+            ThemedSubTitle(showTalusAreaHints ? translations.searchArea : translations.talusArea, type: ThemeGroupType.POM),
             Expanded(
               flex: 1,
-              child: ThemedCaption("Show Hints", type: ThemeGroupType.MOM, textAlign: TextAlign.end),
+              child: ThemedCaption(translations.showHints, type: ThemeGroupType.MOM, textAlign: TextAlign.end),
             ),
             ThemedSwitch(
                 value: showTalusAreaHints,
@@ -1100,10 +1168,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: showTalusAreaHints ? hints : areas,
+              source: widget.observation.getTalusAreaValues(translations),
               value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => showTalusAreaHints ? areas[i] : hints[i],
+              label: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
+              tooltip: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
             )
         )
       ],
@@ -1111,179 +1179,289 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildTemperatureChoices() {
-    var degF = "${String.fromCharCode($deg)}F";
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Temperature", type: ThemeGroupType.POM),
-        ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.temperature,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.temperature = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Cold: <45$degF" , "Cool: 45 - 60$degF", "Warm: 60 - 75$degF", "Hot: >75$degF"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
 
-  Widget _buildSkiesChoices() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         smallTransparentDivider,
-        ThemedSubTitle("Skies", type: ThemeGroupType.POM),
+        ThemedSubTitle(translations.temperature, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.skies,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.skies = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Clear", "Partly Cloudy", "Overcast", "Rain/Drizzle", "Snow"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
-
-  Widget _buildWindChoices() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Wind", type: ThemeGroupType.POM),
-        ChipsChoice<String>.single(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.wind,
-            onChanged: (val) => {
-              if (widget.isEditMode) {
-                setState(() => widget.observation.wind = val)
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: ["Low: Bends Grasses", "Medium: Bends Branches", "High: Bends Trees"],
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            )
-        )
-      ],
-    );
-  }
-
-  Widget _buildOtherAnimalsPresent() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle("Other Animals Present", type: ThemeGroupType.POM),
-        ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.otherAnimalsPresent ?? <String>[],
+          value: widget.observation.temperature,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => widget.observation.otherAnimalsPresent = val)
+              setState(() => widget.observation.temperature = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: ["Marmots", "Weasels", "Woodrats", "Mountain Goats", "Cattle", "Ptarmigans", "Raptors", "Brown Capped Rosy Finch", "Bats", "Other"],
+            source: widget.observation.getTemperatureValues(translations),
             value: (i, v) => v,
-            label: (i, v) => v,
+            label: (i, v) => getTemperatureLabel(i, v, translations),
             tooltip: (i, v) => v,
-          ),
+          )
         )
       ],
     );
   }
 
-  Widget _buildSiteHistory() {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (boolVal) { return true; },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildSkiesChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      ThemedSubTitle(translations.skies, type: ThemeGroupType.POM),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.skies,
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.skies = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getSkiesValues(translations),
+          value: (i, v) => v,
+          label: (i, v) => getSkiesLabel(i, v, translations),
+          tooltip: (i, v) => v,
+        )
+      )
+    ],
+  );
+
+  Widget _buildWindChoices() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      ThemedSubTitle(translations.wind, type: ThemeGroupType.POM),
+      ChipsChoice<String>.single(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.wind,
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.wind = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getWindValues(translations),
+          value: (i, v) => v,
+          label: (i, v) => getWindLabel(i, v, translations),
+          tooltip: (i, v) => v,
+        )
+      )
+    ],
+  );
+
+  Widget _buildOtherAnimalsPresent() => Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      smallTransparentDivider,
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          smallTransparentDivider,
-          ThemedSubTitle("Site History", type: ThemeGroupType.POM),
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
-              text: widget.observation.siteHistory ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Note any history you've had with this site",
-              //hintTextType: hintTextType,
-              //hintTextEmphasis: hintTextEmphasis,
-              //backgroundType: textFieldBackgroundType,
-              onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
-              //validator: validator
-            )
-          ] else ... [
-            SizedBox(
-              height: 120.0,
-              child: SingleChildScrollView(
-                child: ThemedBody(
-                  widget.observation.siteHistory,
-                  type: ThemeGroupType.MOM,
-                ),
-              ),
-            )
+          ThemedSubTitle(translations.otherAnimalsPresent, type: ThemeGroupType.POM),
+          if (widget.isEditMode)...[
+            ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
           ]
         ],
       ),
+      ChipsChoice<String>.multiple(
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        value: widget.observation.otherAnimalsPresent ?? <String>[],
+        onChanged: (val) => {
+          if (widget.isEditMode) {
+            setState(() => widget.observation.otherAnimalsPresent = val)
+          }
+        },
+        choiceItems: C2Choice.listFrom<String, String>(
+          source: widget.observation.getOtherAnimalsPresentValues(translations),
+          value: (i, v) => v,
+          label: (i, v) => getOtherAnimalsPresentLabel(i, v, translations),
+          tooltip: (i, v) => v,
+        ),
+      )
+    ],
+  );
+
+  void _openAddOtherAnimalsDialog() {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => TextEntryDialog(
+        title: translations.addAnotherAnimalDialogTitle,
+        description: translations.addAnotherAnimalDialogDescription,
+      ),
+      barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          var otherAnimalsPresent = widget.observation.otherAnimalsPresent ?? <String>[];
+          otherAnimalsPresent.addAll(value.split(","));
+          otherAnimalsPresent = otherAnimalsPresent.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
+          widget.observation.otherAnimalsPresent = otherAnimalsPresent;
+        }
+      })
+    });
+  }
+
+  Widget _buildSharedWithProjects() {
+
+    var approvedOrganizations = Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+
+    //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
+    //is still empty after logging in, until user restarts app
+    //This list needs to be available offlline as well.
+    if (approvedOrganizations.isEmpty) {
+      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "Denver Zoo", "IF/THEN", "Pika Patrol", "PikaNET (Mountain Studies Institute)", "Rocky Mountain Wild"];
+    }
+
+    var sharedWithProjects = widget.observation.sharedWithProjects ?? approvedOrganizations;
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
+
+    for (var approvedOrganization in approvedOrganizations) {
+      if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
+        //A new organization was added to the approved list on firebase, auto-opt into sending the data
+        sharedWithProjects.add(approvedOrganization);
+      }
+    }
+
+    sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
+    widget.observation.sharedWithProjects = sharedWithProjects;
+
+    notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
+    widget.observation.notSharedWithProjects = notSharedWithProjects;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
+            // if (widget.isEditMode)...[
+            //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
+            // ]
+          ],
+        ),
+        if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
+          ChipsChoice<String>.multiple(
+            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            value: widget.observation.sharedWithProjects ?? <String>[],
+            onChanged: (updatedSharedWithProjects) =>
+            {
+              if (widget.isEditMode) {
+                setState((){
+                  widget.observation.sharedWithProjects = updatedSharedWithProjects;
+
+                  var approvedSet = approvedOrganizations.toSet();
+                  var selectedSet = updatedSharedWithProjects.toSet();
+                  widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
+                })
+              }
+            },
+            choiceItems: C2Choice.listFrom<String, String>(
+              source: approvedOrganizations,
+              value: (i, v) => v,
+              label: (i, v) => v,
+              tooltip: (i, v) => v,
+            ),
+          )
+        ]
+      ],
     );
   }
 
-  Widget _buildComments() {
-    return NotificationListener<ScrollNotification>(
-      onNotification: (boolVal) { return true; },
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          smallTransparentDivider,
-          ThemedSubTitle("Comments", type: ThemeGroupType.POM),
-          miniTransparentDivider,
-          if(widget.isEditMode) ... [
-            ThemedEditableLabelValue(
-              showLabel: false,
-              text: widget.observation.comments ?? "",
-              textType: ThemeGroupType.POM,
-              hintText: "Any additional observations",
-              //hintTextType: hintTextType,
-              //hintTextEmphasis: hintTextEmphasis,
-              //backgroundType: textFieldBackgroundType,
-              onStringChangedCallback: (value) => { widget.observation.comments = value },
-              //validator: validator
-            )
-          ] else ... [
-            SizedBox(
-              height: 120.0,
-              child: SingleChildScrollView(
-                child: ThemedBody(
-                  widget.observation.comments,
-                  type: ThemeGroupType.MOM,
-                ),
-              ),
-            )
-          ]
-        ],
-      ),
-    );
+  void _openSharedWithProjectsDialog() {
+    if (!mounted) return;
+
+    showDialog(
+        context: context,
+        builder: (BuildContext context) => TextEntryDialog(
+          title: translations.addAnotherProjectDialogTitle,
+          description: translations.addAnotherProjectDialogDescription
+        ),
+        barrierDismissible: false
+    ).then((value) => {
+      setState(() {
+        if (value != null && (value as String).isNotEmpty) {
+          var sharedWithProjects = widget.observation.sharedWithProjects ?? <String>[];
+          sharedWithProjects.addAll(value.split(","));
+          sharedWithProjects = sharedWithProjects.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
+          widget.observation.sharedWithProjects = sharedWithProjects;
+        }
+      })
+    });
   }
+
+  Widget _buildSiteHistory() => NotificationListener<ScrollNotification>(
+    onNotification: (boolVal) { return true; },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle(translations.siteHistory, type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        if(widget.isEditMode) ... [
+          ThemedEditableLabelValue(
+            showLabel: false,
+            text: widget.observation.siteHistory ?? "",
+            textType: ThemeGroupType.POM,
+            hintText: translations.siteHistoryHint,
+            //hintTextType: hintTextType,
+            //hintTextEmphasis: hintTextEmphasis,
+            //backgroundType: textFieldBackgroundType,
+            onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
+            //validator: validator
+          )
+        ] else ... [
+          SizedBox(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.observation.siteHistory,
+                type: ThemeGroupType.MOM,
+              ),
+            ),
+          )
+        ]
+      ],
+    ),
+  );
+
+  Widget _buildComments() => NotificationListener<ScrollNotification>(
+    onNotification: (boolVal) { return true; },
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        ThemedSubTitle(translations.comments, type: ThemeGroupType.POM),
+        miniTransparentDivider,
+        if(widget.isEditMode) ... [
+          ThemedEditableLabelValue(
+            showLabel: false,
+            text: widget.observation.comments ?? "",
+            textType: ThemeGroupType.POM,
+            hintText: translations.anyAdditionalObservations,
+            //hintTextType: hintTextType,
+            //hintTextEmphasis: hintTextEmphasis,
+            //backgroundType: textFieldBackgroundType,
+            onStringChangedCallback: (value) => { widget.observation.comments = value },
+            //validator: validator
+          )
+        ] else ... [
+          SizedBox(
+            height: 120.0,
+            child: SingleChildScrollView(
+              child: ThemedBody(
+                widget.observation.comments,
+                type: ThemeGroupType.MOM,
+              ),
+            ),
+          )
+        ]
+      ],
+    ),
+  );
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -1296,6 +1474,65 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       setState((){
         widget.observation.date = picked;
       });
+    }
+  }
+
+  Widget _buildDeleteButtonForForm() => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+    child: Center(
+      child: _buildDeleteButton(false)
+    )
+  );
+
+  Widget _buildDeleteButton(bool userConfirmedDelete) => ElevatedButton(
+    onPressed: () async {
+      if (userConfirmedDelete) {
+        var exception = await deleteObservation(context, widget.observation, true, true);
+        if (exception == null) {
+          showToast(translations.observationDeleted);
+          if (context.mounted) {
+            Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+            );
+          }
+        } else {
+          showToast("${translations.observationNotDeleted} : $exception");
+          if (context.mounted) {
+            Navigator.pop(context, true);
+          }
+        }
+      } else {
+        _showDeleteObservationVerificationDialog();
+      }
+    },
+    style: ElevatedButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+      backgroundColor: Colors.red,
+      shape: const StadiumBorder(),
+    ),
+    child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
+  );
+
+  Widget _buildCancelButton() => TextButton(
+    child: Text(translations.cancel),
+    onPressed: () async {
+      Navigator.pop(context, true);
+    },
+  );
+
+  _showDeleteObservationVerificationDialog() {
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: Text(translations.deleteObservationDialogTitle),
+          content: Text(translations.deleteObservationDialogDescription),
+          actions: [
+            _buildCancelButton(),
+            _buildDeleteButton(true)
+          ],
+        )
+      );
     }
   }
 }

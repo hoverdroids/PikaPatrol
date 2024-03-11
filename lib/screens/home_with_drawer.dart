@@ -124,7 +124,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     if (user != null) {
       GoogleSheetsService googleSheetsService = Provider.of<GoogleSheetsService>(context);
-      var bla = "";
     }
 
     return Scaffold(

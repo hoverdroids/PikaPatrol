@@ -1308,17 +1308,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildSharedWithProjects() {
 
-    var approvedOrganizations = Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+    List<String> approvedOrganizations = [];//Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
 
     //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
     //is still empty after logging in, until user restarts app
     //This list needs to be available offlline as well.
     if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "Denver Zoo", "IF/THEN", "Pika Patrol", "PikaNET (Mountain Studies Institute)", "Rocky Mountain Wild"];
+      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "PikaNET (Mountain Studies Institute)"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
-    var sharedWithProjects = widget.observation.sharedWithProjects ?? approvedOrganizations;
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
+    var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? approvedOrganizations;
 
     for (var approvedOrganization in approvedOrganizations) {
       if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {

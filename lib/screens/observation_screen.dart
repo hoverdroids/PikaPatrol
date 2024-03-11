@@ -982,36 +982,39 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
-  Widget _buildPikaSpecies() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      smallTransparentDivider,
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-          /*if (widget.isEditMode)...[
+  Widget _buildPikaSpecies() {
+    var speciesValues = widget.observation.getSpeciesValues(translations);//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
+            /*if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
           ]*/
-        ],
-      ),
-      ChipsChoice<String>.single(
-        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.species,
-        onChanged: (value) => {
-          if (widget.isEditMode) {
-            setState(() => widget.observation.species = value)
-          }
-        },
-        choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSpeciesValues(translations),
-          value: (i, v) => v,
-          label: (i, v) => getSpeciesLabel(i, v, translations),
-          tooltip: (i, v) => v,
+          ],
         ),
-      )
-    ],
-  );
+        ChipsChoice<String>.single(
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: widget.observation.species,
+          onChanged: (value) => {
+            if (widget.isEditMode) {
+              setState(() => widget.observation.species = value)
+            }
+          },
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: speciesValues,
+            value: (i, v) => v,
+            label: (i, v) => getSpeciesLabel(i, v, translations),
+            tooltip: (i, v) => v,
+          ),
+        )
+      ],
+    );
+  }
 
   void _openAddOtherSpeciesDialog() {
     if (!mounted) return;

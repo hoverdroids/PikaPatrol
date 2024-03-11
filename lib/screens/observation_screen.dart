@@ -840,6 +840,61 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
           return;
         }
+      }
+
+      if (isAndroid) {
+
+        //Devices running Android 13 (API level 33) and above require the photos permission and don't
+        //even have storage permission. Device before that only have storage permission.
+        //So, if either is accepted then the system has the correct permissions for the given sdk
+        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
+        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
+        var isAudioPermissionGranted = await Permission.audio.request().isGranted;
+
+        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
+        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
+        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
+
+        var allPreSdk33FilePermissionsGranted = isStoragePermissionGranted && isMediaLocationPermissionGranted && isManageExternalStoragePermissionGranted;
+        var allSdk33FilePermissionsGranted = isPhotosPermissionGranted && isVideosPermissionGranted && isAudioPermissionGranted;
+        var allSdkSpecificPermissionsGranted = allPreSdk33FilePermissionsGranted || allSdk33FilePermissionsGranted;
+
+        if (!allSdkSpecificPermissionsGranted) {
+          if (!isPhotosPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
+            return;
+          }
+
+          if (!isStoragePermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
+            return;
+          }
+
+          if (!isMediaLocationPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
+            return;
+          }
+
+          if (!isManageExternalStoragePermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
+            return;
+          }
+
+
+          if (!isVideosPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
+            return;
+          }
+        }
+      }
+
+      if (isIos) {
+        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
+        if (!isMediaLibraryPermissionGranted) {
+          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
+          return;
+        }
+
         var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
         if (!isPhotosPermissionGranted) {
           showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
@@ -849,34 +904,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         var isStoragePermissionGranted = await Permission.storage.request().isGranted;
         if (!isStoragePermissionGranted) {
           showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-          return;
-        }
-      }
-
-      if (isAndroid) {
-        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
-        if (!isMediaLocationPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
-          return;
-        }
-
-        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
-        if (!isManageExternalStoragePermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
-          return;
-        }
-
-        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
-        if (!isVideosPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
-          return;
-        }
-      }
-
-      if (isIos) {
-        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
-        if (!isMediaLibraryPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
           return;
         }
       }

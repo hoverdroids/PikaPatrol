@@ -162,7 +162,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   }
 
   void _quitWithoutSaving() async {
-    if (_recordingStatus != RecorderState.STOPPED) {
+    if (_recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.RECORDING) {
       await _recorder.stop();
     }
 

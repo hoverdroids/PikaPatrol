@@ -738,7 +738,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     showDialog(
       context: context,
       builder: (BuildContext context) => const AudioRecorderDialog(),
-      barrierDismissible: false
+      barrierDismissible: true
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
@@ -840,6 +840,61 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
           return;
         }
+      }
+
+      if (isAndroid) {
+
+        //Devices running Android 13 (API level 33) and above require the photos permission and don't
+        //even have storage permission. Device before that only have storage permission.
+        //So, if either is accepted then the system has the correct permissions for the given sdk
+        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
+        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
+        var isAudioPermissionGranted = await Permission.audio.request().isGranted;
+
+        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
+        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
+        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
+
+        var allPreSdk33FilePermissionsGranted = isStoragePermissionGranted && isMediaLocationPermissionGranted && isManageExternalStoragePermissionGranted;
+        var allSdk33FilePermissionsGranted = isPhotosPermissionGranted && isVideosPermissionGranted && isAudioPermissionGranted;
+        var allSdkSpecificPermissionsGranted = allPreSdk33FilePermissionsGranted || allSdk33FilePermissionsGranted;
+
+        if (!allSdkSpecificPermissionsGranted) {
+          if (!isPhotosPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
+            return;
+          }
+
+          if (!isStoragePermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
+            return;
+          }
+
+          if (!isMediaLocationPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
+            return;
+          }
+
+          if (!isManageExternalStoragePermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
+            return;
+          }
+
+
+          if (!isVideosPermissionGranted) {
+            showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
+            return;
+          }
+        }
+      }
+
+      if (isIos) {
+        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
+        if (!isMediaLibraryPermissionGranted) {
+          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
+          return;
+        }
+
         var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
         if (!isPhotosPermissionGranted) {
           showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
@@ -849,34 +904,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         var isStoragePermissionGranted = await Permission.storage.request().isGranted;
         if (!isStoragePermissionGranted) {
           showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-          return;
-        }
-      }
-
-      if (isAndroid) {
-        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
-        if (!isMediaLocationPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
-          return;
-        }
-
-        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
-        if (!isManageExternalStoragePermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
-          return;
-        }
-
-        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
-        if (!isVideosPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
-          return;
-        }
-      }
-
-      if (isIos) {
-        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
-        if (!isMediaLibraryPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
           return;
         }
       }
@@ -982,36 +1009,39 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
-  Widget _buildPikaSpecies() => Column(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      smallTransparentDivider,
-      Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-          /*if (widget.isEditMode)...[
+  Widget _buildPikaSpecies() {
+    var speciesValues = widget.observation.getSpeciesValues(translations);//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        smallTransparentDivider,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
+            /*if (widget.isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
           ]*/
-        ],
-      ),
-      ChipsChoice<String>.single(
-        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.species,
-        onChanged: (value) => {
-          if (widget.isEditMode) {
-            setState(() => widget.observation.species = value)
-          }
-        },
-        choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSpeciesValues(translations),
-          value: (i, v) => v,
-          label: (i, v) => getSpeciesLabel(i, v, translations),
-          tooltip: (i, v) => v,
+          ],
         ),
-      )
-    ],
-  );
+        ChipsChoice<String>.single(
+          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          value: widget.observation.species,
+          onChanged: (value) => {
+            if (widget.isEditMode) {
+              setState(() => widget.observation.species = value)
+            }
+          },
+          choiceItems: C2Choice.listFrom<String, String>(
+            source: speciesValues,
+            value: (i, v) => v,
+            label: (i, v) => getSpeciesLabel(i, v, translations),
+            tooltip: (i, v) => v,
+          ),
+        )
+      ],
+    );
+  }
 
   void _openAddOtherSpeciesDialog() {
     if (!mounted) return;
@@ -1305,17 +1335,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildSharedWithProjects() {
 
-    var approvedOrganizations = Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+    List<String> approvedOrganizations = [];//Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
 
     //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
     //is still empty after logging in, until user restarts app
     //This list needs to be available offlline as well.
     if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "Denver Zoo", "IF/THEN", "Pika Patrol", "PikaNET (Mountain Studies Institute)", "Rocky Mountain Wild"];
+      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "PikaNET (Mountain Studies Institute)"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
-    var sharedWithProjects = widget.observation.sharedWithProjects ?? approvedOrganizations;
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
+    var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? approvedOrganizations;
 
     for (var approvedOrganization in approvedOrganizations) {
       if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {

@@ -601,6 +601,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             editedDzOptIn ?? false
         );
 
+        //Required so that the profile screen doesn't think the user manually edited the password or email when it
+        //is automatically forced open after registration
+        editedEmail = null;
+        editedPassword = null;
+
         if (result.appUser != null) {
           await onRegistrationSuccess(firebaseDatabaseService, result);
         } else {

@@ -72,7 +72,12 @@ class WorksheetService {
   }
 
   Future<bool> updateRow(String uid, Map<String, dynamic> row) async {
-    return await worksheet?.values.map.insertRowByKey(uid, row) ?? false;
+    try {
+      return await worksheet?.values.map.insertRowByKey(uid, row) ?? false;
+    } catch (e) {
+      developer.log("Update Row error:$e");
+      return false;
+    }
   }
 
   Future<bool> updateValue(int id, String columnName, dynamic value) async {

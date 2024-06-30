@@ -1341,16 +1341,25 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //is still empty after logging in, until user restarts app
     //This list needs to be available offlline as well.
     if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "PikaNET (Mountain Studies Institute)"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
+      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
+    var isNewObservation = widget.observation.uid == null;
+
     var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? approvedOrganizations;
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
 
     for (var approvedOrganization in approvedOrganizations) {
       if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
-        //A new organization was added to the approved list on firebase, auto-opt into sending the data
-        sharedWithProjects.add(approvedOrganization);
+        if (isNewObservation) {
+          // If the observations is new, auto-opt into sending the data to new projects
+          sharedWithProjects.add(approvedOrganization);
+        } else {
+          //If the observation is not new, then only indicate sharedWithProjects that were explicitly opted into,
+          //other wise it will appear as though the observation is being shared with certain projects even though the observation
+          //is not in the new project's spreadsheet
+          notSharedWithProjects.add(approvedOrganization);
+        }
       }
     }
 

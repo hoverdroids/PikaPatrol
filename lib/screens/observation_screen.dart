@@ -408,13 +408,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildLatLonAltitude() {
     String latitude = widget.observation.latitude?.toStringAsFixed(3) ?? "";
-    String editLatitude = widget.observation.latitude?.toString() ?? "";
+    String editLatitude = widget.observation.latitude?.toStringAsFixed(5) ?? "";
     String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
-    String editLongitude = widget.observation.longitude?.toString() ?? "";
+    String editLongitude = widget.observation.longitude?.toStringAsFixed(5) ?? "";
 
     double? altMeters = widget.observation.altitudeInMeters;
     String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
-    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toString() : "";    //Editable altitude is full length
+    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";    //Editable altitude is full length
 
     return Row(
       children: <Widget>[

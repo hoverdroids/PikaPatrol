@@ -408,13 +408,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildLatLonAltitude() {
     String latitude = widget.observation.latitude?.toStringAsFixed(3) ?? "";
-    String editLatitude = widget.observation.latitude?.toString() ?? "";
+    String editLatitude = widget.observation.latitude?.toStringAsFixed(5) ?? "";
     String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
-    String editLongitude = widget.observation.longitude?.toString() ?? "";
+    String editLongitude = widget.observation.longitude?.toStringAsFixed(5) ?? "";
 
     double? altMeters = widget.observation.altitudeInMeters;
     String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
-    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toString() : "";    //Editable altitude is full length
+    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";    //Editable altitude is full length
 
     return Row(
       children: <Widget>[
@@ -1341,16 +1341,25 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //is still empty after logging in, until user restarts app
     //This list needs to be available offlline as well.
     if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Cascades Pika Watch", "Colorado Pika Project", "PikaNET (Mountain Studies Institute)"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
+      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
+    var isNewObservation = widget.observation.uid == null;
+
     var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? approvedOrganizations;
+    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
 
     for (var approvedOrganization in approvedOrganizations) {
       if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
-        //A new organization was added to the approved list on firebase, auto-opt into sending the data
-        sharedWithProjects.add(approvedOrganization);
+        if (isNewObservation) {
+          // If the observations is new, auto-opt into sending the data to new projects
+          sharedWithProjects.add(approvedOrganization);
+        } else {
+          //If the observation is not new, then only indicate sharedWithProjects that were explicitly opted into,
+          //other wise it will appear as though the observation is being shared with certain projects even though the observation
+          //is not in the new project's spreadsheet
+          notSharedWithProjects.add(approvedOrganization);
+        }
       }
     }
 

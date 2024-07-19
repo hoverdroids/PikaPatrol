@@ -165,7 +165,7 @@ Future<void> migrateLocalObservations() async {
   for (var element in list) {
     LocalObservation localObservation = element;
     if (!localObservation.isUploaded) {
-      await box.putAt(localObservation.key, localObservation);
+      await box.put(localObservation.key, localObservation);
     }
   }
 }

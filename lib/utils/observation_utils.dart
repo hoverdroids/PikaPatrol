@@ -156,6 +156,51 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   return box.get(observation.dbId);
 }
 
+Future<void> migrateLocalObservations() async {
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+
+
+    //The observation screen can be opened from an online observation, which means that the dbId can be null.
+    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
+    Map<dynamic, dynamic> raw = box.toMap();
+    List list = raw.values.toList();
+
+    for (var element in list) {
+      LocalObservation localObservation = element;
+      if (!localObservation.isUploaded) {
+        localObservation.name = "${localObservation.name} Updated";
+        await box.putAt(localObservation.key, localObservation);
+      }
+    }
+
+
+
+
+
+
+  /*var observations = box.values;
+  // var keys = box.keys;
+  var observationsToUpdate = observations.where((localObservation) => localObservation.isUploaded == false);
+
+
+  observationsToUpdate.toList().asMap().forEach((key, observation) async {
+    await migrateLocalObservation(key, observation);
+  });*/
+
+
+  //Old observations don't have the same fields as new observations.
+  //To remedy this, just save the observation again and the adapter will handle the rest
+  /*for (var observationToUpdate in observationsToUpdate) {
+    await migrateLocalObservation(observationToUpdate, ke);
+  }*/
+}
+
+Future<LocalObservation?> migrateLocalObservation(int dbId, LocalObservation localObservation) async {
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+  await box.put(dbId, localObservation);
+  return box.get(dbId);
+}
+
 Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio) async {
   await deleteLocalObservation(observation);
 

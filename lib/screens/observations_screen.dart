@@ -286,18 +286,11 @@ class ObservationsPageState extends State<ObservationsPage> {
       showToast(translations.uploadingObservations);
 
       for (var observation in localObservations) {
-        //TODO - CHRIS - if the user updated an observation when offline,
-        //the UID won't be null or empty, so those updates will never get pushed
-        //in the bulk upload. This will get fixed when we compare current observations
-        //vs the stored observation.
-        var uid = observation.uid;
-        if (uid == null || uid.isEmpty) {
           //If the observation was made when the user was not logged in, then edited after logging in, the user
           //id can be null. So update it now. This allows local observations to be uploaded when online.
           // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
           observation.observerUid = user.uid ?? observation.observerUid;
           saveObservation(context, observation);
-        }
       }
     } else {
       showToast(translations.couldNotUploadObservationsNoDataConnection);

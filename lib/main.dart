@@ -35,7 +35,7 @@ Future<void> main() async {
   await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
 
-  await updateLocalObservations();
+  await migrateLocalObservations();
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
@@ -131,25 +131,3 @@ Future<void> main() async {
     ),
   );
 }
-
-Future<void> updateLocalObservations() async {
-  var localObservations = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).values;
-  var observationsToUpdate = localObservations.where((localObservation) => localObservation.isUploaded == false);
-
-  //Old observations don't have the same fields as new observations.
-  //To remedy this, just save the observation again and the adapter will handle the rest
-  for (var observationToUpdate in observationsToUpdate) {
-    var observation = toObservation(observationToUpdate);
-    await saveLocalObservation(observation);
-  }
-}
-
-
-
-
-
-
-
-
-
-

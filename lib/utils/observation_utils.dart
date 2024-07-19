@@ -17,6 +17,39 @@ import '../services/firebase_database_service.dart';
 // Instead, there should be an observations manager/service and userProfiles manager/service.
 // Each of those provide a single interface for the UI so that the business logic is hidden away in the manager/service.
 // Each manager/service would have a list of providers, e.g. IObservationProvider with crud methods
+Observation toObservation(LocalObservation localObservation, { String buttonText = ""}) {
+  return Observation(
+      dbId: localObservation.key,
+      uid: localObservation.uid,
+      observerUid: localObservation.observerUid,
+      name: localObservation.name,
+      location: localObservation.location,
+      date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
+      altitudeInMeters: localObservation.altitudeInMeters,
+      latitude: localObservation.latitude,
+      longitude: localObservation.longitude,
+      species: localObservation.species,
+      signs: localObservation.signs,
+      pikasDetected: localObservation.pikasDetected,
+      distanceToClosestPika: localObservation.distanceToClosestPika,
+      searchDuration: localObservation.searchDuration,
+      talusArea: localObservation.talusArea,
+      temperature: localObservation.temperature,
+      skies: localObservation.skies,
+      wind: localObservation.wind,
+      siteHistory: localObservation.siteHistory,
+      comments: localObservation.comments,
+      imageUrls: localObservation.imageUrls,
+      audioUrls: localObservation.audioUrls,
+      otherAnimalsPresent: localObservation.otherAnimalsPresent,
+      sharedWithProjects: localObservation.sharedWithProjects,
+      notSharedWithProjects: localObservation.notSharedWithProjects,
+      dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
+      isUploaded: localObservation.isUploaded,
+      buttonText: buttonText
+  );
+}
+
 
 Future saveObservation(BuildContext context, Observation observation) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
@@ -121,6 +154,26 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   }
 
   return box.get(observation.dbId);
+}
+
+Future<void> migrateLocalObservations() async {
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+
+  Map<dynamic, dynamic> raw = box.toMap();
+  List list = raw.values.toList();
+
+  for (var element in list) {
+    LocalObservation localObservation = element;
+    if (!localObservation.isUploaded) {
+      await box.put(localObservation.key, localObservation);
+    }
+  }
+}
+
+Future<LocalObservation?> migrateLocalObservation(int dbId, LocalObservation localObservation) async {
+  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+  await box.put(dbId, localObservation);
+  return box.get(dbId);
 }
 
 Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio) async {

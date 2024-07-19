@@ -108,38 +108,8 @@ class ObservationsPageState extends State<ObservationsPage> {
         List list = raw.values.toList();
         localObservations = <Observation>[];
         for (var element in list) {
-          //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
           LocalObservation localObservation = element;
-          var observation = Observation(
-              dbId: localObservation.key,
-              uid: localObservation.uid,
-              observerUid: localObservation.observerUid,
-              name: localObservation.name,
-              location: localObservation.location,
-              date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
-              altitudeInMeters: localObservation.altitudeInMeters,
-              latitude: localObservation.latitude,
-              longitude: localObservation.longitude,
-              species: localObservation.species,
-              signs: localObservation.signs,
-              pikasDetected: localObservation.pikasDetected,
-              distanceToClosestPika: localObservation.distanceToClosestPika,
-              searchDuration: localObservation.searchDuration,
-              talusArea: localObservation.talusArea,
-              temperature: localObservation.temperature,
-              skies: localObservation.skies,
-              wind: localObservation.wind,
-              siteHistory: localObservation.siteHistory,
-              comments: localObservation.comments,
-              imageUrls: localObservation.imageUrls,
-              audioUrls: localObservation.audioUrls,
-              otherAnimalsPresent: localObservation.otherAnimalsPresent,
-              sharedWithProjects: localObservation.sharedWithProjects,
-              notSharedWithProjects: localObservation.notSharedWithProjects,
-              dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
-              isUploaded: localObservation.isUploaded,
-              buttonText: translations.viewObservation
-          );
+          var observation = toObservation(localObservation, buttonText: translations.viewObservation);
           localObservations.add(observation);
         }
 
@@ -316,18 +286,11 @@ class ObservationsPageState extends State<ObservationsPage> {
       showToast(translations.uploadingObservations);
 
       for (var observation in localObservations) {
-        //TODO - CHRIS - if the user updated an observation when offline,
-        //the UID won't be null or empty, so those updates will never get pushed
-        //in the bulk upload. This will get fixed when we compare current observations
-        //vs the stored observation.
-        var uid = observation.uid;
-        if (uid == null || uid.isEmpty) {
           //If the observation was made when the user was not logged in, then edited after logging in, the user
           //id can be null. So update it now. This allows local observations to be uploaded when online.
           // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
           observation.observerUid = user.uid ?? observation.observerUid;
           saveObservation(context, observation);
-        }
       }
     } else {
       showToast(translations.couldNotUploadObservationsNoDataConnection);

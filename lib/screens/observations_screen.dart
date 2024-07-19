@@ -108,38 +108,8 @@ class ObservationsPageState extends State<ObservationsPage> {
         List list = raw.values.toList();
         localObservations = <Observation>[];
         for (var element in list) {
-          //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
           LocalObservation localObservation = element;
-          var observation = Observation(
-              dbId: localObservation.key,
-              uid: localObservation.uid,
-              observerUid: localObservation.observerUid,
-              name: localObservation.name,
-              location: localObservation.location,
-              date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
-              altitudeInMeters: localObservation.altitudeInMeters,
-              latitude: localObservation.latitude,
-              longitude: localObservation.longitude,
-              species: localObservation.species,
-              signs: localObservation.signs,
-              pikasDetected: localObservation.pikasDetected,
-              distanceToClosestPika: localObservation.distanceToClosestPika,
-              searchDuration: localObservation.searchDuration,
-              talusArea: localObservation.talusArea,
-              temperature: localObservation.temperature,
-              skies: localObservation.skies,
-              wind: localObservation.wind,
-              siteHistory: localObservation.siteHistory,
-              comments: localObservation.comments,
-              imageUrls: localObservation.imageUrls,
-              audioUrls: localObservation.audioUrls,
-              otherAnimalsPresent: localObservation.otherAnimalsPresent,
-              sharedWithProjects: localObservation.sharedWithProjects,
-              notSharedWithProjects: localObservation.notSharedWithProjects,
-              dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
-              isUploaded: localObservation.isUploaded,
-              buttonText: translations.viewObservation
-          );
+          var observation = toObservation(localObservation, buttonText: translations.viewObservation);
           localObservations.add(observation);
         }
 

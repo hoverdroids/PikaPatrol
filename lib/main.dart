@@ -9,6 +9,7 @@ import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
 import 'package:pika_patrol/services/settings_service.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:pika_patrol/widgets/my_app.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -33,6 +34,8 @@ Future<void> main() async {
 
   await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
+
+  await updateLocalObservations();
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
@@ -128,3 +131,25 @@ Future<void> main() async {
     ),
   );
 }
+
+Future<void> updateLocalObservations() async {
+  var localObservations = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).values;
+  var observationsToUpdate = localObservations.where((localObservation) => localObservation.isUploaded == false);
+
+  //Old observations don't have the same fields as new observations.
+  //To remedy this, just save the observation again and the adapter will handle the rest
+  for (var observationToUpdate in observationsToUpdate) {
+    var observation = toObservation(observationToUpdate);
+    await saveLocalObservation(observation);
+  }
+}
+
+
+
+
+
+
+
+
+
+

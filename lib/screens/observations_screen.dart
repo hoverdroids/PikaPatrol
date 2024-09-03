@@ -36,10 +36,6 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   late Translations translations;
 
-  late PageController localObservationsPageController;
-  List<Observation> localObservations = <Observation>[];
-  double localObservationsCurrentPage = 0.0;
-
   final Key _sharedObservationsScrollerKey = UniqueKey();
   final Key _emptySharedObservationsScrollerKey = UniqueKey();
   final Key _localObservationsScrollerKey = UniqueKey();
@@ -48,7 +44,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   bool _isLocalObservationsDialogShowing = false;
 
   bool localObservationsNeedUploaded() {
-    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
+
+    return false;//localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
   late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
@@ -56,14 +53,6 @@ class ObservationsPageState extends State<ObservationsPage> {
   @override
   void initState() {
     super.initState();
-
-    //TODO - CHRIS - the following controller should be migrated in the same was as shared observations
-    localObservationsPageController = PageController(initialPage: localObservationsCurrentPage.toInt());
-    localObservationsPageController.addListener(() {
-      setState(() {
-        localObservationsCurrentPage = localObservationsPageController.page ?? localObservationsCurrentPage;
-      });
-    });
 
     // actively listen for status updates
     // this will cause DataConnectionChecker to check periodically
@@ -82,7 +71,6 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   }
 
-
   @override
   void dispose() {
     _dataConnectionStatusListener.cancel();
@@ -93,184 +81,182 @@ class ObservationsPageState extends State<ObservationsPage> {
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
 
-    return ValueListenableBuilder(
-      valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
-      builder: (context, box, widget2){
-
-        final user = Provider.of<AppUser?>(context);
-        final userId = user?.uid ?? "";
-
-        //Get all locally saved observations
-        Map<dynamic, dynamic> raw = box.toMap();
-        List list = raw.values.toList();
-        localObservations = <Observation>[];
-        for (var element in list) {
-          //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
-          LocalObservation localObservation = element;
-
-          //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
-          if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
-            var observation = Observation(
-                dbId: localObservation.key,
-                uid: localObservation.uid,
-                observerUid: localObservation.observerUid,
-                name: localObservation.name,
-                location: localObservation.location,
-                date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
-                altitudeInMeters: localObservation.altitudeInMeters,
-                latitude: localObservation.latitude,
-                longitude: localObservation.longitude,
-                species: localObservation.species,
-                signs: localObservation.signs,
-                pikasDetected: localObservation.pikasDetected,
-                distanceToClosestPika: localObservation.distanceToClosestPika,
-                searchDuration: localObservation.searchDuration,
-                talusArea: localObservation.talusArea,
-                temperature: localObservation.temperature,
-                skies: localObservation.skies,
-                wind: localObservation.wind,
-                siteHistory: localObservation.siteHistory,
-                comments: localObservation.comments,
-                imageUrls: localObservation.imageUrls,
-                audioUrls: localObservation.audioUrls,
-                otherAnimalsPresent: localObservation.otherAnimalsPresent,
-                sharedWithProjects: localObservation.sharedWithProjects,
-                notSharedWithProjects: localObservation.notSharedWithProjects,
-                dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
-                isUploaded: localObservation.isUploaded,
-                buttonText: translations.viewObservation
-            );
-            localObservations.add(observation);
-          }
-        }
-
-        var needUploaded = user != null && localObservationsNeedUploaded();
-
-        return SizedBox(
-            width: double.infinity,
-            height: double.infinity,
-            child: Stack(
-              children: <Widget>[
-                context.watch<MaterialThemesManager>().getBackgroundGradient(BackgroundGradientType.PRIMARY),
-                SafeArea(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: <Widget>[
-                          ThemedH4(translations.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ThemedH4(translations.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              ThemedIconButton(
-                                Icons.info,
-                                type: ThemeGroupType.MOP,
-                                onPressedCallback: () async {
-                                  AlertDialog alert = AlertDialog(
-                                    title: Text(translations.sharedObservationsDialogTitle),
-                                    content: Text(translations.sharedObservationsDialogDetails),
-                                  );
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return alert;
-                                    },
-                                  );
-                                }
-                              )
-                            ],
-                          ),
-                          StreamBuilder<List<Observation>>(
-                            stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
-                            builder: (context, snapshot) {
-                              List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
-                              observations = observations.reversed.toList();
-                              
-                              for (var observation in  observations) {
-                                observation.buttonText = translations.viewObservation;
-                              }
-
-                              if (observations.isNotEmpty) {
-                                return CardScroller(
-                                    observations,
-                                    key: _sharedObservationsScrollerKey,
-                                    onTapCard: (index) => {
-                                      Navigator.push( context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ObservationScreen(observations[index].copy()),
-                                        ),
-                                      )
-                                    }
-                                );
-                              }
-
-                              return CardScroller(
-                                _createDefaultObservations(),
-                                key: _emptySharedObservationsScrollerKey,
+    return SizedBox(
+        width: double.infinity,
+        height: double.infinity,
+        child: Stack(
+          children: <Widget>[
+            context.watch<MaterialThemesManager>().getBackgroundGradient(BackgroundGradientType.PRIMARY),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: <Widget>[
+                      ThemedH4(translations.sharedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ThemedH4(translations.sharedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          ThemedIconButton(
+                            Icons.info,
+                            type: ThemeGroupType.MOP,
+                            onPressedCallback: () async {
+                              AlertDialog alert = AlertDialog(
+                                title: Text(translations.sharedObservationsDialogTitle),
+                                content: Text(translations.sharedObservationsDialogDetails),
                               );
-                            },
-                          ),
-                          ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              ThemedH4(translations.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
-                              if(needUploaded) ... [
-                                ThemedIconButton(
-                                    Icons.upload_file,
-                                    type: ThemeGroupType.MOP,
-                                    onPressedCallback: () async {
-                                      await _uploadLocalObservations(user);
-                                    }
-                                )
-                              ],
-                              ThemedIconButton(
-                                Icons.info,
-                                type: ThemeGroupType.MOP,
-                                onPressedCallback: () async {
-                                  AlertDialog alert = AlertDialog(
-                                    title: Text(translations.cachedObservationsDialogTitle),
-                                    content: Text(translations.cachedObservationsDialogDetails),
-                                  );
-                                  showDialog(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return alert;
-                                    },
-                                  );
-                                }
-                              )
-                            ],
-                          ),
-                          if (localObservations.isNotEmpty) ... [
-                            CardScroller(
-                              localObservations,
-                              key: _localObservationsScrollerKey,
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return alert;
+                                },
+                              );
+                            }
+                          )
+                        ],
+                      ),
+                      StreamBuilder<List<Observation>>(
+                        stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+                        builder: (context, snapshot) {
+                          List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
+                          observations = observations.reversed.toList();
+
+                          for (var observation in  observations) {
+                            observation.buttonText = translations.viewObservation;
+                          }
+
+                          if (observations.isNotEmpty) {
+                            return CardScroller(
+                              observations,
+                              key: _sharedObservationsScrollerKey,
                               onTapCard: (index) => {
                                 Navigator.push( context,
                                   MaterialPageRoute(
-                                    builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                    builder: (_) => ObservationScreen(observations[index].copy()),
                                   ),
                                 )
                               }
-                            ),
-                          ] else ...[
-                            CardScroller(
-                              _createDefaultObservations(),
-                              key: _emptyLocalObservationsScrollerKey,
-                            ),
-                          ],
+                            );
+                          }
+
+                          return CardScroller(
+                            _createDefaultObservations(),
+                            key: _emptySharedObservationsScrollerKey,
+                          );
+                        },
+                      ),
+                      ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          ThemedH4(translations.cachedObservationsLine2, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
+                          /*if(needUploaded) ... [
+                            ThemedIconButton(
+                                Icons.upload_file,
+                                type: ThemeGroupType.MOP,
+                                onPressedCallback: () async {
+                                  await _uploadLocalObservations(appUser);
+                                }
+                            )
+                          ],*/
+                          ThemedIconButton(
+                            Icons.info,
+                            type: ThemeGroupType.MOP,
+                            onPressedCallback: () async {
+                              AlertDialog alert = AlertDialog(
+                                title: Text(translations.cachedObservationsDialogTitle),
+                                content: Text(translations.cachedObservationsDialogDetails),
+                              );
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return alert;
+                                },
+                              );
+                            }
+                          )
                         ],
                       ),
-                    ),
+                      ValueListenableBuilder(
+                        valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
+                        builder: (context, box, widget2){
+                          final user = Provider.of<AppUser?>(context);
+                          final userId = user?.uid ?? "";
+
+                          //Get all locally saved observations
+                          Map<dynamic, dynamic> raw = box.toMap();
+                          List list = raw.values.toList();
+                          List<Observation> localObservations = <Observation>[];
+
+                          for (var element in list) {
+                            //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
+                            LocalObservation localObservation = element;
+
+                            //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
+                            if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
+                              var observation = Observation(
+                                  dbId: localObservation.key,
+                                  uid: localObservation.uid,
+                                  observerUid: localObservation.observerUid,
+                                  name: localObservation.name,
+                                  location: localObservation.location,
+                                  date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
+                                  altitudeInMeters: localObservation.altitudeInMeters,
+                                  latitude: localObservation.latitude,
+                                  longitude: localObservation.longitude,
+                                  species: localObservation.species,
+                                  signs: localObservation.signs,
+                                  pikasDetected: localObservation.pikasDetected,
+                                  distanceToClosestPika: localObservation.distanceToClosestPika,
+                                  searchDuration: localObservation.searchDuration,
+                                  talusArea: localObservation.talusArea,
+                                  temperature: localObservation.temperature,
+                                  skies: localObservation.skies,
+                                  wind: localObservation.wind,
+                                  siteHistory: localObservation.siteHistory,
+                                  comments: localObservation.comments,
+                                  imageUrls: localObservation.imageUrls,
+                                  audioUrls: localObservation.audioUrls,
+                                  otherAnimalsPresent: localObservation.otherAnimalsPresent,
+                                  sharedWithProjects: localObservation.sharedWithProjects,
+                                  notSharedWithProjects: localObservation.notSharedWithProjects,
+                                  dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
+                                  isUploaded: localObservation.isUploaded,
+                                  buttonText: translations.viewObservation
+                              );
+                              localObservations.add(observation);
+                            }
+                          }
+
+                          if (localObservations.isNotEmpty) {
+                            return CardScroller(
+                                localObservations,
+                                key: _localObservationsScrollerKey,
+                                onTapCard: (index) => {
+                                  Navigator.push( context,
+                                    MaterialPageRoute(
+                                      builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                    ),
+                                  )
+                                }
+                            );
+                          }
+
+                          return CardScroller(
+                            _createDefaultObservations(),
+                            key: _emptyLocalObservationsScrollerKey,
+                          );
+                        }
+                      )
+                    ],
                   ),
                 ),
-              ],
-            )
-        );
-      },
+              ),
+            ),
+          ],
+        )
     );
   }
 
@@ -322,7 +308,7 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   Future _uploadLocalObservations(AppUser user) async {
-    var hasConnection = await DataConnectionChecker().hasConnection;
+    /*var hasConnection = await DataConnectionChecker().hasConnection;
     if(hasConnection && context.mounted) {
       showToast(translations.uploadingObservations);
 
@@ -342,7 +328,7 @@ class ObservationsPageState extends State<ObservationsPage> {
       }
     } else {
       showToast(translations.couldNotUploadObservationsNoDataConnection);
-    }
+    }*/
   }
 
 

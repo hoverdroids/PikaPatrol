@@ -56,6 +56,7 @@ class HomeWithDrawer extends StatefulWidget {
 class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   final Key _registerKey = UniqueKey();
   final Key _loginKey = UniqueKey();
   final Key _editProfileKey = UniqueKey();

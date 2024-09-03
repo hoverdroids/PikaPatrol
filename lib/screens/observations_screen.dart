@@ -39,8 +39,6 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   final Key _sharedObservationsScrollerKey = UniqueKey();
   final Key _emptySharedObservationsScrollerKey = UniqueKey();
-  final Key _localObservationsScrollerKey = UniqueKey();
-  final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool _isLocalObservationsDialogShowing = false;
 
@@ -82,6 +80,11 @@ class ObservationsPageState extends State<ObservationsPage> {
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
 
+    SharedObservationsService sharedObservationsService = Provider.of<SharedObservationsService>(context);
+    Key localObservationsScrollerKey = sharedObservationsService.localObservationsScrollerKey;
+    Key emptyLocalObservationsScrollerKey = sharedObservationsService.emptyLocalObservationsScrollerKey;
+    List<Observation> localObservations = sharedObservationsService.localObservations;
+
     return SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -118,7 +121,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                           )
                         ],
                       ),
-                      StreamBuilder<List<Observation>>(
+                      /*StreamBuilder<List<Observation>>(
                         stream: Provider.of<SharedObservationsService>(context).sharedObservations,
                         builder: (context, snapshot) {
                           List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
@@ -147,7 +150,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                             key: _emptySharedObservationsScrollerKey,
                           );
                         },
-                      ),
+                      ),*/
                       ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -180,92 +183,24 @@ class ObservationsPageState extends State<ObservationsPage> {
                           )
                         ],
                       ),
-                      ValueListenableBuilder(
-                        valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
-                        builder: (context, box, widget2){
-                          final user = Provider.of<AppUser?>(context);
-                          final userId = user?.uid ?? "";
-
-                          //Get all locally saved observations
-                          Map<dynamic, dynamic> raw = box.toMap();
-                          List list = raw.values.toList();
-                          List<Observation> localObservations = <Observation>[];
-
-                          for (var element in list) {
-                            //TODO - CHRIS - this conversion from LocalObservation to Observation should not happen here
-                            LocalObservation localObservation = element;
-
-                            //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
-                            if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
-                              var observation = Observation(
-                                  dbId: localObservation.key,
-                                  uid: localObservation.uid,
-                                  observerUid: localObservation.observerUid,
-                                  name: localObservation.name,
-                                  location: localObservation.location,
-                                  date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
-                                  altitudeInMeters: localObservation.altitudeInMeters,
-                                  latitude: localObservation.latitude,
-                                  longitude: localObservation.longitude,
-                                  species: localObservation.species,
-                                  signs: localObservation.signs,
-                                  pikasDetected: localObservation.pikasDetected,
-                                  distanceToClosestPika: localObservation.distanceToClosestPika,
-                                  searchDuration: localObservation.searchDuration,
-                                  talusArea: localObservation.talusArea,
-                                  temperature: localObservation.temperature,
-                                  skies: localObservation.skies,
-                                  wind: localObservation.wind,
-                                  siteHistory: localObservation.siteHistory,
-                                  comments: localObservation.comments,
-                                  imageUrls: localObservation.imageUrls,
-                                  audioUrls: localObservation.audioUrls,
-                                  otherAnimalsPresent: localObservation.otherAnimalsPresent,
-                                  sharedWithProjects: localObservation.sharedWithProjects,
-                                  notSharedWithProjects: localObservation.notSharedWithProjects,
-                                  dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
-                                  isUploaded: localObservation.isUploaded,
-                                  buttonText: translations.viewObservation
-                              );
-                              localObservations.add(observation);
+                      if (localObservations.isNotEmpty) ... [
+                        CardScroller(
+                            localObservations,
+                            key: localObservationsScrollerKey,
+                            onTapCard: (index) => {
+                              Navigator.push( context,
+                                MaterialPageRoute(
+                                  builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                ),
+                              )
                             }
-                          }
-
-                          return StreamBuilder<List<Observation>>(
-                            stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
-                            builder: (context, snapshot) {
-
-                              List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
-                              observations = observations.reversed.toList();
-
-                              for (var observation in  observations) {
-                                observation.buttonText = translations.viewObservation;
-                              }
-
-                              localObservations.addAll(observations);
-
-                              if (localObservations.isNotEmpty) {
-                                return CardScroller(
-                                    localObservations,
-                                    key: _localObservationsScrollerKey,
-                                    onTapCard: (index) => {
-                                      Navigator.push( context,
-                                        MaterialPageRoute(
-                                          builder: (_) => ObservationScreen(localObservations[index].copy()),
-                                        ),
-                                      )
-                                    }
-                                );
-                              }
-
-                              return CardScroller(
-                                _createDefaultObservations(),
-                                key: _emptyLocalObservationsScrollerKey,
-                              );
-                            }
-                          );
-                        }
-                      )
+                        )
+                      ] else ... [
+                        CardScroller(
+                          _createDefaultObservations(),
+                          key: emptyLocalObservationsScrollerKey,
+                        )
+                      ]
                     ],
                   ),
                 ),

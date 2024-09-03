@@ -64,7 +64,10 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
             create: (_) => Translations()
-        )
+        ),
+        Provider<SharedObservationsService>(
+            create: (_) => SharedObservationsService()
+        ),
       ],
       builder: (context, child) {
         //Using StreamBuilder here in order so that appUserSnapshot is the desired type
@@ -75,7 +78,13 @@ Future<void> main() async {
           initialData: null,
           builder: (context, appUserSnapshot) {
 
+            final Translations translations = Provider.of<Translations>(context);
+
+            final SharedObservationsService sharedObservationsService = Provider.of<SharedObservationsService>(context);
+            sharedObservationsService.translations = translations;
+
             final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
+            final userId = appUser?.uid ?? "";
 
             var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
             firebaseDatabaseService.uid = appUser?.uid;
@@ -88,45 +97,50 @@ Future<void> main() async {
                 final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
 
                 return StreamBuilder<List<GoogleSheetsCredential>>(
-                        stream: firebaseDatabaseService.googleSheetsService.credentials,
-                        initialData: null,
-                        builder: (context, googleSheetsCredentialsSnapshot) {
+                  stream: firebaseDatabaseService.googleSheetsService.credentials,
+                  initialData: null,
+                  builder: (context, googleSheetsCredentialsSnapshot) {
 
-                          List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
+                    List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
+
+                    return ValueListenableBuilder(
+                        valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
+                        builder: (context, box, widget2){
+
+                          sharedObservationsService.setLocalObservations(box, userId);
 
                           return MultiProvider(
-                              providers: [
-                                Provider<AppUser?>.value(
-                                    value: appUser
-                                ),
-                                Provider<AppUserProfile?>.value(
-                                    value: appUserProfile
-                                ),
-                                Provider<SharedObservationsService>(
-                                    create: (_) => SharedObservationsService(firebaseDatabaseService)
-                                ),
-                                Provider<List<GoogleSheetsCredential>>.value(
-                                    value: googleSheetsCredentials
-                                ),
-                                Provider<GoogleSheetsService>(
-                                    create: (_) {
-                                      List<PikaPatrolSpreadsheetService> services = [];
+                            providers: [
+                              Provider<AppUser?>.value(
+                                  value: appUser
+                              ),
+                              Provider<AppUserProfile?>.value(
+                                  value: appUserProfile
+                              ),
+                              Provider<List<GoogleSheetsCredential>>.value(
+                                  value: googleSheetsCredentials
+                              ),
+                              Provider<GoogleSheetsService>(
+                                  create: (_) {
+                                    List<PikaPatrolSpreadsheetService> services = [];
 
-                                      for (var credential in googleSheetsCredentials) {
-                                        credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                          var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                                          services.add(service);
-                                        });
-                                      }
-
-                                      return GoogleSheetsService(services);
+                                    for (var credential in googleSheetsCredentials) {
+                                      credential.spreadsheets.forEach((projectName, spreadsheetId) {
+                                        var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
+                                        services.add(service);
+                                      });
                                     }
-                                ),
-                              ],
-                              child: const MyApp()
-                          );
-                        }
+
+                                    return GoogleSheetsService(services);
+                                  }
+                              ),
+                            ],
+                            child: const MyApp()
+                        );
+                      }
                     );
+                  }
+                );
               }
             );
           }

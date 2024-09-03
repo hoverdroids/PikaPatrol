@@ -12,6 +12,7 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/services/SharedObservationsService.dart';
 import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
@@ -118,7 +119,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                         ],
                       ),
                       StreamBuilder<List<Observation>>(
-                        stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+                        stream: Provider.of<SharedObservationsService>(context).sharedObservations,
                         builder: (context, snapshot) {
                           List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
                           observations = observations.reversed.toList();

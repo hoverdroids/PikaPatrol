@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
+import 'package:pika_patrol/services/LocalObservationsService.dart';
+import 'package:pika_patrol/services/SharedObservationsService.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -21,6 +23,8 @@ import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'dart:developer' as developer;
+
+import 'model/observation.dart';
 
 const useEmulators = false;
 
@@ -84,42 +88,45 @@ Future<void> main() async {
                 final AppUserProfile? appUserProfile = appUserProfileSnapshot.hasData ? appUserProfileSnapshot.data : null;
 
                 return StreamBuilder<List<GoogleSheetsCredential>>(
-                  stream: firebaseDatabaseService.googleSheetsService.credentials,
-                  initialData: null,
-                  builder: (context, googleSheetsCredentialsSnapshot) {
+                        stream: firebaseDatabaseService.googleSheetsService.credentials,
+                        initialData: null,
+                        builder: (context, googleSheetsCredentialsSnapshot) {
 
-                    List<GoogleSheetsCredential> credentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
+                          List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
-                    return MultiProvider(
-                        providers: [
-                          Provider<AppUser?>.value(
-                              value: appUser
-                          ),
-                          Provider<AppUserProfile?>.value(
-                              value: appUserProfile
-                          ),
-                          Provider<List<GoogleSheetsCredential>>.value(
-                              value: credentials
-                          ),
-                          Provider<GoogleSheetsService>(
-                              create: (_) {
-                                List<PikaPatrolSpreadsheetService> services = [];
+                          return MultiProvider(
+                              providers: [
+                                Provider<AppUser?>.value(
+                                    value: appUser
+                                ),
+                                Provider<AppUserProfile?>.value(
+                                    value: appUserProfile
+                                ),
+                                Provider<SharedObservationsService>(
+                                    create: (_) => SharedObservationsService(firebaseDatabaseService)
+                                ),
+                                Provider<List<GoogleSheetsCredential>>.value(
+                                    value: googleSheetsCredentials
+                                ),
+                                Provider<GoogleSheetsService>(
+                                    create: (_) {
+                                      List<PikaPatrolSpreadsheetService> services = [];
 
-                                for (var credential in credentials) {
-                                  credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                    var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                                    services.add(service);
-                                  });
-                                }
+                                      for (var credential in googleSheetsCredentials) {
+                                        credential.spreadsheets.forEach((projectName, spreadsheetId) {
+                                          var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
+                                          services.add(service);
+                                        });
+                                      }
 
-                                return GoogleSheetsService(services);
-                              }
-                          ),
-                        ],
-                        child: const MyApp()
+                                      return GoogleSheetsService(services);
+                                    }
+                                ),
+                              ],
+                              child: const MyApp()
+                          );
+                        }
                     );
-                  }
-                );
               }
             );
           }

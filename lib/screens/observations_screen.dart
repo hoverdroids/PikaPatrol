@@ -16,6 +16,7 @@ import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../primitives/card_layout.dart';
+import '../services/firebase_database_service.dart';
 import '../services/firebase_observations_service.dart';
 import '../services/settings_service.dart';
 import '../utils/observation_utils.dart';
@@ -25,14 +26,7 @@ import 'observation_screen.dart';
 // ignore: must_be_immutable
 class ObservationsPage extends StatefulWidget {
 
-  late List<Observation> observations;
-  late bool observationsNotNull;
-
-  ObservationsPage(List<Observation>? observations, {super.key}) {
-    List<Observation> resolvedObservations = observations ?? <Observation>[];
-    this.observations = List.from(resolvedObservations.reversed);
-    //developer.log("ObservationsPage ctor observations length:${observations?.length}");
-  }
+  const ObservationsPage({super.key});
 
   @override
   ObservationsPageState createState() => ObservationsPageState();
@@ -158,24 +152,36 @@ class ObservationsPageState extends State<ObservationsPage> {
                               )
                             ],
                           ),
-                          if (widget.observations.isNotEmpty) ... [
-                            CardScroller(
-                              widget.observations,
-                              key: _sharedObservationsScrollerKey,
-                              onTapCard: (index) => {
-                                Navigator.push( context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ObservationScreen(widget.observations[index].copy()),
-                                  ),
-                                )
+                          StreamBuilder<List<Observation>>(
+                            stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+                            builder: (context, snapshot) {
+                              List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
+                              observations = observations.reversed.toList();
+                              
+                              for (var observation in  observations) {
+                                observation.buttonText = translations.viewObservation;
                               }
-                            ),
-                          ] else ...[
-                            CardScroller(
-                              _createDefaultObservations(),
-                              key: _emptySharedObservationsScrollerKey,
-                            ),
-                          ],
+
+                              if (observations.isNotEmpty) {
+                                return CardScroller(
+                                    observations,
+                                    key: _sharedObservationsScrollerKey,
+                                    onTapCard: (index) => {
+                                      Navigator.push( context,
+                                        MaterialPageRoute(
+                                          builder: (_) => ObservationScreen(observations[index].copy()),
+                                        ),
+                                      )
+                                    }
+                                );
+                              }
+
+                              return CardScroller(
+                                _createDefaultObservations(),
+                                key: _emptySharedObservationsScrollerKey,
+                              );
+                            },
+                          ),
                           ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,

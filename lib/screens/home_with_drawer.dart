@@ -177,25 +177,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   Widget buildBody(BuildContext context, double width) {
     return SizedBox(
       width: width,
-      child: Stack(
+      child: const Stack(
         children: <Widget>[
-          PageView.builder(
-            controller: pageController,
-            itemCount: 1,
-            itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-              stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
-              builder: (context, snapshot) {
-                List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
-                if (observations != null) {
-                  for (var observation in  observations) {
-                    observation.buttonText = translations.viewObservation;
-                  }
-                }
-
-                return ObservationsPage(observations ?? <Observation>[]);
-              }
-            )
-          )
+          ObservationsPage()
           /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),

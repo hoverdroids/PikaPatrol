@@ -252,8 +252,8 @@ class FirebaseObservationsService {
     return observationsCollection.orderBy(DATE, descending: true).limit(15).snapshots().map(_observationsFromSnapshot);
   }
 
-  Stream<List<Observation>> get userObservations {
-    return observationsCollection.where(OBSERVER_UID, whereIn: [_currentUserId])
+  Stream<List<Observation>> userObservations(String userId) {
+    return observationsCollection.where(OBSERVER_UID, whereIn: [userId])
     .orderBy(DATE, descending: true)
     .snapshots()
     .map(_observationsFromSnapshot2);

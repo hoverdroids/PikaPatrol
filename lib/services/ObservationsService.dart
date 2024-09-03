@@ -17,21 +17,24 @@ class ObservationsService {
     return _sharedObservations;
   }
 
+  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
+  // It's fine to let the StreamController be garbage collected once all the
+  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  StreamController<List<Observation>>? _sharedObservationsStreamController; // ignore: close_sinks
+
   Stream<List<Observation>> get sharedObservationsStream {
-    //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
 
-    // It's fine to let the StreamController be garbage collected once all the
-    // subscribers have cancelled; this analyzer warning is safe to ignore.
-    late StreamController<List<Observation>> controller; // ignore: close_sinks
-
-    controller = StreamController<List<Observation>>.broadcast(
-      onListen: () async {
-        controller.add(_sharedObservations);
-        controller.close();
-      }
+    _sharedObservationsStreamController = StreamController<List<Observation>>.broadcast(
+        onListen: () async {
+          _sharedObservationsStreamController?.add(_localObservations);
+        },
+        onCancel: () {
+          _sharedObservationsStreamController?.close();
+          _sharedObservationsStreamController = null;
+        }
     );
 
-    return controller.stream;
+    return _sharedObservationsStreamController!.stream;
   }
 
   List<Observation> _localObservations = [];
@@ -39,22 +42,25 @@ class ObservationsService {
   List<Observation> get localObservations {
     return _localObservations;
   }
-
+  
+  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
+  // It's fine to let the StreamController be garbage collected once all the
+  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  StreamController<List<Observation>>? _localObservationsStreamController; // ignore: close_sinks
+  
   Stream<List<Observation>> get localObservationsStream {
-    //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
-
-    // It's fine to let the StreamController be garbage collected once all the
-    // subscribers have cancelled; this analyzer warning is safe to ignore.
-    late StreamController<List<Observation>> controller; // ignore: close_sinks
-
-    controller = StreamController<List<Observation>>.broadcast(
+    
+    _localObservationsStreamController = StreamController<List<Observation>>.broadcast(
         onListen: () async {
-          controller.add(_localObservations);
-          controller.close();
+          _localObservationsStreamController?.add(_localObservations);
+        },
+        onCancel: () {
+          _localObservationsStreamController?.close();
+          _localObservationsStreamController = null;
         }
     );
 
-    return controller.stream;
+    return _localObservationsStreamController!.stream;
   }
 
   setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
@@ -68,7 +74,7 @@ class ObservationsService {
           sharedObservation.buttonText = translations.viewObservation;
         }
 
-        //_sharedObservationsStreamController.add(_sharedObservations);
+        _sharedObservationsStreamController?.add(_sharedObservations);
       }
     }
   }
@@ -121,6 +127,6 @@ class ObservationsService {
     }
 
     _localObservations = localObservations;
-    //_localObservationsStreamController.add(_localObservations);
+    _localObservationsStreamController?.add(_localObservations);
   }
 }

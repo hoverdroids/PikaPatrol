@@ -63,6 +63,14 @@ class ObservationsService {
     return _localObservationsStreamController!.stream;
   }
 
+  List<Observation> _userObservations = [];
+
+  List<Observation> get userObservations {
+    return _userObservations;
+  }
+
+
+
   setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
     if (sharedObservationsOnFirebase.hasData) {
       var data = sharedObservationsOnFirebase.data;
@@ -75,6 +83,34 @@ class ObservationsService {
         }
 
         _sharedObservationsStreamController?.add(_sharedObservations);
+      }
+    }
+  }
+
+  setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) {
+    if (userObservationsOnFirebase.hasData) {
+      var data = userObservationsOnFirebase.data;
+      if (data != null) {
+        _userObservations = data;
+
+        _userObservations = _userObservations.reversed.toList();
+        for (var userObservation in _userObservations) {
+          userObservation.buttonText = translations.viewObservation;
+        }
+
+        //Now, how to handle ...
+        //We've tracked the observations as is, but need to merge with local observations
+        //we could start by comparing and ensuring uniqueness, to prove the concept
+        //Then, the observations should all be local because we want to save observations that are online and not on our phone
+        //Saving the observations that are online and not on the phone will cause the localobservations observable to trigger and update the list
+        //with the same mechanism
+        //This could also determine if the online observations are in sync with local observations, and determine if the user should be notified
+        //that the observations need to be uploaded
+        //We can and should also just upload them without notifying the users
+        //This means we need to get the user's online observations first so that we can compare and save them
+
+        _localObservations = _userObservations;
+        _localObservationsStreamController?.add(_localObservations);
       }
     }
   }
@@ -122,11 +158,11 @@ class ObservationsService {
             isUploaded: localObservation.isUploaded,
             buttonText: translations.viewObservation
         );
-        localObservations.add(observation);
+        //localObservations.add(observation);
       }
     }
 
-    _localObservations = localObservations;
-    _localObservationsStreamController?.add(_localObservations);
+    /*_localObservations = localObservations;
+    _localObservationsStreamController?.add(_localObservations);*/
   }
 }

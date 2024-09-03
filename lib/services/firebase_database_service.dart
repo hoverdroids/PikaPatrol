@@ -7,13 +7,14 @@ import 'package:pika_patrol/services/firebase_user_profiles_database_service.dar
 
 class FirebaseDatabaseService {
 
-  String? _uid;
+  String? _currentUserId;
 
-  String? get uid => _uid;
+  String? get currentUserId => _currentUserId;
 
-  set uid(String? value){
-    _uid = value;
-    userProfilesService.uid = value;
+  set currentUserId(String? value){
+    _currentUserId = value;
+    userProfilesService.currentUserId = value;
+    observationsService.currentUserId = value;
   }
 
   late final FirebaseFirestore firebaseFirestore;
@@ -37,7 +38,7 @@ class FirebaseDatabaseService {
   bool useEmulators;
   late String host;
 
-  FirebaseDatabaseService(this.useEmulators, {String? uid}){
+  FirebaseDatabaseService(this.useEmulators, {String? currentUserId}){
 
     firebaseFirestore = FirebaseFirestore.instance;
 
@@ -48,8 +49,8 @@ class FirebaseDatabaseService {
           persistenceEnabled: false
       );*/
     }
-    _uid = uid;
-    userProfilesService = FirebaseUserProfilesDatabaseService(firebaseFirestore, uid);
+    _currentUserId = currentUserId;
+    userProfilesService = FirebaseUserProfilesDatabaseService(firebaseFirestore, currentUserId);
     observationsService = FirebaseObservationsService(firebaseFirestore);
     googleSheetsService = FirebaseGoogleSheetsDatabaseService(firebaseFirestore);
   }

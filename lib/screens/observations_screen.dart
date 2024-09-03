@@ -3,24 +3,15 @@ import 'dart:async';
 
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
-import 'package:material_themes_widgets/utils/ui_utils.dart';
-import 'package:pika_patrol/model/local_observation.dart';
 import 'package:pika_patrol/model/observation.dart';
-import 'package:pika_patrol/services/SharedObservationsService.dart';
+import 'package:pika_patrol/services/ObservationsService.dart';
 import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../primitives/card_layout.dart';
-import '../services/firebase_database_service.dart';
-import '../services/firebase_observations_service.dart';
-import '../services/settings_service.dart';
-import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
 
@@ -36,11 +27,9 @@ class ObservationsPage extends StatefulWidget {
 class ObservationsPageState extends State<ObservationsPage> {
 
   late Translations translations;
+  late ObservationsService observationsService;
 
-  /*final Key _sharedObservationsScrollerKey = UniqueKey();
-  final Key _emptySharedObservationsScrollerKey = UniqueKey();*/
-
-  final Key _localObservationsScrollerKey = UniqueKey();
+  final Key _emptySharedObservationsScrollerKey = UniqueKey();
   final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool _isLocalObservationsDialogShowing = false;
@@ -82,6 +71,7 @@ class ObservationsPageState extends State<ObservationsPage> {
   @override
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
+    observationsService = Provider.of<ObservationsService>(context);
 
     return SizedBox(
         width: double.infinity,
@@ -119,20 +109,15 @@ class ObservationsPageState extends State<ObservationsPage> {
                           )
                         ],
                       ),
-                      /*StreamBuilder<List<Observation>>(
-                        stream: Provider.of<SharedObservationsService>(context).sharedObservations,
+                      StreamBuilder<List<Observation>>(
+                        stream: observationsService.sharedObservationsStream,
                         builder: (context, snapshot) {
-                          List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
-                          observations = observations.reversed.toList();
-
-                          for (var observation in  observations) {
-                            observation.buttonText = translations.viewObservation;
-                          }
+                          final observations = observationsService.sharedObservations;
 
                           if (observations.isNotEmpty) {
                             return CardScroller(
                               observations,
-                              key: _sharedObservationsScrollerKey,
+                              key: Key(observations.hashCode.toString()),
                               onTapCard: (index) => {
                                 Navigator.push( context,
                                   MaterialPageRoute(
@@ -148,7 +133,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                             key: _emptySharedObservationsScrollerKey,
                           );
                         },
-                      ),*/
+                      ),
                       ThemedH4(translations.cachedObservationsLine1, type: ThemeGroupType.MOP, emphasis: Emphasis.HIGH),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -182,9 +167,9 @@ class ObservationsPageState extends State<ObservationsPage> {
                         ],
                       ),
                       StreamBuilder<List<Observation>>(
-                        stream: Provider.of<SharedObservationsService>(context).localObservationsStream,
+                        stream: observationsService.localObservationsStream,
                         builder: (context, snapshot) {
-                          List<Observation> localObservations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
+                          List<Observation> localObservations = observationsService.localObservations;
 
                           if (localObservations.isNotEmpty) {
                             return CardScroller(

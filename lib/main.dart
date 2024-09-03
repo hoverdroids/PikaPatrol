@@ -2,8 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
-import 'package:pika_patrol/services/LocalObservationsService.dart';
-import 'package:pika_patrol/services/SharedObservationsService.dart';
+import 'package:pika_patrol/services/ObservationsService.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -22,7 +21,6 @@ import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'dart:developer' as developer;
 
 import 'model/observation.dart';
 
@@ -65,8 +63,8 @@ Future<void> main() async {
         ChangeNotifierProvider(
             create: (_) => Translations()
         ),
-        Provider<SharedObservationsService>(
-            create: (_) => SharedObservationsService()
+        Provider<ObservationsService>(
+            create: (_) => ObservationsService()
         ),
       ],
       builder: (context, child) {
@@ -80,8 +78,8 @@ Future<void> main() async {
 
             final Translations translations = Provider.of<Translations>(context);
 
-            final SharedObservationsService sharedObservationsService = Provider.of<SharedObservationsService>(context);
-            sharedObservationsService.translations = translations;
+            final ObservationsService observationsService = Provider.of<ObservationsService>(context);
+            observationsService.translations = translations;
 
             final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
             final userId = appUser?.uid ?? "";
@@ -103,41 +101,50 @@ Future<void> main() async {
 
                     List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
-                    return ValueListenableBuilder(
-                        valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
-                        builder: (context, box, widget2){
+                    return StreamBuilder<List<Observation>>(
+                      stream: firebaseDatabaseService.observationsService.observations,
+                      initialData: const [],
+                      builder: (context, sharedObservationsOnFirebase){
 
-                          sharedObservationsService.setLocalObservations(box, userId);
+                        observationsService.setSharedObservations(sharedObservationsOnFirebase);
 
-                          return MultiProvider(
-                            providers: [
-                              Provider<AppUser?>.value(
-                                  value: appUser
-                              ),
-                              Provider<AppUserProfile?>.value(
-                                  value: appUserProfile
-                              ),
-                              Provider<List<GoogleSheetsCredential>>.value(
-                                  value: googleSheetsCredentials
-                              ),
-                              Provider<GoogleSheetsService>(
-                                  create: (_) {
-                                    List<PikaPatrolSpreadsheetService> services = [];
+                        return ValueListenableBuilder(
+                            valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
+                            builder: (context, box, widget2){
 
-                                    for (var credential in googleSheetsCredentials) {
-                                      credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                        var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                                        services.add(service);
-                                      });
-                                    }
+                              observationsService.setLocalObservations(box, userId);
 
-                                    return GoogleSheetsService(services);
-                                  }
-                              ),
-                            ],
-                            child: const MyApp()
+                              return MultiProvider(
+                                  providers: [
+                                    Provider<AppUser?>.value(
+                                        value: appUser
+                                    ),
+                                    Provider<AppUserProfile?>.value(
+                                        value: appUserProfile
+                                    ),
+                                    Provider<List<GoogleSheetsCredential>>.value(
+                                        value: googleSheetsCredentials
+                                    ),
+                                    Provider<GoogleSheetsService>(
+                                        create: (_) {
+                                          List<PikaPatrolSpreadsheetService> services = [];
+
+                                          for (var credential in googleSheetsCredentials) {
+                                            credential.spreadsheets.forEach((projectName, spreadsheetId) {
+                                              var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
+                                              services.add(service);
+                                            });
+                                          }
+
+                                          return GoogleSheetsService(services);
+                                        }
+                                    ),
+                                  ],
+                                  child: const MyApp()
+                              );
+                            }
                         );
-                      }
+                      },
                     );
                   }
                 );

@@ -1,43 +1,38 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:hive/hive.dart';
-import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
-import 'firebase_database_service.dart';
 
-class SharedObservationsService {
+class ObservationsService {
 
   late Translations translations;
 
-  late FirebaseDatabaseService _firebaseDatabaseService;
+  List<Observation> _sharedObservations = [];
 
-  /*SharedObservationsService(Translations translations, Box<LocalObservation> box, String userId) {
-    _translations = translations;
-    setLocalObservations(box, userId);
-  }*/
+  List<Observation> get sharedObservations {
+    return _sharedObservations;
+  }
 
-  /*SharedObservationsService(FirebaseDatabaseService firebaseDatabaseService) {
-    _firebaseDatabaseService = firebaseDatabaseService;
-  }*/
+  Stream<List<Observation>> get sharedObservationsStream {
+    //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
 
-  /*Stream<List<Observation>> get sharedObservations {
-      //return [];//observationsCollection.orderBy(DATE, descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
+    // It's fine to let the StreamController be garbage collected once all the
+    // subscribers have cancelled; this analyzer warning is safe to ignore.
+    late StreamController<List<Observation>> controller; // ignore: close_sinks
 
-      //return Provider.of<FirebaseDatabaseService>(context).observationsService.observations;
-      return _firebaseDatabaseService.observationsService.observations;
-    }*/
+    controller = StreamController<List<Observation>>.broadcast(
+      onListen: () async {
+        controller.add(_sharedObservations);
+        controller.close();
+      }
+    );
 
-  /* Stream<List<Observation>> get localObservations {
-
-    }*/
-
-
-  List<Observation> sharedObservations = [];
+    return controller.stream;
+  }
 
   List<Observation> _localObservations = [];
 
@@ -45,10 +40,37 @@ class SharedObservationsService {
     return _localObservations;
   }
 
-  final _localObservationsStreamController = StreamController<List<Observation>>();
-
   Stream<List<Observation>> get localObservationsStream {
-    return _localObservationsStreamController.stream;
+    //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
+
+    // It's fine to let the StreamController be garbage collected once all the
+    // subscribers have cancelled; this analyzer warning is safe to ignore.
+    late StreamController<List<Observation>> controller; // ignore: close_sinks
+
+    controller = StreamController<List<Observation>>.broadcast(
+        onListen: () async {
+          controller.add(_localObservations);
+          controller.close();
+        }
+    );
+
+    return controller.stream;
+  }
+
+  setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
+    if (sharedObservationsOnFirebase.hasData) {
+      var data = sharedObservationsOnFirebase.data;
+      if (data != null) {
+        _sharedObservations = data;
+
+        _sharedObservations = _sharedObservations.reversed.toList();
+        for (var sharedObservation in  _sharedObservations) {
+          sharedObservation.buttonText = translations.viewObservation;
+        }
+
+        //_sharedObservationsStreamController.add(_sharedObservations);
+      }
+    }
   }
 
   setLocalObservations(Box<LocalObservation> box, String userId) {
@@ -98,11 +120,7 @@ class SharedObservationsService {
       }
     }
 
-    for (var observation in  localObservations) {
-      observation.buttonText = translations.viewObservation;
-    }
-
     _localObservations = localObservations;
-    _localObservationsStreamController.add(_localObservations);
+    //_localObservationsStreamController.add(_localObservations);
   }
 }

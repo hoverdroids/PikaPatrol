@@ -78,8 +78,8 @@ Future<void> main() async {
 
             final Translations translations = Provider.of<Translations>(context);
 
-            final ObservationsService observationsService = Provider.of<ObservationsService>(context);
-            observationsService.translations = translations;
+            final ObservationsService observationsService = Provider.of<ObservationsService>(context);//TODO - aggregate into observations services
+            observationsService.translations = translations;//TODO - aggregate into observations services
 
             final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
             final userId = appUser?.uid ?? "";
@@ -102,24 +102,24 @@ Future<void> main() async {
                     List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
                     return StreamBuilder<List<Observation>>(
-                      stream: firebaseDatabaseService.observationsService.observations,
+                      stream: firebaseDatabaseService.observationsService.observations,//TODO - aggregate into observations services
                       initialData: const [],
                       builder: (context, sharedObservationsOnFirebase){
 
-                        observationsService.setSharedObservations(sharedObservationsOnFirebase);
+                        observationsService.setSharedObservations(sharedObservationsOnFirebase);//TODO - aggregate into observations services
 
                         return ValueListenableBuilder(
                             valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
                             builder: (context, box, widget2){
 
-                              observationsService.setLocalObservations(box, userId);
+                              //observationsService.setLocalObservations(box, userId);//TODO - aggregate into observations services
 
                               return StreamBuilder<List<Observation>>(
-                                stream: firebaseDatabaseService.observationsService.userObservations(appUser?.uid ?? ""),
+                                stream: userId.isNotEmpty ? firebaseDatabaseService.observationsService.userObservations(userId) : observationsService.emptyObservationsStream,//TODO - aggregate into observations services
                                 initialData: const[],
                                 builder: (context, userObservationsOnFirebase) {
 
-                                  observationsService.setUserObservations(userObservationsOnFirebase);
+                                  observationsService.setUserObservations(userObservationsOnFirebase);//TODO - aggregate into observations services
 
                                   return MultiProvider(
                                       providers: [

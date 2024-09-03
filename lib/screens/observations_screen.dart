@@ -37,8 +37,11 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   late Translations translations;
 
-  final Key _sharedObservationsScrollerKey = UniqueKey();
-  final Key _emptySharedObservationsScrollerKey = UniqueKey();
+  /*final Key _sharedObservationsScrollerKey = UniqueKey();
+  final Key _emptySharedObservationsScrollerKey = UniqueKey();*/
+
+  final Key _localObservationsScrollerKey = UniqueKey();
+  final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool _isLocalObservationsDialogShowing = false;
 
@@ -79,11 +82,6 @@ class ObservationsPageState extends State<ObservationsPage> {
   @override
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
-
-    SharedObservationsService sharedObservationsService = Provider.of<SharedObservationsService>(context);
-    Key localObservationsScrollerKey = sharedObservationsService.localObservationsScrollerKey;
-    Key emptyLocalObservationsScrollerKey = sharedObservationsService.emptyLocalObservationsScrollerKey;
-    List<Observation> localObservations = sharedObservationsService.localObservations;
 
     return SizedBox(
         width: double.infinity,
@@ -183,24 +181,31 @@ class ObservationsPageState extends State<ObservationsPage> {
                           )
                         ],
                       ),
-                      if (localObservations.isNotEmpty) ... [
-                        CardScroller(
-                            localObservations,
-                            key: localObservationsScrollerKey,
-                            onTapCard: (index) => {
-                              Navigator.push( context,
-                                MaterialPageRoute(
-                                  builder: (_) => ObservationScreen(localObservations[index].copy()),
-                                ),
-                              )
-                            }
-                        )
-                      ] else ... [
-                        CardScroller(
-                          _createDefaultObservations(),
-                          key: emptyLocalObservationsScrollerKey,
-                        )
-                      ]
+                      StreamBuilder<List<Observation>>(
+                        stream: Provider.of<SharedObservationsService>(context).localObservationsStream,
+                        builder: (context, snapshot) {
+                          List<Observation> localObservations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
+
+                          if (localObservations.isNotEmpty) {
+                            return CardScroller(
+                              localObservations,
+                              key: Key(localObservations.hashCode.toString()),//using hash for key so that build is called and stack is correctly displayed after observations change
+                              onTapCard: (index) => {
+                                Navigator.push( context,
+                                  MaterialPageRoute(
+                                    builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                  ),
+                                )
+                              }
+                            );
+                          }
+
+                          return CardScroller(
+                            _createDefaultObservations(),
+                            key: _emptyLocalObservationsScrollerKey,
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),

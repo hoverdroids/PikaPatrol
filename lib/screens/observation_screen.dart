@@ -42,6 +42,7 @@ import 'dart:developer' as developer;
 import '../data/pika_species.dart';
 import '../l10n/translations.dart';
 import '../services/google_sheets_service.dart';
+import '../utils/firebase_utils.dart';
 import '../utils/observation_utils.dart';
 import 'home_with_drawer.dart';
 
@@ -1519,7 +1520,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     onPressed: () async {
       if (userConfirmedDelete) {
         var exception = await deleteObservation(context, widget.observation, true, true);
-        if (exception == null) {
+        if (exception == null || exception.code == ERROR_REGISTER_NETWORK_CODE) {
+          //Network exception is ok because the observation is deleted in cache and queued for deletion
+          //from the server once the app is back online
           showToast(translations.observationDeleted);
           if (context.mounted) {
             Navigator.of(context).pushReplacement(

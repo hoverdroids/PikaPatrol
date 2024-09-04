@@ -5,6 +5,7 @@ import 'dart:developer' as developer;
 
 import '../model/observation.dart';
 import '../utils/date_time_utils.dart';
+import '../utils/firebase_utils.dart';
 import '../utils/observation_utils.dart';
 import 'dart:io';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -45,6 +46,9 @@ class FirebaseObservationsService {
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
   static const String IS_UPLOADED = "isUploaded";
   static const String RANDOM_CURRENT_USER_ID = "A9x4ikJ7h6MvaJiYAHx7v9o7zRx5";
+
+  static const int FUTURE_TIMEOUT_SECONDS = 3;
+  static const bool FUTURE_TIMEDOUT = true;
 
   //Any random Id to start with so that it doesn't match until a real ID is provided,
   //because we don't want to match against null or empty as though are valid but undesirable
@@ -126,10 +130,17 @@ class FirebaseObservationsService {
       return exception;
     }
 
-    var docUid = observation.uid;
-    if (docUid?.isNotEmpty == true) {
+    var docUid = observation.uid ?? "";
+    if (docUid.isNotEmpty) {
       try {
-        await observationsCollection.doc(docUid).delete();
+
+        //Observations.doc.delete does not return when offline and doesn't throw an offline exception;
+        //it just hangs until it goes back online, even though the doc delete is queued up and will take affect after going online
+        //So, need to timeout so that the process can continue
+        //https://stackoverflow.com/questions/52672137/await-future-for-a-specific-time
+        await Future.value(observationsCollection.doc(docUid).delete())
+            .timeout(const Duration(seconds: 3), onTimeout: () => throw getFirebaseNetworkException());
+
       } on FirebaseException catch (e) {
         return e;
       }

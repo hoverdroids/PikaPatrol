@@ -38,8 +38,26 @@ class FirebaseUserProfilesDatabaseService {
   }
 
   Future<AppUserProfile?> getCurrentUserProfileFromCache() async {
-    var options = const GetOptions(source: Source.cache);
-    var userProfileSnapshot = await userProfilesCollection.doc(currentUserId).get(options);
+    return await getUserProfileFromCache(currentUserId);
+  }
+
+  Future<AppUserProfile?> getUserProfileFromCache(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.cache));
+  }
+
+  Future<AppUserProfile?> getUserProfileFromServer(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.server));
+  }
+
+  Future<AppUserProfile?> getUserProfileFromServerWithCacheFallback(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.serverAndCache));
+  }
+
+  Future<AppUserProfile?> getUserProfile(String? userId, GetOptions options) async {
+    if (userId == null) {
+      return null;
+    }
+    var userProfileSnapshot = await userProfilesCollection.doc(userId).get(options);
     return _userProfileFromSnapshot(userProfileSnapshot);
   }
 

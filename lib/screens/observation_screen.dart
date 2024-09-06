@@ -1518,26 +1518,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildDeleteButton(bool userConfirmedDelete) => ElevatedButton(
     onPressed: () async {
-      if (userConfirmedDelete) {
-        var exception = await deleteObservation(context, widget.observation, true, true);
-        if (exception == null || exception.code == ERROR_REGISTER_NETWORK_CODE) {
-          //Network exception is ok because the observation is deleted in cache and queued for deletion
-          //from the server once the app is back online
-          showToast(translations.observationDeleted);
-          if (context.mounted) {
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-            );
-          }
-        } else {
-          showToast("${translations.observationNotDeleted} : $exception");
-          if (context.mounted) {
-            Navigator.pop(context, true);
-          }
-        }
-      } else {
-        _showDeleteObservationVerificationDialog();
-      }
+      _confirmAndDelete(userConfirmedDelete, true, true, true);
+    },
+    onLongPress: () async {
+      _confirmAndDelete(userConfirmedDelete, true, false, false);
     },
     style: ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -1546,6 +1530,30 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ),
     child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
   );
+
+  _confirmAndDelete(bool userConfirmedDelete, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {
+    if (userConfirmedDelete) {
+      var exception = await deleteObservation(context, widget.observation, true, true, deleteLocal, deleteFromFirebase, deleteFromGoogleSheets);
+      if (exception == null || exception.code == ERROR_REGISTER_NETWORK_CODE) {
+        //Network exception is ok because the observation is deleted in cache and queued for deletion
+        //from the server once the app is back online
+        showToast(translations.observationDeleted);
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+          );
+        }
+      } else {
+        showToast("${translations.observationNotDeleted} : $exception");
+        if (context.mounted) {
+          Navigator.pop(context, true);
+        }
+      }
+    } else {
+      _showDeleteObservationVerificationDialog();
+    }
+  }
+
 
   Widget _buildCancelButton() => TextButton(
     child: Text(translations.cancel),

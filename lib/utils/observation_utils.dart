@@ -123,16 +123,18 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
   return box.get(observation.dbId);
 }
 
-Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio) async {
-  await deleteLocalObservation(observation);
+Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {
+  if (deleteLocal) {
+    await deleteLocalObservation(observation);
+  }
 
   FirebaseException? firebaseException;
-  if (context.mounted) {
+  if (context.mounted && deleteFromFirebase) {
     var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
     firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
   }
 
-  if (context.mounted) {
+  if (context.mounted && deleteFromGoogleSheets) {
     var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
     for (var service in sheetsService.pikaPatrolSpreadsheetServices) {
         service.observationWorksheetService?.deleteObservation(observation);

@@ -112,7 +112,7 @@ Future<void> main() async {
                             valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
                             builder: (context, box, widget2){
 
-                              //observationsService.setLocalObservations(box, userId);//TODO - aggregate into observations services
+                              observationsService.setLocalObservations(box, userId);//TODO - aggregate into observations services
 
                               return StreamBuilder<List<Observation>>(
                                 stream: userId.isNotEmpty ? firebaseDatabaseService.observationsService.userObservations(userId) : observationsService.emptyObservationsStream,//TODO - aggregate into observations services

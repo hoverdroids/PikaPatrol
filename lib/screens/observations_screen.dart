@@ -7,7 +7,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:pika_patrol/model/observation.dart';
-import 'package:pika_patrol/services/ObservationsService.dart';
+import 'package:pika_patrol/services/observations_service.dart';
 import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';

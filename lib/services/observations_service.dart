@@ -85,8 +85,6 @@ class ObservationsService {
     return _userObservations;
   }
 
-
-
   setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
     if (sharedObservationsOnFirebase.hasData) {
       var data = sharedObservationsOnFirebase.data;

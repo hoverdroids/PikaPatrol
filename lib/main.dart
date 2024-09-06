@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
-import 'package:pika_patrol/services/ObservationsService.dart';
+import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';

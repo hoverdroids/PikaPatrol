@@ -3,6 +3,7 @@ import 'package:gsheets/gsheets.dart';
 import 'dart:developer' as developer;
 
 import 'package:pika_patrol/model/gsheets_value.dart';
+import 'package:pika_patrol/utils/collection_utils.dart';
 
 class WorksheetService {
 
@@ -30,59 +31,82 @@ class WorksheetService {
   static const String EXPORT_FORMAT_PDF = "pdf";
   static const String EXPORT_FORMAT_CSV = "csv";
 
+  Spreadsheet spreadsheet;
+  String worksheetTitle;
   Worksheet? worksheet;
-  List<String> columns;
+  List<String> columnHeaderKeys;
   int columnHeadersRowNumber;
 
   WorksheetService(
-    Spreadsheet spreadsheet,
-    String worksheetTitle,
-    this.columns,
+    this.spreadsheet,
+    this.worksheetTitle,
+    this.columnHeaderKeys,
     bool doInitHeaderRow,
     {
       this.columnHeadersRowNumber = DEFAULT_COLUMN_HEADER_ROW_NUMBER
     }
   ) {
-    _init(spreadsheet, worksheetTitle, columns, doInitHeaderRow, columnHeadersRowNumber);
+    _init(doInitHeaderRow);
   }
 
   //#region Init
-  _init(Spreadsheet spreadsheet, String worksheetTitle, List<String> columns, bool doInitHeaderRow, int columnHeadersRowNumber) async {
+  _init(bool doInitHeaderRow) async {
 
-    final returnValue = await getWorksheet(spreadsheet, worksheetTitle);
+    final returnValue = await getWorksheet();
+    worksheet = returnValue.value;
 
     if (returnValue.exception != null) {
       developer.log("Google Sheets init error in $worksheetTitle :${returnValue.exception}");
-    } else if (doInitHeaderRow) {
+    }
 
-      worksheet = returnValue.value;
-
-      final returnValue2 = await initHeaderRow();
-      if (returnValue2.exception != null) {
-        developer.log("Google sheets initHeaderRow error in $worksheetTitle :${returnValue2.exception}");
+    if (doInitHeaderRow) {
+      final returnValue = await initHeaderRow();
+      if (returnValue.exception != null) {
+        developer.log("Google sheets initHeaderRow error in $worksheetTitle :${returnValue.exception}");
       }
     }
   }
 
   Future<GSheetsValue<bool>> initHeaderRow() async {
-
-    try {
-      final returnValue = await worksheet?.values.insertRow(columnHeadersRowNumber, columns) ?? false;
-      return GSheetsValue(returnValue);
-    } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+    final returnValue = await updateRowWithoutColumnHeaderKeys(columnHeadersRowNumber, columnHeaderKeys);
+    if (returnValue.exception != null) {
+      return GSheetsValue(false, exception: returnValue.exception);
     }
+    return GSheetsValue(returnValue.value);
   }
   //#endregion
 
   //#region Worksheet
-  Future<GSheetsValue<Worksheet>> getWorksheet (Spreadsheet spreadsheet, String title) async {
+  Future<GSheetsValue<Worksheet>> getWorksheet({Spreadsheet? spreadsheet, String? title, bool addWorksheetIfDoesNotExist = true}) async {
+    final sheet = spreadsheet ?? this.spreadsheet;
+    final worksheetTitle = title ?? this.worksheetTitle;
+
+    final worksheet = sheet.worksheetByTitle(worksheetTitle);
+    if (worksheet != null) {
+      return GSheetsValue(worksheet);
+    }
+
+    if (addWorksheetIfDoesNotExist) {
+      try {
+        final returnValue = await addWorksheet(worksheetTitle);
+        final exception = returnValue.exception;
+        if (exception != null) {
+          throw GSheetsException(exception.cause);
+        }
+        return GSheetsValue(returnValue.value);
+      } on GSheetsException catch (e) {
+        return GSheetsValue(null, exception: e);
+      }
+    }
+    return GSheetsValue(null);
+  }
+
+  Future<GSheetsValue<Worksheet>> addWorksheet(String title) async {
     try {
       final returnValue = await spreadsheet.addWorksheet(title);
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
-      final returnValue = spreadsheet.worksheetByTitle(title);
-      return GSheetsValue(returnValue, exception: e);
+      return GSheetsValue(null, exception: e);
     }
   }
   //#endregion
@@ -284,10 +308,6 @@ class WorksheetService {
     return await insertRowsAbove(index, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
-  Future<GSheetsValue<bool>> insertRowBelow(int index, { bool inheritFromBefore = false}) async {
-    return await insertRowsBelow(index, count: 1, inheritFromBefore: inheritFromBefore);
-  }
-
   //This is the same a insertRows, but I think the name is clearer
   Future<GSheetsValue<bool>> insertRowsAbove(
     int index,
@@ -296,7 +316,11 @@ class WorksheetService {
       bool inheritFromBefore = false
     }
   ) async {
-    return await insertRows(index, count: count, inheritFromBefore: inheritFromBefore);
+    return await insertEmptyRowsAtIndex(index, count: count, inheritFromBefore: inheritFromBefore);
+  }
+
+  Future<GSheetsValue<bool>> insertRowBelow(int index, { bool inheritFromBefore = false}) async {
+    return await insertRowsBelow(index, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
   Future<GSheetsValue<bool>> insertRowsBelow(
@@ -306,10 +330,190 @@ class WorksheetService {
       bool inheritFromBefore = false
     }
   ) async {
-    return await insertRows(index + 1, count: count, inheritFromBefore: inheritFromBefore);
+    return await insertEmptyRowsAtIndex(index + 1, count: count, inheritFromBefore: inheritFromBefore);
   }
 
-  Future<GSheetsValue<bool>> insertRows(
+  //Row, Indexes, Values
+  Future<GSheetsValue<bool>> insertRowAtIndexes(
+    List<int> indexes,
+    {
+      bool inheritFromBefore = false,
+      Map<String, dynamic> rowValuesWithColumnHeaderKeys = const {},
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
+      dynamic mapTo,
+      bool appendMissing = false,
+      bool overwrite = false
+    }
+  ) async {
+    return await insertRowsAtIndexes(
+        indexes,
+        count: 1,
+        inheritFromBefore: inheritFromBefore,
+        rowsValuesByColumn: rowValuesWithColumnHeaderKeys.isEmpty ? [] : [rowValuesWithColumnHeaderKeys],
+        fromColumn: fromColumn,
+        mapTo: mapTo,
+        appendMissing: appendMissing,
+        overwrite: overwrite
+    );
+  }
+
+  //Rows, Indexes, Values
+  Future<GSheetsValue<bool>> insertRowsAtIndexes(
+    List<int> indexes,
+    {
+      int count = 1,
+      bool inheritFromBefore = false,
+      List<Map<String, dynamic>> rowsValuesByColumn = const [],
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
+      dynamic mapTo,
+      bool appendMissing = false,
+      bool overwrite = false
+    }
+  ) async {
+    try {
+      var allSucceeded = true;
+
+      //Insert from the highest index and to lowest index to avoid changing the referenced rows
+      final uniqueReversedSortedIndexes = indexes.clone(isUnique: true, isSorted: true, isReversed: true);
+      for (var index in uniqueReversedSortedIndexes) {
+        final returnValue = await insertRowsAtIndex(
+          index,
+          count: count,
+          inheritFromBefore: inheritFromBefore,
+          rowsValuesByColumn: rowsValuesByColumn,
+          fromColumn: fromColumn,
+          mapTo: mapTo,
+          appendMissing: appendMissing,
+          overwrite: overwrite
+        );
+
+        final exception = returnValue.exception;
+        if (exception != null) {
+          throw GSheetsException(exception.cause);
+        }
+
+        if (returnValue.value == false) {
+          allSucceeded = false;
+        }
+      }
+
+      return GSheetsValue(allSucceeded);
+    } on GSheetsException catch(e) {
+      return GSheetsValue(false, exception: e);
+    }
+  }
+
+  //Row, Index, Values
+  Future<GSheetsValue<bool>> insertRowAtIndex(
+    int index,
+    {
+      bool inheritFromBefore = false,
+      Map<String, dynamic> rowValuesWithColumnHeaderKeys = const {},
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
+      dynamic mapTo,
+      bool appendMissing = false,
+      bool overwrite = false
+    }
+  ) async {
+    return await insertRowsAtIndex(
+      index,
+      count: 1,
+      inheritFromBefore: inheritFromBefore,
+      rowsValuesByColumn: rowValuesWithColumnHeaderKeys.isEmpty ? [] : [rowValuesWithColumnHeaderKeys],
+      fromColumn: fromColumn,
+      mapTo: mapTo,
+      appendMissing: appendMissing,
+      overwrite: overwrite
+    );
+  }
+
+  //Rows, Index, Values
+  Future<GSheetsValue<bool>> insertRowsAtIndex(
+    int index,
+    {
+      int count = 1,
+      bool inheritFromBefore = false,
+      List<Map<String, dynamic>> rowsValuesByColumn = const [],
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
+      dynamic mapTo,
+      bool appendMissing = false,
+      bool overwrite = false
+    }
+  ) async {
+    try {
+      var allSucceeded = true;
+
+      final resolvedCount = rowsValuesByColumn.isNotEmpty ? rowsValuesByColumn.length : count;
+
+      var returnValue = await insertEmptyRowsAtIndex(index, count: resolvedCount, inheritFromBefore: inheritFromBefore);
+      var exception = returnValue.exception;
+      if (exception != null) {
+        throw GSheetsException(exception.cause);
+      }
+      if (returnValue.value != true) {
+        allSucceeded = false;
+      }
+
+      for (int i = 0; i < rowsValuesByColumn.length; i++) {
+        returnValue = await updateRow(index + i, rowsValuesByColumn[i], fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite);
+        exception = returnValue.exception;
+        if (exception != null) {
+          throw GSheetsException(exception.cause);
+        }
+        if (returnValue.value != true) {
+          allSucceeded = false;
+        }
+      }
+
+      return GSheetsValue(allSucceeded);
+    } on GSheetsException catch(e) {
+      return GSheetsValue(false, exception: e);
+    }
+  }
+
+  //Row, Indexes, No Values
+  Future<GSheetsValue<bool>> insertEmptyRowAtIndexes(List<int> indexes, {bool inheritFromBefore = false}) async {
+    return await insertEmptyRowsAtIndexes(indexes, count: 1, inheritFromBefore: inheritFromBefore);
+  }
+
+  //Rows, Indexes, No Values
+  Future<GSheetsValue<bool>> insertEmptyRowsAtIndexes(
+    List<int> indexes,
+    {
+      int count = 1,
+      bool inheritFromBefore = false
+    }
+  ) async {
+    try {
+      var allSucceeded = true;
+
+      //Insert from the highest index and to lowest index to avoid changing the referenced rows
+      final uniqueReversedSortedIndexes = indexes.clone(isUnique: true, isSorted: true, isReversed: true);
+      for (var index in uniqueReversedSortedIndexes) {
+        final returnValue = await insertEmptyRowsAtIndex(index, count: count, inheritFromBefore: inheritFromBefore);
+        final exception = returnValue.exception;
+        if (exception != null) {
+          throw GSheetsException(exception.cause);
+        }
+
+        if (returnValue.value == false) {
+          allSucceeded = false;
+        }
+      }
+
+      return GSheetsValue(allSucceeded);
+    } on GSheetsException catch(e) {
+      return GSheetsValue(false, exception: e);
+    }
+  }
+
+  //Row, Index, No Values
+  Future<GSheetsValue<bool>> insertEmptyRowAtIndex(int index, {bool inheritFromBefore = false}) async {
+    return await insertEmptyRowsAtIndex(index, count: 1, inheritFromBefore: inheritFromBefore);
+  }
+
+  //Rows, Index, No Values
+  Future<GSheetsValue<bool>> insertEmptyRowsAtIndex(
     int index,
     {
       int count = 1,
@@ -402,11 +606,29 @@ class WorksheetService {
   //#endregion
 
   //#region Row(s): Update
+  Future<GSheetsValue<bool>> updateRowWithoutColumnHeaderKeys(
+    int? index,
+    List<dynamic> rowValues,
+    {
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
+    }
+  ) async {
+    try {
+      final sheet = worksheet;
+      final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
+          ? await sheet.values.insertRow(index, rowValues, fromColumn: fromColumn)
+          : false;
+      return GSheetsValue(returnValue);
+    } on GSheetsException catch (e) {
+      return GSheetsValue(false, exception: e);
+    }
+  }
+
   Future<GSheetsValue<bool>> updateRow(
     int? index,
-    Map<String, dynamic> rowValuesByColumn,
+    Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
-      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesByColumn contain data for all columns including uid column
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
       dynamic mapTo,
       bool appendMissing = false,
       bool overwrite = false
@@ -415,7 +637,7 @@ class WorksheetService {
     try {
       final sheet = worksheet;
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
-          ? await sheet.values.map.insertRow(index, rowValuesByColumn, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite)
+          ? await sheet.values.map.insertRow(index, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite)
           : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
@@ -425,37 +647,37 @@ class WorksheetService {
 
   Future<GSheetsValue<bool>> updateRowByUid(
     String? uid,
-    Map<String, dynamic> rowValuesByColumn,
+    Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
-      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesByColumn contain data for all columns including uid column
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
       dynamic mapTo,
       bool appendMissing = false,
       bool overwrite = false,
       bool eager = true
     }
   ) async {
-    return await updateRowByKey(uid, rowValuesByColumn, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
+    return await updateRowByKey(uid, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
   }
 
   Future<GSheetsValue<bool>> updateRowById(
     int? id,
-    Map<String, dynamic> rowValuesByColumn,
+    Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
-      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesByColumn contain data for all columns including uid column
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
       dynamic mapTo,
       bool appendMissing = false,
       bool overwrite = false,
       bool eager = true
     }
   ) async {
-    return await updateRowByKey(id, rowValuesByColumn, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
+    return await updateRowByKey(id, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
   }
 
   Future<GSheetsValue<bool>> updateRowByKey(
     Object? key,
-    Map<String, dynamic> rowValuesByColumn,
+    Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
-      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesByColumn contain data for all columns including uid column
+      int fromColumn = UID_COLUMN_NUMBER,//default was 2; assume rowValuesWithColumnHeaderKeys contain data for all columns including uid column
       dynamic mapTo,
       bool appendMissing = false,
       bool overwrite = false,
@@ -465,7 +687,7 @@ class WorksheetService {
     try {
       final sheet = worksheet;
       final returnValue = key != null && sheet != null
-          ? await sheet.values.map.insertRowByKey(key, rowValuesByColumn, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager)
+          ? await sheet.values.map.insertRowByKey(key, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager)
           : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {

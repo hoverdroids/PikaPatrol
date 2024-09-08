@@ -130,9 +130,9 @@ class UserProfilesWorksheetService extends WorksheetService {
       }
 
       if (index == null || index == -1) {
-        await insertRow(json);
+        await appendRow(json);
       } else {
-        await updateRow(uid, json);
+        await updateRowByUid(uid, json);
       }
     }
   }

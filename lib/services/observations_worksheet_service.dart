@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:pika_patrol/model/gsheets_value.dart';
 import 'package:pika_patrol/services/worksheet_service.dart';
 import 'dart:developer' as developer;
 
@@ -75,87 +76,31 @@ class ObservationsWorksheetService extends WorksheetService {
     doInitHeaderRow,
     columnHeadersRowNumber: columnHeadersRowNumber
   );
+  
+  Future<GSheetsValue<Observation>> getObservation(String uid) async {
+    final returnValue = await getRowByUid(uid);
+    final value = returnValue.value;
 
-  Map<String, dynamic> toGoogleSheetsJson(Observation observation) => {
-    WorksheetService.UID_COLUMN_TITLE: observation.uid,
-    OBSERVER_UID_COLUMN_TITLE: observation.observerUid,
-    ALTITUDE_IN_METERS_COLUMN_TITLE: observation.altitudeInMeters,
-    LONGITUDE_COLUMN_TITLE: observation.longitude,
-    LATITUDE_COLUMN_TITLE: observation.latitude,
-    NAME_COLUMN_TITLE: observation.name,
-    LOCATION_COLUMN_TITLE: observation.location,
-    DATE_COLUMN_TITLE: observation.date?.toUtc().toString(),
-    SPECIES_COLUMN_TITLE: observation.species,
-    SIGNS_COLUMN_TITLE: jsonEncode(observation.signs),
-    PIKAS_DETECTED_COLUMN_TITLE: observation.pikasDetected,
-    DISTANCE_TO_CLOSEST_PIKA_COLUMN_TITLE: observation.distanceToClosestPika,
-    SEARCH_DURATION_COLUMN_TITLE: observation.searchDuration,
-    TALUS_AREA_COLUMN_TITLE: observation.talusArea,
-    TEMPERATURE_COLUMN_TITLE: observation.temperature,
-    SKIES_COLUMN_TITLE: observation.skies,
-    WIND_COLUMN_TITLE: observation.wind,
-    SITE_HISTORY_COLUMN_TITLE: observation.siteHistory,
-    COMMENTS_COLUMN_TITLE: observation.comments,
-    IMAGE_URLS_COLUMN_TITLE: jsonEncode(observation.imageUrls),
-    AUDIO_URLS_COLUMN_TITLE: jsonEncode(observation.audioUrls),
-    OTHER_ANIMALS_PRESENT_COLUMN_TITLE: jsonEncode(observation.otherAnimalsPresent),
-    SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(observation.sharedWithProjects),
-    NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(observation.notSharedWithProjects),
-    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: observation.dateUpdatedInGoogleSheets?.toUtc().toString()
-  };
-
-  Observation fromGoogleSheetsJson(Map<String, dynamic> json) => Observation(
-    uid: json[WorksheetService.UID_COLUMN_TITLE],
-    observerUid: json[OBSERVER_UID_COLUMN_TITLE],
-    name: json[NAME_COLUMN_TITLE],
-    location: json[LOCATION_COLUMN_TITLE],
-    date: DateTime.parse(jsonDecode(json[DATE_COLUMN_TITLE])),
-    altitudeInMeters: jsonDecode(json[ALTITUDE_IN_METERS_COLUMN_TITLE]),
-    latitude: jsonDecode(json[LATITUDE_COLUMN_TITLE]),
-    longitude: jsonDecode(json[LONGITUDE_COLUMN_TITLE]),
-    species: json[SPECIES_COLUMN_TITLE],
-    signs: jsonDecode(json[SIGNS_COLUMN_TITLE]),
-    pikasDetected: json[PIKAS_DETECTED_COLUMN_TITLE],
-    distanceToClosestPika: json[DISTANCE_TO_CLOSEST_PIKA_COLUMN_TITLE],
-    searchDuration: json[SEARCH_DURATION_COLUMN_TITLE],
-    talusArea: json[TALUS_AREA_COLUMN_TITLE],
-    temperature: json[TEMPERATURE_COLUMN_TITLE],
-    skies: json[SKIES_COLUMN_TITLE],
-    wind: json[WIND_COLUMN_TITLE],
-    siteHistory: json[SITE_HISTORY_COLUMN_TITLE],
-    comments: json[COMMENTS_COLUMN_TITLE],
-    imageUrls: jsonDecode(json[IMAGE_URLS_COLUMN_TITLE]),
-    audioUrls: jsonDecode(json[AUDIO_URLS_COLUMN_TITLE]),
-    otherAnimalsPresent: jsonDecode(json[OTHER_ANIMALS_PRESENT_COLUMN_TITLE]),
-    sharedWithProjects: jsonDecode(json[SHARED_WITH_PROJECTS_COLUMN_TITLE]),
-    notSharedWithProjects: jsonDecode(json[NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE]),
-    dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
-  );
-
-  Future<Observation?> getObservation(String uid) async {
-    final json = await worksheet?.values.map.rowByKey(uid, fromColumn: WorksheetService.UID_COLUMN_NUMBER);
-    return json != null ? fromGoogleSheetsJson(json) : null;
-  }
-
-  Future<List<Observation>> getObservations() async {
-    final observations = await worksheet?.values.map.allRows();
-    return observations == null ? <Observation>[] : observations.map(fromGoogleSheetsJson).toList();
-  }
-
-  Future<void> addOrUpdateObservation(Observation observation) async {
-    var uid = observation.uid;
-    if (uid != null) {
-      final index = await worksheet?.values.rowIndexOf(uid, inColumn: WorksheetService.UID_COLUMN_NUMBER);
-
-      Map<String, dynamic> json;
-      json = toGoogleSheetsJson(observation);
-
-      if (index == null || index == -1) {
-        await insertRow(json);
-      } else {
-        await updateRow(uid, json);
-      }
+    if (returnValue.exception != null) {
+      return GSheetsValue(null, exception: returnValue.exception);
     }
+    return GSheetsValue(value?.toObservationFromGoogleSheetsRow());
+  }
+
+  Future<GSheetsValue<List<Observation>>> getAllObservations() async {
+    final returnValue = await getAllRows();
+    final value = returnValue.value ?? [];
+
+    if (returnValue.exception != null) {
+      return GSheetsValue(null, exception: returnValue.exception);
+    }
+
+    final observations = value.map((row) => row.toObservationFromGoogleSheetsRow()).toList();
+    return GSheetsValue(observations);
+  }
+
+  Future<GSheetsValue<bool>> addOrUpdateObservation(Observation observation) async {
+    return await addOrUpdateRowByUid(observation.uid, observation.toGoogleSheetsRow());
   }
 
   Future<void> addOrUpdateObservations(List<Observation> observations, String organization) async {
@@ -180,7 +125,66 @@ class ObservationsWorksheetService extends WorksheetService {
     }
   }
 
-  Future<bool> deleteObservation(Observation observation) async {
-    return deleteRowByUid(observation.uid);
-  }
+  Future<GSheetsValue<bool>> deleteObservation(Observation observation) async => await deleteRowByUid(observation.uid);
+}
+
+extension GoogleSheetsObservationRow on Map<String, dynamic> {
+  Observation toObservationFromGoogleSheetsRow() => Observation(
+      uid: this[WorksheetService.UID_COLUMN_TITLE],
+      observerUid: this[ObservationsWorksheetService.OBSERVER_UID_COLUMN_TITLE],
+      name: this[ObservationsWorksheetService.NAME_COLUMN_TITLE],
+      location: this[ObservationsWorksheetService.LOCATION_COLUMN_TITLE],
+      date: DateTime.parse(jsonDecode(this[ObservationsWorksheetService.DATE_COLUMN_TITLE])),
+      altitudeInMeters: jsonDecode(this[ObservationsWorksheetService.ALTITUDE_IN_METERS_COLUMN_TITLE]),
+      latitude: jsonDecode(this[ObservationsWorksheetService.LATITUDE_COLUMN_TITLE]),
+      longitude: jsonDecode(this[ObservationsWorksheetService.LONGITUDE_COLUMN_TITLE]),
+      species: this[ObservationsWorksheetService.SPECIES_COLUMN_TITLE],
+      signs: jsonDecode(this[ObservationsWorksheetService.SIGNS_COLUMN_TITLE]),
+      pikasDetected: this[ObservationsWorksheetService.PIKAS_DETECTED_COLUMN_TITLE],
+      distanceToClosestPika: this[ObservationsWorksheetService.DISTANCE_TO_CLOSEST_PIKA_COLUMN_TITLE],
+      searchDuration: this[ObservationsWorksheetService.SEARCH_DURATION_COLUMN_TITLE],
+      talusArea: this[ObservationsWorksheetService.TALUS_AREA_COLUMN_TITLE],
+      temperature: this[ObservationsWorksheetService.TEMPERATURE_COLUMN_TITLE],
+      skies: this[ObservationsWorksheetService.SKIES_COLUMN_TITLE],
+      wind: this[ObservationsWorksheetService.WIND_COLUMN_TITLE],
+      siteHistory: this[ObservationsWorksheetService.SITE_HISTORY_COLUMN_TITLE],
+      comments: this[ObservationsWorksheetService.COMMENTS_COLUMN_TITLE],
+      imageUrls: jsonDecode(this[ObservationsWorksheetService.IMAGE_URLS_COLUMN_TITLE]),
+      audioUrls: jsonDecode(this[ObservationsWorksheetService.AUDIO_URLS_COLUMN_TITLE]),
+      otherAnimalsPresent: jsonDecode(this[ObservationsWorksheetService.OTHER_ANIMALS_PRESENT_COLUMN_TITLE]),
+      sharedWithProjects: jsonDecode(this[ObservationsWorksheetService.SHARED_WITH_PROJECTS_COLUMN_TITLE]),
+      notSharedWithProjects: jsonDecode(this[ObservationsWorksheetService.NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE]),
+      dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(this[ObservationsWorksheetService.DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE]))
+  );
+}
+
+extension GoogleSheetsObservation on Observation {
+  
+  Map<String, dynamic> toGoogleSheetsRow() => {
+    WorksheetService.UID_COLUMN_TITLE: uid,
+    ObservationsWorksheetService.OBSERVER_UID_COLUMN_TITLE: observerUid,
+    ObservationsWorksheetService.ALTITUDE_IN_METERS_COLUMN_TITLE: altitudeInMeters,
+    ObservationsWorksheetService.LONGITUDE_COLUMN_TITLE: longitude,
+    ObservationsWorksheetService.LATITUDE_COLUMN_TITLE: latitude,
+    ObservationsWorksheetService.NAME_COLUMN_TITLE: name,
+    ObservationsWorksheetService.LOCATION_COLUMN_TITLE: location,
+    ObservationsWorksheetService.DATE_COLUMN_TITLE: date?.toUtc().toString(),
+    ObservationsWorksheetService.SPECIES_COLUMN_TITLE: species,
+    ObservationsWorksheetService.SIGNS_COLUMN_TITLE: jsonEncode(signs),
+    ObservationsWorksheetService.PIKAS_DETECTED_COLUMN_TITLE: pikasDetected,
+    ObservationsWorksheetService.DISTANCE_TO_CLOSEST_PIKA_COLUMN_TITLE: distanceToClosestPika,
+    ObservationsWorksheetService.SEARCH_DURATION_COLUMN_TITLE: searchDuration,
+    ObservationsWorksheetService.TALUS_AREA_COLUMN_TITLE: talusArea,
+    ObservationsWorksheetService.TEMPERATURE_COLUMN_TITLE: temperature,
+    ObservationsWorksheetService.SKIES_COLUMN_TITLE: skies,
+    ObservationsWorksheetService.WIND_COLUMN_TITLE: wind,
+    ObservationsWorksheetService.SITE_HISTORY_COLUMN_TITLE: siteHistory,
+    ObservationsWorksheetService.COMMENTS_COLUMN_TITLE: comments,
+    ObservationsWorksheetService.IMAGE_URLS_COLUMN_TITLE: jsonEncode(imageUrls),
+    ObservationsWorksheetService.AUDIO_URLS_COLUMN_TITLE: jsonEncode(audioUrls),
+    ObservationsWorksheetService.OTHER_ANIMALS_PRESENT_COLUMN_TITLE: jsonEncode(otherAnimalsPresent),
+    ObservationsWorksheetService.SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(sharedWithProjects),
+    ObservationsWorksheetService.NOT_SHARED_WITH_PROJECTS_COLUMN_TITLE: jsonEncode(notSharedWithProjects),
+    ObservationsWorksheetService.DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: dateUpdatedInGoogleSheets?.toUtc().toString()
+  };
 }

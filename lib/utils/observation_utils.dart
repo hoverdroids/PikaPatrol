@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:gsheets/gsheets.dart';
 import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
@@ -9,6 +10,7 @@ import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
+import '../model/gsheets_value.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../services/firebase_database_service.dart';
@@ -18,7 +20,7 @@ import '../services/firebase_database_service.dart';
 // Each of those provide a single interface for the UI so that the business logic is hidden away in the manager/service.
 // Each manager/service would have a list of providers, e.g. IObservationProvider with crud methods
 
-Future saveObservation(BuildContext context, Observation observation) async {
+Future saveObservation(BuildContext context, Observation observation, {bool saveLocal = true}) async {//TODO - these utils should be in observations service and shouldn't require a context
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
     var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
@@ -34,24 +36,39 @@ Future saveObservation(BuildContext context, Observation observation) async {
     }
     //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
-    observation.isUploaded = true;//set this before attempting upload so that it's saved to firebase on success
+    //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
+    if (context.mounted) {
+      final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+      observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+      try {
+        var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+
+        var sharedWithProjects = observation.sharedWithProjects;
+        sharedWithProjects?.add("Pika Patrol");
+
+        for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+          GSheetsValue<bool>? returnValue;
+          if (sharedWithProjects?.contains(service.organization) == true) {
+            returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
+          } else {
+            returnValue = await service.observationWorksheetService?.deleteObservation(observation);
+          }
+
+          final exception = returnValue?.exception;
+          if (exception != null) {
+            throw GSheetsException(exception.cause);
+          }
+        }
+      } on GSheetsException catch (e) {
+        observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
+        showToast("Exception: ${e.cause}");
+      }
+    }
+
     var exception = await databaseService.observationsService.updateObservation(observation);
     if (exception != null) {
       showToast("Exception: ${exception.message}");
-      observation.isUploaded = false;
-    } else if (context.mounted) {
-      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-
-      var sharedWithProjects = observation.sharedWithProjects;
-      sharedWithProjects?.add("Pika Patrol");
-
-      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        if (sharedWithProjects?.contains(service.organization) == true) {
-          await service.observationWorksheetService?.addOrUpdateObservation(observation);
-        } else {
-          await service.observationWorksheetService?.deleteObservation(observation);
-        }
-      }
     }
 
     // Update local observation after successful upload because the uid will be non empty now.
@@ -59,7 +76,9 @@ Future saveObservation(BuildContext context, Observation observation) async {
     // because firebase will throw an exception of being offline.
     // In that case, track that the updates are no longer uploaded and will need to be the next time internet
     // is available
-    await saveLocalObservation(observation);
+    if (saveLocal) {
+      await saveLocalObservation(observation);
+    }
 }
 
 Future<LocalObservation?> saveLocalObservation(Observation observation) async {
@@ -106,6 +125,7 @@ Future<LocalObservation?> saveLocalObservation(Observation observation) async {
       otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
       sharedWithProjects: observation.sharedWithProjects ?? <String>[],
       notSharedWithProjects: observation.notSharedWithProjects ?? <String>[],
+      dateUpdatedInGoogleSheets: observation.dateUpdatedInGoogleSheets?.toString() ?? "",
       isUploaded: observation.isUploaded ?? false
   );
 

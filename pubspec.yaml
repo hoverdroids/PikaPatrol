@@ -55,6 +55,7 @@ dependencies:
   googleapis: ^11.4.0
   googleapis_auth: ^1.4.1
   http: ^1.1.0
+  deepcopy: ^1.1.2
 
 dev_dependencies:
   flutter_test:

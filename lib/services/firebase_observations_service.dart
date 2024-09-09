@@ -67,33 +67,15 @@ class FirebaseObservationsService {
   Future<FirebaseException?> updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
 
-    var observationObject = {
-      OBSERVER_UID: observation.observerUid,
-      NAME: observation.name,
-      LOCATION: observation.location,
-      DATE: observation.date,
-      ALTITUDE: observation.altitudeInMeters,
-      LATITUDE: observation.latitude,
-      LONGITUDE: observation.longitude,
-      SPECIES: observation.species,
-      SIGNS: observation.signs,
-      PIKAS_DETECTED: observation.pikasDetected,
-      DISTANCE_TO_CLOSEST_PIKA: observation.distanceToClosestPika,
-      SEARCH_DURATION: observation.searchDuration,
-      TALUS_AREA: observation.talusArea,
-      TEMPERATURE: observation.temperature,
-      SKIES: observation.skies,
-      WIND: observation.wind,
-      SITE_HISTORY: observation.siteHistory,
-      COMMENTS: observation.comments,
-      IMAGE_URLS: observation.imageUrls,
-      AUDIO_URLS: observation.audioUrls,
-      OTHER_ANIMALS_PRESENT: observation.otherAnimalsPresent,
-      SHARED_WITH_PROJECTS: observation.sharedWithProjects,
-      NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
-      DATE_UPDATED_IN_GOOGLE_SHEETS: observation.dateUpdatedInGoogleSheets,
-      IS_UPLOADED: observation.isUploaded
-    };
+    //Assume a successful upload unless an exception is thrown
+    //This allows firebase to be up-to-date with only one write
+    observation.isUploaded = true;
+
+    //Keep this in case the upload throws an exception
+    final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+    var firebaseObservation = observation.toFirebaseObservation();
 
     DocumentReference doc;
     var isUidNullOrEmpty = observation.uid == null || observation.uid?.isEmpty == true;
@@ -107,12 +89,15 @@ class FirebaseObservationsService {
     try {
       // Calling set when a doc with the Id doesn't exist will create it.
       // If the doc exists, it will be updated
-      await doc.set(observationObject);
+      await doc.set(firebaseObservation);
     } on FirebaseException catch (e) {
       if (isUidNullOrEmpty) {
         // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
         observation.uid = null;
       }
+
+      observation.isUploaded = false;
+      observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
 
       return e;
     }
@@ -339,4 +324,34 @@ class FirebaseObservationsService {
 
     return observations;
   }
+}
+
+extension FirebaseObservation on Observation {
+  Map<String, dynamic> toFirebaseObservation() => {
+    FirebaseObservationsService.OBSERVER_UID: observerUid,
+    FirebaseObservationsService.NAME: name,
+    FirebaseObservationsService.LOCATION: location,
+    FirebaseObservationsService.DATE: date,
+    FirebaseObservationsService.ALTITUDE: altitudeInMeters,
+    FirebaseObservationsService.LATITUDE: latitude,
+    FirebaseObservationsService.LONGITUDE: longitude,
+    FirebaseObservationsService.SPECIES: species,
+    FirebaseObservationsService.SIGNS: signs,
+    FirebaseObservationsService.PIKAS_DETECTED: pikasDetected,
+    FirebaseObservationsService.DISTANCE_TO_CLOSEST_PIKA: distanceToClosestPika,
+    FirebaseObservationsService.SEARCH_DURATION: searchDuration,
+    FirebaseObservationsService.TALUS_AREA: talusArea,
+    FirebaseObservationsService.TEMPERATURE: temperature,
+    FirebaseObservationsService.SKIES: skies,
+    FirebaseObservationsService.WIND: wind,
+    FirebaseObservationsService.SITE_HISTORY: siteHistory,
+    FirebaseObservationsService.COMMENTS: comments,
+    FirebaseObservationsService.IMAGE_URLS: imageUrls,
+    FirebaseObservationsService.AUDIO_URLS: audioUrls,
+    FirebaseObservationsService.OTHER_ANIMALS_PRESENT: otherAnimalsPresent,
+    FirebaseObservationsService.SHARED_WITH_PROJECTS: sharedWithProjects,
+    FirebaseObservationsService.NOT_SHARED_WITH_PROJECTS: notSharedWithProjects,
+    FirebaseObservationsService.DATE_UPDATED_IN_GOOGLE_SHEETS: dateUpdatedInGoogleSheets,
+    FirebaseObservationsService.IS_UPLOADED: isUploaded
+  };
 }

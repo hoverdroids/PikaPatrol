@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
@@ -13,9 +14,11 @@ import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 
 import '../l10n/translations.dart';
+import '../model/app_user.dart';
 import '../model/gsheets_value.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
+import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
 
 class ObservationsService {
@@ -317,9 +320,9 @@ class ObservationsService {
   //endregion
 
   //region Observation CRUD
-  Future<bool> trySaveObservation(Observation observation) async {
+  Future<ValueMessagePair?> trySaveObservation(BuildContext context, Observation observation, AppUser? user) async {//TODO - this should be provided to the service to avoid context
     //Do not set the date using DateTime.now because it can be set manually by the user for any date they indicate the observation was made
-    // widget.observationViewModel.dateUpdatedInGoogleSheets = DateTime.now();
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
     /*
                TODO:
@@ -331,12 +334,12 @@ class ObservationsService {
               */
 
 
-    /*var isInitialObservation = widget.observationViewModel.uid == null;//always save a new observation locally
-    var isUsersObservation = user != null && user.uid == widget.observationViewModel.observerUid;//don't save another user's observations locally; can happen when admin edits
+    var isInitialObservation = observation.uid == null;//always save a new observation locally
+    var isUsersObservation = user != null && user.uid == observation.observerUid;//don't save another user's observations locally; can happen when admin edits
     if (isInitialObservation || isUsersObservation) {
-      widget.observationViewModel.isUploaded = false;
+      observation.isUploaded = false;
       //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
-      await saveLocalObservation(widget.observationViewModel);//TODO - CHRIS - I don't like the save local, save, save local approach
+      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
     }
 
     //TODO - CHRIS - probably worth moving to the saveObservationon method
@@ -345,23 +348,24 @@ class ObservationsService {
     // saved for others to register sooner
     var hasConnection = await DataConnectionChecker().hasConnection;
     if (!hasConnection) {
-      showToast(translations.noConnectionFoundObservationSavedLocally);
-    } else if (user != null) {
-      setState(() {
-        _isUploading = true;
-      });
+      return ValueMessagePair(null, translations.noConnectionFoundObservationSavedLocally);
+    }
 
-      //If the observation was made when the user was not logged in, then edited after logging in, the user
-      //id can be null. So update it now. This allows local observations to be uploaded when online.
-      // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
-      widget.observationViewModel.observerUid ??= user.uid;
+    if (user == null) {
+      //TODO - should this indicate the user is null so the user can be notified?
+      return null;
+    }
 
-      //Share with others
-      if (context.mounted) {
-        await saveObservation(context, widget.observationViewModel);
-      }
-    }*/
-    return true;
+    //If the observation was made when the user was not logged in, then edited after logging in, the user
+    //id can be null. So update it now. This allows local observations to be uploaded when online.
+    // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+    observation.observerUid ??= user.uid;
+
+    //Share with others
+    await saveObservation(context, observation);
+
+    //TODO -  should this return a message indicating successful update?
+    return null;
   }
 
   Future saveObservation(BuildContext context, Observation observation, {bool saveLocal = true}) async {//TODO - these utils should be in observations service and shouldn't require a context
@@ -372,47 +376,44 @@ class ObservationsService {
     if (imageUrls != null && imageUrls.isNotEmpty) {
       observation.imageUrls = await databaseService.observationsService.uploadFiles(imageUrls, true);
     }
-    //developer.log("ImageUrls: ${observation.imageUrls.toString()}");
 
     var audioUrls = observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
       observation.audioUrls = await databaseService.observationsService.uploadFiles(audioUrls, false);
     }
-    //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
 
     //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
-    if (context.mounted) {
-      final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-      observation.dateUpdatedInGoogleSheets = DateTime.now();
 
-      try {
-        var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
+    final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
-        var sharedWithProjects = observation.sharedWithProjects;
-        sharedWithProjects?.add("Pika Patrol");
+    try {
+      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);//TODO - this should be provided to the service to avoid context
 
-        for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-          GSheetsValue<bool>? returnValue;
-          if (sharedWithProjects?.contains(service.organization) == true) {
-            returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
-          } else {
-            returnValue = await service.observationWorksheetService?.deleteObservation(observation);
-          }
+      var sharedWithProjects = observation.sharedWithProjects;
+      sharedWithProjects?.add("Pika Patrol");
 
-          final exception = returnValue?.exception;
-          if (exception != null) {
-            throw GSheetsException(exception.cause);
-          }
+      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+        GSheetsValue<bool>? returnValue;
+        if (sharedWithProjects?.contains(service.organization) == true) {
+          returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
+        } else {
+          returnValue = await service.observationWorksheetService?.deleteObservation(observation);
         }
-      } on GSheetsException catch (e) {
-        observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
-        showToast("Exception: ${e.cause}");
+
+        final exception = returnValue?.exception;
+        if (exception != null) {
+          throw GSheetsException(exception.cause);
+        }
       }
+    } on GSheetsException catch (e) {
+      observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
+      showToast("Exception: ${e.cause}");//TODO - toast should not be here
     }
 
     var exception = await databaseService.observationsService.updateObservation(observation);
     if (exception != null) {
-      showToast("Exception: ${exception.message}");
+      showToast("Exception: ${exception.message}");//TODO - toast should not be here
     }
 
     // Update local observation after successful upload because the uid will be non empty now.

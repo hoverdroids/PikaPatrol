@@ -20,6 +20,7 @@ import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
@@ -632,7 +633,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now()))
+        builder: (_) {
+          final translations = Provider.of<Translations>(context);
+          final observation = Observation(observerUid: user?.uid, date: DateTime.now());
+          final observationViewModel = ObservationViewModel(observation, translations);
+          return ObservationScreen(observationViewModel);
+        }
       ),
     );
   }

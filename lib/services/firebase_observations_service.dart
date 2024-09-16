@@ -1,15 +1,14 @@
 // ignore_for_file: constant_identifier_names
+import 'dart:io';
+import 'dart:developer' as developer;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'dart:developer' as developer;
+import 'package:path/path.dart';
 
 import '../model/observation.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/firebase_utils.dart';
-import '../utils/observation_utils.dart';
-import 'dart:io';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:path/path.dart';
 
 class FirebaseObservationsService {
 
@@ -162,7 +161,7 @@ class FirebaseObservationsService {
           latitude: dataMap[LATITUDE],
           longitude: dataMap[LONGITUDE],
           signs: signs,
-          species: dataMap[SPECIES] ?? SPECIES_DEFAULT,
+          species: dataMap[SPECIES] ?? Observation.SPECIES_DEFAULT,
           pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
           distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
           searchDuration: dataMap[SEARCH_DURATION] ?? '',
@@ -217,7 +216,7 @@ class FirebaseObservationsService {
           latitude: dataMap[LATITUDE],
           longitude: dataMap[LONGITUDE],
           signs: signs,
-          species: dataMap[SPECIES] ?? SPECIES_DEFAULT,
+          species: dataMap[SPECIES] ?? Observation.SPECIES_DEFAULT,
           pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
           distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
           searchDuration: dataMap[SEARCH_DURATION] ?? '',

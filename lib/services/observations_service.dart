@@ -24,6 +24,8 @@ import '../services/firebase_database_service.dart';
 class ObservationsService {
 
   late Translations translations;
+  late GoogleSheetsService googleSheetsService;
+  late FirebaseDatabaseService firebaseDatabaseService;//TODO - should this be firebase_observations_service?
 
   //region Empty Observations
   StreamController<List<Observation>>? _emptyObservationsStreamController;
@@ -320,7 +322,7 @@ class ObservationsService {
   //endregion
 
   //region Observation CRUD
-  Future<ValueMessagePair?> trySaveObservation(BuildContext context, Observation observation, AppUser? user) async {//TODO - this should be provided to the service to avoid context
+  Future<ValueMessagePair?> trySaveObservation(Observation observation, AppUser? user) async {
     //Do not set the date using DateTime.now because it can be set manually by the user for any date they indicate the observation was made
     observation.dateUpdatedInGoogleSheets = DateTime.now();
 
@@ -362,24 +364,23 @@ class ObservationsService {
     observation.observerUid ??= user.uid;
 
     //Share with others
-    await saveObservation(context, observation);
+    await saveObservation(observation);
 
     //TODO -  should this return a message indicating successful update?
     return null;
   }
 
-  Future saveObservation(BuildContext context, Observation observation, {bool saveLocal = true}) async {//TODO - these utils should be in observations service and shouldn't require a context
+  Future saveObservation(Observation observation, {bool saveLocal = true}) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
-    var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
 
     var imageUrls = observation.imageUrls;
     if (imageUrls != null && imageUrls.isNotEmpty) {
-      observation.imageUrls = await databaseService.observationsService.uploadFiles(imageUrls, true);
+      observation.imageUrls = await firebaseDatabaseService.observationsService.uploadFiles(imageUrls, true);
     }
 
     var audioUrls = observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
-      observation.audioUrls = await databaseService.observationsService.uploadFiles(audioUrls, false);
+      observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);
     }
 
     //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
@@ -388,8 +389,6 @@ class ObservationsService {
     observation.dateUpdatedInGoogleSheets = DateTime.now();
 
     try {
-      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);//TODO - this should be provided to the service to avoid context
-
       var sharedWithProjects = observation.sharedWithProjects;
       sharedWithProjects?.add("Pika Patrol");
 
@@ -411,7 +410,7 @@ class ObservationsService {
       showToast("Exception: ${e.cause}");//TODO - toast should not be here
     }
 
-    var exception = await databaseService.observationsService.updateObservation(observation);
+    var exception = await firebaseDatabaseService.observationsService.updateObservation(observation);
     if (exception != null) {
       showToast("Exception: ${exception.message}");//TODO - toast should not be here
     }

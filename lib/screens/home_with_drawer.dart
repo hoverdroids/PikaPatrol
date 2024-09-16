@@ -124,10 +124,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
     }
 
-    if (user != null) {
-      GoogleSheetsService googleSheetsService = Provider.of<GoogleSheetsService>(context);
-    }
-
     return Scaffold(
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
@@ -138,14 +134,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         drawer: buildDrawer(context, user, userProfile, bottom),
         endDrawer: buildEndDrawer(context, user, userProfile, bottom),
         onEndDrawerChanged: (isOpen) {
-          // developer.log("IsOpen:$isOpen");
-
-          //If the user tries to close the profile screen with an incomplete profile, force it back open
           if (isOpen && forceProfileOpen && !isEditingProfile) {
-            // developer.log("Setting isEditingProfile true. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
+            //If the user tries to close the profile screen with an incomplete profile, force it back open
             setState((){ isEditingProfile = true; });
           } else if (forceProfileOpen && !isOpen) {
-            // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
             showToast(translations.enterRequiredFields);
           }

@@ -2,7 +2,7 @@
 import 'package:gsheets/gsheets.dart';
 import 'dart:developer' as developer;
 
-import 'package:pika_patrol/model/google_sheets_value_exception_pair.dart';
+import 'package:pika_patrol/services/google_sheets/google_sheets_value_exception_pair.dart';
 import 'package:pika_patrol/utils/collection_utils.dart';
 
 class GoogleSheetsWorksheet {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
-import '../primitives/card_layout.dart';
+import '../../primitives/card_layout.dart';
 
 class Observation extends card.CardModel {
 

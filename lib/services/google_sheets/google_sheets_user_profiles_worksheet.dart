@@ -5,8 +5,8 @@ import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/services/google_sheets/google_sheets_worksheet.dart';
 
-import '../../model/app_user.dart';
-import '../../model/app_user_profile.dart';
+import '../authentication/app_user.dart';
+import '../user_profiles/app_user_profile.dart';
 import '../../model/gsheets_value.dart';
 import '../google_sheets_service.dart';
 

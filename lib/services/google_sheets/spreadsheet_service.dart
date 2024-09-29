@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:gsheets/gsheets.dart';
 import 'package:googleapis/sheets/v4.dart' as v4;
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:pika_patrol/model/google_sheets_value_exception_pair.dart';
+import 'package:pika_patrol/services/google_sheets/google_sheets_value_exception_pair.dart';
 import 'package:pika_patrol/services/worksheet_service.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;

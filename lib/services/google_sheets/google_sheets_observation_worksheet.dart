@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
-import 'package:pika_patrol/model/google_sheets_value_exception_pair.dart';
+import 'package:pika_patrol/services/google_sheets/google_sheets_value_exception_pair.dart';
 import 'package:pika_patrol/services/google_sheets_worksheet.dart';
 import 'dart:developer' as developer;
 
-import '../../model/observation.dart';
+import '../observations/observation.dart';
 import '../google_sheets_service.dart';
 
 class GoogleSheetsObservationWorksheet extends GoogleSheetsWorksheet {

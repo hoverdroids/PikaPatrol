@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-import 'app_user.dart';
+import '../../authentication/app_user.dart';
 
 class FirebaseRegistrationResult {
   AppUser? appUser;

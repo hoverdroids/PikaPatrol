@@ -2,17 +2,18 @@ import 'dart:io';
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:pika_patrol/providers/authentication/authentication_provider.dart';
 import 'package:pika_patrol/services/firebase/firebase_constants.dart';
 import 'package:pika_patrol/services/firebase/firebase_service.dart';
-import '../../model/firebase_registration_result.dart';
-import 'package:pika_patrol/model/app_user.dart';
+import 'model/firebase_registration_result.dart';
+import 'package:pika_patrol/services/authentication/app_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer' as developer;
 
 import '../../model/firebase_value_exception_pair.dart';
 import '../../utils/constants.dart';
 
-class FirebaseAuthService extends FirebaseService {
+class FirebaseAuthService extends FirebaseService implements AuthenticationProvider{
 
   //region Constructors
   //Use this constructor when not using the emulator
@@ -61,29 +62,34 @@ class FirebaseAuthService extends FirebaseService {
   Stream<bool> get isAdminStream {
     return _firebaseAuth.idTokenChanges().asyncMap((User? user) => await user.isAdmin().value);
   }
-
-
   //endregion
 
   //region User ID Token
-  Future<String?> getCurrentUserIdToken() async => await _firebaseAuth.currentUser?.getIdToken();
+  Future<FirebaseValueExceptionPair<String>> getCurrentUserIdToken() async {
+    try {
+      final returnValue = await _firebaseAuth.currentUser?.getIdToken();
+      return FirebaseValueExceptionPair(returnValue);
+    } on FirebaseException catch (e) {
+      return FirebaseValueExceptionPair(null, exception: e);
+    }
+  }
   //endregion
 
   //region User
-  Stream<AppUser?> get user {
+  Stream<AppUser?> get appUserStream {
     return _firebaseAuth.userChanges().asyncMap((User? user) => _userFromFirebaseUser(user));
   }
 
-  Future<FirebaseAuthException?> changeCurrentUser(String? photoUrl) async {
+  Future<FirebaseValueExceptionPair<bool>> updateCurrentUserPhotoUrl(String? photoUrl) async {
     try {
       await _firebaseAuth.currentUser?.updatePhotoURL(photoUrl);
-      return null;
+      return FirebaseValueExceptionPair(true);
     } on FirebaseAuthException catch(e) {
-      return e;
+      return FirebaseValueExceptionPair(false, exception: e);
     }
   }
 
-  Future<FirebaseAuthException?> deleteUser() async {
+  Future<FirebaseValueExceptionPair<bool>> deleteUser() async {
     try {
       User? user = _firebaseAuth.currentUser;
       await user?.delete();
@@ -94,10 +100,9 @@ class FirebaseAuthService extends FirebaseService {
       // Old user data will remain cached and the user can't re-register with the same email - even if the email isn't in Firebase!
       await clearPersistedUserData();
 
-      return null;
+      return FirebaseValueExceptionPair(true);
     } on FirebaseAuthException catch(e) {
-      developer.log(e.toString());
-      return e;
+      return FirebaseValueExceptionPair(false, exception: e);
     }
   }
 
@@ -107,12 +112,11 @@ class FirebaseAuthService extends FirebaseService {
     final idToken = await user.idToken(forceRefresh: forceRefresh);
     return user.toAppUser(isAdminValue, idToken.value);
   }
-
   //endregion
 
   //region Register
   Future<FirebaseRegistrationResult> registerWithEmailAndPassword(String email, String password) async {
-
+    //TODO need to fix the return type
     final registrationResult = FirebaseRegistrationResult(email: email);
 
     try {
@@ -128,6 +132,7 @@ class FirebaseAuthService extends FirebaseService {
 
   //region Sign-in
   Future signInAnonymously() async {
+    //TODO - this likely needs to return FirebaseValueExceptionPair
     try {
       UserCredential result = await _firebaseAuth.signInAnonymously();
       User? user = result.user;
@@ -139,6 +144,7 @@ class FirebaseAuthService extends FirebaseService {
   }
 
   Future signInWithEmailAndPassword(String email, String password) async {
+    //TODO - this likely needs to return FirebaeValueExceptionPair
     try {
       UserCredential result = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
       return _tryConvertUserToAppUser(result.user);
@@ -149,6 +155,7 @@ class FirebaseAuthService extends FirebaseService {
   }
 
   Future<UserCredential?> signInWithGoogle() async {
+    //TODO - this likely needs to return FirebaseValueExceptionPair
     try {
       // Trigger the authentication flow
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();

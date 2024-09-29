@@ -26,9 +26,9 @@ import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:pika_patrol/model/observation_view_model.dart';
+import 'package:pika_patrol/services/observations/observation_view_model.dart';
 import 'package:provider/provider.dart';
-import 'package:pika_patrol/model/app_user.dart';
+import 'package:pika_patrol/services/authentication/app_user.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
@@ -40,7 +40,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../l10n/translations.dart';
-import '../services/observations_service.dart';
+import '../services/observation/observations_service.dart';
 import '../services/firebase/utils/firebase_utils.dart';
 import 'home_with_drawer.dart';
 

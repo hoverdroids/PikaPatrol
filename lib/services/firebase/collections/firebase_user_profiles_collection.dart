@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:pika_patrol/model/firebase_value_exception_pair.dart';
 
 import '../../../l10n/translations.dart';
-import '../../../model/app_user_profile.dart';
+import '../../user_profiles/app_user_profile.dart';
 import '../../../utils/date_time_utils.dart';
 import 'firebase_firestore_collection.dart';
 

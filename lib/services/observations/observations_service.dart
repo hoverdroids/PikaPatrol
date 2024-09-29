@@ -10,16 +10,16 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/providers/filehost/file_host.dart';
 import 'package:provider/provider.dart';
 
-import '../l10n/translations.dart';
-import '../model/app_user.dart';
-import '../model/google_sheets_value_exception_pair.dart';
-import '../model/local_observation.dart';
-import '../model/observation.dart';
-import '../model/value_message_pair.dart';
-import 'firebase/buckets/firebase_audio_storage_bucket.dart';
-import 'firebase/buckets/firebase_images_storage_bucket.dart';
-import 'firebase/firebase_firestore_service.dart';
-import 'google_sheets/google_sheets_service.dart';
+import '../../l10n/translations.dart';
+import '../authentication/app_user.dart';
+import '../google_sheets/google_sheets_value_exception_pair.dart';
+import 'local_observation.dart';
+import 'observation.dart';
+import '../../model/value_message_pair.dart';
+import '../firebase/buckets/firebase_audio_storage_bucket.dart';
+import '../firebase/buckets/firebase_images_storage_bucket.dart';
+import '../firebase/firebase_firestore_service.dart';
+import '../google_sheets/google_sheets_service.dart';
 
 
 //TODO - this probably needs to get merged into AnimalObservationsFirebaseFirestoreService

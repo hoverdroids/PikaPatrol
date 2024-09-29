@@ -1,7 +1,7 @@
 import 'package:hive/hive.dart';
 
 @HiveType(typeId: 3)
-class GoogleSheetsCredential extends HiveObject {
+class LocalGoogleSheetsCredential extends HiveObject {
   @HiveField(0)
   String uid;
 
@@ -11,7 +11,7 @@ class GoogleSheetsCredential extends HiveObject {
   @HiveField(2)
   Map<String, String> spreadsheets;
 
-  GoogleSheetsCredential({
+  LocalGoogleSheetsCredential({
     this.uid = "",
     this.credential = "",
     this.spreadsheets = const {}

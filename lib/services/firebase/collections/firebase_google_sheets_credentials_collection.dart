@@ -2,7 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:pika_patrol/services/firebase/firebase_firestore_service.dart';
 
-import '../../../model/google_sheets_credential.dart';
+import '../../google_sheets_credentials/google_sheets_credential.dart';
 import 'firebase_firestore_collection.dart';
 
 class FirebaseGoogleSheetsCredentialCollection extends FirebaseFirestoreCollection {

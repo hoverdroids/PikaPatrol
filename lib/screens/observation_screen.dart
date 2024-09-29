@@ -21,7 +21,6 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/fundamental/toggles.dart';
-import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -42,6 +41,7 @@ import 'dart:developer' as developer;
 import '../l10n/translations.dart';
 import '../provider_services/observations/observation.dart';
 import '../utils/observation_utils.dart';
+import '../widgets/observation/shared_with_projects_widget.dart';
 import '../widgets/observation/site_history_widget.dart';
 import 'home_with_drawer.dart';
 
@@ -50,15 +50,29 @@ class ObservationScreen extends StatefulWidget {
 
   final Observation observation;
   late bool isEditMode;
+  late List<String> approvedOrganizations = [];
 
   ObservationScreen(this.observation, {super.key}) {
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
     isEditMode = observation.uid == null ? true : false;
+
+    updateApprovedOrganizations();
   }
 
   @override
   ObservationScreenState createState() => ObservationScreenState();
+
+  updateApprovedOrganizations() {
+    //List<String> approvedOrganizations = [];//Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
+
+    //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
+    //is still empty after logging in, until user restarts app
+    //This list needs to be available offlline as well.
+    if (approvedOrganizations.isEmpty) {
+      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
+    }
+  }
 }
 
 class ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
@@ -649,6 +663,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildFields() {
+
     return Padding(
       padding: _horzPadding,
       child: Column(
@@ -664,19 +679,31 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildSkiesChoices(),
           _buildWindChoices(),
           _buildOtherAnimalsPresent(),
-          _buildSharedWithProjects(),
+          SharedWithProjectsWidget(
+            translations.sharedWithProjects,
+            widget.isEditMode,
+            widget.approvedOrganizations,
+            widget.observation.sharedWithProjects,
+            widget.observation.notSharedWithProjects,
+            (sharedWithProjects, notSharedWithProjects) => {
+              setState((){
+                widget.observation.sharedWithProjects = sharedWithProjects;
+                widget.observation.notSharedWithProjects = notSharedWithProjects;
+              })
+            }
+          ),
           SiteHistoryWidget(
             translations.siteHistory,
             widget.isEditMode,
             widget.observation.siteHistory,
-            (value) => setState((){ widget.observation.siteHistory = value; }),
+            (siteHistory) => setState((){ widget.observation.siteHistory = siteHistory; }),
             translations.siteHistoryHint,
           ),
           CommentsWidget(
             translations.comments,
             widget.isEditMode,
             widget.observation.comments,
-            (value) => setState((){ widget.observation.comments = value; }),
+            (comments) => setState((){ widget.observation.comments = comments; }),
             translations.anyAdditionalObservations
           ),
         ],
@@ -1345,96 +1372,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
-  Widget _buildSharedWithProjects() {
 
-    List<String> approvedOrganizations = [];//Provider.of<GoogleSheetsService>(context, listen: false).organizations.toTrimmedUniqueList().sortList();
-
-    //TODO - CHRIS - figure out how to get the projects after user has logged in. Currently, the list
-    //is still empty after logging in, until user restarts app
-    //This list needs to be available offlline as well.
-    if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
-    }
-
-    var isNewObservation = widget.observation.uid == null;
-
-    var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
-
-    for (var approvedOrganization in approvedOrganizations) {
-      if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
-          notSharedWithProjects.add(approvedOrganization);
-      }
-    }
-
-    sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
-    widget.observation.sharedWithProjects = sharedWithProjects;
-
-    notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
-    widget.observation.notSharedWithProjects = notSharedWithProjects;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
-            // if (widget.isEditMode)...[
-            //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
-            // ]
-          ],
-        ),
-        if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
-          ChipsChoice<String>.multiple(
-            padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.sharedWithProjects ?? <String>[],
-            onChanged: (updatedSharedWithProjects) =>
-            {
-              if (widget.isEditMode) {
-                setState((){
-                  widget.observation.sharedWithProjects = updatedSharedWithProjects;
-
-                  var approvedSet = approvedOrganizations.toSet();
-                  var selectedSet = updatedSharedWithProjects.toSet();
-                  widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
-                })
-              }
-            },
-            choiceItems: C2Choice.listFrom<String, String>(
-              source: approvedOrganizations,
-              value: (i, v) => v,
-              label: (i, v) => v,
-              tooltip: (i, v) => v,
-            ),
-          )
-        ]
-      ],
-    );
-  }
-
-  void _openSharedWithProjectsDialog() {
-    if (!mounted) return;
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) => TextEntryDialog(
-          title: translations.addAnotherProjectDialogTitle,
-          description: translations.addAnotherProjectDialogDescription
-        ),
-        barrierDismissible: false
-    ).then((value) => {
-      setState(() {
-        if (value != null && (value as String).isNotEmpty) {
-          var sharedWithProjects = widget.observation.sharedWithProjects ?? <String>[];
-          sharedWithProjects.addAll(value.split(","));
-          sharedWithProjects = sharedWithProjects.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
-          widget.observation.sharedWithProjects = sharedWithProjects;
-        }
-      })
-    });
-  }
 
 
 

@@ -42,6 +42,7 @@ import 'dart:developer' as developer;
 import '../l10n/translations.dart';
 import '../provider_services/observations/observation.dart';
 import '../utils/observation_utils.dart';
+import '../widgets/observation/site_history_widget.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
@@ -664,7 +665,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildWindChoices(),
           _buildOtherAnimalsPresent(),
           _buildSharedWithProjects(),
-          _buildSiteHistory(),
+          SiteHistoryWidget(
+            translations.siteHistory,
+            widget.isEditMode,
+            widget.observation.siteHistory,
+            (value) => setState((){ widget.observation.siteHistory = value; }),
+            translations.siteHistoryHint,
+          ),
           CommentsWidget(
             translations.comments,
             widget.isEditMode,
@@ -1429,40 +1436,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
-  Widget _buildSiteHistory() => NotificationListener<ScrollNotification>(
-    onNotification: (boolVal) { return true; },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle(translations.siteHistory, type: ThemeGroupType.POM),
-        miniTransparentDivider,
-        if(widget.isEditMode) ... [
-          ThemedEditableLabelValue(
-            showLabel: false,
-            text: widget.observation.siteHistory ?? "",
-            textType: ThemeGroupType.POM,
-            hintText: translations.siteHistoryHint,
-            //hintTextType: hintTextType,
-            //hintTextEmphasis: hintTextEmphasis,
-            //backgroundType: textFieldBackgroundType,
-            onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
-            //validator: validator
-          )
-        ] else ... [
-          SizedBox(
-            height: 120.0,
-            child: SingleChildScrollView(
-              child: ThemedBody(
-                widget.observation.siteHistory,
-                type: ThemeGroupType.MOM,
-              ),
-            ),
-          )
-        ]
-      ],
-    ),
-  );
+
 
 
 

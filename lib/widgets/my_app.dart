@@ -9,7 +9,7 @@ import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../l10n/translations.dart';
 import '../screens/splash/partners_splash_screens_pager.dart';
-import '../services/settings_service.dart';
+import '../services/settings/settings_service.dart';
 
 class MyApp extends StatelessWidget {
 

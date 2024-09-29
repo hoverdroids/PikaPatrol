@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
-import 'package:pika_patrol/services/worksheet_service.dart';
+import 'package:pika_patrol/services/google_sheets/worksheet_service.dart';
 
-import '../model/app_user.dart';
-import '../model/app_user_profile.dart';
-import 'google_sheets_service.dart';
+import '../../../provider_services/authentication/app_user.dart';
+import '../../../provider_services/user_profiles/app_user_profile.dart';
+import '../database/google_sheets_service.dart';
 
 class UserProfilesWorksheetService extends WorksheetService {
    

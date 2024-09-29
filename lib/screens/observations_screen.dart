@@ -10,16 +10,16 @@ import 'package:material_themes_widgets/dialogs/text_entry_dialog.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
-import 'package:pika_patrol/model/local_observation.dart';
-import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/provider_services/observations/local_observation.dart';
 import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
-import '../model/app_user.dart';
+import '../provider_services/authentication/app_user.dart';
 import '../primitives/card_layout.dart';
-import '../services/firebase_observations_service.dart';
-import '../services/settings_service.dart';
+import '../provider_services/observations/observation.dart';
+import '../services/firebase/observations/firebase_observations_service.dart';
+import '../services/settings/settings_service.dart';
 import '../utils/observation_utils.dart';
-import '../widgets/card_scroller.dart';
+import '../widgets/card/card_scroller.dart';
 import 'observation_screen.dart';
 
 // ignore: must_be_immutable

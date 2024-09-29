@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../model/pika.dart';
-import '../services/settings_service.dart';
+import '../services/settings/settings_service.dart';
 
 class TrainingScreensPager extends StatefulWidget {
 

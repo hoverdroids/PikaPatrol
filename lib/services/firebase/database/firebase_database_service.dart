@@ -1,9 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
-import 'package:pika_patrol/services/firebase_observations_service.dart';
-import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
+import 'package:pika_patrol/services/firebase/google_sheets_credentials/firebase_google_sheets_database_service.dart';
+import 'package:pika_patrol/services/firebase/observations/firebase_observations_service.dart';
+import 'package:pika_patrol/services/firebase/user_profiles/firebase_user_profiles_database_service.dart';
 
 class FirebaseDatabaseService {
 

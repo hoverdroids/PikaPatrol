@@ -2,15 +2,15 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
-import 'package:pika_patrol/model/card.dart' as card;
+import 'package:pika_patrol/widgets/card/card_model.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 
-import '../primitives/card_layout.dart';
+import '../../primitives/card_layout.dart';
 
 class CardScrollWidget extends StatelessWidget {
 
-  List<card.CardModel> cards = [];
+  List<CardModel> cards = [];
   late double cardAspectRatio;
   late double widgetAspectRatio;
 

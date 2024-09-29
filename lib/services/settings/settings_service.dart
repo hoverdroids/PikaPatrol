@@ -2,7 +2,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../l10n/l10n.dart';
+import '../../l10n/l10n.dart';
 
 /// Mix-in [DiagnosticableTreeMixin] to have access to [debugFillProperties] for the devtool
 class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {

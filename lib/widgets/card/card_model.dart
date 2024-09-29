@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import '../primitives/card_layout.dart';
+import '../../primitives/card_layout.dart';
 
 class CardModel {
 

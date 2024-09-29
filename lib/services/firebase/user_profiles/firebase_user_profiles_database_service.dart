@@ -4,9 +4,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'dart:developer' as developer;
 
-import '../l10n/translations.dart';
-import '../model/app_user_profile.dart';
-import '../utils/date_time_utils.dart';
+import '../../../l10n/translations.dart';
+import '../../../provider_services/user_profiles/app_user_profile.dart';
+import '../../../utils/date_time_utils.dart';
 
 class FirebaseUserProfilesDatabaseService {
 

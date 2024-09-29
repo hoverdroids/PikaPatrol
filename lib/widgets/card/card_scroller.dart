@@ -1,11 +1,12 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pika_patrol/model/card.dart' as card;
+import 'package:pika_patrol/widgets/card/card_model.dart';
+
 import 'card_scroll.dart';
 
 class CardScroller extends StatefulWidget {
 
-  List<card.CardModel> cards;
+  List<CardModel> cards;
   Function(int index)? onTapCard;
   bool reverse = true;
   double currentCardPosition = 0.0;

@@ -1,5 +1,5 @@
 import 'package:gsheets/gsheets.dart';
-import 'package:pika_patrol/services/worksheet_service.dart';
+import 'package:pika_patrol/services/google_sheets/worksheet_service.dart';
 
 abstract class SpreadsheetService {
 

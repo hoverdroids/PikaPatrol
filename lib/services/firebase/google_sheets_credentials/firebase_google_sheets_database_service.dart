@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import '../model/google_sheets_credential.dart';
+import '../../../provider_services/credentials/google_sheets/google_sheets_credential.dart';
 
 class FirebaseGoogleSheetsDatabaseService {
 

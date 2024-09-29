@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import '../model/firebase_registration_result.dart';
-import 'package:pika_patrol/model/app_user.dart';
+import 'firebase_registration_result.dart';
+import 'package:pika_patrol/provider_services/authentication/app_user.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'dart:developer' as developer;
 

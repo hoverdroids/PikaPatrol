@@ -26,8 +26,7 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:pika_patrol/model/app_user.dart';
-import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/provider_services/authentication/app_user.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
@@ -41,7 +40,8 @@ import 'dart:developer' as developer;
 
 import '../data/pika_species.dart';
 import '../l10n/translations.dart';
-import '../services/google_sheets_service.dart';
+import '../provider_services/observations/observation.dart';
+import '../services/google_sheets/database/google_sheets_service.dart';
 import '../utils/observation_utils.dart';
 import 'home_with_drawer.dart';
 

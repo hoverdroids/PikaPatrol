@@ -1,5 +1,5 @@
 // ignore_for_file: constant_identifier_names
-import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
+import 'package:pika_patrol/services/google_sheets/pika_patrol_spreadsheet_service.dart';
 
 class GoogleSheetsService {
 

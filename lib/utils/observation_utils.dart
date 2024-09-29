@@ -4,14 +4,14 @@ import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/main.dart';
-import 'package:pika_patrol/services/firebase_observations_service.dart';
-import 'package:pika_patrol/services/google_sheets_service.dart';
+import 'package:pika_patrol/services/firebase/observations/firebase_observations_service.dart';
+import 'package:pika_patrol/services/google_sheets/database/google_sheets_service.dart';
 import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
-import '../model/local_observation.dart';
-import '../model/observation.dart';
-import '../services/firebase_database_service.dart';
+import '../provider_services/observations/local_observation.dart';
+import '../provider_services/observations/observation.dart';
+import '../services/firebase/database/firebase_database_service.dart';
 
 //TODO - CHRIS - the UI and these methods should be split. However, this class isn't great.
 // Instead, there should be an observations manager/service and userProfiles manager/service.

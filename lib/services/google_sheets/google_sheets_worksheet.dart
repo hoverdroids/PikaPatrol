@@ -2,10 +2,10 @@
 import 'package:gsheets/gsheets.dart';
 import 'dart:developer' as developer;
 
-import 'package:pika_patrol/model/gsheets_value.dart';
+import 'package:pika_patrol/model/google_sheets_value_exception_pair.dart';
 import 'package:pika_patrol/utils/collection_utils.dart';
 
-class WorksheetService {
+class GoogleSheetsWorksheet {
 
   static const int DEFAULT_COLUMN_HEADER_ROW_NUMBER = 1;
   static const int UID_COLUMN_NUMBER = 1;
@@ -37,7 +37,7 @@ class WorksheetService {
   List<String> columnHeaderKeys;
   int columnHeadersRowNumber;
 
-  WorksheetService(
+  GoogleSheetsWorksheet(
     this.spreadsheet,
     this.worksheetTitle,
     this.columnHeaderKeys,
@@ -67,23 +67,23 @@ class WorksheetService {
     }
   }
 
-  Future<GSheetsValue<bool>> initHeaderRow() async {
+  Future<GoogleSheetsValueExceptionPair<bool>> initHeaderRow() async {
     final returnValue = await updateRowWithoutColumnHeaderKeys(columnHeadersRowNumber, columnHeaderKeys);
     if (returnValue.exception != null) {
-      return GSheetsValue(false, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(false, exception: returnValue.exception);
     }
-    return GSheetsValue(returnValue.value);
+    return GoogleSheetsValueExceptionPair(returnValue.value);
   }
   //#endregion
 
   //#region Worksheet
-  Future<GSheetsValue<Worksheet>> getWorksheet({Spreadsheet? spreadsheet, String? title, bool addWorksheetIfDoesNotExist = true}) async {
+  Future<GoogleSheetsValueExceptionPair<Worksheet>> getWorksheet({Spreadsheet? spreadsheet, String? title, bool addWorksheetIfDoesNotExist = true}) async {
     final sheet = spreadsheet ?? this.spreadsheet;
     final worksheetTitle = title ?? this.worksheetTitle;
 
     final worksheet = sheet.worksheetByTitle(worksheetTitle);
     if (worksheet != null) {
-      return GSheetsValue(worksheet);
+      return GoogleSheetsValueExceptionPair(worksheet);
     }
 
     if (addWorksheetIfDoesNotExist) {
@@ -93,26 +93,26 @@ class WorksheetService {
         if (exception != null) {
           throw GSheetsException(exception.cause);
         }
-        return GSheetsValue(returnValue.value);
+        return GoogleSheetsValueExceptionPair(returnValue.value);
       } on GSheetsException catch (e) {
-        return GSheetsValue(null, exception: e);
+        return GoogleSheetsValueExceptionPair(null, exception: e);
       }
     }
-    return GSheetsValue(null);
+    return GoogleSheetsValueExceptionPair(null);
   }
 
-  Future<GSheetsValue<Worksheet>> addWorksheet(String title) async {
+  Future<GoogleSheetsValueExceptionPair<Worksheet>> addWorksheet(String title) async {
     try {
       final returnValue = await spreadsheet.addWorksheet(title);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
   //#endregion
 
   //#region Render Options
-  /*Future<GSheetsValue<ValueRenderOption>> getRenderOption() async {
+  /*Future<GoogleSheetsValueExceptionPair<ValueRenderOption>> getRenderOption() async {
     try {
       final sheet = worksheet;
       final returnValue = sheet != null ? sheet.renderOption : "";
@@ -123,7 +123,7 @@ class WorksheetService {
           break;
       }
     } on GSheetsException catch(e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }*/
   //#endregion
@@ -138,26 +138,26 @@ class WorksheetService {
   }*/
 
   //#region Row(s): Get Index
-  Future<GSheetsValue<int>> getRowIndexWithUid(String? uid, {int inColumn = UID_COLUMN_NUMBER}) async {
+  Future<GoogleSheetsValueExceptionPair<int>> getRowIndexWithUid(String? uid, {int inColumn = UID_COLUMN_NUMBER}) async {
     return await getRowIndexOfKeyInColumn(uid, inColumn: inColumn);
   }
 
-  Future<GSheetsValue<int>> getRowIndexOfKeyInColumn(Object? key, {int inColumn = UID_COLUMN_NUMBER}) async {
+  Future<GoogleSheetsValueExceptionPair<int>> getRowIndexOfKeyInColumn(Object? key, {int inColumn = UID_COLUMN_NUMBER}) async {
     try {
       final sheet = worksheet;
       final index = key != null && sheet != null ? await sheet.values.rowIndexOf(key, inColumn: inColumn) : KEY_IS_NOT_FOUND;
-      return GSheetsValue(index);
+      return GoogleSheetsValueExceptionPair(index);
     } on GSheetsException catch(e) {
-      return GSheetsValue(KEY_IS_NOT_FOUND, exception: e);
+      return GoogleSheetsValueExceptionPair(KEY_IS_NOT_FOUND, exception: e);
     }
   }
   //#endregion
 
   //#region Row(s): Get
-  Future<GSheetsValue<Map<String, String>>> getRowByUid(
+  Future<GoogleSheetsValueExceptionPair<Map<String, String>>> getRowByUid(
     String uid,
     {
-      int fromColumn = WorksheetService.UID_COLUMN_NUMBER,
+      int fromColumn = GoogleSheetsWorksheet.UID_COLUMN_NUMBER,
       int length = -1,
       dynamic mapTo,
     }
@@ -165,28 +165,28 @@ class WorksheetService {
     return await getRowByKey(uid, fromColumn: fromColumn, length: length, mapTo: mapTo);
   }
 
-  Future<GSheetsValue<Map<String, String>>> getRowByKey(
+  Future<GoogleSheetsValueExceptionPair<Map<String, String>>> getRowByKey(
     Object key,
     {
-      int fromColumn = WorksheetService.UID_COLUMN_NUMBER,
+      int fromColumn = GoogleSheetsWorksheet.UID_COLUMN_NUMBER,
       int length = -1,
       dynamic mapTo,
     }
   ) async {
     try {
       final row = await worksheet?.values.map.rowByKey(key, fromColumn: fromColumn, length: length, mapTo: mapTo);
-      return GSheetsValue(row);
+      return GoogleSheetsValueExceptionPair(row);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
-  Future<GSheetsValue<List<Map<String, String>>>> getAllRows() async => await getRows();
+  Future<GoogleSheetsValueExceptionPair<List<Map<String, String>>>> getAllRows() async => await getRows();
 
-  Future<GSheetsValue<List<Map<String, String>>>> getRows(
+  Future<GoogleSheetsValueExceptionPair<List<Map<String, String>>>> getRows(
     {
-      int fromRow = WorksheetService.DEFAULT_COLUMN_HEADER_ROW_NUMBER,
-      int fromColumn = WorksheetService.UID_COLUMN_NUMBER,
+      int fromRow = GoogleSheetsWorksheet.DEFAULT_COLUMN_HEADER_ROW_NUMBER,
+      int fromColumn = GoogleSheetsWorksheet.UID_COLUMN_NUMBER,
       int length = -1,
       int count = -1,
       int mapTo = 1
@@ -194,40 +194,40 @@ class WorksheetService {
   ) async {
     try {
       final rows = await worksheet?.values.map.allRows(fromRow: fromRow, fromColumn: fromColumn, length: length, count: count, mapTo: mapTo);
-      return GSheetsValue(rows);
+      return GoogleSheetsValueExceptionPair(rows);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
-  Future<GSheetsValue<Map<String, String>>> getRow(
+  Future<GoogleSheetsValueExceptionPair<Map<String, String>>> getRow(
     int index, {
-      int fromColumn = WorksheetService.UID_COLUMN_NUMBER,
+      int fromColumn = GoogleSheetsWorksheet.UID_COLUMN_NUMBER,
       int length = -1,
       int mapTo = 1,
     }
   ) async {
     try {
       final row = await worksheet?.values.map.row(index, fromColumn: fromColumn, length: length, mapTo: mapTo);
-      return GSheetsValue(row);
+      return GoogleSheetsValueExceptionPair(row);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
   //#endregion
 
   //#region Row(s): Count
-  Future<GSheetsValue<int>> getNumberOfRowsInSheet({bool includeEmptyRowsInCount = false}) async {
+  Future<GoogleSheetsValueExceptionPair<int>> getNumberOfRowsInSheet({bool includeEmptyRowsInCount = false}) async {
     final returnValue = await getAllRowCounts();
     final value = returnValue.value;
 
     if (returnValue.exception != null) {
-      return GSheetsValue(0, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(0, exception: returnValue.exception);
     }
     if (value == null) {
-      return GSheetsValue(0);
+      return GoogleSheetsValueExceptionPair(0);
     }
-    return GSheetsValue(value[includeEmptyRowsInCount ? ROW_COUNT : ROW_COUNT_FROM_LAST_NON_EMPTY_ROW]);
+    return GoogleSheetsValueExceptionPair(value[includeEmptyRowsInCount ? ROW_COUNT : ROW_COUNT_FROM_LAST_NON_EMPTY_ROW]);
   }
 
   // It returns total number of rows, even the ones that have no data
@@ -235,40 +235,40 @@ class WorksheetService {
     return worksheet?.rowCount ?? 0;
   }
 
-  Future<GSheetsValue<int>> getRowCountFromAllRows() async {
+  Future<GoogleSheetsValueExceptionPair<int>> getRowCountFromAllRows() async {
     try {
       var allRows = await worksheet?.values.allRows();
       var value = allRows?.length ?? 0;
-      return GSheetsValue(value);
+      return GoogleSheetsValueExceptionPair(value);
     } on GSheetsException catch(e) {
-      return GSheetsValue(0, exception: e);
+      return GoogleSheetsValueExceptionPair(0, exception: e);
     }
   }
 
-  Future<GSheetsValue<int>> getRowCountFromAllRowsMap() async {
+  Future<GoogleSheetsValueExceptionPair<int>> getRowCountFromAllRowsMap() async {
     try {
       var allRows = await worksheet?.values.map.allRows();
       var value = allRows?.length ?? 0;
-      return GSheetsValue(value);
+      return GoogleSheetsValueExceptionPair(value);
     } on GSheetsException catch(e) {
-      return GSheetsValue(0, exception: e);
+      return GoogleSheetsValueExceptionPair(0, exception: e);
     }
   }
 
-  Future<GSheetsValue<int>> getRowCountFromLastNonEmptyRow() async {
+  Future<GoogleSheetsValueExceptionPair<int>> getRowCountFromLastNonEmptyRow() async {
     try {
       var lastRow = await worksheet?.values.lastRow();
       var hasRows = lastRow != null;
       var returnValue = hasRows ? int.parse(lastRow.first) : 0;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(KEY_IS_NOT_FOUND, exception: e);
+      return GoogleSheetsValueExceptionPair(KEY_IS_NOT_FOUND, exception: e);
     } on FormatException catch(e) {
-      return GSheetsValue(0);
+      return GoogleSheetsValueExceptionPair(0);
     }
   }
 
-  Future<GSheetsValue<Map<String, int>>> getAllRowCounts() async {
+  Future<GoogleSheetsValueExceptionPair<Map<String, int>>> getAllRowCounts() async {
     final Map<String, int> rowCounts = {
       ROW_COUNT : 0,
       ROW_COUNT_FROM_ALL_ROWS : 0,
@@ -281,35 +281,35 @@ class WorksheetService {
     var returnValue = await getRowCountFromAllRows();
     var value = returnValue.value;
     if (returnValue.exception != null) {
-      return GSheetsValue(rowCounts, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(rowCounts, exception: returnValue.exception);
     }
     rowCounts[ROW_COUNT_FROM_ALL_ROWS] = value ?? 0;
 
     returnValue = await getRowCountFromAllRowsMap();
     value = returnValue.value;
     if (returnValue.exception != null) {
-      return GSheetsValue(rowCounts, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(rowCounts, exception: returnValue.exception);
     }
     rowCounts[ROW_COUNT_FROM_ALL_ROWS_MAP] = value ?? 0;
 
     returnValue = await getRowCountFromLastNonEmptyRow();
     value = returnValue.value;
     if (returnValue.exception != null) {
-      return GSheetsValue(rowCounts, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(rowCounts, exception: returnValue.exception);
     }
     rowCounts[ROW_COUNT_FROM_LAST_NON_EMPTY_ROW] = value ?? 0;
 
-    return GSheetsValue(rowCounts);
+    return GoogleSheetsValueExceptionPair(rowCounts);
   }
   //#endregion
 
   //#region Row(s): Insert
-  Future<GSheetsValue<bool>> insertRowAbove(int index, { bool inheritFromBefore = false}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowAbove(int index, { bool inheritFromBefore = false}) async {
     return await insertRowsAbove(index, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
   //This is the same a insertRows, but I think the name is clearer
-  Future<GSheetsValue<bool>> insertRowsAbove(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowsAbove(
     int index,
     {
       int count = 1,
@@ -319,11 +319,11 @@ class WorksheetService {
     return await insertEmptyRowsAtIndex(index, count: count, inheritFromBefore: inheritFromBefore);
   }
 
-  Future<GSheetsValue<bool>> insertRowBelow(int index, { bool inheritFromBefore = false}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowBelow(int index, { bool inheritFromBefore = false}) async {
     return await insertRowsBelow(index, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
-  Future<GSheetsValue<bool>> insertRowsBelow(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowsBelow(
     int index,
     {
       int count = 1,
@@ -334,7 +334,7 @@ class WorksheetService {
   }
 
   //Row, Indexes, Values
-  Future<GSheetsValue<bool>> insertRowAtIndexes(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowAtIndexes(
     List<int> indexes,
     {
       bool inheritFromBefore = false,
@@ -358,7 +358,7 @@ class WorksheetService {
   }
 
   //Rows, Indexes, Values
-  Future<GSheetsValue<bool>> insertRowsAtIndexes(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowsAtIndexes(
     List<int> indexes,
     {
       int count = 1,
@@ -397,14 +397,14 @@ class WorksheetService {
         }
       }
 
-      return GSheetsValue(allSucceeded);
+      return GoogleSheetsValueExceptionPair(allSucceeded);
     } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
   //Row, Index, Values
-  Future<GSheetsValue<bool>> insertRowAtIndex(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowAtIndex(
     int index,
     {
       bool inheritFromBefore = false,
@@ -428,7 +428,7 @@ class WorksheetService {
   }
 
   //Rows, Index, Values
-  Future<GSheetsValue<bool>> insertRowsAtIndex(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertRowsAtIndex(
     int index,
     {
       int count = 1,
@@ -465,19 +465,19 @@ class WorksheetService {
         }
       }
 
-      return GSheetsValue(allSucceeded);
+      return GoogleSheetsValueExceptionPair(allSucceeded);
     } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
   //Row, Indexes, No Values
-  Future<GSheetsValue<bool>> insertEmptyRowAtIndexes(List<int> indexes, {bool inheritFromBefore = false}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> insertEmptyRowAtIndexes(List<int> indexes, {bool inheritFromBefore = false}) async {
     return await insertEmptyRowsAtIndexes(indexes, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
   //Rows, Indexes, No Values
-  Future<GSheetsValue<bool>> insertEmptyRowsAtIndexes(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertEmptyRowsAtIndexes(
     List<int> indexes,
     {
       int count = 1,
@@ -501,19 +501,19 @@ class WorksheetService {
         }
       }
 
-      return GSheetsValue(allSucceeded);
+      return GoogleSheetsValueExceptionPair(allSucceeded);
     } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
   //Row, Index, No Values
-  Future<GSheetsValue<bool>> insertEmptyRowAtIndex(int index, {bool inheritFromBefore = false}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> insertEmptyRowAtIndex(int index, {bool inheritFromBefore = false}) async {
     return await insertEmptyRowsAtIndex(index, count: 1, inheritFromBefore: inheritFromBefore);
   }
 
   //Rows, Index, No Values
-  Future<GSheetsValue<bool>> insertEmptyRowsAtIndex(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertEmptyRowsAtIndex(
     int index,
     {
       int count = 1,
@@ -522,15 +522,15 @@ class WorksheetService {
   ) async {
     try {
       final returnValue = await worksheet?.insertRow(index, count: count, inheritFromBefore: inheritFromBefore);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
   //#endregion
 
   //#region Row(s): AddOrUpdate
-  Future<GSheetsValue<bool>> addOrUpdateRowByUid(
+  Future<GoogleSheetsValueExceptionPair<bool>> addOrUpdateRowByUid(
     String? uid,
     Map<String, dynamic> row,
     {
@@ -545,12 +545,12 @@ class WorksheetService {
     final returnValue = await getRowIndexWithUid(uid, inColumn: uidInColumn);
     final value = returnValue.value;
     if (returnValue.exception != null){
-      return GSheetsValue(false, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(false, exception: returnValue.exception);
     }
     return await addOrUpdateRow(value, row, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, inRange: inRange, overwrite: overwrite);
   }
     
-  Future<GSheetsValue<bool>> addOrUpdateRow(
+  Future<GoogleSheetsValueExceptionPair<bool>> addOrUpdateRow(
     int? index,
     Map<String, dynamic> row,
     {
@@ -570,7 +570,7 @@ class WorksheetService {
   //#endregion
   
   //#region Row(s): Append
-  Future<GSheetsValue<bool>> appendRow(
+  Future<GoogleSheetsValueExceptionPair<bool>> appendRow(
     Map<String, dynamic> row,
     {
       int fromColumn = UID_COLUMN_NUMBER,
@@ -581,13 +581,13 @@ class WorksheetService {
   ) async {
     try {
       final returnValue = await worksheet?.values.map.appendRow(row, mapTo: mapTo, appendMissing: appendMissing, inRange: inRange) ?? false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
-  Future<GSheetsValue<bool>> appendRows(
+  Future<GoogleSheetsValueExceptionPair<bool>> appendRows(
     List<Map<String, dynamic>> rows,
     {
       int fromColumn = UID_COLUMN_NUMBER,
@@ -598,15 +598,15 @@ class WorksheetService {
   ) async {
     try {
       final returnValue = await worksheet?.values.map.appendRows(rows, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, inRange: inRange) ?? false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
   //#endregion
 
   //#region Row(s): Update
-  Future<GSheetsValue<bool>> updateRowWithoutColumnHeaderKeys(
+  Future<GoogleSheetsValueExceptionPair<bool>> updateRowWithoutColumnHeaderKeys(
     int? index,
     List<dynamic> rowValues,
     {
@@ -618,13 +618,13 @@ class WorksheetService {
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
           ? await sheet.values.insertRow(index, rowValues, fromColumn: fromColumn)
           : false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
-  Future<GSheetsValue<bool>> updateRow(
+  Future<GoogleSheetsValueExceptionPair<bool>> updateRow(
     int? index,
     Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
@@ -639,13 +639,13 @@ class WorksheetService {
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
           ? await sheet.values.map.insertRow(index, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite)
           : false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
 
-  Future<GSheetsValue<bool>> updateRowByUid(
+  Future<GoogleSheetsValueExceptionPair<bool>> updateRowByUid(
     String? uid,
     Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
@@ -659,7 +659,7 @@ class WorksheetService {
     return await updateRowByKey(uid, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
   }
 
-  Future<GSheetsValue<bool>> updateRowById(
+  Future<GoogleSheetsValueExceptionPair<bool>> updateRowById(
     int? id,
     Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
@@ -673,7 +673,7 @@ class WorksheetService {
     return await updateRowByKey(id, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager);
   }
 
-  Future<GSheetsValue<bool>> updateRowByKey(
+  Future<GoogleSheetsValueExceptionPair<bool>> updateRowByKey(
     Object? key,
     Map<String, dynamic> rowValuesWithColumnHeaderKeys,
     {
@@ -689,49 +689,49 @@ class WorksheetService {
       final returnValue = key != null && sheet != null
           ? await sheet.values.map.insertRowByKey(key, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager)
           : false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
   //#endregion
 
   //#region Row(s): Delete
-  Future<GSheetsValue<bool>> deleteRowByUid(String? uid, {int inColumn = UID_COLUMN_NUMBER}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> deleteRowByUid(String? uid, {int inColumn = UID_COLUMN_NUMBER}) async {
     return await deleteRowByKey(uid, inColumn: inColumn);
   }
 
-  Future<GSheetsValue<bool>> deleteRowById(int? id, {int inColumn = UID_COLUMN_NUMBER}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> deleteRowById(int? id, {int inColumn = UID_COLUMN_NUMBER}) async {
     return await deleteRowByKey(id, inColumn: inColumn);
   }
 
-  Future<GSheetsValue<bool>> deleteRowByKey<T>(Object? key, {int inColumn = UID_COLUMN_NUMBER}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> deleteRowByKey<T>(Object? key, {int inColumn = UID_COLUMN_NUMBER}) async {
     final returnValue = await getRowIndexOfKeyInColumn(key, inColumn: inColumn);
     if (returnValue.exception != null) {
-      return GSheetsValue(false, exception: returnValue.exception);
+      return GoogleSheetsValueExceptionPair(false, exception: returnValue.exception);
     }
     return await deleteRow(returnValue.value);
   }
 
-  Future<GSheetsValue<bool>> deleteRow(int? index) async => await deleteRows(index, 1);
+  Future<GoogleSheetsValueExceptionPair<bool>> deleteRow(int? index) async => await deleteRows(index, 1);
 
-  Future<GSheetsValue<bool>> deleteRows(int? index, int numberOfRows) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> deleteRows(int? index, int numberOfRows) async {
     try {
       final sheet = worksheet;
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null ? await sheet.deleteRow(index, count: numberOfRows) : false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
   //#endregion
 
   //#region Values
-  Future<GSheetsValue<bool>> updateValue(dynamic value, int rowNumber, String columnName, {bool eager = true}) async {
+  Future<GoogleSheetsValueExceptionPair<bool>> updateValue(dynamic value, int rowNumber, String columnName, {bool eager = true}) async {
     return insertValueByKeys(value, columnKey: columnName, rowKey: rowNumber, eager: eager);
   }
 
-  Future<GSheetsValue<bool>> insertValueByKeys(
+  Future<GoogleSheetsValueExceptionPair<bool>> insertValueByKeys(
       Object? value,
       {
         required Object columnKey,
@@ -742,9 +742,9 @@ class WorksheetService {
     try {
       final sheet = worksheet;
       final returnValue = value != null && sheet != null ? await sheet.values.insertValueByKeys(value, columnKey: columnKey, rowKey: rowKey, eager: eager) : false;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(false, exception: e);
+      return GoogleSheetsValueExceptionPair(false, exception: e);
     }
   }
   //#endregion

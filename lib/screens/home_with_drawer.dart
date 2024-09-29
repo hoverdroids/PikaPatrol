@@ -21,7 +21,7 @@ import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/observation_view_model.dart';
-import 'package:pika_patrol/services/firebase_auth_service.dart';
+import 'package:pika_patrol/services/firebase/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -381,7 +381,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
-            await firebaseDatabaseService.userProfilesService.deleteUserProfile();
+            await firebaseDatabaseService.userProfilesCollection.deleteUserProfile();
 
             var result = await firebaseAuthService.deleteUser();
             var message = result?.message;
@@ -600,7 +600,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     var newlyRegisteredUid = registrationResult.appUser?.uid;
     if (newlyRegisteredUid != null) {
-      var initializationException = await firebaseDatabaseService.userProfilesService.initializeUser(newlyRegisteredUid);
+      var initializationException = await firebaseDatabaseService.userProfilesCollection.initializeUser(newlyRegisteredUid);
+
+      this is now a bool wrapped up
       if (initializationException == null) {
         showToast("${translations.initialized} ${registrationResult.email}");
       }
@@ -744,7 +746,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseUserProfilesNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var appUserProfiles = await firebaseDatabaseService.userProfilesService.getAllUserProfiles(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
+    var appUserProfiles = await firebaseDatabaseService.userProfilesCollection.getAllUserProfiles(limit: FirebaseUserProfilesProvider.NO_LIMIT);
 
     for (var appUserProfile in appUserProfiles) {
       var now = DateTime.now();
@@ -781,7 +783,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   exportFirebaseObservationsNotInGoogleSheetsToGoogleSheets() async {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
-    var observations = await firebaseDatabaseService.observationsService.getAllObservations(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
+    var observations = await firebaseDatabaseService.observationsCollection.getAllObservations(limit: FirebaseUserProfilesProvider.NO_LIMIT);
 
     for (var observation in observations) {
       var now = DateTime.now();
@@ -868,7 +870,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var profileUpdated = false;
     AppUserProfile? updatedUserProfile;
     if (!hasError) {
-      updatedUserProfile = await firebaseDatabaseService.userProfilesService.addOrUpdateUserProfile(
+      showToast("App profile update error:$e");
+
+      updatedUserProfile = await firebaseDatabaseService.userProfilesCollection.createOrUpdateUserProfile(
           editedFirstName ?? userProfile?.firstName ?? "",
           editedLastName ?? userProfile?.lastName ?? "",
           userProfile?.uid,

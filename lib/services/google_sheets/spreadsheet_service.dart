@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:gsheets/gsheets.dart';
 import 'package:googleapis/sheets/v4.dart' as v4;
 import 'package:googleapis_auth/auth_io.dart';
-import 'package:pika_patrol/model/gsheets_value.dart';
+import 'package:pika_patrol/model/google_sheets_value_exception_pair.dart';
 import 'package:pika_patrol/services/worksheet_service.dart';
 import 'dart:developer' as developer;
 import 'package:http/http.dart' as http;
@@ -120,7 +120,7 @@ abstract class SpreadsheetService {
   //#endregion
 
   //#region Spreadsheet
-  Future<GSheetsValue<Spreadsheet>> createSpreadsheet(
+  Future<GoogleSheetsValueExceptionPair<Spreadsheet>> createSpreadsheet(
       String title, {
         List<String> worksheetTitles = const <String>['Sheet1'],
         ValueRenderOption render = ValueRenderOption.unformattedValue,
@@ -129,13 +129,13 @@ abstract class SpreadsheetService {
       ) async {
     try {
       final returnValue = await _gSheets?.createSpreadsheet(title, worksheetTitles: worksheetTitles, render: render, input: input);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
-  Future<GSheetsValue<Spreadsheet>> getSpreadsheet(
+  Future<GoogleSheetsValueExceptionPair<Spreadsheet>> getSpreadsheet(
       String spreadsheetId, {
         ValueRenderOption render = ValueRenderOption.unformattedValue,
         ValueInputOption input = ValueInputOption.userEntered,
@@ -143,9 +143,9 @@ abstract class SpreadsheetService {
       ) async {
     try {
       final returnValue = await _gSheets?.spreadsheet(spreadsheetId, render: render, input: input);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch (e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
@@ -153,12 +153,12 @@ abstract class SpreadsheetService {
   //#endregion
 
   //#region Client
-  Future<GSheetsValue<AutoRefreshingAuthClient>> getClient() async {
+  Future<GoogleSheetsValueExceptionPair<AutoRefreshingAuthClient>> getClient() async {
     try {
       final returnValue = await _gSheets?.client;
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
@@ -177,7 +177,7 @@ abstract class SpreadsheetService {
   //#endregion
 
   //#region Updates
-  Future<GSheetsValue<http.Response>> batchUpdate(
+  Future<GoogleSheetsValueExceptionPair<http.Response>> batchUpdate(
       List<Map<String, dynamic>> requests,
       {
         String? spreadsheetId,
@@ -189,20 +189,20 @@ abstract class SpreadsheetService {
     final resolvedSpreadsheetId = spreadsheetId ?? this.spreadsheetId;
 
     if (resolvedClient == null || resolvedSpreadsheetId == null) {
-      return GSheetsValue(null);
+      return GoogleSheetsValueExceptionPair(null);
     }
 
     try {
       final returnValue = await GSheets.batchUpdate(resolvedClient, resolvedSpreadsheetId, requests);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
   //#endregion
 
   //#region Import/Export
-  Future<GSheetsValue<List<Uint8List>>> exportSpreadsheetWorksheets(
+  Future<GoogleSheetsValueExceptionPair<List<Uint8List>>> exportSpreadsheetWorksheets(
     {
       List<int> worksheetIdsToIgnore = const [],
       AutoRefreshingAuthClient? client,
@@ -223,7 +223,7 @@ abstract class SpreadsheetService {
     return await exportAnySpreadsheetWorksheets(worksheetIdsToExport);
   }
 
-  Future<GSheetsValue<List<Uint8List>>> exportAnySpreadsheetWorksheets(
+  Future<GoogleSheetsValueExceptionPair<List<Uint8List>>> exportAnySpreadsheetWorksheets(
     List<int> worksheetIdsToExport,
     {
       AutoRefreshingAuthClient? client,
@@ -237,7 +237,7 @@ abstract class SpreadsheetService {
     final resolvedSpreadsheetUrl = spreadsheetUrl ?? this.spreadsheetUrl;
 
     if (resolvedClient == null || resolvedSpreadsheetId == null || resolvedSpreadsheetUrl == null) {
-      return GSheetsValue(null);
+      return GoogleSheetsValueExceptionPair(null);
     }
 
     try {
@@ -253,13 +253,13 @@ abstract class SpreadsheetService {
           exportedWorksheets.add(value);
         }
       }
-      return GSheetsValue(exportedWorksheets);
+      return GoogleSheetsValueExceptionPair(exportedWorksheets);
     } on GSheetsException catch(e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
 
-  Future<GSheetsValue<Uint8List>> exportAnyWorksheet(
+  Future<GoogleSheetsValueExceptionPair<Uint8List>> exportAnyWorksheet(
     int worksheetIdToExport,
     {
       AutoRefreshingAuthClient? client,
@@ -273,14 +273,14 @@ abstract class SpreadsheetService {
     final resolvedSpreadsheetUrl = spreadsheetUrl ?? this.spreadsheetUrl;
 
     if (resolvedClient == null || resolvedSpreadsheetId == null || resolvedSpreadsheetUrl == null) {
-      return GSheetsValue(null);
+      return GoogleSheetsValueExceptionPair(null);
     }
 
     try {
       final returnValue = await GSheets.export(client: resolvedClient, spreadsheetId: resolvedSpreadsheetId, spreadsheetUrl: resolvedSpreadsheetUrl, format: format, worksheetId: worksheetIdToExport);
-      return GSheetsValue(returnValue);
+      return GoogleSheetsValueExceptionPair(returnValue);
     } on GSheetsException catch(e) {
-      return GSheetsValue(null, exception: e);
+      return GoogleSheetsValueExceptionPair(null, exception: e);
     }
   }
   //#endregion

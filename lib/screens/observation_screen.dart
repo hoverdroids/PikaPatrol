@@ -41,7 +41,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
-import '../utils/firebase_utils.dart';
+import '../services/firebase/utils/firebase_utils.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable

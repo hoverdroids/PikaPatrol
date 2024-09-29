@@ -7,25 +7,49 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:pika_patrol/providers/filehost/file_host.dart';
 import 'package:provider/provider.dart';
-
-import 'package:pika_patrol/main.dart';
-import 'package:pika_patrol/services/firebase_observations_service.dart';
-import 'package:pika_patrol/services/google_sheets_service.dart';
 
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
-import '../model/gsheets_value.dart';
+import '../model/google_sheets_value_exception_pair.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../model/value_message_pair.dart';
-import '../services/firebase_database_service.dart';
+import 'firebase/buckets/firebase_audio_storage_bucket.dart';
+import 'firebase/buckets/firebase_images_storage_bucket.dart';
+import 'firebase/firebase_firestore_service.dart';
+import 'google_sheets/google_sheets_service.dart';
 
+
+//TODO - this probably needs to get merged into AnimalObservationsFirebaseFirestoreService
 class ObservationsService {
+
+  //TODO - this service should have list of observations services and loop through providers, and each service or provider should be able to be used for reading or writing
+
+  //TODO - CHRIS - should this be a list of buckets?
+  //there could be any number of image and audio buckets; they do not have to be one to one by file type
+
+  //region File Hosts
+  FileHost? imagesFileHost;
+  FileHost? audioFileHost;
+  //endregion
+
+  //region Observation provider(s)
+  //TODO - note if is a local or remote provider
+  //endregion
+
+  //region User profile provider(s)
+  //TODO - note if is local or remote provider
+  //endregion
+
+  //region Authentication provider(s)
+  //TODO - note if local or remote
+  //endregion
 
   late Translations translations;
   late GoogleSheetsService googleSheetsService;
-  late FirebaseDatabaseService firebaseDatabaseService;//TODO - should this be firebase_observations_service?
+  late FirebaseFirestoreService firebaseFirestoreService;
 
   //region Empty Observations
   StreamController<List<Observation>>? _emptyObservationsStreamController;
@@ -151,7 +175,7 @@ class ObservationsService {
   }
 
   Future<LocalObservation?> saveLocalObservation(Observation observation) async {
-    var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+    var box = Hive.box<LocalObservation>(FirebaseObservationProvider.COLLECTION_NAME);
 
     LocalObservation? currentLocalObservation = box.get(observation.dbId);
     if (currentLocalObservation == null) {
@@ -213,7 +237,7 @@ class ObservationsService {
   }
 
   Future deleteLocalObservation(Observation observation) async {
-    var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+    var box = Hive.box<LocalObservation>(FirebaseObservationProvider.COLLECTION_NAME);
     if (observation.dbId != null) {
       // Deleting from cached observations, the observation will have a dbId, but might not have a uid
       await box.delete(observation.dbId);
@@ -323,26 +347,34 @@ class ObservationsService {
 
   //region Observation CRUD
   Future<ValueMessagePair?> trySaveObservation(Observation observation, AppUser? user) async {
-    //Do not set the date using DateTime.now because it can be set manually by the user for any date they indicate the observation was made
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
     /*
-               TODO:
-              all of this needs to go in the service
-              and all of this needs  to start with a uid that is generated with observationsCollection.doc().id
-              then, we can use that id to save once locally, save to sheets with and get a real date, and then update firebase so that all is in sync
-              one foreseeable issue is going to be isUploaded will not be correct in sheets as firebase call comes after sheets call now
+      TODO:
+      all of this needs to go in the service
+      and all of this needs  to start with a uid that is generated with observationsCollection.doc().id
+      then, we can use that id to save once locally, save to sheets with and get a real date, and then update firebase so that all is in sync
+      one foreseeable issue is going to be isUploaded will not be correct in sheets as firebase call comes after sheets call now
+    */
 
-              */
+
+    final originalObservationUid = observation.uid;
+    final resolvedObservationUid = originalObservationUid ?? firebaseFirestoreService.observationsCollection.getNewObservationUid();
+    observation.uid = resolvedObservationUid;
 
 
-    var isInitialObservation = observation.uid == null;//always save a new observation locally
-    var isUsersObservation = user != null && user.uid == observation.observerUid;//don't save another user's observations locally; can happen when admin edits
-    if (isInitialObservation || isUsersObservation) {
-      observation.isUploaded = false;
-      //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
-      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
-    }
+
+    //var isInitialObservation = observation.uid == null;//always save a new observation locally
+
+
+
+
+    //"Date" can be set manually by the user for any date they indicate the observation was made.
+    // So, do not set the date using DateTime.now!
+    final dateUpdated = DateTime.now();
+    final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+
 
     //TODO - CHRIS - probably worth moving to the saveObservationon method
     // TODO: we need an online/offline widget that triggers updates so that we con't have to ask the isOnline question every time
@@ -363,8 +395,18 @@ class ObservationsService {
     // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
     observation.observerUid ??= user.uid;
 
-    //Share with others
+    probably need some stuff here
     await saveObservation(observation);
+
+    // Save local observation last to ensure correct information and status for Firebase and Google Sheets,
+    // and to avoid having to call multiple times
+    var isUsersObservation = user != null && user.uid == observation.observerUid;//don't save another user's observations locally; can happen when admin edits
+    if (isUsersObservation) {
+      observation.isUploaded = false; how to handle this
+      //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
+      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
+    }
+
 
     //TODO -  should this return a message indicating successful update?
     return null;
@@ -372,28 +414,33 @@ class ObservationsService {
 
   Future saveObservation(Observation observation, {bool saveLocal = true}) async {
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
+    we now have all of our own observations and should compare what we have to the update and only try to update when different
+
+    await saveObservationToFirebase();
+    await saveObservationToGoogleSheets();
+
 
     var imageUrls = observation.imageUrls;
     if (imageUrls != null && imageUrls.isNotEmpty) {
-      observation.imageUrls = await firebaseDatabaseService.observationsService.uploadFiles(imageUrls, true);
+      observation.imageUrls = await firebaseFirestoreService.observationsCollection.uploadFiles(imageUrls, true);do not upload if no change
     }
 
     var audioUrls = observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
-      observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);
+      observation.audioUrls = await firebaseFirestoreService.observationsCollection.uploadFiles(audioUrls, false);do not upload if no change
     }
 
     //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
-
     final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
+    final resolvedDateUpdatedInGoogleSheets = DateTime.now();
+    observation.dateUpdatedInGoogleSheets = resolvedDateUpdatedInGoogleSheets;
 
     try {
       var sharedWithProjects = observation.sharedWithProjects;
       sharedWithProjects?.add("Pika Patrol");
 
       for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        GSheetsValue<bool>? returnValue;
+        GoogleSheetsValueExceptionPair<bool>? returnValue;
         if (sharedWithProjects?.contains(service.organization) == true) {
           returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
         } else {
@@ -410,7 +457,14 @@ class ObservationsService {
       showToast("Exception: ${e.cause}");//TODO - toast should not be here
     }
 
-    var exception = await firebaseDatabaseService.observationsService.updateObservation(observation);
+    this is where we probably need to use buckets, instead of the observation collection
+
+    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
+    modify files in the file host now, based on the updated observation files list
+
+
+
+      var exception = await firebaseFirestoreService.observationsCollection.updateObservation(observation);
     if (exception != null) {
       showToast("Exception: ${exception.message}");//TODO - toast should not be here
     }
@@ -430,15 +484,39 @@ class ObservationsService {
       await deleteLocalObservation(observation);
     }
 
+    this is where we need to delete the observation images and audio, not in the collection
+
     FirebaseException? firebaseException;
     if (context.mounted && deleteFromFirebase) {
       var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
-      firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+      firebaseException = await databaseService.observationsCollection.deleteObservation(observation, deleteImages, deleteAudio);
+
+
+      if (, bool deleteImages, bool deleteAudio) {
+    delete files here instead of in the observationCollection in order to separate concerns
+    if for example, we change the file host, then there will not be a need to change the code other than swapping out the file host implementation
+
+    for this to work, need a list of urls for the files
+    }
+    var exception = deleteImages ? await deleteFiles(FOLDER_NAME, observation.imageUrls) : null;
+    if (exception != null) {
+    return exception;
+    }
+
+    exception = deleteAudio ? await deleteFiles(FOLDER_NAME, observation.audioUrls) : null;
+    if (exception != null) {
+    return exception;
+    }
+
+
     }
 
     if (context.mounted && deleteFromGoogleSheets) {
       var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
       for (var service in sheetsService.pikaPatrolSpreadsheetServices) {
+
+
+
         service.observationWorksheetService?.deleteObservation(observation);
         await Future.delayed(const Duration(milliseconds: GoogleSheetsService.LESS_THAN_60_WRITES_DELAY_MS), () {});
       }

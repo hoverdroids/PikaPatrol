@@ -1,23 +1,29 @@
 // ignore_for_file: constant_identifier_names
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pika_patrol/services/firebase/firebase_firestore_service.dart';
 
-import '../model/google_sheets_credential.dart';
+import '../../../model/google_sheets_credential.dart';
+import 'firebase_firestore_collection.dart';
 
-class FirebaseGoogleSheetsDatabaseService {
+class FirebaseGoogleSheetsCredentialCollection extends FirebaseFirestoreCollection {
 
-  static const GOOGLE_SHEETS_COLLECTION_NAME = "googleSheets";
+  static const COLLECTION_NAME = "googleSheets";
 
   static const String CREDENTIAL = "credential";
   static const String SPREADSHEETS = "spreadsheets";
 
-  final FirebaseFirestore firebaseFirestore;
-  late final CollectionReference credentialsCollection;
-
   var enabled = true;
 
-  FirebaseGoogleSheetsDatabaseService(this.firebaseFirestore) {
-    credentialsCollection = firebaseFirestore.collection(GOOGLE_SHEETS_COLLECTION_NAME);
-  }
+  //region Constructor
+  FirebaseGoogleSheetsCredentialCollection(
+    FirebaseFirestore firestore,
+    {
+      String name = COLLECTION_NAME,
+      super.limit = FirebaseFirestoreCollection.DEFAULT_LIMIT_NONE
+    }
+  ) : super(firestore, name);
+  //endregion
+
 
   List<GoogleSheetsCredential> _credentialsFromSnapshot(QuerySnapshot snapshot) {
     return snapshot.docs.map((doc) {

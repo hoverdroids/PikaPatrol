@@ -53,7 +53,7 @@ Future<void> main() async {
   final firebaseAuthService = firebaseAuthServiceReturnValue.value ?? FirebaseAuthService();
 
   //TODO - this needs to be a generic database service so that we could switch out for another option if desired
-  final animalObservationsFirebaseFirestoreService = AnimalObservationsFirebaseFirestoreService(
+  final animalObservationsFirebaseFirestoreService = AppFirebaseFirestoreService(
     bucket: FirebaseProjectConfig.STORAGE_BUCKET,
     useEmulator: FirebaseProjectConfig.FIRESTORE_USE_EMULATOR,
     emulatorHostnameOrIpAddress: FirebaseProjectConfig.FIRESTORE_EMULATOR_IP,
@@ -73,7 +73,7 @@ Future<void> main() async {
         Provider<FirebaseAuthService>(
             create: (_) => firebaseAuthService//Only one service to avoid multiple connections to firebase
         ),
-        Provider<AnimalObservationsFirebaseFirestoreService>(
+        Provider<AppFirebaseFirestoreService>(
             create: (_) => animalObservationsFirebaseFirestoreService//Only one service to avoid multiple connections to firebase
         ),
         ChangeNotifierProvider(

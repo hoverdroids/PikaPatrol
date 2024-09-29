@@ -4,13 +4,16 @@ import 'package:pika_patrol/services/firebase/collections/firebase_google_sheets
 import 'package:pika_patrol/services/firebase/collections/firebase_observation_collection.dart';
 import 'package:pika_patrol/services/firebase/collections/firebase_user_profiles_collection.dart';
 
+import '../../providers/filehost/file_host.dart';
 import '../../utils/constants.dart';
 import 'buckets/firebase_audio_storage_bucket.dart';
 import 'buckets/firebase_images_storage_bucket.dart';
 import 'firebase_constants.dart';
 import 'firebase_firestore_service.dart';
 
-class AnimalObservationsFirebaseFirestoreService extends FirebaseFirestoreService {
+//TODO - this should aggregate all the filehosts and dbs in one place for the app
+// It should be useful regardless of choice of db or file host
+class AppFirebaseFirestoreService extends FirebaseFirestoreService {
 
 
   /*
@@ -37,15 +40,20 @@ class AnimalObservationsFirebaseFirestoreService extends FirebaseFirestoreServic
     return googleSheetsService.credentialsCollection;
   }*/
 
+
   //TODO - CHRIS - should these be available to caller or should there be an interface that abstracts how the service is doing it?
+  //TODO - this collection is providing Profiles
   late final FirebaseUserProfilesCollection userProfilesCollection;//TODO - should this be a generic database with the specific implementation set in init?
+  //TODO - this collection is providing Observations
   late final FirebaseObservationCollection observationsCollection;
+  //TODO - this collection is providing GoogleSheetsCredentials
   late final FirebaseGoogleSheetsCredentialCollection googleSheetsCredentialsCollection;
 
-  late final FirebaseAudioStorageBucket audioStorageBucket;//TODO - should this be a FileHost with the specific implementation set in init?
-  late final FirebaseImagesStorageBucket imagesStorageBucket;
 
-  AnimalObservationsFirebaseFirestoreService(
+  late final FileHost audioFileHost;
+  late final FileHost imagesFileHost;
+
+  AppFirebaseFirestoreService(
     {
       super.firebaseFirestore,
       String? bucket,
@@ -69,11 +77,13 @@ class AnimalObservationsFirebaseFirestoreService extends FirebaseFirestoreServic
     collections[googleSheetsCredentialsCollection.name] = googleSheetsCredentialsCollection;
 
     if (bucket != null) {
-      audioStorageBucket = FirebaseAudioStorageBucket(bucket);
-      buckets[audioStorageBucket.folderName] = audioStorageBucket;
+      final audioStorageBucket = FirebaseAudioStorageBucket(bucket);
+      audioFileHost = audioStorageBucket;
+      buckets[audioFileHost.name] = audioStorageBucket;
 
-      imagesStorageBucket = FirebaseImagesStorageBucket(bucket);
-      buckets[imagesStorageBucket.folderName] = imagesStorageBucket;
+      final imagesStorageBucket = FirebaseImagesStorageBucket(bucket);
+      imagesFileHost = imagesFileHost;
+      buckets[imagesFileHost.name] = imagesStorageBucket;
     }
   }
 }

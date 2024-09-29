@@ -498,12 +498,12 @@ class ObservationsService {
 
     for this to work, need a list of urls for the files
     }
-    var exception = deleteImages ? await deleteFiles(FOLDER_NAME, observation.imageUrls) : null;
+    var exception = deleteImages ? await deleteFiles(NAME, observation.imageUrls) : null;
     if (exception != null) {
     return exception;
     }
 
-    exception = deleteAudio ? await deleteFiles(FOLDER_NAME, observation.audioUrls) : null;
+    exception = deleteAudio ? await deleteFiles(NAME, observation.audioUrls) : null;
     if (exception != null) {
     return exception;
     }

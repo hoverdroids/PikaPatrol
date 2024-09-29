@@ -10,20 +10,25 @@ import '../../../utils/path_utils.dart';
 import '../utils/firebase_utils.dart';
 import '../firebase_constants.dart';
 
-abstract class FirebaseStorageBucket implements FileHost {
+abstract class FirebaseStorageBucket implements FileHost<FirebaseException> {
 
   FirebaseStorage? storage;
   FirebaseException? storageInitializationException;
 
-  String folderName;
   String bucket;
   late String bucketUrl;
 
+  @override
+  String name;
+
+  @override
   Set<String>? restrictMimeTypesTo;
+
+  @override
   Set<String>? restrictFileTypesTo;
 
   //region Constructors
-  FirebaseStorageBucket(this.bucket, {required this.folderName, this.restrictMimeTypesTo, this.restrictFileTypesTo}) {
+  FirebaseStorageBucket(this.bucket, {required this.name, this.restrictMimeTypesTo, this.restrictFileTypesTo}) {
     bucketUrl = "${FirebaseConstants.STORAGE_BUCKET_URL_PREFIX}$bucket";
 
     try {
@@ -35,12 +40,6 @@ abstract class FirebaseStorageBucket implements FileHost {
   //endregion
 
   //region Upload
-  // Returns a mapping of the original path to FirebaseValueExceptionPair with a result path based on:
-  // If restrictedMimeTypesTo is provided and the file's mime type is not included, result path will be the input path.
-  // If restrictedFileTypesTo is provided and the file's file type is not included, result path will be the input path.
-  // If Firebase throws an exception, result path will be the input path.
-  // If the path is an Url, result path will be the input path.
-  // Otherwise, the result path will be the upload path returned by firebase.
   @override
   Future<FirebaseValueExceptionPair<String>> uploadFile(String filepathOrUrl) async {
     final returnValue = FirebaseValueExceptionPair(filepathOrUrl, exception: storageInitializationException);
@@ -62,7 +61,7 @@ abstract class FirebaseStorageBucket implements FileHost {
 
       if (isAllowed) {
         try {
-          final snapshot = await storage.ref().child("$folderName/${basename(filepathOrUrl)}").putFile(File(filepathOrUrl));
+          final snapshot = await storage.ref().child("$name/${basename(filepathOrUrl)}").putFile(File(filepathOrUrl));
 
           //return value that is the download url without an exception to indicate all is well and the path can be used
           returnValue.value = await snapshot.ref.getDownloadURL();
@@ -99,27 +98,27 @@ abstract class FirebaseStorageBucket implements FileHost {
 
   //region Download
   @override
-  Future<FirebaseValueExceptionPair> downloadFile(String url) {
+  Future<FirebaseValueExceptionPair<String>> downloadFile(String url) async {
     throw UnimplementedError();
   }
 
   @override
-  Future<Map<String, FirebaseValueExceptionPair>> downloadFiles(List<String> urls) {
+  Future<Map<String, FirebaseValueExceptionPair<String>>> downloadFiles(List<String> urls) async {
     throw UnimplementedError();
   }
   //endregion
 
   //region Delete
   @override
-  Future<FirebaseValueExceptionPair<bool>> deleteFile(String? url, {bool useFolderName = false}) async {
+  Future<FirebaseValueExceptionPair<bool>> deleteFile(String? url, {bool useNameInsteadOfRefFromUrl = false}) async {
     final returnValue = FirebaseValueExceptionPair(false);
     final storage = this.storage;
 
     if (url == null || url.isEmpty || storage == null) return returnValue;
 
     try {
-      if (useFolderName) {
-        await storage.ref().child("$folderName/${basename(url)}").delete();
+      if (useNameInsteadOfRefFromUrl) {
+        await storage.ref().child("$name/${basename(url)}").delete();
       } else {
         await storage.refFromURL(url).delete();
       }
@@ -139,7 +138,7 @@ abstract class FirebaseStorageBucket implements FileHost {
     if (urls.isEmpty || storage == null) return returnValue;
 
     for (var url in urls) {
-      returnValue[url] = await deleteFile(url, useFolderName: useFolderName);
+      returnValue[url] = await deleteFile(url, useNameInsteadOfRefFromUrl: useFolderName);
     }
 
     return returnValue;

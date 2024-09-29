@@ -25,6 +25,7 @@ import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pika_patrol/widgets/observation/comments_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/provider_services/authentication/app_user.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
@@ -38,10 +39,8 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:developer' as developer;
 
-import '../data/pika_species.dart';
 import '../l10n/translations.dart';
 import '../provider_services/observations/observation.dart';
-import '../services/google_sheets/database/google_sheets_service.dart';
 import '../utils/observation_utils.dart';
 import 'home_with_drawer.dart';
 
@@ -666,7 +665,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildOtherAnimalsPresent(),
           _buildSharedWithProjects(),
           _buildSiteHistory(),
-          _buildComments(),
+          CommentsWidget(
+            translations.comments,
+            widget.isEditMode,
+            widget.observation.comments,
+            (value) => setState((){ widget.observation.comments = value; }),
+            translations.anyAdditionalObservations
+          ),
         ],
       ),
     );
@@ -1459,40 +1464,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ),
   );
 
-  Widget _buildComments() => NotificationListener<ScrollNotification>(
-    onNotification: (boolVal) { return true; },
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        ThemedSubTitle(translations.comments, type: ThemeGroupType.POM),
-        miniTransparentDivider,
-        if(widget.isEditMode) ... [
-          ThemedEditableLabelValue(
-            showLabel: false,
-            text: widget.observation.comments ?? "",
-            textType: ThemeGroupType.POM,
-            hintText: translations.anyAdditionalObservations,
-            //hintTextType: hintTextType,
-            //hintTextEmphasis: hintTextEmphasis,
-            //backgroundType: textFieldBackgroundType,
-            onStringChangedCallback: (value) => { widget.observation.comments = value },
-            //validator: validator
-          )
-        ] else ... [
-          SizedBox(
-            height: 120.0,
-            child: SingleChildScrollView(
-              child: ThemedBody(
-                widget.observation.comments,
-                type: ThemeGroupType.MOM,
-              ),
-            ),
-          )
-        ]
-      ],
-    ),
-  );
+
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(

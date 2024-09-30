@@ -24,6 +24,7 @@ import 'package:material_themes_widgets/fundamental/toggles.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pika_patrol/widgets/label_and_value/label_and_single_chip_choice.dart';
 import 'package:pika_patrol/widgets/observation/comments_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/provider_services/authentication/app_user.dart';
@@ -669,7 +670,26 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          _buildPikaSpecies(),
+          LabelAndSingleChipChoice(
+            translations.species,
+            widget.isEditMode,
+            widget.observation.species,
+            widget.observation.getSpeciesValues(translations),
+            (species) => setState(() {
+              widget.observation.species = species;
+            }),
+            (index, species) => getSpeciesLabel(index, species, translations),
+            canAddNewValues: false,
+            addNewValueDialogTitle: translations.addAnotherSpeciesDialogTitle,
+            addNewValueDialogDescription: translations.addAnotherSpeciesDialogDescription,
+            onAddNewValueCallback: (newSpecies) => setState(() {
+              if (newSpecies.isNotEmpty) {
+                widget.observation.species = newSpecies.trim();
+              }
+            }),
+            cancelButtonText: translations.cancel,
+            okButtonText: translations.ok,
+          ),
           _buildSignsChoices(),
           _buildCountChoices(),
           _buildDistanceChoices(),
@@ -1046,59 +1066,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           cropGridColumnCount
       ); 
     }
-  }
-
-  Widget _buildPikaSpecies() {
-    var speciesValues = widget.observation.getSpeciesValues(translations);//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        smallTransparentDivider,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-            /*if (widget.isEditMode)...[
-            ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
-          ]*/
-          ],
-        ),
-        ChipsChoice<String>.single(
-          padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.species,
-          onChanged: (value) => {
-            if (widget.isEditMode) {
-              setState(() => widget.observation.species = value)
-            }
-          },
-          choiceItems: C2Choice.listFrom<String, String>(
-            source: speciesValues,
-            value: (i, v) => v,
-            label: (i, v) => getSpeciesLabel(i, v, translations),
-            tooltip: (i, v) => v,
-          ),
-        )
-      ],
-    );
-  }
-
-  void _openAddOtherSpeciesDialog() {
-    if (!mounted) return;
-
-    showDialog(
-        context: context,
-        builder: (BuildContext context) => TextEntryDialog(
-          title: translations.addAnotherSpeciesDialogTitle,
-          description: translations.addAnotherSpeciesDialogDescription,
-        ),
-        barrierDismissible: false
-    ).then((value) => {
-      setState(() {
-        if (value != null && (value as String).isNotEmpty) {
-          widget.observation.species = value.trim();
-        }
-      })
-    });
   }
 
   Widget _buildSignsChoices() {

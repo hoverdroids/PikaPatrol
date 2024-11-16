@@ -103,17 +103,22 @@ class ObservationsPageState extends State<ObservationsPage> {
       valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
       builder: (context, box, widget2){
 
+        final user = Provider.of<AppUser?>(context);
+        final userId = user?.uid ?? "";
+
         //Get all locally saved observations
         Map<dynamic, dynamic> raw = box.toMap();
         List list = raw.values.toList();
         localObservations = <Observation>[];
         for (var element in list) {
           LocalObservation localObservation = element;
-          var observation = toObservation(localObservation, buttonText: translations.viewObservation);
-          localObservations.add(observation);
-        }
 
-        var user = Provider.of<AppUser?>(context);
+          //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
+          if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
+            var observation = toObservation(localObservation, buttonText: translations.viewObservation);
+            localObservations.add(observation);
+          }
+        }
 
         var needUploaded = user != null && localObservationsNeedUploaded();
 

@@ -201,23 +201,37 @@ class ObservationsPageState extends State<ObservationsPage> {
                             }
                           }
 
-                          if (localObservations.isNotEmpty) {
-                            return CardScroller(
-                                localObservations,
-                                key: _localObservationsScrollerKey,
-                                onTapCard: (index) => {
-                                  Navigator.push( context,
-                                    MaterialPageRoute(
-                                      builder: (_) => ObservationScreen(localObservations[index].copy()),
-                                    ),
-                                  )
-                                }
-                            );
-                          }
+                          return StreamBuilder<List<Observation>>(
+                            stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+                            builder: (context, snapshot) {
+                              List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
+                              observations = observations.reversed.toList();
 
-                          return CardScroller(
-                            _createDefaultObservations(),
-                            key: _emptyLocalObservationsScrollerKey,
+                              for (var observation in observations) {
+                                observation.buttonText = translations.viewObservation;
+                              }
+
+                              localObservations.addAll(observations);
+
+                              if (localObservations.isNotEmpty) {
+                                return CardScroller(
+                                  localObservations,
+                                  key: _localObservationsScrollerKey,
+                                  onTapCard: (index) => {
+                                    Navigator.push( context,
+                                      MaterialPageRoute(
+                                        builder: (_) => ObservationScreen(localObservations[index].copy())
+                                      )
+                                    )
+                                  }
+                                );
+                              }
+
+                              return CardScroller(
+                                _createDefaultObservations(),
+                                key: _emptyLocalObservationsScrollerKey
+                              );
+                            }
                           );
                         }
                       )

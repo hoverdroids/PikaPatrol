@@ -19,6 +19,7 @@ import '../primitives/card_layout.dart';
 import '../services/firebase_database_service.dart';
 import '../services/firebase_observations_service.dart';
 import '../services/settings_service.dart';
+import '../services/shared_observations_service.dart';
 import '../utils/observation_utils.dart';
 import '../widgets/card_scroller.dart';
 import 'observation_screen.dart';
@@ -118,7 +119,7 @@ class ObservationsPageState extends State<ObservationsPage> {
                         ],
                       ),
                       StreamBuilder<List<Observation>>(
-                        stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
+                        stream: Provider.of<SharedObservationsService>(context).sharedObservations,
                         builder: (context, snapshot) {
                           List<Observation> observations = snapshot.hasData ? (snapshot.data ?? <Observation>[]) : <Observation>[];
                           observations = observations.reversed.toList();

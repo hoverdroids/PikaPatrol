@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
@@ -34,13 +35,16 @@ class SharedObservationsService {
 
   List<Observation> sharedObservations = [];
 
-  Key localObservationsScrollerKey = UniqueKey();
-  final Key emptyLocalObservationsScrollerKey = UniqueKey();
-
   List<Observation> _localObservations = [];
 
   List<Observation> get localObservations {
     return _localObservations;
+  }
+
+  final _localObservationsStreamController = StreamController<List<Observation>>();
+
+  Stream<List<Observation>> get localObservationsStream {
+    return _localObservationsStreamController.stream;
   }
 
   setLocalObservations(Box<LocalObservation> box, String userId) {
@@ -48,14 +52,20 @@ class SharedObservationsService {
     List list = raw.values.toList();
     List<Observation> localObservations = <Observation>[];
 
+    localObservations = localObservations.reversed.toList();
+
     for (var element in list) {
       var observation = toObservation(element, buttonText: translations.viewObservation);
       localObservations.add(observation);
     }
 
+    for (var observation in localObservations) {
+      observation.buttonText = translations.viewObservation;
+    }
+
     _localObservations = localObservations;
 
-    localObservationsScrollerKey = Key(_localObservations.hashCode.toString());
+    _localObservationsStreamController.add(_localObservations);
   }
 
 }

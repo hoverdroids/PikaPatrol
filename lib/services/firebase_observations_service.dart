@@ -3,7 +3,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'dart:developer' as developer;
 
-import '../data/pika_species.dart';
 import '../model/observation.dart';
 import '../utils/date_time_utils.dart';
 import '../utils/observation_utils.dart';

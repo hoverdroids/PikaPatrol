@@ -44,6 +44,14 @@ class FirebaseObservationsService {
   static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
   static const String IS_UPLOADED = "isUploaded";
+  static const String RANDOM_CURRENT_USER_ID = "A9x4ikJ7h6MvaJiYAHx7v9o7zRx5";
+
+  //Any random Id to start with so that it doesn't match until a real ID is provided,
+  //because we don't want to match against null or empty as those are valid but undesirable
+  String _currentUserId = RANDOM_CURRENT_USER_ID;
+  set currentUesrId(String? userId) {
+    _currentUserId = userId ?? RANDOM_CURRENT_USER_ID;
+  }
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference observationsCollection;
@@ -185,8 +193,70 @@ class FirebaseObservationsService {
     }).toList();
   }
 
+  List<Observation> _observationsFromSnapshot2(QuerySnapshot snapshot) {
+    return snapshot.docs.map((doc) {
+
+      final dataMap = doc.data() as Map<String, dynamic>;
+
+      List<dynamic>? data = dataMap[SIGNS];
+      List<String> signs = data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
+
+      data = dataMap[OTHER_ANIMALS_PRESENT];
+      List<String> otherAnimalsPresent = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
+
+      data = dataMap[IMAGE_URLS];
+      List<String> imageUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
+
+      data = dataMap[AUDIO_URLS];
+      List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
+
+      data = dataMap[SHARED_WITH_PROJECTS];
+      List<String> sharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
+
+      data = dataMap[NOT_SHARED_WITH_PROJECTS];
+      List<String> notSharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
+
+      return Observation(
+          uid: doc.id,
+          observerUid: dataMap[OBSERVER_UID] ?? '',
+          name: dataMap[NAME] ?? '',
+          location: dataMap[LOCATION] ?? '',
+          date: parseTime(dataMap[DATE]),
+          altitudeInMeters: dataMap[ALTITUDE],
+          latitude: dataMap[LATITUDE],
+          longitude: dataMap[LONGITUDE],
+          signs: signs,
+          species: dataMap[SPECIES] ?? SPECIES_DEFAULT,
+          pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
+          distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
+          searchDuration: dataMap[SEARCH_DURATION] ?? '',
+          talusArea: dataMap[TALUS_AREA] ?? '',
+          temperature: dataMap[TEMPERATURE] ?? '',
+          skies: dataMap[SKIES] ?? '',
+          wind: dataMap[WIND] ?? '',
+          siteHistory: dataMap[SITE_HISTORY] ?? '',
+          otherAnimalsPresent: otherAnimalsPresent,
+          comments: dataMap[COMMENTS] ?? '',
+          imageUrls: imageUrls,
+          audioUrls: audioUrls,
+          sharedWithProjects: sharedWithProjects,
+          notSharedWithProjects: notSharedWithProjects,
+          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS]),
+          isUploaded: dataMap[IS_UPLOADED] ?? true
+
+      );
+    }).toList();
+  }
+
   Stream<List<Observation>> get observations {
     return observationsCollection.orderBy(DATE, descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
+  }
+
+  Stream<List<Observation>> get userObservations {
+    return observationsCollection.where(OBSERVER_UID, whereIn: [_currentUserId])
+        .orderBy(DATE, descending: true)
+        .snapshots()
+        .map(_observationsFromSnapshot2);
   }
 
   Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {

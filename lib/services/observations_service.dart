@@ -122,8 +122,8 @@ class ObservationsService {
         //We can and should also just upload them without notifying the users
         //This means we need to get the user's online observations first so that we can compare and save them
 
-        _localObservations = _userObservations;
-        _localObservationsStreamController?.add(_localObservations);
+        /*_localObservations = _userObservations;
+        _localObservationsStreamController?.add(_localObservations);*/
       }
     }
   }
@@ -142,7 +142,7 @@ class ObservationsService {
       if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
 
         var observation = toObservation(localObservation, buttonText: translations.viewObservation);
-        //localObservations.add(observation);
+        localObservations.add(observation);
       }
     }
 
@@ -150,8 +150,8 @@ class ObservationsService {
       observation.buttonText = translations.viewObservation;
     }
 
-    /*_localObservations = localObservations;
-    _localObservationsStreamController?.add(_localObservations);*/
+    _localObservations = localObservations;
+    _localObservationsStreamController?.add(_localObservations);
   }
 
 }

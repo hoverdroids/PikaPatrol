@@ -12,6 +12,21 @@ class ObservationsService {
 
   late Translations translations;
 
+  StreamController<List<Observation>>? _emptyObservationsStreamController;
+  Stream<List<Observation>> get emptyObservationsStream {
+
+    _emptyObservationsStreamController = StreamController<List<Observation>>.broadcast(
+      onListen: () async {
+        _emptyObservationsStreamController?.add([]);
+      }, onCancel: () {
+        _emptyObservationsStreamController?.close();
+        _emptyObservationsStreamController = null;
+      }
+    );
+
+    return _emptyObservationsStreamController!.stream;
+  }
+
   List<Observation> _sharedObservations = [];
 
   List<Observation> get sharedObservations {

@@ -116,7 +116,7 @@ Future<void> main() async {
                               observationsService.setLocalObservations(box, userId);
 
                               return StreamBuilder<List<Observation>>(
-                                stream: firebaseDatabaseService.observationsService.userObservations,
+                                stream: firebaseDatabaseService.observationsService.userObservations(appUser?.uid ?? ""),
                                 initialData: const [],
                                 builder: (context, userObservationsOnFirebase) {
 

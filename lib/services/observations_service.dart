@@ -100,7 +100,7 @@ class ObservationsService {
     }
   }
 
-  setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) {
+  setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) async {
     if (userObservationsOnFirebase.hasData) {
       var data = userObservationsOnFirebase.data;
       if (data != null) {
@@ -108,24 +108,60 @@ class ObservationsService {
 
         _userObservations = _userObservations.reversed.toList();
         for (var userObservation in _userObservations) {
+
+          var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocalObservation(localObservation, userObservation)).toList();
+
+          // There are no local observations matching the remote observations.
+          // So, add the remote observation to the local cache to allow the user to restore their observations from another device,
+          // or after an uninstall and reinstall.
+          if (localVersionsOfObservation.isEmpty) {
+            await saveLocalObservation(userObservation);
+          }
+
+          //TODO
+          for (var localObservationWithSameUid in localVersionsOfObservation) {
+            // Is the local observation more up to date?
+            // Trigger remote update
+
+            //Is the remote observation more up to date?
+            //Don't trigger remote update
+            //Trigger local update
+
+            //Are the local and remote observations the same?
+            //Don't do anything
+          }
+
           userObservation.buttonText = translations.viewObservation;
         }
-
-        //Now, how to handle ...
-        //We've tracked the observations a is, but need to merge with local observations
-        //we could start by comparing and ensuring uniqueness, to prove the concept
-        //Then, the obeservations should all be local because we want to save observations that are online and not on our phone
-        //Saving the observations that are online and not on the phone will cause the localObservations observable to trigger and update the list
-        //with the same mechanism
-        //This could also determine if the online observations are in sync with local observations, and determine if the user should be notified
-        //that the observations need to be up;loaded
-        //We can and should also just upload them without notifying the users
-        //This means we need to get the user's online observations first so that we can compare and save them
-
-        /*_localObservations = _userObservations;
-        _localObservationsStreamController?.add(_localObservations);*/
       }
     }
+  }
+
+  bool _isLocalObservation(Observation localObservation, Observation userObservation) {
+    //this would be preferable for comparison, but it fails immediately after creating an observation
+    if (userObservation.uid == localObservation.uid) {
+      return true;
+    }
+
+    // IF the uid isn't available yet, e.g. right after adding to the local store and waiting for another update to the local store with the uid
+    // then use a combo of info to determine if there is a local version of the observation already.
+    // Note that it would e very hard to have the same user make observations at the exact same time, and then even harder to make them with the same exact name
+    var isSameName = userObservation.name == localObservation.name;
+    var isSameLocation = userObservation.location == localObservation.location;
+    var userDate = userObservation.date;
+    var localDate = localObservation.date;
+
+    //Don't compare with equals as the microseconds are not exactly the same for whatever reason.
+    //So, if the time is within a second, it's likely the same observation
+    var isSameTime = false;
+    if (userDate != null && localDate != null) {
+      isSameTime = userDate.difference(localDate) < const Duration(minutes: 1);
+    }
+
+    var isSameObserver = userObservation.observerUid == localObservation.observerUid;
+
+    var bla = isSameLocation && isSameTime && isSameObserver;
+    return bla;
   }
 
   setLocalObservations(Box<LocalObservation> box, String userId) {

@@ -337,6 +337,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.2"
+  deepcopy:
+    dependency: "direct main"
+    description:
+      name: deepcopy
+      sha256: a9ef127c1dda20c9ebf280551a9653afc71ba76a408f3ed5ca58062f367af5ac
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.2"
   fake_async:
     dependency: transitive
     description:

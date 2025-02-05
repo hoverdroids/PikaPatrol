@@ -71,10 +71,6 @@ class FirebaseObservationsService {
     //This allows firebase to be up-to-date with only one write
     observation.isUploaded = true;
 
-    //Keep this in case the upload throws an exception
-    final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
-
     var firebaseObservation = observation.toFirebaseObservation();
 
     DocumentReference doc;
@@ -97,7 +93,6 @@ class FirebaseObservationsService {
       }
 
       observation.isUploaded = false;
-      observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
 
       return e;
     }

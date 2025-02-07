@@ -189,11 +189,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               _formKey.currentState?.save();
 
               var observationsService = Provider.of<ObservationsService>(context);
-              await observationsService.trySaveObservation(widget.observationViewModel.observation);
 
               setState((){
                 _isUploading = false;
               });
+
+              final returnValue = await observationsService.trySaveObservation(context, widget.observationViewModel.observation, user);
+              final message = returnValue?.message;
+
+
             } else {
               showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
             }

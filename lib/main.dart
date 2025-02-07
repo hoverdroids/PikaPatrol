@@ -88,6 +88,8 @@ Future<void> main() async {
             var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
             firebaseDatabaseService.currentUserId = appUser?.uid;
 
+            observationsService.firebaseDatabaseService = firebaseDatabaseService;
+
             return StreamBuilder<AppUserProfile?>(
               stream: firebaseDatabaseService.userProfilesService.userProfile,
               initialData: null,
@@ -103,24 +105,24 @@ Future<void> main() async {
                     List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
                     return StreamBuilder<List<Observation>>(
-                      stream: firebaseDatabaseService.observationsService.observations,//TODO -aggregate into observations services
+                      stream: firebaseDatabaseService.observationsService.observations,//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
                       initialData: const [],
                       builder: (context, sharedObservationsOnFirebase) {
 
-                        observationsService.setSharedObservations(sharedObservationsOnFirebase);//TODO -aggregate into observations services
+                        observationsService.setSharedObservations(sharedObservationsOnFirebase);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
 
                         return ValueListenableBuilder(
                             valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
                             builder: (context, box, widget2) {
 
-                              observationsService.setLocalObservations(box, userId);//TODO - aggregate into observations services
+                              observationsService.setLocalObservations(box, userId);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
 
                               return StreamBuilder<List<Observation>>(
                                 stream: userId.isNotEmpty ? firebaseDatabaseService.observationsService.userObservations(userId) : observationsService.emptyObservationsStream,//TODO -aggregate into observations services
                                 initialData: const [],
                                 builder: (context, userObservationsOnFirebase) {
 
-                                  observationsService.setUserObservations(userObservationsOnFirebase);//TODO -aggregate into observations services
+                                  observationsService.setUserObservations(userObservationsOnFirebase);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
 
                                   return MultiProvider(
                                       providers: [
@@ -144,7 +146,11 @@ Future<void> main() async {
                                                 });
                                               }
 
-                                              return GoogleSheetsService(services);
+                                              final googleSheetsService = GoogleSheetsService(services);
+
+                                              observationsService.googleSheetsService = googleSheetsService;
+
+                                              return googleSheetsService;
                                             }
                                         ),
                                       ],

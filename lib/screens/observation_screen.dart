@@ -194,7 +194,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 _isUploading = false;
               });
 
-              final returnValue = await observationsService.trySaveObservation(context, widget.observationViewModel.observation, user);
+              final returnValue = await observationsService.trySaveObservation(widget.observationViewModel.observation, user);
               final message = returnValue?.message;
 
 

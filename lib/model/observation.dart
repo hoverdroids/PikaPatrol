@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:pika_patrol/model/card.dart' as card;
 import '../primitives/card_layout.dart';
-import '../utils/observation_utils.dart';
 
 class Observation extends card.CardModel {
+
+  static const String SPECIES_DEFAULT = "American Pika";
 
   int? dbId;
   String? uid;

@@ -10,6 +10,7 @@ import 'package:pika_patrol/model/observation.dart';
 import 'package:provider/provider.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
+import '../model/observation_view_model.dart';
 import '../primitives/card_layout.dart';
 import '../services/observations_service.dart';
 import '../widgets/card_scroller.dart';
@@ -121,7 +122,11 @@ class ObservationsPageState extends State<ObservationsPage> {
                               onTapCard: (index) => {
                                 Navigator.push( context,
                                   MaterialPageRoute(
-                                    builder: (_) => ObservationScreen(observations[index].copy()),
+                                    builder: (_) {
+                                      final translations = Provider.of<Translations>(context);
+                                      final viewModel = ObservationViewModel(observations[index].copy(), translations);
+                                      return ObservationScreen(viewModel);
+                                    },
                                   ),
                                 )
                               }
@@ -178,7 +183,12 @@ class ObservationsPageState extends State<ObservationsPage> {
                                 onTapCard: (index) => {
                                   Navigator.push( context,
                                     MaterialPageRoute(
-                                      builder: (_) => ObservationScreen(localObservations[index].copy()),
+                                      builder: (_) {
+                                        final translations = Provider.of<Translations>(context);
+                                        final observation = localObservations[index].copy();
+                                        final observationViewModel = ObservationViewModel(observation, translations);
+                                        return ObservationScreen(observationViewModel);
+                                      },
                                     ),
                                   )
                                 }

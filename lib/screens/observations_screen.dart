@@ -184,6 +184,8 @@ class ObservationsPageState extends State<ObservationsPage> {
                                   Navigator.push( context,
                                     MaterialPageRoute(
                                       builder: (_) {
+                                        //Open the observation screen with a previously created local observation
+                                        //This observation may or may not have been uploaded
                                         final translations = Provider.of<Translations>(context);
                                         final observation = localObservations[index].copy();
                                         final observationViewModel = ObservationViewModel(observation, translations);

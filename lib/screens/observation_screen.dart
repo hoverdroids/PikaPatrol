@@ -177,7 +177,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         leftIconClickedCallback: () => Navigator.pop(context),
         rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
         showRightIcon: showRightIcon,
-        //Widget will only be in edit mode if new observation
         rightIconType: ThemeGroupType.MOS,
         rightIconClickedCallback: () async {
           if (!widget.isEditMode) {

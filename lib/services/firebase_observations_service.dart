@@ -64,6 +64,14 @@ class FirebaseObservationsService {
     observationsCollection = firebaseFirestore.collection(OBSERVATIONS_COLLECTION_NAME);
   }
 
+  //region Id: Generator
+  // Get a new and unique auto-generated document ID prefixed with a client-generated timestamp
+  //Doesn't need FirebaseValueExceptionPair; no exceptions can be thrown.
+  String getNewObservationUid() {
+    return observationsCollection.doc().id;
+  }
+  //endregion
+
   Future<FirebaseException?> updateObservation(Observation observation) async {
     //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
 

@@ -323,27 +323,50 @@ class ObservationsService {
 
   //region Observation CRUD
   Future<ValueMessagePair?> trySaveObservation(Observation observation, AppUser? user) async {
-    //Do not set the date using DateTime.now because it can be set manually by the user for any date they indicate the observation was made
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
     /*
-               TODO:
-              all of this needs to go in the service
-              and all of this needs  to start with a uid that is generated with observationsCollection.doc().id
-              then, we can use that id to save once locally, save to sheets with and get a real date, and then update firebase so that all is in sync
-              one foreseeable issue is going to be isUploaded will not be correct in sheets as firebase call comes after sheets call now
+     TODO:
+      all of this needs to go in the service
+      and all of this needs  to start with a uid that is generated with observationsCollection.doc().id
+      then, we can use that id to save once locally, save to sheets with and get a real date, and then update firebase so that all is in sync
+      one foreseeable issue is going to be isUploaded will not be correct in sheets as firebase call comes after sheets call now
+    */
 
-              */
+    //Observation.uid will be null if the observation is new
+    //It will not be null otherwise, even if not uploaded to Firebase yet
+    final originalObservationUid = observation.uid;
+    final isInitialObservation = observation.uid == null;
+    observation.uid = originalObservationUid ?? firebaseDatabaseService.observationsService.getNewObservationUid();
 
 
-    var isInitialObservation = observation.uid == null;//always save a new observation locally
-    var isUsersObservation = user != null && user.uid == observation.observerUid;//don't save another user's observations locally; can happen when admin edits
-    if (isInitialObservation || isUsersObservation) {
-      observation.isUploaded = false;
-      //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
-      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
-    }
+    //"Date" can be set manually by the user for any date they indicate the observation was made.
+    // So, do not set the date using DateTime.now!
+    final dateUpdated = DateTime.now();
+    final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
+
+
+    /*// TODO - need to determine how to handle user here given that the user can be null and it's not a problem
+    if (user == null) {
+      //TODO - should this indicate the user is null so the user can be notified?
+      //TODO - this won't work because the user should be allowed to save observations without being logged in
+      return null;
+    }*/
+
+    //If the observation was made when the user was not logged in, then edited after logging in, the user
+    //id can be null. So update it now. This allows local observations to be uploaded when online.
+    // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
+    //TODO - observations that were made when the user was not logged in, will not be displayed to the logged in user.
+    //So, the following is no longer necessary
+    //A logged in user needs to be asked whether or not to associate observations with them
+    //The observations will only be local given that uploading observations to the cloud requires authentication
+    //observation.observerUid ??= user.uid;
+
+    //TODO - probably need some stuff here
+
+    //Share with others
+    // TODO - ensure that this doesn't hang and prevent local observation from being saved
     //TODO - CHRIS - probably worth moving to the saveObservationon method
     // TODO: we need an online/offline widget that triggers updates so that we con't have to ask the isOnline question every time
     // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
@@ -353,39 +376,69 @@ class ObservationsService {
       return ValueMessagePair(null, translations.noConnectionFoundObservationSavedLocally);
     }
 
-    if (user == null) {
-      //TODO - should this indicate the user is null so the user can be notified?
-      return null;
+    await saveObservationToFirebase(observation);
+
+    await saveObservationToGoogleSheets(observation);
+
+    //TODO - this should only be required if something changed that the localobservation didn't already know about
+    // Update local observation after successful upload because the uid will be non empty now.
+    // Also, if the user was offline and editing an already created observation, isUploaded will be false
+    // because firebase will throw an exception of being offline.
+    // In that case, track that the updates are no longer uploaded and will need to be the next time internet
+    // is available
+    if (saveLocal) {
+      await saveLocalObservation(observation);
     }
 
-    //If the observation was made when the user was not logged in, then edited after logging in, the user
-    //id can be null. So update it now. This allows local observations to be uploaded when online.
-    // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
-    observation.observerUid ??= user.uid;
+    //TODO - handle the return value since it indicates if the observation was saved or not
 
-    //Share with others
-    await saveObservation(observation);
+    // Save local observation last to ensure correct information and status for Firebase and Google Sheets,
+    // and to avoid having to call multiple times
+    var isUsersObservation = user != null && user.uid == observation.observerUid;
+
+    //don't save another user's observations locally; can happen when admin edits
+    if (isUsersObservation) {
+      observation.isUploaded = false;//TODO - how to handle this?
+      //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
+      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
+    }
 
     //TODO -  should this return a message indicating successful update?
     return null;
   }
 
-  Future saveObservation(Observation observation, {bool saveLocal = true}) async {
+  Future saveObservationToFirebase(Observation observation) async {
+
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
+
+    //TODO - we now have all of our own observations nad should compare what we have to the update and only try to update when different
 
     var imageUrls = observation.imageUrls;
     if (imageUrls != null && imageUrls.isNotEmpty) {
-      observation.imageUrls = await firebaseDatabaseService.observationsService.uploadFiles(imageUrls, true);
+      observation.imageUrls = await firebaseDatabaseService.observationsService.uploadFiles(imageUrls, true);//TODO - do not upload if no change
     }
 
     var audioUrls = observation.audioUrls;
     if (audioUrls != null && audioUrls.isNotEmpty) {
-      observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);
+      observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);//TODO - do not upload if no chane
     }
+
+    //TODO - determine if there are any images that were uploaded and associtated with this observation that are no longer associated; delete them from the database
+
+    //TODO - modify files in the file host now, based on the updated observation files list
+
+    var exception = await firebaseDatabaseService.observationsService.updateObservation(observation);
+    if (exception != null) {
+      showToast("Exception: ${exception.message}");//TODO - toast should not be here since this is a service; it should be in the UI that called the service
+    }
+  }
+
+  Future saveObservationToGoogleSheets(Observation observation) async {
 
     //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
     final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
+    final resolvedDateUpdatedInGoogleSheets = DateTime.now();
+    observation.dateUpdatedInGoogleSheets = resolvedDateUpdatedInGoogleSheets;
 
     try {
       var sharedWithProjects = observation.sharedWithProjects;
@@ -408,20 +461,6 @@ class ObservationsService {
       observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
       showToast("Exception: ${e.cause}");//TODO - toast should not be here
     }
-
-    var exception = await firebaseDatabaseService.observationsService.updateObservation(observation);
-    if (exception != null) {
-      showToast("Exception: ${exception.message}");//TODO - toast should not be here
-    }
-
-    // Update local observation after successful upload because the uid will be non empty now.
-    // Also, if the user was offline and editing an already created observation, isUploaded will be false
-    // because firebase will throw an exception of being offline.
-    // In that case, track that the updates are no longer uploaded and will need to be the next time internet
-    // is available
-    if (saveLocal) {
-      await saveLocalObservation(observation);
-    }
   }
 
   Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {
@@ -429,11 +468,35 @@ class ObservationsService {
       await deleteLocalObservation(observation);
     }
 
+    //TODO -  this is where we need to delete the observation images and audio, not in the collection
+
     FirebaseException? firebaseException;
     if (context.mounted && deleteFromFirebase) {
       var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
       firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
     }
+
+    /*
+    TODO - figure out where I was going with the following
+      if (bool deleteImages, bool deleteAudio) {
+        //delete files here instead of in the observationCollection in order to separate concerns
+        //if for example, we change the file host, then there will not be a need to change the code other than swapping out the file host implementation
+
+        //for this to work, need a list of urls for the files
+
+        var exception = deleteImages ? await deleteFiles(FOLDER_NAME, observation.imageUrls) : null;
+        if (exception != null) {
+          return exception;
+        }
+
+        exception = deleteAudio ? await deleteFiles(FOLDER_NAME, observation.audioUrls) : null;
+        if (exception != null) {
+          return exception;
+        }
+      }
+
+
+     */
 
     if (context.mounted && deleteFromGoogleSheets) {
       var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);

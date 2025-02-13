@@ -73,6 +73,7 @@ class ObservationsService {
     return _localObservationsStreamController!.stream;
   }
 
+  //TODO - why is this here vs utils?
   bool _isLocallySavedObservation(Observation localObservation, Observation userObservation) {
 
     //this would be preferable for comparison, but it fails immediately after creating an observation

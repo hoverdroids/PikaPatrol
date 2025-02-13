@@ -26,6 +26,7 @@ import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/model/observation_view_model.dart';
+import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
 
@@ -50,10 +51,10 @@ class ObservationScreen extends StatefulWidget {
   final ObservationViewModel observationViewModel;
   late bool isEditMode;
 
-  ObservationScreen(this.observationViewModel, {super.key}) {
+  ObservationScreen(this.observationViewModel, {super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
-    isEditMode = observationViewModel.observation.uid == null ? true : false;
+    isEditMode = observationViewModel.observation.isNewObservation();
   }
 
   @override
@@ -113,9 +114,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         .animate(_colorAnimationController);
 
     // Show delete button even when not editing
-    var canEdit = user != null && (widget.observationViewModel.observation.observerUid == user.uid || user.isAdmin);
-    var isNewObservation = widget.observationViewModel.observation.uid == null && widget.observationViewModel.observation.dbId == null;
-    var showDeleteButton = canEdit && !isNewObservation;
+    final observation = widget.observationViewModel.observation;
+    var showDeleteButton = observation.canUserEdit(user) && !observation.isNewObservation();
 
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
@@ -191,13 +191,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               var observationsService = Provider.of<ObservationsService>(context);
 
               setState((){
-                _isUploading = false;
+                _isUploading = true;
               });
 
-              final returnValue = await observationsService.trySaveObservation(widget.observationViewModel.observation, user);
+              //Indicate that there are changes that are not uploaded when the updates are saved so that observations
+              //can be saved in whatever their current state is without having to determine if the observation has been updated.
+              widget.observationViewModel.observation.isUploaded = false;
+
+              final returnValue = await observationsService.saveObservation(widget.observationViewModel.observation, user);
               final message = returnValue?.message;
+              if (message != null) {
+                showToast(message);
+              }
 
-
+              setState((){
+                _isUploading = false;
+              });
             } else {
               showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
             }

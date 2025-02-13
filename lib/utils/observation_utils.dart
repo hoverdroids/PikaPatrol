@@ -224,7 +224,7 @@ extension Wind on Observation {
 }
 //endregion
 
-extension State on Observation {
+extension ObservationState on Observation {
   bool isUserObservation(AppUser? user) {
     return user != null && user.uid == observerUid;
   }

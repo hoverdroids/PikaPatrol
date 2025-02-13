@@ -67,38 +67,29 @@ class FirebaseObservationsService {
   //region Id: Generator
   // Get a new and unique auto-generated document ID prefixed with a client-generated timestamp
   //Doesn't need FirebaseValueExceptionPair; no exceptions can be thrown.
-  String getNewObservationUid() {
+  String generateNewObservationUid() {
     return observationsCollection.doc().id;
   }
   //endregion
 
-  Future<FirebaseException?> updateObservation(Observation observation) async {
-    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
+  Future<FirebaseException?> addOrUpdateObservation(Observation observation) async {
 
     //Assume a successful upload unless an exception is thrown
     //This allows firebase to be up-to-date with only one write
     observation.isUploaded = true;
 
-    var firebaseObservation = observation.toFirebaseObservation();
-
-    DocumentReference doc;
-    var isUidNullOrEmpty = observation.uid == null || observation.uid?.isEmpty == true;
-    if (isUidNullOrEmpty) {
-      doc = observationsCollection.doc();
-      observation.uid = doc.id;
-    } else {
-      doc = observationsCollection.doc(observation.uid);
-    }
+    final originalUid = observation.uid;
+    observation.uid = observation.uid ?? generateNewObservationUid();
+    DocumentReference doc = observationsCollection.doc(observation.uid);
 
     try {
-      // Calling set when a doc with the Id doesn't exist will create it.
-      // If the doc exists, it will be updated
-      await doc.set(firebaseObservation);
+      // Calling "set" when a doc with the Id doesn't exist will create it.
+      // If a doc exists with the given uid, it will be updated
+      await doc.set(observation.toFirebaseObservation());
     } on FirebaseException catch (e) {
-      if (isUidNullOrEmpty) {
-        // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
-        observation.uid = null;
-      }
+
+      // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
+      observation.uid = originalUid;
 
       observation.isUploaded = false;
 

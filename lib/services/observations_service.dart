@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pika_patrol/main.dart';
@@ -72,7 +73,8 @@ class ObservationsService {
     return _localObservationsStreamController!.stream;
   }
 
-  bool _isLocalObservation(Observation localObservation, Observation userObservation) {
+  bool _isLocallySavedObservation(Observation localObservation, Observation userObservation) {
+
     //this would be preferable for comparison, but it fails immediately after creating an observation
     if (userObservation.uid == localObservation.uid) {
       return true;
@@ -95,8 +97,7 @@ class ObservationsService {
 
     var isSameObserver = userObservation.observerUid == localObservation.observerUid;
 
-    var bla = isSameLocation && isSameTime && isSameObserver;
-    return bla;
+    return isSameLocation && isSameTime && isSameObserver;
   }
 
   setLocalObservations(Box<LocalObservation> box, String userId) {
@@ -281,7 +282,7 @@ class ObservationsService {
   }
 
   setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) async {
-    if (userObservationsOnFirebase.hasData) {
+    /*if (userObservationsOnFirebase.hasData) {
       var data = userObservationsOnFirebase.data;
       if (data != null) {
         _userObservations = data;
@@ -289,7 +290,7 @@ class ObservationsService {
         _userObservations = _userObservations.reversed.toList();
         for (var userObservation in _userObservations) {
 
-          var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocalObservation(localObservation, userObservation)).toList();
+          var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocallySavedObservation(localObservation, userObservation)).toList();
 
           // There are no local observations matching the remote observations.
           // So, add the remote observation to the local cache to allow the user to restore their observations from another device,
@@ -317,97 +318,68 @@ class ObservationsService {
           userObservation.buttonText = translations.viewObservation;
         }
       }
-    }
+    }*/
   }
   //endregion
 
   //region Observation CRUD
-  Future<ValueMessagePair?> trySaveObservation(Observation observation, AppUser? user) async {
+  Future<ValueMessagePair?> saveObservation(Observation observation, AppUser? user) async {
 
-    /*
-     TODO:
-      all of this needs to go in the service
-      and all of this needs  to start with a uid that is generated with observationsCollection.doc().id
-      then, we can use that id to save once locally, save to sheets with and get a real date, and then update firebase so that all is in sync
-      one foreseeable issue is going to be isUploaded will not be correct in sheets as firebase call comes after sheets call now
-    */
+    var returnValue = ValueMessagePair<bool>(true, null);
 
-    //Observation.uid will be null if the observation is new
-    //It will not be null otherwise, even if not uploaded to Firebase yet
-    final originalObservationUid = observation.uid;
-    final isInitialObservation = observation.uid == null;
-    observation.uid = originalObservationUid ?? firebaseDatabaseService.observationsService.getNewObservationUid();
-
-
-    //"Date" can be set manually by the user for any date they indicate the observation was made.
-    // So, do not set the date using DateTime.now!
-    final dateUpdated = DateTime.now();
-    final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-    observation.dateUpdatedInGoogleSheets = DateTime.now();
-
-
-
-    /*// TODO - need to determine how to handle user here given that the user can be null and it's not a problem
-    if (user == null) {
-      //TODO - should this indicate the user is null so the user can be notified?
-      //TODO - this won't work because the user should be allowed to save observations without being logged in
-      return null;
-    }*/
-
-    //If the observation was made when the user was not logged in, then edited after logging in, the user
-    //id can be null. So update it now. This allows local observations to be uploaded when online.
-    // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
-    //TODO - observations that were made when the user was not logged in, will not be displayed to the logged in user.
-    //So, the following is no longer necessary
-    //A logged in user needs to be asked whether or not to associate observations with them
-    //The observations will only be local given that uploading observations to the cloud requires authentication
-    //observation.observerUid ??= user.uid;
-
-    //TODO - probably need some stuff here
-
-    //Share with others
-    // TODO - ensure that this doesn't hang and prevent local observation from being saved
-    //TODO - CHRIS - probably worth moving to the saveObservationon method
-    // TODO: we need an online/offline widget that triggers updates so that we con't have to ask the isOnline question every time
+    // TODO: we need an online/offline widget that triggers updates so that we don't have to ask this question every time
     // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
     // saved for others to register sooner
     var hasConnection = await DataConnectionChecker().hasConnection;
-    if (!hasConnection) {
-      return ValueMessagePair(null, translations.noConnectionFoundObservationSavedLocally);
+
+    // TODO - ensure that this doesn't hang and prevent local observation from being saved
+    if (hasConnection) {
+      // "Date" can be set manually by the user to indicate the date the observation was made.
+      // So, do not set the date using DateTime.now!
+      // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
+      // Also, if there is no connection, then all remote updates will fail, so don't worry about trying to update the dateUpdatedInGoogleSheets as it will just be reset to the original value
+
+      //dateUpdatedInGoogleSheets is updated here so that Firebase is up-to-date without having to write twice (second write would occur after Google Sheets is updated)
+      final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+      observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+      final firebaseReturnValue = await saveObservationToFirebase(observation);
+      final firebaseException = firebaseReturnValue?.message;
+      final firebaseUpdated = firebaseException == null && observation.uid != null;
+
+      if (firebaseUpdated) {
+        final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
+        final googleSheetsException = googleSheetsReturnValue.first.exception;
+
+        if (googleSheetsException != null) {
+          returnValue = ValueMessagePair(false, googleSheetsException.cause);
+        }
+      } else {
+        //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
+        //Or, if the uid is not null, but there was an exception, then don't update Google Sheets because the observation wasn't updated in Firebase
+        observation.dateUpdatedInGoogleSheets = originalDateUpdatedInGoogleSheets;
+
+        if (firebaseException != null) {
+          returnValue = ValueMessagePair(false, firebaseException);
+        }
+      }
+    } else {
+      //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
+      //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
+
+      returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
     }
 
-    await saveObservationToFirebase(observation);
-
-    await saveObservationToGoogleSheets(observation);
-
-    //TODO - this should only be required if something changed that the localobservation didn't already know about
-    // Update local observation after successful upload because the uid will be non empty now.
-    // Also, if the user was offline and editing an already created observation, isUploaded will be false
-    // because firebase will throw an exception of being offline.
-    // In that case, track that the updates are no longer uploaded and will need to be the next time internet
-    // is available
-    if (saveLocal) {
+    //Only save the current user's observations locally, not other observations the current user modified as admin
+    if (observation.isUserObservation(user)) {
+      // Save local observation last to ensure correct information and status for Firebase and Google Sheets
       await saveLocalObservation(observation);
     }
 
-    //TODO - handle the return value since it indicates if the observation was saved or not
-
-    // Save local observation last to ensure correct information and status for Firebase and Google Sheets,
-    // and to avoid having to call multiple times
-    var isUsersObservation = user != null && user.uid == observation.observerUid;
-
-    //don't save another user's observations locally; can happen when admin edits
-    if (isUsersObservation) {
-      observation.isUploaded = false;//TODO - how to handle this?
-      //The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
-      await saveLocalObservation(observation);//TODO - CHRIS - I don't like the save local, save, save local approach
-    }
-
-    //TODO -  should this return a message indicating successful update?
-    return null;
+    return returnValue;
   }
 
-  Future saveObservationToFirebase(Observation observation) async {
+  Future<FirebaseException?> saveObservationToFirebase(Observation observation) async {
 
     //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
 
@@ -423,44 +395,49 @@ class ObservationsService {
       observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);//TODO - do not upload if no chane
     }
 
-    //TODO - determine if there are any images that were uploaded and associtated with this observation that are no longer associated; delete them from the database
+    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
 
     //TODO - modify files in the file host now, based on the updated observation files list
 
-    var exception = await firebaseDatabaseService.observationsService.updateObservation(observation);
-    if (exception != null) {
-      showToast("Exception: ${exception.message}");//TODO - toast should not be here since this is a service; it should be in the UI that called the service
-    }
+    return await firebaseDatabaseService.observationsService.addOrUpdateObservation(observation);
   }
 
-  Future saveObservationToGoogleSheets(Observation observation) async {
+  Future<List<GSheetsValue>> saveObservationToGoogleSheets(Observation observation) async {
 
-    //Try to update to googleSheets first so that we have a real date that the date actually reflects when sheet updates succeeded
+    //Try to update to googleSheets first so that we have a real date that actually reflects when sheet updates succeeded
     final lastDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-    final resolvedDateUpdatedInGoogleSheets = DateTime.now();
-    observation.dateUpdatedInGoogleSheets = resolvedDateUpdatedInGoogleSheets;
+    observation.dateUpdatedInGoogleSheets = DateTime.now();
 
-    try {
-      var sharedWithProjects = observation.sharedWithProjects;
-      sharedWithProjects?.add("Pika Patrol");
+    List<GSheetsValue> returnValues = [];
 
-      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        GSheetsValue<bool>? returnValue;
-        if (sharedWithProjects?.contains(service.organization) == true) {
-          returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
-        } else {
-          returnValue = await service.observationWorksheetService?.deleteObservation(observation);
-        }
+    var sharedWithProjects = observation.sharedWithProjects;
+    sharedWithProjects?.add("Pika Patrol");
 
-        final exception = returnValue?.exception;
-        if (exception != null) {
-          throw GSheetsException(exception.cause);
-        }
+    GSheetsException? firstException;
+
+    //Update all organization's spreadsheets even if an exception is thrown for one of them, since a single sheet can have an error while others are don't
+    for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+      GSheetsValue<bool>? returnValue;
+      if (sharedWithProjects?.contains(service.organization) == true) {
+        returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
+      } else {
+        //Just in case the observation was previously shared with the organization, but now isn't
+        returnValue = await service.observationWorksheetService?.deleteObservation(observation);
       }
-    } on GSheetsException catch (e) {
-      observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
-      showToast("Exception: ${e.cause}");//TODO - toast should not be here
+
+      if (returnValue != null) {
+        returnValues.add(returnValue);
+      }
+
+      firstException = firstException ?? returnValue?.exception;
     }
+
+    if (firstException != null) {
+      //Indicate that one or more sheets did not update successfully
+      observation.dateUpdatedInGoogleSheets = lastDateUpdatedInGoogleSheets;
+    }
+
+    return returnValues;
   }
 
   Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {

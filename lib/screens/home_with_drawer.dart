@@ -782,8 +782,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
     var observations = await firebaseDatabaseService.observationsService.getAllObservations(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
 
+    var now = DateTime.now();
     for (var observation in observations) {
-      var now = DateTime.now();
       observation.dateUpdatedInGoogleSheets = now;
     }
 

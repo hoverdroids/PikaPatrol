@@ -1,5 +1,6 @@
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import '../l10n/translations.dart';
+import '../model/app_user.dart';
 import '../model/observation.dart';
 
 //region OtherAnimalsPresent
@@ -222,3 +223,74 @@ extension Wind on Observation {
   }
 }
 //endregion
+
+extension State on Observation {
+  bool isUserObservation(AppUser? user) {
+    return user != null && user.uid == observerUid;
+  }
+
+  bool isNewObservation() {
+    // We know this is a new observations since uid isn't set until the observation is saved, and dbId isn't set until the local observation is saved
+    return uid == null && dbId == null;
+  }
+
+  bool isLocalObservation() {
+    return dbId != null;
+  }
+
+  bool isOnlyLocalObservation() {
+    return isLocalObservation() && !isRemoteObservation();
+  }
+
+  bool isRemoteObservation() {
+    return uid != null;
+  }
+
+  bool isOnlyRemoteObservation() {
+    return isRemoteObservation() && !isLocalObservation();
+  }
+
+  bool canUserEdit(AppUser? user) {
+    //When can an observation be edited?
+
+    // Observation is new
+    //    user == null or user != null <- since there is no requirement to be logged in to make local observations
+    //    dbId == null
+    //    uid == null
+    final isNew = isNewObservation();
+
+    //  Observation is local, for a user that is not signed in            <-edit local
+    //    user == null
+    //    dbId != null
+    //    uid == null
+    final isLocalWithoutObserver = user == null && observerUid == null && isOnlyLocalObservation();
+
+    //  Observation is our own local, and a remote version doesn't exist  <-edit local
+    //    user != null
+    //    user.id == observer.id
+    //    dbId != null
+    //    uid == null
+    //  Observation is our own local, and a remote version exists         <-edit local and remote
+    //    user != null
+    //    user.id == observer.id
+    //    dbId != null
+    //    uid != null
+    //  Observation is our own remote, and a local version doesn't exist  <-edit remote
+    //    user != null
+    //    user.id == observer.id
+    //    dbId == null
+    //    uid != null
+    final isUsers = isUserObservation(user);
+
+    //  We are a logged in admin                   <-edit remote for any user
+    //    user != null
+    //    admin == true
+    final isAdmin = user?.isAdmin ?? false;
+
+    //When can't an observation be deleted?
+    //  Observation is new                                                <-already editing
+    //  Observation is not our own remote, we are not admin               <-no permissions to edit
+
+    return isNew || isLocalWithoutObserver || isUsers || isAdmin;
+  }
+}

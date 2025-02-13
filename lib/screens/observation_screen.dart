@@ -28,6 +28,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
+
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';

@@ -1,5 +1,6 @@
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import '../l10n/translations.dart';
+import 'app_user.dart';
 import 'observation.dart';
 
 class ObservationViewModel {

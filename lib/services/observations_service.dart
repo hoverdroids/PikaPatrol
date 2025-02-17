@@ -8,6 +8,7 @@ import 'package:hive/hive.dart';
 import 'package:gsheets/gsheets.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
+import 'package:pika_patrol/utils/primitive_utils.dart';
 import 'package:provider/provider.dart';
 
 import 'package:pika_patrol/main.dart';
@@ -113,7 +114,15 @@ class ObservationsService {
       LocalObservation localObservation = element;
 
       //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
-      if (localObservation.canUserEdit(user)) {
+      final canUserEdit = localObservation.canUserEdit(user);
+
+      //Given that admin can edit any observation, we need to avoid allowing an admin on the device to edit local observations on the device that were made by a non-logged in user
+      //because this would result in the observation being uploaded to Firebase with an empty observer uid.
+      //To make the logic easier, only show local observations for the logged in user or observations for a non-logged-in user made by a non-logged-in user (as though non-logged-in is a user itself)
+      final isAdmin = user?.isAdmin == true;
+      final isAdminAndNonLoggedInUserObservation = isAdmin && localObservation.observerUid.isNullOrEmpty;
+
+      if (canUserEdit && !isAdminAndNonLoggedInUserObservation) {
         var observation = Observation(
             dbId: localObservation.key,
             uid: localObservation.uid,

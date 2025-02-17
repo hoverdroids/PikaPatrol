@@ -79,7 +79,7 @@ class FirebaseObservationsService {
     observation.isUploaded = true;
 
     final originalUid = observation.uid;
-    observation.uid = observation.uid ?? generateNewObservationUid();
+    observation.uid = originalUid == null || originalUid.isEmpty ? generateNewObservationUid() : originalUid;
     DocumentReference doc = observationsCollection.doc(observation.uid);
 
     try {

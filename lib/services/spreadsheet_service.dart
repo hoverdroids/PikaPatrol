@@ -15,7 +15,7 @@ abstract class SpreadsheetService {
   bool isClosed = false;
 
   Spreadsheet? spreadsheet;
-  String? get spreadsheetId => spreadsheet?.id;
+  String? spreadsheetId;
   String? get spreadsheetUrl => spreadsheet?.url;
   SpreadsheetData? get spreadsheetData => spreadsheet?.data;
   List<Worksheet>? get spreadsheetWorksheets => spreadsheet?.sheets;
@@ -101,6 +101,7 @@ abstract class SpreadsheetService {
       ValueInputOption input = ValueInputOption.userEntered
     }
   ) async {
+    this.spreadsheetId = spreadsheetId;
     final returnValue = await getSpreadsheet(spreadsheetId, render: render, input: input);
     final spreadsheet = returnValue.value;
     if (spreadsheet == null) {

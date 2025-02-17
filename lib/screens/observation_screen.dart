@@ -1520,7 +1520,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   _confirmAndDelete(BuildContext context, bool userConfirmedDelete, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {
     if (userConfirmedDelete) {
-      final observationsService = Provider.of<ObservationsService>(context);
+      final observationsService = Provider.of<ObservationsService>(context, listen: false);
       var exception = await observationsService.deleteObservation(context, widget.observationViewModel.observation, true, true, deleteLocal, deleteFromFirebase, deleteFromGoogleSheets);
       if (exception == null || exception.code == ERROR_REGISTER_NETWORK_CODE) {
         //Network exception is OK because the observation is deleted in cache and queued for deletion

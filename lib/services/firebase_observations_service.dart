@@ -76,6 +76,7 @@ class FirebaseObservationsService {
 
     //Assume a successful upload unless an exception is thrown
     //This allows firebase to be up-to-date with only one write
+    final originalIsUploaded = observation.isUploaded;
     observation.isUploaded = true;
 
     final originalUid = observation.uid;
@@ -91,7 +92,7 @@ class FirebaseObservationsService {
       // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
       observation.uid = originalUid;
 
-      observation.isUploaded = false;
+      observation.isUploaded = originalIsUploaded;
 
       return e;
     }

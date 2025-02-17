@@ -36,8 +36,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   bool _isLocalObservationsDialogShowing = false;
 
   bool localObservationsNeedUploaded() {
-
-    return false;//localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
+    final localObservations = observationsService.localObservations;
+    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
   late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
@@ -261,20 +261,13 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   Future _uploadLocalObservations(AppUser user) async {
-    /*var hasConnection = await DataConnectionChecker().hasConnection;
-    if(hasConnection && context.mounted) {
-      showToast(translations.uploadingObservations);
 
-      for (var observation in localObservations) {
-          //If the observation was made when the user was not logged in, then edited after logging in, the user
-          //id can be null. So update it now. This allows local observations to be uploaded when online.
-          // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
-          observation.observerUid = user.uid ?? observation.observerUid;
-          saveObservation(context, observation);
+    for (var localObservation in observationsService.localObservations) {
+      if (!localObservation.isUploaded) {
+        final returnValue = await observationsService.saveObservation(localObservation, user);
+        //saving in the background, so don't toast
       }
-    } else {
-      showToast(translations.couldNotUploadObservationsNoDataConnection);
-    }*/
+    }
   }
 
 
@@ -283,7 +276,8 @@ class ObservationsPageState extends State<ObservationsPage> {
       var user = Provider.of<AppUser?>(context, listen: false);
       var needUploaded = user != null && localObservationsNeedUploaded();
       if (needUploaded) {
-        Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context, user));
+        //Future.delayed(Duration.zero, () => _openLocalObservationsNeedUploadedDialog(context, user));
+        _uploadLocalObservations(user);
       }
     }
   }

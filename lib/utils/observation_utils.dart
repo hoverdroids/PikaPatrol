@@ -225,7 +225,14 @@ extension Wind on Observation {
 //endregion
 
 extension ObservationState on Observation {
+
+  bool isNonLoggedInUserObservation(AppUser? user) {
+    //Non-logged in user can save an observation, but only if the observerUid is null
+    return user == null && observerUid == null;
+  }
+
   bool isUserObservation(AppUser? user) {
+    //Logged in user can save an observation, but only if the observerUid is their own uid
     return user != null && user.uid == observerUid;
   }
 
@@ -287,7 +294,7 @@ extension ObservationState on Observation {
     //    admin == true
     final isAdmin = user?.isAdmin ?? false;
 
-    //When can't an observation be deleted?
+    //When can't an observation be edited?
     //  Observation is new                                                <-already editing
     //  Observation is not our own remote, we are not admin               <-no permissions to edit
 

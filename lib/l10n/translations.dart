@@ -224,6 +224,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatOnboardingDetails = ERROR;
   String deleteObservationDialogTitle = ERROR;
   String deleteObservationDialogDescription = ERROR;
+  String observationSavedSuccessfully = ERROR;
+  String unknownErrorUploadingToServerObservationSavedLocally = ERROR;
+  String fillInAllFormFields = ERROR;
 
   String unsureMoreThanOne = ERROR;
   late List<String> pikasDetectedKeys;
@@ -557,6 +560,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     initializeGoogleSheets = AppLocalizations.of(context)?.initializeGoogleSheets ?? initializeGoogleSheets;
     localObservationsNeedUploadedDialogTitle = AppLocalizations.of(context)?.localObservationsNeedUploadedDialogTitle ?? localObservationsNeedUploadedDialogTitle;
     localObservationsNeedUploadedDialogDescription = AppLocalizations.of(context)?.localObservationsNeedUploadedDialogDescription ?? localObservationsNeedUploadedDialogDescription;
+    observationSavedSuccessfully = AppLocalizations.of(context)?.observationSavedSuccessfully ?? observationSavedSuccessfully;
+    unknownErrorUploadingToServerObservationSavedLocally = AppLocalizations.of(context)?.unknownErrorUploadingToServerObservationSavedLocally ?? unknownErrorUploadingToServerObservationSavedLocally;
+    fillInAllFormFields = AppLocalizations.of(context)?.fillInAllFormFields ?? fillInAllFormFields;
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -799,6 +805,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "initializeGoogleSheets": return initializeGoogleSheets;
       case "localObservationsNeedUploadedDialogTitle": return localObservationsNeedUploadedDialogTitle;
       case "localObservationsNeedUploadedDialogDescription": return localObservationsNeedUploadedDialogDescription;
+      case "observationSavedSuccessfully": return observationSavedSuccessfully;
+      case "unknownErrorUploadingToServerObservationSavedLocally": return unknownErrorUploadingToServerObservationSavedLocally;
+      case "fillInAllFormFields": return fillInAllFormFields;
       default: return key;
     }
   }

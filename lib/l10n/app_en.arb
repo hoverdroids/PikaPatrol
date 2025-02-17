@@ -234,5 +234,8 @@
     "observationNotDeleted": "Observation not deleted",
     "initializeGoogleSheets": "Initialize Google Sheets",
     "localObservationsNeedUploadedDialogTitle": "Offline observations need uploaded",
-    "localObservationsNeedUploadedDialogDescription": "Observations that were made offline have not been uploaded yet. Upload now?"
+    "localObservationsNeedUploadedDialogDescription": "Observations that were made offline have not been uploaded yet. Upload now?",
+    "observationSavedSuccessfully": "Observation saved successfully",
+    "unknownErrorUploadingToServerObservationSavedLocally": "Unknown error uploading to server. Observation saved locally",
+    "fillInAllFormFields": "Fill in all form fields"
 }

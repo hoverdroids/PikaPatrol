@@ -333,8 +333,14 @@ class ObservationsService {
     // saved for others to register sooner
     var hasConnection = await DataConnectionChecker().hasConnection;
 
-    // TODO - ensure that this doesn't hang and prevent local observation from being saved
-    if (hasConnection) {
+    if (user == null) {
+      returnValue = ValueMessagePair(false, translations.youMustLoginToUploadAnObservationObservationSavedLocally);
+    } else if (!hasConnection) {
+      //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
+      //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
+
+      returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
+    } else {
       // "Date" can be set manually by the user to indicate the date the observation was made.
       // So, do not set the date using DateTime.now!
       // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
@@ -354,6 +360,8 @@ class ObservationsService {
 
         if (googleSheetsException != null) {
           returnValue = ValueMessagePair(false, googleSheetsException.cause);
+        } else {
+          returnValue = ValueMessagePair(true, translations.observationSavedSuccessfully);
         }
       } else {
         //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
@@ -362,17 +370,14 @@ class ObservationsService {
 
         if (firebaseException != null) {
           returnValue = ValueMessagePair(false, firebaseException);
+        } else {
+          returnValue = ValueMessagePair(false, translations.unknownErrorUploadingToServerObservationSavedLocally);
         }
       }
-    } else {
-      //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
-      //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
-
-      returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
     }
 
     //Only save the current user's observations locally, not other observations the current user modified as admin
-    if (observation.isUserObservation(user)) {
+    if (observation.isUserObservation(user) || observation.isNonLoggedInUserObservation(user)) {
       // Save local observation last to ensure correct information and status for Firebase and Google Sheets
       await saveLocalObservation(observation);
     }

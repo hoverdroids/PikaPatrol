@@ -188,8 +188,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
 
-              var observationsService = Provider.of<ObservationsService>(context);
-
               setState((){
                 _isUploading = true;
               });
@@ -198,6 +196,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               //can be saved in whatever their current state is without having to determine if the observation has been updated.
               widget.observationViewModel.observation.isUploaded = false;
 
+              var observationsService = Provider.of<ObservationsService>(context, listen: false);
               final returnValue = await observationsService.saveObservation(widget.observationViewModel.observation, user);
               final message = returnValue?.message;
               if (message != null) {
@@ -206,13 +205,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
               setState((){
                 _isUploading = false;
+                widget.isEditMode = false;
               });
             } else {
-              showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
+              //The following isn't required because the form will show the error messages
+              //showToast(translations.fillInAllFormFields);
             }
-            setState((){
-              widget.isEditMode = false;
-            });
           }
         },
       );

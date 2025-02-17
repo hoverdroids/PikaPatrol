@@ -234,5 +234,8 @@
     "observationNotDeleted": "Observación no eliminada",
     "initializeGoogleSheets": "Inicializar hojas de cálculo de Google",
     "localObservationsNeedUploadedDialogTitle": "Es necesario cargar las observaciones fuera de línea.",
-    "localObservationsNeedUploadedDialogDescription": "Las observaciones que se realizaron fuera de línea aún no se han cargado. ¿Cargar ahora?"
+    "localObservationsNeedUploadedDialogDescription": "Las observaciones que se realizaron fuera de línea aún no se han cargado. ¿Cargar ahora?",
+    "observationSavedSuccessfully": "Observación guardada exitosamente",
+    "unknownErrorUploadingToServerObservationSavedLocally": "Error desconocido al subir al servidor.\nObservación guardada localmente.",
+    "fillInAllFormFields": "Rellene todos los campos del formulario"
 }

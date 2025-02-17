@@ -101,7 +101,7 @@ class ObservationsService {
     return isSameLocation && isSameTime && isSameObserver;
   }
 
-  setLocalObservations(Box<LocalObservation> box, String userId) {
+  setLocalObservations(Box<LocalObservation> box, AppUser? user) {
     Map<dynamic, dynamic> raw = box.toMap();
     List list = raw.values.toList();
     List<Observation> localObservations = <Observation>[];
@@ -113,7 +113,7 @@ class ObservationsService {
       LocalObservation localObservation = element;
 
       //Only load observations for the current user or observations that don't have an ownerId because they were made when the user wasn't logged in
-      if (localObservation.observerUid == userId || localObservation.observerUid.isEmpty) {
+      if (localObservation.canUserEdit(user)) {
         var observation = Observation(
             dbId: localObservation.key,
             uid: localObservation.uid,

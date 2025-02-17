@@ -1,6 +1,7 @@
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
+import '../model/local_observation.dart';
 import '../model/observation.dart';
 
 //region OtherAnimalsPresent
@@ -228,7 +229,8 @@ extension ObservationState on Observation {
 
   bool isNonLoggedInUserObservation(AppUser? user) {
     //Non-logged in user can save an observation, but only if the observerUid is null
-    return user == null && observerUid == null;
+    final obsUid = observerUid;
+    return user == null && (obsUid == null || obsUid.isEmpty);
   }
 
   bool isUserObservation(AppUser? user) {
@@ -262,42 +264,101 @@ extension ObservationState on Observation {
 
     // Observation is new
     //    user == null or user != null <- since there is no requirement to be logged in to make local observations
+    //    observerUid == null
     //    dbId == null
     //    uid == null
     final isNew = isNewObservation();
 
     //  Observation is local, for a user that is not signed in            <-edit local
     //    user == null
+    //    observerUid == null
     //    dbId != null
     //    uid == null
-    final isLocalWithoutObserver = user == null && observerUid == null && isOnlyLocalObservation();
+    final isNonLoggedInUsersObservation = isNonLoggedInUserObservation(user);// && isOnlyLocalObservation();<-no need to check for local as a remote observation will not have null observerUid
 
     //  Observation is our own local, and a remote version doesn't exist  <-edit local
     //    user != null
-    //    user.id == observer.id
+    //    observerUid == user.id
     //    dbId != null
     //    uid == null
     //  Observation is our own local, and a remote version exists         <-edit local and remote
     //    user != null
-    //    user.id == observer.id
+    //    observerUid == user.id
     //    dbId != null
     //    uid != null
     //  Observation is our own remote, and a local version doesn't exist  <-edit remote
     //    user != null
-    //    user.id == observer.id
+    //    observerUid == user.id
     //    dbId == null
     //    uid != null
-    final isUsers = isUserObservation(user);
+    final isUsersObservation = isUserObservation(user);
 
     //  We are a logged in admin                   <-edit remote for any user
     //    user != null
     //    admin == true
     final isAdmin = user?.isAdmin ?? false;
 
-    //When can't an observation be edited?
-    //  Observation is new                                                <-already editing
-    //  Observation is not our own remote, we are not admin               <-no permissions to edit
+    //  When can't an observation be edited?
+    //  Observation is not our own and we are not admin               <-no permissions to edit
 
-    return isNew || isLocalWithoutObserver || isUsers || isAdmin;
+    return isNew || isNonLoggedInUsersObservation || isUsersObservation || isAdmin;
   }
+}
+
+extension ObservationState2 on LocalObservation {
+  bool isNonLoggedInUserObservation(AppUser? user) {
+    //Non-logged in user can save an observation, but only if the observerUid is null
+    return user == null && observerUid.isEmpty;
+  }
+
+  bool isUserObservation(AppUser? user) {
+    //Logged in user can save an observation, but only if the observerUid is their own uid
+    return user != null && user.uid == observerUid;
+  }
+
+  bool canUserEdit(AppUser? user) {
+    //When can an observation be edited?
+
+    // Observation is new
+    //    user == null or user != null <- since there is no requirement to be logged in to make local observations
+    //    observerUid == null
+    //    dbId == null
+    //    uid == null
+    //final isNew = isNewObservation(); <- no need to check since if a local observation exists, it is not new; only observation can be new as that's the temp type
+
+    //  Observation is local, for a user that is not signed in            <-edit local
+    //    user == null
+    //    observerUid == null
+    //    dbId != null
+    //    uid == null
+    final isNonLoggedInUsersObservation = isNonLoggedInUserObservation(user);// && isOnlyLocalObservation();<-no need to check for local as a remote observation will not have null observerUid
+
+    //  Observation is our own local, and a remote version doesn't exist  <-edit local
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid == null
+    //  Observation is our own local, and a remote version exists         <-edit local and remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid != null
+    //  Observation is our own remote, and a local version doesn't exist  <-edit remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId == null
+    //    uid != null
+    final isUsersObservation = isUserObservation(user);
+
+    //  We are a logged in admin                   <-edit remote for any user
+    //    user != null
+    //    admin == true
+    final isAdmin = user?.isAdmin ?? false;
+
+    //  When can't an observation be edited?
+    //  Observation is not our own and we are not admin               <-no permissions to edit
+
+    return isNonLoggedInUsersObservation || isUsersObservation || isAdmin;
+  }
+
 }

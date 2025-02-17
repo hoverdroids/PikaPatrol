@@ -165,8 +165,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     animation: _colorAnimationController,
     builder: (context, child) {
 
-      var isUsersObservationOrAdmin = user != null && (widget.observationViewModel.observation.observerUid == user.uid || user.isAdmin);
-      var showRightIcon = widget.isEditMode || widget.observationViewModel.observation.dbId != null || isUsersObservationOrAdmin;
+      var showRightIcon = widget.observationViewModel.observation.canUserEdit(user);
 
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),

@@ -32,6 +32,7 @@ class WorksheetService {
   static const String EXPORT_FORMAT_CSV = "csv";
 
   Spreadsheet spreadsheet;
+  String? spreadsheetTitle;
   String worksheetTitle;
   Worksheet? worksheet;
   List<String> columnHeaderKeys;
@@ -46,11 +47,15 @@ class WorksheetService {
         this.columnHeadersRowNumber = DEFAULT_COLUMN_HEADER_ROW_NUMBER
       }
       ) {
+
     _init(doInitHeaderRow);
   }
 
   //#region Init
   _init(bool doInitHeaderRow) async {
+
+    spreadsheetTitle = spreadsheet.data.properties.title;
+    developer.log("[READ] Excel sheet properties.title $spreadsheetTitle $worksheetTitle");
 
     final returnValue = await getWorksheet();
     worksheet = returnValue.value;
@@ -83,6 +88,7 @@ class WorksheetService {
     final worksheetTitle = title ?? this.worksheetTitle;
 
     final worksheet = sheet.worksheetByTitle(worksheetTitle);
+    developer.log("[READ] Excel sheet worksheetByTitle $spreadsheetTitle $worksheetTitle");
     if (worksheet != null) {
       return GSheetsValue(worksheet);
     }
@@ -104,9 +110,11 @@ class WorksheetService {
 
   Future<GSheetsValue<Worksheet>> addWorksheet(String title) async {
     try {
+      developer.log("[WRITE] Excel sheet addWorksheet $spreadsheetTitle $worksheetTitle title:$title");
       final returnValue = await spreadsheet.addWorksheet(title);
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet addWorksheet $spreadsheetTitle $worksheetTitle title:$title [ERROR] ${e.cause}");
       return GSheetsValue(null, exception: e);
     }
   }
@@ -146,9 +154,11 @@ class WorksheetService {
   Future<GSheetsValue<int>> getRowIndexOfKeyInColumn(Object? key, {int inColumn = UID_COLUMN_NUMBER}) async {
     try {
       final sheet = worksheet;
+      developer.log("[READ] Excel sheet rowIndexOf $spreadsheetTitle $worksheetTitle row:$key column:$inColumn");
       final index = key != null && sheet != null ? await sheet.values.rowIndexOf(key, inColumn: inColumn) : KEY_IS_NOT_FOUND;
       return GSheetsValue(index);
     } on GSheetsException catch(e) {
+      developer.log("[READ] Excel sheet rowIndexOf $spreadsheetTitle $worksheetTitle row:$key column:$inColumn [ERROR] ${e.cause}");
       return GSheetsValue(KEY_IS_NOT_FOUND, exception: e);
     }
   }
@@ -175,9 +185,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[READ] Excel sheet getRowByKey $spreadsheetTitle $worksheetTitle key:$key column:$fromColumn");
       final row = await worksheet?.values.map.rowByKey(key, fromColumn: fromColumn, length: length, mapTo: mapTo);
       return GSheetsValue(row);
     } on GSheetsException catch (e) {
+      developer.log("[READ] Excel sheet getRowByKey $spreadsheetTitle $worksheetTitle key:$key column:$fromColumn");
       return GSheetsValue(null, exception: e);
     }
   }
@@ -194,9 +206,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[READ] Excel sheet getRows $spreadsheetTitle $worksheetTitle fromRow:$fromRow fromColumn:$fromColumn length:$length count:$count mapTo:$mapTo");
       final rows = await worksheet?.values.map.allRows(fromRow: fromRow, fromColumn: fromColumn, length: length, count: count, mapTo: mapTo);
       return GSheetsValue(rows);
     } on GSheetsException catch (e) {
+      developer.log("[READ] Excel sheet getRows $spreadsheetTitle $worksheetTitle fromRow:$fromRow fromColumn:$fromColumn length:$length count:$count mapTo:$mapTo [ERROR] ${e.cause}");
       return GSheetsValue(null, exception: e);
     }
   }
@@ -209,9 +223,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[READ] Excel sheet getRow $spreadsheetTitle $worksheetTitle index:$index fromColumn:$fromColumn length:$length mapTo:$mapTo");
       final row = await worksheet?.values.map.row(index, fromColumn: fromColumn, length: length, mapTo: mapTo);
       return GSheetsValue(row);
     } on GSheetsException catch (e) {
+      developer.log("[READ] Excel sheet getRow $spreadsheetTitle $worksheetTitle index:$index fromColumn:$fromColumn length:$length mapTo:$mapTo");
       return GSheetsValue(null, exception: e);
     }
   }
@@ -233,38 +249,46 @@ class WorksheetService {
 
   // It returns total number of rows, even the ones that have no data
   int getRowCount() {
+    developer.log("[READ] Excel sheet getRowCount $spreadsheetTitle $worksheetTitle");
     return worksheet?.rowCount ?? 0;
   }
 
   Future<GSheetsValue<int>> getRowCountFromAllRows() async {
     try {
+      developer.log("[READ] Excel sheet getRowCountFromAllRows $spreadsheetTitle $worksheetTitle");
       var allRows = await worksheet?.values.allRows();
       var value = allRows?.length ?? 0;
       return GSheetsValue(value);
     } on GSheetsException catch(e) {
+      developer.log("[READ] Excel sheet getRowCountFromAllRows $spreadsheetTitle $worksheetTitle [ERROR] ${e.cause}");
       return GSheetsValue(0, exception: e);
     }
   }
 
   Future<GSheetsValue<int>> getRowCountFromAllRowsMap() async {
     try {
+      developer.log("[READ] Excel sheet getRowCountFromAllRowsMap $spreadsheetTitle $worksheetTitle");
       var allRows = await worksheet?.values.map.allRows();
       var value = allRows?.length ?? 0;
       return GSheetsValue(value);
     } on GSheetsException catch(e) {
+      developer.log("[READ] Excel sheet getRowCountFromAllRowsMap $spreadsheetTitle $worksheetTitle [ERROR] ${e.cause}");
       return GSheetsValue(0, exception: e);
     }
   }
 
   Future<GSheetsValue<int>> getRowCountFromLastNonEmptyRow() async {
     try {
+      developer.log("[READ] Excel sheet getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle");
       var lastRow = await worksheet?.values.lastRow();
       var hasRows = lastRow != null;
       var returnValue = hasRows ? int.parse(lastRow.first) : 0;
       return GSheetsValue(returnValue);
     } on GSheetsException catch(e) {
+      developer.log("[READ] Excel sheet getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle [ERROR] ${e.cause}");
       return GSheetsValue(KEY_IS_NOT_FOUND, exception: e);
     } on FormatException catch(e) {
+      developer.log("[READ] Excel sheet read getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle [ERROR] ${e}");
       return GSheetsValue(0);
     }
   }
@@ -522,9 +546,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[WRITE] Excel sheet insertEmptyRowsAtIndex $spreadsheetTitle $worksheetTitle index:$index count:$count");
       final returnValue = await worksheet?.insertRow(index, count: count, inheritFromBefore: inheritFromBefore);
       return GSheetsValue(returnValue);
     } on GSheetsException catch(e) {
+      developer.log("[WRITE] Excel sheet insertEmptyRowsAtIndex $spreadsheetTitle $worksheetTitle index:$index count:$count");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -581,9 +607,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[WRITE] Excel sheet appendRow $spreadsheetTitle $worksheetTitle row:$row fromColumn:$fromColumn");
       final returnValue = await worksheet?.values.map.appendRow(row, mapTo: mapTo, appendMissing: appendMissing, inRange: inRange) ?? false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet appendRow $spreadsheetTitle $worksheetTitle row:$row fromColumn:$fromColumn [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -598,9 +626,11 @@ class WorksheetService {
       }
       ) async {
     try {
+      developer.log("[WRITE] Excel sheet appendRows $spreadsheetTitle $worksheetTitle rows:$rows fromColumn:$fromColumn");
       final returnValue = await worksheet?.values.map.appendRows(rows, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, inRange: inRange) ?? false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch(e) {
+      developer.log("[WRITE] Excel sheet appendRows $spreadsheetTitle $worksheetTitle rows:$rows fromColumn:$fromColumn [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -616,11 +646,13 @@ class WorksheetService {
       ) async {
     try {
       final sheet = worksheet;
+      developer.log("[WRITE] Excel sheet updateRowWithoutColumnHeaderKeys $spreadsheetTitle $worksheetTitle index:$index rowValues:$rowValues");
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
           ? await sheet.values.insertRow(index, rowValues, fromColumn: fromColumn)
           : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet updateRowWithoutColumnHeaderKeys $spreadsheetTitle $worksheetTitle index:$index rowValues:$rowValues [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -637,11 +669,13 @@ class WorksheetService {
       ) async {
     try {
       final sheet = worksheet;
+      developer.log("[WRITE] Excel sheet updateRow $spreadsheetTitle $worksheetTitle");
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null
           ? await sheet.values.map.insertRow(index, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite)
           : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet updateRow $spreadsheetTitle $worksheetTitle [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -687,11 +721,13 @@ class WorksheetService {
       ) async {
     try {
       final sheet = worksheet;
+      developer.log("[WRITE] Excel sheet updateRowByKey $spreadsheetTitle $worksheetTitle row:$key rowValues:$rowValuesWithColumnHeaderKeys");
       final returnValue = key != null && sheet != null
           ? await sheet.values.map.insertRowByKey(key, rowValuesWithColumnHeaderKeys, fromColumn: fromColumn, mapTo: mapTo, appendMissing: appendMissing, overwrite: overwrite, eager: eager)
           : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet updateRowByKey $spreadsheetTitle $worksheetTitle row:$key rowValues:$rowValuesWithColumnHeaderKeys [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -719,9 +755,11 @@ class WorksheetService {
   Future<GSheetsValue<bool>> deleteRows(int? index, int numberOfRows) async {
     try {
       final sheet = worksheet;
+      developer.log("[WRITE] Excel sheet deleteRows $spreadsheetTitle $worksheetTitle index:$index numberOfRows:$numberOfRows");
       final returnValue = index != null && index != KEY_IS_NOT_FOUND && sheet != null ? await sheet.deleteRow(index, count: numberOfRows) : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet deleteRows $spreadsheetTitle $worksheetTitle index:$index numberOfRows:$numberOfRows [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }
@@ -742,9 +780,11 @@ class WorksheetService {
       ) async {
     try {
       final sheet = worksheet;
+      developer.log("[WRITE] Excel sheet insertValueByKeys $spreadsheetTitle $worksheetTitle value:$value columnKey:$columnKey rowKey:$rowKey");
       final returnValue = value != null && sheet != null ? await sheet.values.insertValueByKeys(value, columnKey: columnKey, rowKey: rowKey, eager: eager) : false;
       return GSheetsValue(returnValue);
     } on GSheetsException catch (e) {
+      developer.log("[WRITE] Excel sheet insertValueByKeys $spreadsheetTitle $worksheetTitle value:$value columnKey:$columnKey rowKey:$rowKey [ERROR] ${e.cause}");
       return GSheetsValue(false, exception: e);
     }
   }

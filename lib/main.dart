@@ -104,6 +104,19 @@ Future<void> main() async {
 
                     List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
+                    List<PikaPatrolSpreadsheetService> services = [];
+
+                    for (var credential in googleSheetsCredentials) {
+                      credential.spreadsheets.forEach((projectName, spreadsheetId) {
+                        var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
+                        services.add(service);
+                      });
+                    }
+
+                    final googleSheetsService = GoogleSheetsService(services);
+
+                    observationsService.googleSheetsService = googleSheetsService;
+
                     return StreamBuilder<List<Observation>>(
                       stream: firebaseDatabaseService.observationsService.observations,//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
                       initialData: const [],
@@ -135,23 +148,8 @@ Future<void> main() async {
                                         Provider<List<GoogleSheetsCredential>>.value(
                                             value: googleSheetsCredentials
                                         ),
-                                        Provider<GoogleSheetsService>(
-                                            create: (_) {
-                                              List<PikaPatrolSpreadsheetService> services = [];
-
-                                              for (var credential in googleSheetsCredentials) {
-                                                credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                                  var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                                                  services.add(service);
-                                                });
-                                              }
-
-                                              final googleSheetsService = GoogleSheetsService(services);
-
-                                              observationsService.googleSheetsService = googleSheetsService;
-
-                                              return googleSheetsService;
-                                            }
+                                        Provider<GoogleSheetsService>.value(
+                                          value: googleSheetsService
                                         ),
                                       ],
                                       child: const MyApp()

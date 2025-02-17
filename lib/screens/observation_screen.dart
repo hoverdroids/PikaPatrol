@@ -1372,6 +1372,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
                   var approvedSet = approvedOrganizations.toSet();
                   var selectedSet = updatedSharedWithProjects.toSet();
+                  observation.sharedWithProjects = selectedSet.toList();
                   observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
                 })
               }

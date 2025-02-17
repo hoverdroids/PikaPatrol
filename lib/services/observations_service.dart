@@ -436,6 +436,8 @@ class ObservationsService {
       if (sharedWithProjects?.contains(service.organization) == true) {
         returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
       } else {
+        //TODO - it would be nice if we could know if the observation was previously shared with the organization, but now isn't
+        //in order to reduce the number of calls being made to google sheets
         //Just in case the observation was previously shared with the organization, but now isn't
         returnValue = await service.observationWorksheetService?.deleteObservation(observation);
       }

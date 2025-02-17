@@ -67,6 +67,10 @@ Future<void> main() async {
         Provider<ObservationsService>(
             create: (_) => ObservationsService()
         ),
+        Provider<GoogleSheetsService>(
+          create: (_) => GoogleSheetsService(),
+          lazy: false
+        ),
       ],
       builder: (context, child) {
         //Using StreamBuilder here in order so that appUserSnapshot is the desired type
@@ -104,16 +108,8 @@ Future<void> main() async {
 
                     List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
-                    List<PikaPatrolSpreadsheetService> services = [];
-
-                    for (var credential in googleSheetsCredentials) {
-                      credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                        var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                        services.add(service);
-                      });
-                    }
-
-                    final googleSheetsService = GoogleSheetsService(services);
+                    final googleSheetsService = Provider.of<GoogleSheetsService>(context);
+                    googleSheetsService.updateSpreadsheetServices(googleSheetsCredentials);
 
                     observationsService.googleSheetsService = googleSheetsService;
 
@@ -147,16 +143,12 @@ Future<void> main() async {
                                         ),
                                         Provider<List<GoogleSheetsCredential>>.value(
                                             value: googleSheetsCredentials
-                                        ),
-                                        Provider<GoogleSheetsService>.value(
-                                          value: googleSheetsService
-                                        ),
+                                        )
                                       ],
                                       child: const MyApp()
                                   );
                                 }
                               );
-
                             }
                         );
                       }

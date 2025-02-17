@@ -1,5 +1,8 @@
 // ignore_for_file: constant_identifier_names
+import 'dart:developer' as developer;
 import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
+
+import '../model/google_sheets_credential.dart';
 
 class GoogleSheetsService {
 
@@ -21,5 +24,30 @@ class GoogleSheetsService {
     return pikaPatrolSpreadsheetServices.map((service) => service.organization).nonNulls.toList();
   }
 
-  GoogleSheetsService(this.pikaPatrolSpreadsheetServices);
+  GoogleSheetsService();
+
+  void updateSpreadsheetServices(List<GoogleSheetsCredential> googleSheetsCredentials) {
+    if (googleSheetsCredentials.isEmpty){
+      //Account for the user signing out
+      pikaPatrolSpreadsheetServices = [];
+      return;
+    }
+
+    // Account for credentials being added dynamically, while also avoiding instantiating the same service multiple times as that causes more calls to the service than necessary
+    for (var credential in googleSheetsCredentials) {
+      credential.spreadsheets.forEach((projectName, spreadsheetId) {
+        if (!pikaPatrolSpreadsheetServices.any((service) => service.spreadsheetId == spreadsheetId)) {
+          developer.log("Adding service for projectName:$projectName spreadsheetId: $spreadsheetId");
+          var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
+          pikaPatrolSpreadsheetServices.add(service);
+        } else {
+          developer.log("Service already exists for projectName:$projectName spreadsheetId: $spreadsheetId");
+        }
+      });
+    }
+
+    //Account for credentials being removed dynamically
+    //TODO pikaPatrolSpreadsheetServices.removeWhere((service) => !googleSheetsCredentials.any((credential) => credential.spreadsheets.containsValue(service.spreadsheetId)));
+  }
+
 }

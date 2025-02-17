@@ -1,9 +1,9 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:async';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:chips_choice/chips_choice.dart';
-import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,9 +25,11 @@ import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pika_patrol/model/observation_view_model.dart';
+import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
-import 'package:pika_patrol/model/observation.dart';
+
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
@@ -37,24 +39,22 @@ import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
-import 'dart:developer' as developer;
 
-import '../data/pika_species.dart';
 import '../l10n/translations.dart';
-import '../services/google_sheets_service.dart';
-import '../utils/observation_utils.dart';
+import '../services/observations_service.dart';
+import '../utils/firebase_utils.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
 
-  final Observation observation;
+  final ObservationViewModel observationViewModel;
   late bool isEditMode;
 
-  ObservationScreen(this.observation, {super.key}) {
+  ObservationScreen(this.observationViewModel, {super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
-    isEditMode = observation.uid == null ? true : false;
+    isEditMode = observationViewModel.observation.isNewObservation();
   }
 
   @override
@@ -114,9 +114,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         .animate(_colorAnimationController);
 
     // Show delete button even when not editing
-    var canEdit = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
-    var isNewObservation = widget.observation.uid == null && widget.observation.dbId == null;
-    var showDeleteButton = canEdit && !isNewObservation;
+    final observation = widget.observationViewModel.observation;
+    var showDeleteButton = observation.canUserEdit(user) && !observation.isNewObservation();
 
     return Scaffold(
       backgroundColor: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).scaffoldBackgroundColor,
@@ -141,7 +140,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     smallTransparentDivider,
                     _buildAudioRecordings(),
                     if (showDeleteButton) ... [
-                      _buildDeleteButtonForForm()
+                      _buildDeleteButtonForForm(context)
                     ],
                   ],
                 ),
@@ -166,8 +165,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     animation: _colorAnimationController,
     builder: (context, child) {
 
-      var isUsersObservationOrAdmin = user != null && (widget.observation.observerUid == user.uid || user.isAdmin);
-      var showRightIcon = widget.isEditMode || widget.observation.dbId != null || isUsersObservationOrAdmin;
+      var showRightIcon = widget.observationViewModel.observation.canUserEdit(user);
 
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),
@@ -179,7 +177,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         leftIconClickedCallback: () => Navigator.pop(context),
         rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
         showRightIcon: showRightIcon,
-        //Widget will only be in edit mode if new observation
         rightIconType: ThemeGroupType.MOS,
         rightIconClickedCallback: () async {
           if (!widget.isEditMode) {
@@ -190,43 +187,28 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
 
-              widget.observation.dateUpdatedInGoogleSheets = DateTime.now();
+              setState((){
+                _isUploading = true;
+              });
 
-              var isInitialObservation = widget.observation.uid == null;//always save a new observation locally
-              var isUsersObservation = user != null && user.uid == widget.observation.observerUid;//don't save another user's observations locally; can happen when admin edits
-              if (isInitialObservation || isUsersObservation) {
-                widget.observation.isUploaded = false;//The observation was updated and not yet uploaded; ensure that's reflected in case !hasConnection
-                var localObservation = await saveLocalObservation(widget.observation);//TODO - CHRIS - I don't like the save local, save, save local approach
+              //Indicate that there are changes that are not uploaded when the updates are saved so that observations
+              //can be saved in whatever their current state is without having to determine if the observation has been updated.
+              widget.observationViewModel.observation.isUploaded = false;
+
+              var observationsService = Provider.of<ObservationsService>(context, listen: false);
+              final returnValue = await observationsService.saveObservation(widget.observationViewModel.observation, user);
+              final message = returnValue?.message;
+              if (message != null) {
+                showToast(message);
               }
 
-              //TODO - CHRIS - probably worth moving to the saveObservationon method
-              var hasConnection = await DataConnectionChecker().hasConnection;
-              if (!hasConnection) {
-                showToast(translations.noConnectionFoundObservationSavedLocally);
-              } else if (user != null) {
-                setState(() {
-                  _isUploading = true;
-                });
-
-                //If the observation was made when the user was not logged in, then edited after logging in, the user
-                //id can be null. So update it now. This allows local observations to be uploaded when online.
-                // However, if it's not null, then an admin could be editing it; so, don't override the original owner's ID
-                widget.observation.observerUid ??= user.uid;
-
-                //Share with others
-                if (context.mounted) {
-                  await saveObservation(context, widget.observation);
-                }
-
-                setState(() {
-                  _isUploading = false;
-                });
-              } else {
-                showToast(translations.youMustLoginToUploadAnObservationObservationSavedLocally);
-              }
-              setState(() {
+              setState((){
+                _isUploading = false;
                 widget.isEditMode = false;
               });
+            } else {
+              //The following isn't required because the form will show the error messages
+              //showToast(translations.fillInAllFormFields);
             }
           }
         },
@@ -311,7 +293,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     TrainingScreensPager(
                       backClickedCallback: () =>
                         Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observation))
+                            MaterialPageRoute(builder: (BuildContext context) => ObservationScreen(widget.observationViewModel))
                         )
                     )
                   )
@@ -334,7 +316,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         color: context.watch<MaterialThemesManager>().colorPalette().secondary,
         size: 48),
     onPressed: () {
-      var audioUrls = widget.observation.audioUrls;
+      var audioUrls = widget.observationViewModel.observation.audioUrls;
       if (audioUrls != null && audioUrls.isNotEmpty) {
         _playAudio(audioUrls[0]);
       } else {
@@ -381,7 +363,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildImage() {
-    var imageUrls = widget.observation.imageUrls ?? <String>[];
+    var imageUrls = widget.observationViewModel.observation.imageUrls ?? <String>[];
     if(imageUrls.isEmpty) {
       return const Image(
         height: 300.0,
@@ -407,12 +389,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildLatLonAltitude() {
-    String latitude = widget.observation.latitude?.toStringAsFixed(3) ?? "";
-    String editLatitude = widget.observation.latitude?.toStringAsFixed(5) ?? "";
-    String longitude = widget.observation.longitude?.toStringAsFixed(3) ?? "";
-    String editLongitude = widget.observation.longitude?.toStringAsFixed(5) ?? "";
+    final observation = widget.observationViewModel.observation;
+    String latitude = observation.latitude?.toStringAsFixed(3) ?? "";
+    String editLatitude = observation.latitude?.toStringAsFixed(5) ?? "";
+    String longitude = observation.longitude?.toStringAsFixed(3) ?? "";
+    String editLongitude = observation.longitude?.toStringAsFixed(5) ?? "";
 
-    double? altMeters = widget.observation.altitudeInMeters;
+    double? altMeters = observation.altitudeInMeters;
     String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
     String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";    //Editable altitude is full length
 
@@ -437,7 +420,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     text: editLatitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observation.latitude = double.parse(value) },
+                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.latitude = double.parse(value) },
                     validator: (value) => isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
@@ -465,7 +448,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     text: editLongitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observation.longitude = double.parse(value) },
+                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.longitude = double.parse(value) },
                     validator: (value) => isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
@@ -495,7 +478,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     hintText: "0.0",
                     onStringChangedCallback: (value) {
                       var altitudeInFeet = double.parse(value);
-                      widget.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
+                      widget.observationViewModel.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
                     },
                     validator: (value) => isValidGeo(value, translations.altitude),
                   )
@@ -521,9 +504,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         showToast("${translations.location}:\n$lat $lon $alt");
 
         setState(() {
-          widget.observation.latitude = position.latitude;
-          widget.observation.longitude = position.longitude;
-          widget.observation.altitudeInMeters = position.altitude;
+          final observation = widget.observationViewModel.observation;
+          observation.latitude = position.latitude;
+          observation.longitude = position.longitude;
+          observation.altitudeInMeters = position.altitude;
 
           _hideGeoFields = true;
           resetHideGeoFields();
@@ -543,7 +527,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildHeader() {
-    var date = widget.observation.date;
+    var date = widget.observationViewModel.observation.date;
     String month = date == null ? "" : DateFormat.yMMMMd('en_US').format(date).split(" ")[0];
     String day = date == null ? "" : date.day.toString();
     String year = date == null ? "" : date.year.toString();
@@ -558,14 +542,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           if(widget.isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
-              text: widget.observation.location ?? "",
+              text: widget.observationViewModel.observation.location ?? "",
               textType: ThemeGroupType.POM,
               hintText: translations.siteName,
-              onStringChangedCallback: (value) => { widget.observation.location = value },
+              onStringChangedCallback: (value) => { widget.observationViewModel.observation.location = value },
               validator: (value) => nonEmptyValidator(value, translations.siteName, true),
             )
           ] else ... [
-            ThemedH5(widget.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+            ThemedH5(widget.observationViewModel.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
@@ -694,7 +678,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ];
 
     return ContentScroll(
-      images: widget.observation.imageUrls ?? <String>[],
+      images: widget.observationViewModel.observation.imageUrls ?? <String>[],
       title: translations.images,
       emptyListMessage: translations.noImages,
       imageHeight: 200.0,
@@ -708,7 +692,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   _removeImage(path) {
     setState(() {
       //remove image from the observation
-      widget.observation.imageUrls?.remove(path);
+      widget.observationViewModel.observation.imageUrls?.remove(path);
       needsUpdated = true;
     });
 
@@ -723,7 +707,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ];
 
     return AudioContentScroll(
-      urls: widget.observation.audioUrls ?? <String>[],
+      urls: widget.observationViewModel.observation.audioUrls ?? <String>[],
       title: translations.audioRecordings,
       emptyListMessage: translations.noAudioRecordings,
       imageHeight: 200.0,
@@ -742,7 +726,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          widget.observation.audioUrls?.add(value);
+          widget.observationViewModel.observation.audioUrls?.add(value);
           justKeepToggling = !justKeepToggling;
         }
       })
@@ -770,15 +754,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     setState(() {
       for (var filePath in filePaths) {
         if (addImages) {
-          if (widget.observation.imageUrls?.contains(filePath) == true) {
+          if (widget.observationViewModel.observation.imageUrls?.contains(filePath) == true) {
             showToast(translations.didNotAddImage);
           } else {
-            widget.observation.imageUrls?.add(filePath);
+            widget.observationViewModel.observation.imageUrls?.add(filePath);
           }
-        } else if (widget.observation.audioUrls?.contains(filePath) == true) {
+        } else if (widget.observationViewModel.observation.audioUrls?.contains(filePath) == true) {
           showToast(translations.didNotAddAudio);
         } else {
-          widget.observation.audioUrls?.add(filePath);
+          widget.observationViewModel.observation.audioUrls?.add(filePath);
         }
       }
 
@@ -959,7 +943,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
 
     setState(() {
-      widget.observation.imageUrls?.add(croppedPath ?? sourcePath);
+      widget.observationViewModel.observation.imageUrls?.add(croppedPath ?? sourcePath);
     });
   }
   
@@ -1010,7 +994,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildPikaSpecies() {
-    var speciesValues = widget.observation.getSpeciesValues(translations);//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
+    var speciesValues = widget.observationViewModel.getSpeciesValues();//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1026,16 +1010,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.species,
+          value: widget.observationViewModel.observation.species,
           onChanged: (value) => {
             if (widget.isEditMode) {
-              setState(() => widget.observation.species = value)
+              setState(() => widget.observationViewModel.observation.species = value)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
             source: speciesValues,
             value: (i, v) => v,
-            label: (i, v) => getSpeciesLabel(i, v, translations),
+            label: (i, v) => widget.observationViewModel.getSpeciesLabel(i, v),
             tooltip: (i, v) => v,
           ),
         )
@@ -1056,7 +1040,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          widget.observation.species = value.trim();
+          widget.observationViewModel.observation.species = value.trim();
         }
       })
     });
@@ -1070,16 +1054,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.signs, type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.signs ?? <String>[],
+          value: widget.observationViewModel.observation.signs ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => widget.observation.signs = val)
+              setState(() => widget.observationViewModel.observation.signs = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: widget.observation.getSignsValues(translations),
+            source: widget.observationViewModel.getSignsValues(),
             value: (i, v) => v,
-            label: (i, v) => getSignsLabel(i, v, translations),
+            label: (i, v) => widget.observationViewModel.getSignsLabel(i, v),
             tooltip: (i, v) => v,
           ),
         )
@@ -1088,8 +1072,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildCountChoices() {
-    String? pikasDetected = widget.observation.pikasDetected;
+    String? pikasDetected = widget.observationViewModel.observation.pikasDetected;
     bool pikasDetectedEmpty = pikasDetected != null && pikasDetected.isEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1102,14 +1087,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               if (widget.isEditMode) {
                 setState(() {
                   //If selected the same value as before, unset the value
-                  widget.observation.pikasDetected = widget.observation.pikasDetected == val ? null : val;
+                  widget.observationViewModel.observation.pikasDetected = widget.observationViewModel.observation.pikasDetected == val ? null : val;
                 })
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getPikasDetectedValues(translations),
+              source: widget.observationViewModel.getPikasDetectedValues(),
               value: (i, v) => v,
-              label: (i, v) => getPikasDetectedLabel(i, v, translations),
+              label: (i, v) => widget.observationViewModel.getPikasDetectedLabel(i, v),
               tooltip: (i, v) => v,
             )
         )
@@ -1125,16 +1110,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.distanceToClosestPika, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.distanceToClosestPika,
+            value: widget.observationViewModel.observation.distanceToClosestPika,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => widget.observation.distanceToClosestPika = val)
+                setState(() => widget.observationViewModel.observation.distanceToClosestPika = val)
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getDistanceToClosestPikaValues(translations),
+              source: widget.observationViewModel.getDistanceToClosestPikaValues(),
               value: (i, v) => v,
-              label: (i, v) => getDistanceToClosestPikaLabel(i, v, translations),
+              label: (i, v) => widget.observationViewModel.getDistanceToClosestPikaLabel(i, v),
               tooltip: (i, v) => v,
             )
         )
@@ -1150,16 +1135,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.searchDuration, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.searchDuration,
+            value: widget.observationViewModel.observation.searchDuration,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => widget.observation.searchDuration = val)
+                setState(() => widget.observationViewModel.observation.searchDuration = val)
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getSearchDurationValues(translations),
+              source: widget.observationViewModel.getSearchDurationValues(),
               value: (i, v) => v,
-              label: (i, v) => getSearchDurationLabel(i, v, translations),
+              label: (i, v) => widget.observationViewModel.getSearchDurationLabel(i, v),
               tooltip: (i, v) => v,
             )
         )
@@ -1191,17 +1176,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.talusArea,
+            value: widget.observationViewModel.observation.talusArea,
             onChanged: (val) => {
               if (widget.isEditMode) {
-                setState(() => widget.observation.talusArea = val)
+                setState(() => widget.observationViewModel.observation.talusArea = val)
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
-              source: widget.observation.getTalusAreaValues(translations),
+              source: widget.observationViewModel.getTalusAreaValues(),
               value: (i, v) => v,
-              label: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
-              tooltip: (i, v) => getTalusAreaLabel(i, v, translations, showTalusAreaHints),
+              label: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
+              tooltip: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
             )
         )
       ],
@@ -1217,16 +1202,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.temperature, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-          value: widget.observation.temperature,
+          value: widget.observationViewModel.observation.temperature,
           onChanged: (val) => {
             if (widget.isEditMode) {
-              setState(() => widget.observation.temperature = val)
+              setState(() => widget.observationViewModel.observation.temperature = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
-            source: widget.observation.getTemperatureValues(translations),
+            source: widget.observationViewModel.getTemperatureValues(),
             value: (i, v) => v,
-            label: (i, v) => getTemperatureLabel(i, v, translations),
+            label: (i, v) => widget.observationViewModel.getTemperatureLabel(i, v),
             tooltip: (i, v) => v,
           )
         )
@@ -1241,17 +1226,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.skies, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.skies,
+        value: widget.observationViewModel.observation.skies,
         onChanged: (val) => {
           if (widget.isEditMode) {
-            setState(() => widget.observation.skies = val)
+            setState(() => widget.observationViewModel.observation.skies = val)
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getSkiesValues(translations),
+          source: widget.observationViewModel.getSkiesValues(),
           value: (i, v) => v,
-          label: (i, v) => getSkiesLabel(i, v, translations),
-          tooltip: (i, v) => v,
+          label: (i, v) => widget.observationViewModel.getSkiesLabel(i, v),
+          tooltip: (i, v) => v
         )
       )
     ],
@@ -1264,17 +1249,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.wind, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.wind,
+        value: widget.observationViewModel.observation.wind,
         onChanged: (val) => {
           if (widget.isEditMode) {
-            setState(() => widget.observation.wind = val)
+            setState(() => widget.observationViewModel.observation.wind = val)
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getWindValues(translations),
+          source: widget.observationViewModel.getWindValues(),
           value: (i, v) => v,
-          label: (i, v) => getWindLabel(i, v, translations),
-          tooltip: (i, v) => v,
+          label: (i, v) => widget.observationViewModel.getWindLabel(i, v),
+          tooltip: (i, v) => v
         )
       )
     ],
@@ -1295,17 +1280,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ),
       ChipsChoice<String>.multiple(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-        value: widget.observation.otherAnimalsPresent ?? <String>[],
+        value: widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[],
         onChanged: (val) => {
           if (widget.isEditMode) {
-            setState(() => widget.observation.otherAnimalsPresent = val)
+            setState(() => widget.observationViewModel.observation.otherAnimalsPresent = val)
           }
         },
         choiceItems: C2Choice.listFrom<String, String>(
-          source: widget.observation.getOtherAnimalsPresentValues(translations),
+          source: widget.observationViewModel.getOtherAnimalsPresentValues(),
           value: (i, v) => v,
-          label: (i, v) => getOtherAnimalsPresentLabel(i, v, translations),
-          tooltip: (i, v) => v,
+          label: (i, v) => widget.observationViewModel.getOtherAnimalsPresentLabel(i, v),
+          tooltip: (i, v) => v
         ),
       )
     ],
@@ -1324,10 +1309,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          var otherAnimalsPresent = widget.observation.otherAnimalsPresent ?? <String>[];
+          var otherAnimalsPresent = widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[];
           otherAnimalsPresent.addAll(value.split(","));
           otherAnimalsPresent = otherAnimalsPresent.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
-          widget.observation.otherAnimalsPresent = otherAnimalsPresent;
+          widget.observationViewModel.observation.otherAnimalsPresent = otherAnimalsPresent;
         }
       })
     });
@@ -1344,10 +1329,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
-    var isNewObservation = widget.observation.uid == null;
+    var observation = widget.observationViewModel.observation;
 
-    var sharedWithProjects = widget.observation.sharedWithProjects ?? [];
-    var notSharedWithProjects = widget.observation.notSharedWithProjects ?? [];
+    var sharedWithProjects = observation.sharedWithProjects ?? [];
+    var notSharedWithProjects = observation.notSharedWithProjects ?? [];
 
     for (var approvedOrganization in approvedOrganizations) {
       if (!sharedWithProjects.contains(approvedOrganization) && !notSharedWithProjects.contains(approvedOrganization)) {
@@ -1356,10 +1341,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
 
     sharedWithProjects = sharedWithProjects.toTrimmedUniqueList().sortList();
-    widget.observation.sharedWithProjects = sharedWithProjects;
+    observation.sharedWithProjects = sharedWithProjects;
 
     notSharedWithProjects = notSharedWithProjects.toTrimmedUniqueList().sortList();
-    widget.observation.notSharedWithProjects = notSharedWithProjects;
+    observation.notSharedWithProjects = notSharedWithProjects;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1377,16 +1362,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
           ChipsChoice<String>.multiple(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
-            value: widget.observation.sharedWithProjects ?? <String>[],
+            value: widget.observationViewModel.observation.sharedWithProjects ?? <String>[],
             onChanged: (updatedSharedWithProjects) =>
             {
               if (widget.isEditMode) {
                 setState((){
-                  widget.observation.sharedWithProjects = updatedSharedWithProjects;
+                  final observation = widget.observationViewModel.observation;
+                  sharedWithProjects = updatedSharedWithProjects;
 
                   var approvedSet = approvedOrganizations.toSet();
                   var selectedSet = updatedSharedWithProjects.toSet();
-                  widget.observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
+                  observation.sharedWithProjects = selectedSet.toList();
+                  observation.notSharedWithProjects = List.from(approvedSet.difference(selectedSet));
                 })
               }
             },
@@ -1415,10 +1402,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ).then((value) => {
       setState(() {
         if (value != null && (value as String).isNotEmpty) {
-          var sharedWithProjects = widget.observation.sharedWithProjects ?? <String>[];
+          final observation = widget.observationViewModel.observation;
+
+          var sharedWithProjects = observation.sharedWithProjects ?? <String>[];
           sharedWithProjects.addAll(value.split(","));
           sharedWithProjects = sharedWithProjects.map((string) => string.replaceAllMapped(RegExp(r'^\s+|\s+$'), (match) => "")).toSet().toList();
-          widget.observation.sharedWithProjects = sharedWithProjects;
+          observation.sharedWithProjects = sharedWithProjects;
         }
       })
     });
@@ -1435,13 +1424,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if(widget.isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
-            text: widget.observation.siteHistory ?? "",
+            text: widget.observationViewModel.observation.siteHistory ?? "",
             textType: ThemeGroupType.POM,
             hintText: translations.siteHistoryHint,
             //hintTextType: hintTextType,
             //hintTextEmphasis: hintTextEmphasis,
             //backgroundType: textFieldBackgroundType,
-            onStringChangedCallback: (value) => { widget.observation.siteHistory = value },
+            onStringChangedCallback: (value) => { widget.observationViewModel.observation.siteHistory = value },
             //validator: validator
           )
         ] else ... [
@@ -1449,7 +1438,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             height: 120.0,
             child: SingleChildScrollView(
               child: ThemedBody(
-                widget.observation.siteHistory,
+                widget.observationViewModel.observation.siteHistory,
                 type: ThemeGroupType.MOM,
               ),
             ),
@@ -1470,13 +1459,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if(widget.isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
-            text: widget.observation.comments ?? "",
+            text: widget.observationViewModel.observation.comments ?? "",
             textType: ThemeGroupType.POM,
             hintText: translations.anyAdditionalObservations,
             //hintTextType: hintTextType,
             //hintTextEmphasis: hintTextEmphasis,
             //backgroundType: textFieldBackgroundType,
-            onStringChangedCallback: (value) => { widget.observation.comments = value },
+            onStringChangedCallback: (value) => { widget.observationViewModel.observation.comments = value },
             //validator: validator
           )
         ] else ... [
@@ -1484,7 +1473,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             height: 120.0,
             child: SingleChildScrollView(
               child: ThemedBody(
-                widget.observation.comments,
+                widget.observationViewModel.observation.comments,
                 type: ThemeGroupType.MOM,
               ),
             ),
@@ -1497,44 +1486,30 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: widget.observation.date ?? DateTime.now(),
+      initialDate: widget.observationViewModel.observation.date ?? DateTime.now(),
       firstDate: DateTime.fromMicrosecondsSinceEpoch(0),
       lastDate: DateTime.now()
     );
-    if (picked != null && picked != widget.observation.date) {
+    if (picked != null && picked != widget.observationViewModel.observation.date) {
       setState((){
-        widget.observation.date = picked;
+        widget.observationViewModel.observation.date = picked;
       });
     }
   }
 
-  Widget _buildDeleteButtonForForm() => Padding(
+  Widget _buildDeleteButtonForForm(BuildContext context) => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
     child: Center(
-      child: _buildDeleteButton(false)
+      child: _buildDeleteButton(context, false)
     )
   );
 
-  Widget _buildDeleteButton(bool userConfirmedDelete) => ElevatedButton(
+  Widget _buildDeleteButton(BuildContext context, bool userConfirmedDelete) => ElevatedButton(
     onPressed: () async {
-      if (userConfirmedDelete) {
-        var exception = await deleteObservation(context, widget.observation, true, true);
-        if (exception == null) {
-          showToast(translations.observationDeleted);
-          if (context.mounted) {
-            Navigator.of(context).pushReplacement(
-                MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
-            );
-          }
-        } else {
-          showToast("${translations.observationNotDeleted} : $exception");
-          if (context.mounted) {
-            Navigator.pop(context, true);
-          }
-        }
-      } else {
-        _showDeleteObservationVerificationDialog();
-      }
+      _confirmAndDelete(context, userConfirmedDelete, true, true, true);
+    },
+    onLongPress: () async {
+      _confirmAndDelete(context, userConfirmedDelete, true, false, false);
     },
     style: ElevatedButton.styleFrom(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
@@ -1544,6 +1519,30 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
   );
 
+  _confirmAndDelete(BuildContext context, bool userConfirmedDelete, bool deleteLocal, bool deleteFromFirebase, bool deleteFromGoogleSheets) async {
+    if (userConfirmedDelete) {
+      final observationsService = Provider.of<ObservationsService>(context, listen: false);
+      var exception = await observationsService.deleteObservation(context, widget.observationViewModel.observation, true, true, deleteLocal, deleteFromFirebase, deleteFromGoogleSheets);
+      if (exception == null || exception.code == ERROR_REGISTER_NETWORK_CODE) {
+        //Network exception is OK because the observation is deleted in cache and queued for deletion
+        //from the server once the app is back online
+        showToast(translations.observationDeleted);
+        if (context.mounted) {
+          Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (BuildContext context) => const HomeWithDrawer())
+          );
+        }
+      } else {
+        showToast("${translations.observationNotDeleted} : $exception");
+        if (context.mounted) {
+          Navigator.pop(context, true);
+        }
+      }
+    } else {
+      _showDeleteObservationVerificationDialog(context);
+    }
+  }
+
   Widget _buildCancelButton() => TextButton(
     child: Text(translations.cancel),
     onPressed: () async {
@@ -1551,7 +1550,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     },
   );
 
-  _showDeleteObservationVerificationDialog() {
+  _showDeleteObservationVerificationDialog(BuildContext context) {
     if (mounted) {
       showDialog(
         context: context,
@@ -1560,7 +1559,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           content: Text(translations.deleteObservationDialogDescription),
           actions: [
             _buildCancelButton(),
-            _buildDeleteButton(true)
+            _buildDeleteButton(context, true)
           ],
         )
       );

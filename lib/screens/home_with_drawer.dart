@@ -20,6 +20,7 @@ import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
 import 'package:pika_patrol/model/observation.dart';
+import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
@@ -122,10 +123,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
     }
 
-    if (user != null) {
-      GoogleSheetsService googleSheetsService = Provider.of<GoogleSheetsService>(context);
-    }
-
     return Scaffold(
         key: _scaffoldKey,
         extendBodyBehindAppBar: true,
@@ -136,14 +133,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         drawer: buildDrawer(context, user, userProfile, bottom),
         endDrawer: buildEndDrawer(context, user, userProfile, bottom),
         onEndDrawerChanged: (isOpen) {
-          // developer.log("IsOpen:$isOpen");
-
-          //If the user tries to close the profile screen with an incomplete profile, force it back open
           if (isOpen && forceProfileOpen && !isEditingProfile) {
-            // developer.log("Setting isEditingProfile true. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
+            //If the user tries to close the profile screen with an incomplete profile, force it back open
             setState((){ isEditingProfile = true; });
           } else if (forceProfileOpen && !isOpen) {
-            // developer.log("Calling openEndDrawer and Toast. IsOpen:$isOpen, ForceProfileOpen:$forceProfileOpen");
             _scaffoldKey.currentState?.openEndDrawer();
             showToast(translations.enterRequiredFields);
           }
@@ -177,25 +170,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   Widget buildBody(BuildContext context, double width) {
     return SizedBox(
       width: width,
-      child: Stack(
+      child: const Stack(
         children: <Widget>[
-          PageView.builder(
-            controller: pageController,
-            itemCount: 1,
-            itemBuilder: (context, position) => StreamBuilder<List<Observation>>(
-              stream: Provider.of<FirebaseDatabaseService>(context).observationsService.observations,
-              builder: (context, snapshot) {
-                List<Observation>? observations = snapshot.hasData ? snapshot.data : null;//Provider.of<List<Observation>?>(context)
-                if (observations != null) {
-                  for (var observation in  observations) {
-                    observation.buttonText = translations.viewObservation;
-                  }
-                }
-
-                return ObservationsPage(observations ?? <Observation>[]);
-              }
-            )
-          )
+          ObservationsPage()
           /*LiquidSwipe(
               pages: <Container>[
                 ObservationsPage(),
@@ -647,7 +624,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ObservationScreen(Observation(observerUid: user?.uid, date: DateTime.now()))
+        builder: (_) {
+          final translations = Provider.of<Translations>(context);
+          final observation = Observation(observerUid: user?.uid, date: DateTime.now());
+          final observationViewModel = ObservationViewModel(observation, translations);
+          return ObservationScreen(observationViewModel);
+        }
       ),
     );
   }
@@ -800,8 +782,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
     var observations = await firebaseDatabaseService.observationsService.getAllObservations(limit: FirebaseUserProfilesDatabaseService.NO_LIMIT);
 
+    var now = DateTime.now();
     for (var observation in observations) {
-      var now = DateTime.now();
       observation.dateUpdatedInGoogleSheets = now;
     }
 

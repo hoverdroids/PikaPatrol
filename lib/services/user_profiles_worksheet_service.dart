@@ -7,7 +7,10 @@ import 'package:pika_patrol/services/worksheet_service.dart';
 
 import '../model/app_user.dart';
 import '../model/app_user_profile.dart';
+import '../model/gsheets_value.dart';
 import 'google_sheets_service.dart';
+
+import 'dart:developer' as developer;
 
 class UserProfilesWorksheetService extends WorksheetService {
    
@@ -55,93 +58,109 @@ class UserProfilesWorksheetService extends WorksheetService {
     columnHeadersRowNumber: columnHeadersRowNumber
   );
 
+  Future<GSheetsValue<AppUserProfile>> getAppUserProfile(String uid) async {
+    final returnValue = await getRowByUid(uid);
+
+    if (returnValue.exception != null) {
+      return GSheetsValue(null, exception: returnValue.exception);
+    }
+    return GSheetsValue(returnValue.value?.toAppUserProfileFromGoogleSheetsRow());
+  }
+
+  Future<GSheetsValue<List<AppUserProfile>>> getAppUserProfiles() async {
+    final returnValue = await getAllRows();
+    final value = returnValue.value ?? [];
+
+    if (returnValue.exception != null) {
+      return GSheetsValue(null, exception: returnValue.exception);
+    }
+
+    final appUserProfiles = value.map((row) => row.toAppUserProfileFromGoogleSheetsRow()).toList();
+    return GSheetsValue(appUserProfiles);
+  }
+
+  Future<GSheetsValue<bool>> addOrUpdateAppUserProfile(AppUser? appUser, AppUserProfile appUserProfile) async {
+    Map<String, dynamic> row;
+    if (appUser == null) {
+      row = appUserProfile.toGoogleSheetsRowForBulkProfileExport();
+    } else {
+      row = appUserProfile.toGoogleSheetsRowForLoggedInUser(appUser);
+    }
+
+    return await addOrUpdateRowByUid(appUserProfile.uid, row);
+  }
+
+  Future<GSheetsValue<bool>> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles, String organization) async {
+    for (var appUserProfile in appUserProfiles) {
+      var returnValue = await addOrUpdateAppUserProfile(null, appUserProfile);
+
+      if (returnValue.exception != null) {
+        developer.log("Not updated ${appUserProfile.firstName} ${appUserProfile.lastName} in $organization");
+        return GSheetsValue(false, exception: returnValue.exception);
+      } else {
+        showToast("Updated ${appUserProfile.firstName} ${appUserProfile.lastName} in $organization");
+      }
+
+      await Future.delayed(const Duration(milliseconds: GoogleSheetsService.MORE_THAN_60_WRITES_DELAY_MS), () {});
+    }
+    return GSheetsValue(true);
+  }
+}
+
+extension GoogleSheetsAppUserProfileRow on Map<String, dynamic> {
+  AppUserProfile toAppUserProfileFromGoogleSheetsRow() => AppUserProfile(
+    this[UserProfilesWorksheetService.FIRST_NAME_COLUMN_TITLE],
+    this[UserProfilesWorksheetService.LAST_NAME_COLUMN_TITLE],
+    uid: this[WorksheetService.UID_COLUMN_TITLE],
+    tagline: this[UserProfilesWorksheetService.TAGLINE_COLUMN_TITLE],
+    pronouns: this[UserProfilesWorksheetService.PRONOUNS_COLUMN_TITLE],
+    organization: this[UserProfilesWorksheetService.ORGANIZATION_COLUMN_TITLE],
+    address: this[UserProfilesWorksheetService.ADDRESS_COLUMN_TITLE],
+    city: this[UserProfilesWorksheetService.CITY_COLUMN_TITLE],
+    state: this[UserProfilesWorksheetService.STATE_COLUMN_TITLE],
+    zip: this[UserProfilesWorksheetService.ZIP_COLUMN_TITLE],
+    dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(this[UserProfilesWorksheetService.DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE])),
+    // creationTimestamp: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE])), //No need; info is in AppUser
+    // lastSignInTime: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE])),     //No need; info is in Appuser
+  );
+}
+
+extension GoogleSheetsAppUserProfile on AppUserProfile {
   // There is no way to get all user emails and other credentials in bulk for Firebase Client SDK
   // Consequently, those fields must be ignored when bulk exporting user profiles from Firebase to Google Sheets
   // and then updated from a server with the Admin SDK
-  Map<String, dynamic> toGoogleSheetJsonForBulkProfileExport(AppUserProfile appUserProfile) => {
-    WorksheetService.UID_COLUMN_TITLE: appUserProfile.uid,
-    FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
-    LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
-    TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
-    PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
-    ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
-    ADDRESS_COLUMN_TITLE: appUserProfile.address,
-    CITY_COLUMN_TITLE: appUserProfile.city,
-    STATE_COLUMN_TITLE: appUserProfile.state,
-    ZIP_COLUMN_TITLE: appUserProfile.zip,
-    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString()
+  Map<String, dynamic> toGoogleSheetsRowForBulkProfileExport() =>
+  {
+    WorksheetService.UID_COLUMN_TITLE: uid,
+    UserProfilesWorksheetService.FIRST_NAME_COLUMN_TITLE: firstName,
+    UserProfilesWorksheetService.LAST_NAME_COLUMN_TITLE: lastName,
+    UserProfilesWorksheetService.TAGLINE_COLUMN_TITLE: tagline,
+    UserProfilesWorksheetService.PRONOUNS_COLUMN_TITLE: pronouns,
+    UserProfilesWorksheetService.ORGANIZATION_COLUMN_TITLE: organization,
+    UserProfilesWorksheetService.ADDRESS_COLUMN_TITLE: address,
+    UserProfilesWorksheetService.CITY_COLUMN_TITLE: city,
+    UserProfilesWorksheetService.STATE_COLUMN_TITLE: state,
+    UserProfilesWorksheetService.ZIP_COLUMN_TITLE: zip,
+    UserProfilesWorksheetService.DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: dateUpdatedInGoogleSheets?.toUtc().toString()
   };
 
   // Since the user is logged in, their individual information is available for update
-  Map<String, dynamic> toGoogleSheetJsonForLoggedInUser(AppUser appUser, AppUserProfile appUserProfile) => {
-    WorksheetService.UID_COLUMN_TITLE: appUserProfile.uid,
-    IS_ADMIN_COLUMN_TITLE: appUser.isAdmin,
-    FIRST_NAME_COLUMN_TITLE: appUserProfile.firstName,
-    LAST_NAME_COLUMN_TITLE: appUserProfile.lastName,
-    EMAIL_COLUMN_TITLE: appUser.email,
-    TAGLINE_COLUMN_TITLE: appUserProfile.tagline,
-    PRONOUNS_COLUMN_TITLE: appUserProfile.pronouns,
-    ORGANIZATION_COLUMN_TITLE: appUserProfile.organization,
-    ADDRESS_COLUMN_TITLE: appUserProfile.address,
-    CITY_COLUMN_TITLE: appUserProfile.city,
-    STATE_COLUMN_TITLE: appUserProfile.state,
-    ZIP_COLUMN_TITLE: appUserProfile.zip,
-    DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: appUserProfile.dateUpdatedInGoogleSheets?.toUtc().toString(),
-    DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc().toString(),
-    DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc().toString()
+  Map<String, dynamic> toGoogleSheetsRowForLoggedInUser(AppUser appUser) =>
+  {
+    WorksheetService.UID_COLUMN_TITLE: uid,
+    UserProfilesWorksheetService.IS_ADMIN_COLUMN_TITLE: appUser.isAdmin,
+    UserProfilesWorksheetService.FIRST_NAME_COLUMN_TITLE: firstName,
+    UserProfilesWorksheetService.LAST_NAME_COLUMN_TITLE: lastName,
+    UserProfilesWorksheetService.EMAIL_COLUMN_TITLE: appUser.email,
+    UserProfilesWorksheetService.TAGLINE_COLUMN_TITLE: tagline,
+    UserProfilesWorksheetService.PRONOUNS_COLUMN_TITLE: pronouns,
+    UserProfilesWorksheetService.ORGANIZATION_COLUMN_TITLE: organization,
+    UserProfilesWorksheetService.ADDRESS_COLUMN_TITLE: address,
+    UserProfilesWorksheetService.CITY_COLUMN_TITLE: city,
+    UserProfilesWorksheetService.STATE_COLUMN_TITLE: state,
+    UserProfilesWorksheetService.ZIP_COLUMN_TITLE: zip,
+    UserProfilesWorksheetService.DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE: dateUpdatedInGoogleSheets?.toUtc().toString(),
+    UserProfilesWorksheetService.DATE_ACCOUNT_CREATED_TITLE: appUser.creationTimestamp?.toUtc().toString(),
+    UserProfilesWorksheetService.DATE_LAST_SIGNED_IN_TITLE: appUser.lastSignInTime?.toUtc().toString()
   };
-  
-  AppUserProfile fromGoogleSheetsJson(Map<String, dynamic> json) => AppUserProfile(
-      json[FIRST_NAME_COLUMN_TITLE],
-      json[LAST_NAME_COLUMN_TITLE],
-      uid: json[WorksheetService.UID_COLUMN_TITLE],
-      tagline: json[TAGLINE_COLUMN_TITLE],
-      pronouns: json[PRONOUNS_COLUMN_TITLE],
-      organization: json[ORGANIZATION_COLUMN_TITLE],
-      address: json[ADDRESS_COLUMN_TITLE],
-      city: json[CITY_COLUMN_TITLE],
-      state: json[STATE_COLUMN_TITLE],
-      zip: json[ZIP_COLUMN_TITLE],
-      dateUpdatedInGoogleSheets: DateTime.parse(jsonDecode(json[DATE_UPDATED_IN_GOOGLE_SHEETS_COLUMN_TITLE])),
-      // creationTimestamp: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_ACCOUNT_CREATED_TITLE])), //No need; info is in AppUser
-      // lastSignInTime: DateTime.parse(jsonDecode(json[USER_PROFILES_DATE_LAST_SIGNED_IN_TITLE])),     //No need; info is in Appuser
-  );
-
-  Future<AppUserProfile?> getAppUserProfile(String uid) async {
-    final json = await worksheet?.values.map.rowByKey(uid, fromColumn: WorksheetService.UID_COLUMN_NUMBER);
-    return json != null ? fromGoogleSheetsJson(json) : null;
-  }
-
-  Future<List<AppUserProfile>> getAppUserProfiles() async {
-    final appUserProfiles = await worksheet?.values.map.allRows();
-    return appUserProfiles == null ? <AppUserProfile>[] : appUserProfiles.map(fromGoogleSheetsJson).toList();
-  }
-
-  Future<void> addOrUpdateAppUserProfile(AppUser? appUser, AppUserProfile appUserProfile) async {
-    var uid = appUserProfile.uid;
-    if (uid != null) {
-      final index = await worksheet?.values.rowIndexOf(uid, inColumn: WorksheetService.UID_COLUMN_NUMBER);
-
-      Map<String, dynamic> json;
-      if (appUser == null) {
-        json = toGoogleSheetJsonForBulkProfileExport(appUserProfile);
-      } else {
-        json = toGoogleSheetJsonForLoggedInUser(appUser, appUserProfile);
-      }
-
-      if (index == null || index == -1) {
-        await insertRow(json);
-      } else {
-        await updateRow(uid, json);
-      }
-    }
-  }
-
-  Future<void> addOrUpdateAppUserProfiles(List<AppUserProfile> appUserProfiles, String organization) async {
-    for (var appUserProfile in appUserProfiles) {
-      await addOrUpdateAppUserProfile(null, appUserProfile);
-      showToast("Updated ${appUserProfile.firstName} ${appUserProfile.lastName} in $organization");
-      await Future.delayed(const Duration(milliseconds: GoogleSheetsService.MORE_THAN_60_WRITES_DELAY_MS), () {});
-    }
-  }
 }

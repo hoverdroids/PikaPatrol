@@ -146,6 +146,7 @@ class FirebaseAuthService {
   Future<FirebaseAuthException?> signOut() async {
     try {
       await _auth.signOut();
+      await clearPersistedUserData();
       return null;
     } on FirebaseAuthException catch(e) {
       developer.log(e.toString());

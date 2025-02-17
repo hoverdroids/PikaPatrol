@@ -1,216 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:hive/hive.dart';
 import 'package:material_themes_widgets/utils/collection_utils.dart';
-import 'package:material_themes_widgets/utils/ui_utils.dart';
-import 'package:pika_patrol/main.dart';
-import 'package:pika_patrol/services/firebase_observations_service.dart';
-import 'package:pika_patrol/services/google_sheets_service.dart';
-import 'package:provider/provider.dart';
-
 import '../l10n/translations.dart';
+import '../model/app_user.dart';
 import '../model/local_observation.dart';
 import '../model/observation.dart';
-import '../services/firebase_database_service.dart';
-
-//TODO - CHRIS - the UI and these methods should be split. However, this class isn't great.
-// Instead, there should be an observations manager/service and userProfiles manager/service.
-// Each of those provide a single interface for the UI so that the business logic is hidden away in the manager/service.
-// Each manager/service would have a list of providers, e.g. IObservationProvider with crud methods
-Observation toObservation(LocalObservation localObservation, { String buttonText = ""}) {
-  return Observation(
-      dbId: localObservation.key,
-      uid: localObservation.uid,
-      observerUid: localObservation.observerUid,
-      name: localObservation.name,
-      location: localObservation.location,
-      date: localObservation.date.isEmpty ? null : DateTime.parse(localObservation.date),
-      altitudeInMeters: localObservation.altitudeInMeters,
-      latitude: localObservation.latitude,
-      longitude: localObservation.longitude,
-      species: localObservation.species,
-      signs: localObservation.signs,
-      pikasDetected: localObservation.pikasDetected,
-      distanceToClosestPika: localObservation.distanceToClosestPika,
-      searchDuration: localObservation.searchDuration,
-      talusArea: localObservation.talusArea,
-      temperature: localObservation.temperature,
-      skies: localObservation.skies,
-      wind: localObservation.wind,
-      siteHistory: localObservation.siteHistory,
-      comments: localObservation.comments,
-      imageUrls: localObservation.imageUrls,
-      audioUrls: localObservation.audioUrls,
-      otherAnimalsPresent: localObservation.otherAnimalsPresent,
-      sharedWithProjects: localObservation.sharedWithProjects,
-      notSharedWithProjects: localObservation.notSharedWithProjects,
-      dateUpdatedInGoogleSheets: localObservation.dateUpdatedInGoogleSheets.isEmpty ? null : DateTime.parse(localObservation.dateUpdatedInGoogleSheets),
-      isUploaded: localObservation.isUploaded,
-      buttonText: buttonText
-  );
-}
-
-
-Future saveObservation(BuildContext context, Observation observation) async {
-    //TODO - CHRIS - compare observation with its firebase counterpart and don't upload if unchanged
-    var databaseService = FirebaseDatabaseService(useEmulators);//TODO - CHRIS - Provider.of<FirebaseDatabaseService>(context);
-
-    var imageUrls = observation.imageUrls;
-    if (imageUrls != null && imageUrls.isNotEmpty) {
-      observation.imageUrls = await databaseService.observationsService.uploadFiles(imageUrls, true);
-    }
-    //developer.log("ImageUrls: ${observation.imageUrls.toString()}");
-
-    var audioUrls = observation.audioUrls;
-    if (audioUrls != null && audioUrls.isNotEmpty) {
-      observation.audioUrls = await databaseService.observationsService.uploadFiles(audioUrls, false);
-    }
-    //developer.log("AudioUrls: ${observation.audioUrls.toString()}");
-
-    observation.isUploaded = true;//set this before attempting upload so that it's saved to firebase on success
-    var exception = await databaseService.observationsService.updateObservation(observation);
-    if (exception != null) {
-      showToast("Exception: ${exception.message}");
-      observation.isUploaded = false;
-    } else if (context.mounted) {
-      var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-
-      var sharedWithProjects = observation.sharedWithProjects;
-      sharedWithProjects?.add("Pika Patrol");
-
-      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
-        if (sharedWithProjects?.contains(service.organization) == true) {
-          await service.observationWorksheetService?.addOrUpdateObservation(observation);
-        } else {
-          await service.observationWorksheetService?.deleteObservation(observation);
-        }
-      }
-    }
-
-    // Update local observation after successful upload because the uid will be non empty now.
-    // Also, if the user was offline and editing an already created observation, isUploaded will be false
-    // because firebase will throw an exception of being offline.
-    // In that case, track that the updates are no longer uploaded and will need to be the next time internet
-    // is available
-    await saveLocalObservation(observation);
-}
-
-Future<LocalObservation?> saveLocalObservation(Observation observation) async {
-  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
-
-  LocalObservation? currentLocalObservation = box.get(observation.dbId);
-  if (currentLocalObservation == null) {
-    //The observation screen can be opened from an online observation, which means that the dbId can be null.
-    //So, make sure we associate the dbId if there's a local copy so that we don't duplicate local copies
-    Map<dynamic, dynamic> raw = box.toMap();
-    List list = raw.values.toList();
-
-    for (var element in list) {
-      LocalObservation localObservation = element;
-      if (localObservation.uid == observation.uid) {
-        currentLocalObservation = localObservation;
-        break;
-      }
-    }
-  }
-
-  var localObservation = LocalObservation(
-      uid: observation.uid ?? "",
-      observerUid: observation.observerUid ?? "",
-      name: observation.name ?? "",
-      location: observation.location ?? "",
-      date: observation.date?.toString() ?? "",
-      altitudeInMeters: observation.altitudeInMeters ?? 0.0,
-      latitude: observation.latitude ?? 0.0,
-      longitude: observation.longitude ?? 0.0,
-      species: observation.species,
-      signs: observation.signs ?? <String>[],
-      pikasDetected: observation.pikasDetected ?? "",
-      distanceToClosestPika: observation.distanceToClosestPika ?? "",
-      searchDuration: observation.searchDuration ?? "",
-      talusArea: observation.talusArea ?? "",
-      temperature: observation.temperature ?? "",
-      skies: observation.skies ?? "",
-      wind: observation.wind ?? "",
-      siteHistory: observation.siteHistory ?? "",
-      comments: observation.comments ?? "",
-      imageUrls: observation.imageUrls ?? <String>[],
-      audioUrls: observation.audioUrls ?? <String>[],
-      otherAnimalsPresent: observation.otherAnimalsPresent ?? <String>[],
-      sharedWithProjects: observation.sharedWithProjects ?? <String>[],
-      notSharedWithProjects: observation.notSharedWithProjects ?? <String>[],
-      isUploaded: observation.isUploaded ?? false
-  );
-
-  if(currentLocalObservation == null) {
-    int? key = await box.add(localObservation);
-
-    //If the user remains on the observation page, they can edit/save again. In that case, they need
-    //to use the same database ID instead of adding a new entry each time
-    observation.dbId = key;
-  } else {
-    observation.dbId = currentLocalObservation.key;
-    await box.put(observation.dbId, localObservation);
-  }
-
-  return box.get(observation.dbId);
-}
-
-Future<void> migrateLocalObservations() async {
-  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
-
-  Map<dynamic, dynamic> raw = box.toMap();
-  List list = raw.values.toList();
-
-  for (var element in list) {
-    LocalObservation localObservation = element;
-    if (!localObservation.isUploaded) {
-      await box.put(localObservation.key, localObservation);
-    }
-  }
-}
-
-Future<LocalObservation?> migrateLocalObservation(int dbId, LocalObservation localObservation) async {
-  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
-  await box.put(dbId, localObservation);
-  return box.get(dbId);
-}
-
-Future<FirebaseException?> deleteObservation(BuildContext context, Observation observation, bool deleteImages, bool deleteAudio) async {
-  await deleteLocalObservation(observation);
-
-  FirebaseException? firebaseException;
-  if (context.mounted) {
-    var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
-    firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
-  }
-
-  if (context.mounted) {
-    var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-    for (var service in sheetsService.pikaPatrolSpreadsheetServices) {
-        service.observationWorksheetService?.deleteObservation(observation);
-        await Future.delayed(const Duration(milliseconds: GoogleSheetsService.LESS_THAN_60_WRITES_DELAY_MS), () {});
-    }
-  }
-
-  return firebaseException;
-}
-
-Future deleteLocalObservation(Observation observation) async {
-  var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
-  if (observation.dbId != null) {
-    // Deleting from cached observations, the observation will have a dbId, but might not have a uid
-    await box.delete(observation.dbId);
-  } else {
-    // Deleting from shared observations, the observation will hava uid but not a dbId
-    for (var localObservation in box.values) {
-      if (localObservation.uid == observation.uid) {
-        await box.delete(localObservation.key);
-        return;
-      }
-    }
-  }
-}
 
 //region OtherAnimalsPresent
 List<String> getOtherAnimalsPresentDefaults(Translations translations) => translations.otherAnimalsPresentDefaultValues;
@@ -432,3 +224,141 @@ extension Wind on Observation {
   }
 }
 //endregion
+
+extension ObservationState on Observation {
+
+  bool isNonLoggedInUserObservation(AppUser? user) {
+    //Non-logged in user can save an observation, but only if the observerUid is null
+    final obsUid = observerUid;
+    return user == null && (obsUid == null || obsUid.isEmpty);
+  }
+
+  bool isUserObservation(AppUser? user) {
+    //Logged in user can save an observation, but only if the observerUid is their own uid
+    return user != null && user.uid == observerUid;
+  }
+
+  bool isNewObservation() {
+    // We know this is a new observations since uid isn't set until the observation is saved, and dbId isn't set until the local observation is saved
+    return uid == null && dbId == null;
+  }
+
+  bool isLocalObservation() {
+    return dbId != null;
+  }
+
+  bool isOnlyLocalObservation() {
+    return isLocalObservation() && !isRemoteObservation();
+  }
+
+  bool isRemoteObservation() {
+    return uid != null;
+  }
+
+  bool isOnlyRemoteObservation() {
+    return isRemoteObservation() && !isLocalObservation();
+  }
+
+  bool canUserEdit(AppUser? user) {
+    //When can an observation be edited?
+
+    // Observation is new
+    //    user == null or user != null <- since there is no requirement to be logged in to make local observations
+    //    observerUid == null
+    //    dbId == null
+    //    uid == null
+    final isNew = isNewObservation();
+
+    //  Observation is local, for a user that is not signed in            <-edit local
+    //    user == null
+    //    observerUid == null
+    //    dbId != null
+    //    uid == null
+    final isNonLoggedInUsersObservation = isNonLoggedInUserObservation(user);// && isOnlyLocalObservation();<-no need to check for local as a remote observation will not have null observerUid
+
+    //  Observation is our own local, and a remote version doesn't exist  <-edit local
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid == null
+    //  Observation is our own local, and a remote version exists         <-edit local and remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid != null
+    //  Observation is our own remote, and a local version doesn't exist  <-edit remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId == null
+    //    uid != null
+    final isUsersObservation = isUserObservation(user);
+
+    //  We are a logged in admin                   <-edit remote for any user
+    //    user != null
+    //    admin == true
+    final isAdmin = user?.isAdmin ?? false;
+
+    //  When can't an observation be edited?
+    //  Observation is not our own and we are not admin               <-no permissions to edit
+
+    return isNew || isNonLoggedInUsersObservation || isUsersObservation || isAdmin;
+  }
+}
+
+extension ObservationState2 on LocalObservation {
+  bool isNonLoggedInUserObservation(AppUser? user) {
+    //Non-logged in user can save an observation, but only if the observerUid is null
+    return user == null && observerUid.isEmpty;
+  }
+
+  bool isUserObservation(AppUser? user) {
+    //Logged in user can save an observation, but only if the observerUid is their own uid
+    return user != null && user.uid == observerUid;
+  }
+
+  bool canUserEdit(AppUser? user) {
+    //When can an observation be edited?
+
+    // Observation is new
+    //    user == null or user != null <- since there is no requirement to be logged in to make local observations
+    //    observerUid == null
+    //    dbId == null
+    //    uid == null
+    //final isNew = isNewObservation(); <- no need to check since if a local observation exists, it is not new; only observation can be new as that's the temp type
+
+    //  Observation is local, for a user that is not signed in            <-edit local
+    //    user == null
+    //    observerUid == null
+    //    dbId != null
+    //    uid == null
+    final isNonLoggedInUsersObservation = isNonLoggedInUserObservation(user);// && isOnlyLocalObservation();<-no need to check for local as a remote observation will not have null observerUid
+
+    //  Observation is our own local, and a remote version doesn't exist  <-edit local
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid == null
+    //  Observation is our own local, and a remote version exists         <-edit local and remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId != null
+    //    uid != null
+    //  Observation is our own remote, and a local version doesn't exist  <-edit remote
+    //    user != null
+    //    observerUid == user.id
+    //    dbId == null
+    //    uid != null
+    final isUsersObservation = isUserObservation(user);
+
+    //  We are a logged in admin                   <-edit remote for any user
+    //    user != null
+    //    admin == true
+    final isAdmin = user?.isAdmin ?? false;
+
+    //  When can't an observation be edited?
+    //  Observation is not our own and we are not admin               <-no permissions to edit
+
+    return isNonLoggedInUsersObservation || isUsersObservation || isAdmin;
+  }
+
+}

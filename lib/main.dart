@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
+import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -21,7 +22,8 @@ import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'dart:developer' as developer;
+
+import 'model/observation.dart';
 
 const useEmulators = false;
 
@@ -34,8 +36,6 @@ Future<void> main() async {
 
   await Hive.openBox<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
-
-  await migrateLocalObservations();
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,7 +63,14 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
             create: (_) => Translations()
-        )
+        ),
+        Provider<ObservationsService>(
+            create: (_) => ObservationsService()
+        ),
+        Provider<GoogleSheetsService>(
+          create: (_) => GoogleSheetsService(),
+          lazy: false
+        ),
       ],
       builder: (context, child) {
         //Using StreamBuilder here in order so that appUserSnapshot is the desired type
@@ -74,10 +81,18 @@ Future<void> main() async {
           initialData: null,
           builder: (context, appUserSnapshot) {
 
+            final Translations translations = Provider.of<Translations>(context);
+
+            final ObservationsService observationsService = Provider.of<ObservationsService>(context);//TODO - aggregate into observations services
+            observationsService.translations = translations;//TODO -aggregate into observations services
+
             final AppUser? appUser = appUserSnapshot.hasData ? appUserSnapshot.data : null;
+            final userId = appUser?.uid ?? "";
 
             var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context);
-            firebaseDatabaseService.uid = appUser?.uid;
+            firebaseDatabaseService.currentUserId = appUser?.uid;
+
+            observationsService.firebaseDatabaseService = firebaseDatabaseService;
 
             return StreamBuilder<AppUserProfile?>(
               stream: firebaseDatabaseService.userProfilesService.userProfile,
@@ -91,35 +106,52 @@ Future<void> main() async {
                   initialData: null,
                   builder: (context, googleSheetsCredentialsSnapshot) {
 
-                    List<GoogleSheetsCredential> credentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
+                    List<GoogleSheetsCredential> googleSheetsCredentials = googleSheetsCredentialsSnapshot.hasData ? (googleSheetsCredentialsSnapshot.data ?? []) : [];
 
-                    return MultiProvider(
-                        providers: [
-                          Provider<AppUser?>.value(
-                              value: appUser
-                          ),
-                          Provider<AppUserProfile?>.value(
-                              value: appUserProfile
-                          ),
-                          Provider<List<GoogleSheetsCredential>>.value(
-                              value: credentials
-                          ),
-                          Provider<GoogleSheetsService>(
-                              create: (_) {
-                                List<PikaPatrolSpreadsheetService> services = [];
+                    final googleSheetsService = Provider.of<GoogleSheetsService>(context);
+                    googleSheetsService.updateSpreadsheetServices(googleSheetsCredentials);
 
-                                for (var credential in credentials) {
-                                  credential.spreadsheets.forEach((projectName, spreadsheetId) {
-                                    var service = PikaPatrolSpreadsheetService(projectName, credential.credential, spreadsheetId, false);
-                                    services.add(service);
-                                  });
+                    observationsService.googleSheetsService = googleSheetsService;
+
+                    return StreamBuilder<List<Observation>>(
+                      stream: firebaseDatabaseService.observationsService.observations,//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
+                      initialData: const [],
+                      builder: (context, sharedObservationsOnFirebase) {
+
+                        observationsService.setSharedObservations(sharedObservationsOnFirebase);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
+
+                        return ValueListenableBuilder(
+                            valueListenable: Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME).listenable(),
+                            builder: (context, box, widget2) {
+
+                              observationsService.setLocalObservations(box, appUser);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
+
+                              return StreamBuilder<List<Observation>>(
+                                stream: userId.isNotEmpty ? firebaseDatabaseService.observationsService.userObservations(userId) : observationsService.emptyObservationsStream,//TODO -aggregate into observations services
+                                initialData: const [],
+                                builder: (context, userObservationsOnFirebase) {
+
+                                  observationsService.setUserObservations(userObservationsOnFirebase);//TODO - aggregate into observations services (see stashes: shared observations attempt 1 and 2)
+
+                                  return MultiProvider(
+                                      providers: [
+                                        Provider<AppUser?>.value(
+                                            value: appUser
+                                        ),
+                                        Provider<AppUserProfile?>.value(
+                                            value: appUserProfile
+                                        ),
+                                        Provider<List<GoogleSheetsCredential>>.value(
+                                            value: googleSheetsCredentials
+                                        )
+                                      ],
+                                      child: const MyApp()
+                                  );
                                 }
-
-                                return GoogleSheetsService(services);
-                              }
-                          ),
-                        ],
-                        child: const MyApp()
+                              );
+                            }
+                        );
+                      }
                     );
                   }
                 );

@@ -4,7 +4,7 @@ description: "Patrol, track, and log pikas"
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 
-version: 3.0.5+305
+version: 3.1.0+310
 
 environment:
   sdk: '>=3.3.0-71.0.dev <4.0.0'
@@ -52,6 +52,7 @@ dependencies:
   dash_flags: ^0.1.1
   language_code_icons: ^0.1.0
   gsheets: ^0.5.0
+  deepcopy: ^1.1.2
 
 dev_dependencies:
   flutter_test:

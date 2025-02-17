@@ -28,18 +28,36 @@ class FirebaseUserProfilesDatabaseService {
 
   static const int? NO_LIMIT = null;
 
-  String? uid;
+  String? currentUserId;
 
   final FirebaseFirestore firebaseFirestore;
   late final CollectionReference userProfilesCollection;
 
-  FirebaseUserProfilesDatabaseService(this.firebaseFirestore, this.uid) {
+  FirebaseUserProfilesDatabaseService(this.firebaseFirestore, this.currentUserId) {
     userProfilesCollection = firebaseFirestore.collection(USER_PROFILES_COLLECTION_NAME);
   }
 
   Future<AppUserProfile?> getCurrentUserProfileFromCache() async {
-    var options = const GetOptions(source: Source.cache);
-    var userProfileSnapshot = await userProfilesCollection.doc(uid).get(options);
+     return await getUserProfileFromCache(currentUserId);
+  }
+
+  Future<AppUserProfile?> getUserProfileFromCache(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.cache));
+  }
+
+  Future<AppUserProfile?> getUserProfileFromServer(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.server));
+  }
+
+  Future<AppUserProfile?> getUserProfileFromServerWithCAcheFallback(String? userId) async {
+    return await getUserProfile(userId, const GetOptions(source: Source.serverAndCache));
+  }
+
+  Future<AppUserProfile?> getUserProfile(String? userId, GetOptions options) async {
+    if (userId == null) {
+      return null;
+    }
+    var userProfileSnapshot = await userProfilesCollection.doc(userId).get(options);
     return _userProfileFromSnapshot(userProfileSnapshot);
   }
 
@@ -134,7 +152,7 @@ class FirebaseUserProfilesDatabaseService {
     );
 
     var shouldUpdate = true;
-    var isCurrentUser = updatedUserProfile.uid == this.uid;
+    var isCurrentUser = updatedUserProfile.uid == this.currentUserId;
     if (isCurrentUser) {
       var cachedUserProfile = await getCurrentUserProfileFromCache();
       shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
@@ -170,12 +188,12 @@ class FirebaseUserProfilesDatabaseService {
   }
 
   Future deleteUserProfile() async {
-    return userProfilesCollection.doc(uid).delete();
+    return userProfilesCollection.doc(currentUserId).delete();
   }
 
   AppUserProfile? _userProfileFromSnapshot(DocumentSnapshot snapshot) {
     var exists = snapshot.exists;
-    if (uid == null || !exists) {
+    if (currentUserId == null || !exists) {
       return null;
     }
 
@@ -186,7 +204,7 @@ class FirebaseUserProfilesDatabaseService {
       return AppUserProfile(
           snapshot.get(FIRST_NAME)?.trim() ?? '',
           snapshot.get(LAST_NAME)?.trim() ?? '',
-          uid: uid?.trim(),
+          uid: currentUserId?.trim(),
           tagline: snapshot.get(TAGLINE)?.trim() ?? '',
           pronouns: snapshot.get(PRONOUNS)?.trim() ?? '',
           organization: snapshot.get(ORGANIZATION)?.trim() ?? '',
@@ -229,7 +247,7 @@ class FirebaseUserProfilesDatabaseService {
   }
 
   Stream<AppUserProfile?> get userProfile {
-    return userProfilesCollection.doc(uid).snapshots().map(_userProfileFromSnapshot);
+    return userProfilesCollection.doc(currentUserId).snapshots().map(_userProfileFromSnapshot);
   }
 
   Future<List<AppUserProfile>> getAllUserProfiles({int? limit}) async {

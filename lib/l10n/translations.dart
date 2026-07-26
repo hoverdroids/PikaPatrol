@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pika_patrol/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 

@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
-import 'package:pika_patrol/l10n/app_localizations.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 import '../../l10n/translations.dart';
 

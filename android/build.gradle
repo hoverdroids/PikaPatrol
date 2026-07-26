@@ -1,12 +1,12 @@
 buildscript {
-    ext.kotlin_version = '1.7.10'
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.2'
+        classpath 'com.android.tools.build:gradle:8.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.gms:google-services:4.3.15'  // Google Services plugin
     }
@@ -16,6 +16,24 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+    }
+}
+
+// Automatically set namespace for old plugins that don't declare one (AGP 8+ requirement)
+subprojects {
+    afterEvaluate { project ->
+        if (project.plugins.hasPlugin('com.android.library')) {
+            if (project.android.namespace == null) {
+                def manifestFile = project.file("src/main/AndroidManifest.xml")
+                if (manifestFile.exists()) {
+                    def xml = new XmlParser().parse(manifestFile)
+                    def pkg = xml.'@package'
+                    if (pkg) {
+                        project.android.namespace = pkg
+                    }
+                }
+            }
+        }
     }
 }
 

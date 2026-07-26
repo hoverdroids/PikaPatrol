@@ -54,6 +54,15 @@ dependencies:
   gsheets: ^0.5.0
   deepcopy: ^1.1.2
 
+  flutter_gen: any
+  material_themes_manager: any
+  assets_audio_player: any
+  path_provider: any
+  googleapis: any
+  googleapis_auth: any
+  http: any
+  path: any
+  file: any
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -7,8 +7,6 @@ import 'package:pika_patrol/utils/firebase_utils.dart';
 
 import '../model/observation.dart';
 import '../utils/date_time_utils.dart';
-import '../utils/observation_utils.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:path/path.dart';
 
 class FirebaseObservationsService {
@@ -270,7 +268,7 @@ class FirebaseObservationsService {
           var storageTaskSnapshot = snapshot;
           final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
           uploadUrls.add(downloadUrl);
-        } on FirebaseException catch (e) {
+        } on FirebaseException {
           throw ('This file is not an image');
         }
       }

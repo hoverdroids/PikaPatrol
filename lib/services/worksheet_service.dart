@@ -288,7 +288,7 @@ class WorksheetService {
       developer.log("[READ] Excel sheet getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle [ERROR] ${e.cause}");
       return GSheetsValue(KEY_IS_NOT_FOUND, exception: e);
     } on FormatException catch(e) {
-      developer.log("[READ] Excel sheet read getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle [ERROR] ${e}");
+      developer.log("[READ] Excel sheet read getRowCountFromLastNonEmptyRow $spreadsheetTitle $worksheetTitle [ERROR] $e");
       return GSheetsValue(0);
     }
   }

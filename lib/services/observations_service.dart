@@ -6,12 +6,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:gsheets/gsheets.dart';
-import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:pika_patrol/utils/primitive_utils.dart';
 import 'package:provider/provider.dart';
 
-import 'package:pika_patrol/main.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 
@@ -285,7 +283,7 @@ class ObservationsService {
   //endregion
 
   //region User Observations
-  List<Observation> _userObservations = [];
+  final List<Observation> _userObservations = [];
 
   List<Observation> get userObservations {
     return _userObservations;

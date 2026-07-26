@@ -41,10 +41,6 @@ Future<Position> checkPermissionsAndGetCurrentPosition(Translations translations
   // When we reach here, permissions are granted and we can continue accessing the device position
   Position position = await Geolocator.getCurrentPosition();
 
-  if (position == null) {
-    showToast(translations.couldNotRetrieveLocationFromGps);
-  }
-
   return position;
 }
 

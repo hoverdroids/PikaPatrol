@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '11.0'
+platform :ios, '12.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -28,7 +28,7 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
+  use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
@@ -40,62 +40,80 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-    # Start of the permission_handler configuration
-    target.build_configurations.each do |config|
 
-      # You can enable the permissions needed here. For example to enable camera
-      # permission, just remove the `#` character in front so it looks like this:
-      #
-      # ## dart: PermissionGroup.camera
-      # 'PERMISSION_CAMERA=1'
-      #
-      #  Preprocessor definitions can be found in: https://github.com/Baseflow/flutter-permission-handler/blob/master/permission_handler_apple/ios/Classes/PermissionHandlerEnums.h
+    # BoringSSL-GRPC adds an invalid per-file compiler flag that clang parses as "-G" on Xcode 26.
+    if target.name == 'BoringSSL-GRPC'
+      target.source_build_phase.files.each do |file|
+        next unless file.settings && file.settings['COMPILER_FLAGS']
+
+        flags = file.settings['COMPILER_FLAGS']
+        cleaned = flags.gsub('-GCC_WARN_INHIBIT_ALL_WARNINGS', '').squeeze(' ').strip
+        file.settings['COMPILER_FLAGS'] = cleaned
+      end
+    end
+
+    target.build_configurations.each do |config|
+      # Force all pods to iOS 12.0 minimum for current Flutter/Firebase 10.x constraints
+      if config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'].to_f < 12.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '12.0'
+      end
+
+      # On Apple Silicon, exclude x86_64 simulator for pod builds
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'x86_64'
+
+      # Fix firebase_* non-modular include warnings promoted to errors on newer Xcode
+      config.build_settings['CLANG_WARN_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'NO'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+
+      # Remove malformed compiler flags if present
+      %w[OTHER_CFLAGS OTHER_CPLUSPLUSFLAGS].each do |key|
+        flags = config.build_settings[key]
+        next if flags.nil?
+
+        if flags.is_a?(String)
+          config.build_settings[key] = flags.gsub('-GCC_WARN_INHIBIT_ALL_WARNINGS', '').squeeze(' ').strip
+        elsif flags.is_a?(Array)
+          config.build_settings[key] = flags.reject { |f| f.to_s.include?('-GCC_WARN_INHIBIT_ALL_WARNINGS') }
+        end
+      end
+
+      # gRPC/abseil compatibility with latest Xcode toolchain
+      if ['gRPC-Core', 'gRPC-C++', 'BoringSSL-GRPC', 'abseil'].include?(target.name)
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
+
+        cpp_flags = config.build_settings['OTHER_CPLUSPLUSFLAGS']
+        if cpp_flags.is_a?(String)
+          unless cpp_flags.include?('-Wno-error=missing-template-arg-list-after-template-kw')
+            config.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{cpp_flags} -Wno-error=missing-template-arg-list-after-template-kw".strip
+          end
+        elsif cpp_flags.is_a?(Array)
+          unless cpp_flags.include?('-Wno-error=missing-template-arg-list-after-template-kw')
+            cpp_flags << '-Wno-error=missing-template-arg-list-after-template-kw'
+            config.build_settings['OTHER_CPLUSPLUSFLAGS'] = cpp_flags
+          end
+        else
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] = ['$(inherited)', '-Wno-error=missing-template-arg-list-after-template-kw']
+        end
+      end
+
+      # permission_handler configuration
       config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
         '$(inherited)',
-
-        ## dart: PermissionGroup.calendar
         # 'PERMISSION_EVENTS=1',
-
-        ## dart: PermissionGroup.reminders
         # 'PERMISSION_REMINDERS=1',
-
-        ## dart: PermissionGroup.contacts
         # 'PERMISSION_CONTACTS=1',
-
-        ## dart: PermissionGroup.camera
         'PERMISSION_CAMERA=1',
-
-        ## dart: PermissionGroup.microphone
         'PERMISSION_MICROPHONE=1',
-
-        ## dart: PermissionGroup.speech
         # 'PERMISSION_SPEECH_RECOGNIZER=1',
-
-        ## dart: PermissionGroup.photos
         'PERMISSION_PHOTOS=1',
-
-        ## dart: [PermissionGroup.location, PermissionGroup.locationAlways, PermissionGroup.locationWhenInUse]
         'PERMISSION_LOCATION=1',
-
-        ## dart: PermissionGroup.notification
         # 'PERMISSION_NOTIFICATIONS=1',
-
-        ## dart: PermissionGroup.mediaLibrary
         'PERMISSION_MEDIA_LIBRARY=1',
-
-        ## dart: PermissionGroup.sensors
         # 'PERMISSION_SENSORS=1',
-
-        ## dart: PermissionGroup.bluetooth
         # 'PERMISSION_BLUETOOTH=1',
-
-        ## dart: PermissionGroup.appTrackingTransparency
         # 'PERMISSION_APP_TRACKING_TRANSPARENCY=1',
-
-        ## dart: PermissionGroup.criticalAlerts
         # 'PERMISSION_CRITICAL_ALERTS=1'
       ]
     end
-    # End of the permission_handler configuration
   end
 end

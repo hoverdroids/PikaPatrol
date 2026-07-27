@@ -27,6 +27,37 @@ class ObservationsService {
   late GoogleSheetsService googleSheetsService;
   late FirebaseDatabaseService firebaseDatabaseService;//TODO - should this be firebase_observations_service?
 
+  void refreshLocalizedCardText() {
+    final localizedViewObservation = translations.viewObservation;
+    var changed = false;
+
+    for (final observation in _localObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    for (final observation in _sharedObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    for (final observation in _userObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      _localObservationsStreamController?.add(_localObservations);
+      _sharedObservationsStreamController?.add(_sharedObservations);
+    }
+  }
+
   //region Empty Observations
   StreamController<List<Observation>>? _emptyObservationsStreamController;
   Stream<List<Observation>> get emptyObservationsStream {

@@ -25,6 +25,7 @@ import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
 import 'package:pika_patrol/services/firebase_user_profiles_database_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
+import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -96,6 +97,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
     translations.update(context);
+
+    // Keep existing observation cards in sync with the selected locale.
+    Provider.of<ObservationsService>(context, listen: false).refreshLocalizedCardText();
 
     MediaQueryData mediaQuery = MediaQuery.of(context);
     Size size = mediaQuery.size;

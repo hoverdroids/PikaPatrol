@@ -77,23 +77,25 @@ post_install do |installer|
         end
       end
 
-      # gRPC/abseil compatibility with latest Xcode toolchain
-      if ['gRPC-Core', 'gRPC-C++', 'BoringSSL-GRPC', 'abseil'].include?(target.name)
-        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++17'
-
-        cpp_flags = config.build_settings['OTHER_CPLUSPLUSFLAGS']
-        if cpp_flags.is_a?(String)
-          unless cpp_flags.include?('-Wno-error=missing-template-arg-list-after-template-kw')
-            config.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{cpp_flags} -Wno-error=missing-template-arg-list-after-template-kw".strip
-          end
-        elsif cpp_flags.is_a?(Array)
-          unless cpp_flags.include?('-Wno-error=missing-template-arg-list-after-template-kw')
-            cpp_flags << '-Wno-error=missing-template-arg-list-after-template-kw'
-            config.build_settings['OTHER_CPLUSPLUSFLAGS'] = cpp_flags
-          end
-        else
-          config.build_settings['OTHER_CPLUSPLUSFLAGS'] = ['$(inherited)', '-Wno-error=missing-template-arg-list-after-template-kw']
+      # gRPC/BoringSSL: C++14 to stay ABI-compatible with abseil/FirebaseFirestore.
+      # The missing-template-arg-list diagnostic must be downgraded (clang 16+ promotes it to error).
+      if ['gRPC-Core', 'gRPC-C++', 'BoringSSL-GRPC'].include?(target.name)
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++14'
+        cflags = config.build_settings['OTHER_CPLUSPLUSFLAGS'] || '$(inherited)'
+        flag = '-Wno-error=missing-template-arg-list-after-template-kw'
+        if cflags.is_a?(String)
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{cflags} #{flag}".strip unless cflags.include?(flag)
+        elsif cflags.is_a?(Array)
+          cflags << flag unless cflags.include?(flag)
+          config.build_settings['OTHER_CPLUSPLUSFLAGS'] = cflags
         end
+      end
+
+      # abseil MUST compile as C++14 so absl::string_view stays its own type (not aliased to std::string_view).
+      # FirebaseFirestore 10.x and gRPC-Core were compiled against that ABI; C++17 mode produces mangled-name
+      # mismatches at link time because absl::string_view would become std::string_view.
+      if target.name == 'abseil'
+        config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'gnu++14'
       end
 
       # permission_handler configuration

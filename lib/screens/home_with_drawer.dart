@@ -170,7 +170,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   Widget buildBody(BuildContext context, double width) {
     return SizedBox(
       width: width,
-      child: const Stack(
+      child: Stack(
         children: <Widget>[
           ObservationsPage()
           /*LiquidSwipe(

@@ -1,7 +1,8 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 /// Model for territory data from Native Land Digital API
 class Territory {
@@ -21,26 +22,61 @@ class Territory {
   }
 }
 
-/// Service to query Native Land Digital API for Indigenous territories
-/// API Documentation: https://api-docs.native-land.ca/
-/// 
-/// SETUP INSTRUCTIONS:
-/// 1. Get your free API key from https://api-docs.native-land.ca/get-and-use-your-api-key
-/// 2. Copy .env.example to .env in the project root
-/// 3. Add your API key to the .env file: NATIVE_LAND_API_KEY=your_key_here
-/// 4. The .env file is in .gitignore and won't be committed to version control
+/// Service to query Indigenous territory and language data from Native Land.
+///
+/// The API key is loaded from `.env` at build/run time using `flutter_dotenv`.
+/// Keep `NATIVE_LAND_API_KEY` out of version control by storing it only in your
+/// local `.env` file or CI secret store.
 class NativeLandService {
   static const String _baseUrl = 'https://native-land.ca/api/index.php';
+  static const String _apiKeyEnvKey = 'NATIVE_LAND_API_KEY';
   static const int _timeoutSeconds = 10;
-  
-  /// Get the API key from environment variables
-  /// Returns null if not configured
-  static String? _getApiKey() {
-    return dotenv.env['NATIVE_LAND_API_KEY'];
+
+  static String? get _apiKey {
+    final configured = dotenv.env[_apiKeyEnvKey]?.trim();
+    if (configured != null && configured.isNotEmpty) {
+      return configured;
+    }
+    return null;
   }
-  
-  /// Whether the API service is available (has an API key configured)
-  static bool get isAvailable => _getApiKey() != null && _getApiKey()!.isNotEmpty;
+
+  static bool get _isPlaceholderKey => _apiKey == 'YOUR_API_KEY_HERE';
+
+  /// Logs whether the Native Land API key was loaded, without printing the key.
+  static void logApiKeyStatus() {
+    final key = _apiKey;
+    final isLoaded = key != null;
+    final length = key?.length ?? 0;
+    final looksValid = isLoaded && !_isPlaceholderKey;
+
+    developer.log(
+      '[NativeLandService] env status -> NATIVE_LAND_API_KEY loaded=$isLoaded length=$length placeholder=$_isPlaceholderKey usable=$looksValid',
+    );
+
+    if (!looksValid) {
+      developer.log(
+        '[NativeLandService] Native Land lookup is disabled until a real NATIVE_LAND_API_KEY is set in .env.',
+      );
+    }
+  }
+
+  static Uri _buildUri({
+    required String maps,
+    required double latitude,
+    required double longitude,
+  }) {
+    final uri = Uri.parse(_baseUrl);
+    return uri.replace(
+      queryParameters: {
+        'maps': maps,
+        'position': '$longitude,$latitude',
+        'key': _apiKey ?? '',
+      },
+    );
+  }
+
+  /// Whether the service can make Native Land requests.
+  static bool get isAvailable => _apiKey != null && !_isPlaceholderKey;
 
   /// Query territories at the given coordinates
   /// Returns a list of territories found at the location
@@ -50,17 +86,20 @@ class NativeLandService {
   }) async {
     if (!isAvailable) {
       developer.log(
-        'Native Land Digital API not configured. '
-        'Get an API key at https://api-docs.native-land.ca/get-and-use-your-api-key',
+        'Native Land API key is not configured. Add NATIVE_LAND_API_KEY to .env.',
       );
       return [];
     }
 
     try {
-      final String url = '$_baseUrl?maps=territories&position=$longitude,$latitude&key=${_getApiKey()}';
+      final uri = _buildUri(
+        maps: 'territories',
+        latitude: latitude,
+        longitude: longitude,
+      );
 
       final response = await http.get(
-        Uri.parse(url),
+        uri,
         headers: {'Accept': 'application/json'},
       ).timeout(
         const Duration(seconds: _timeoutSeconds),
@@ -86,7 +125,7 @@ class NativeLandService {
         // No territory found at this location
         return [];
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        developer.log('Native Land API authentication failed. Check your API key.');
+        developer.log('Native Land authentication failed. Check NATIVE_LAND_API_KEY.');
         return [];
       } else {
         throw Exception('Failed to fetch territories: ${response.statusCode}');
@@ -107,10 +146,14 @@ class NativeLandService {
     }
 
     try {
-      final String url = '$_baseUrl?maps=languages&position=$longitude,$latitude&key=${_getApiKey()}';
+      final uri = _buildUri(
+        maps: 'languages',
+        latitude: latitude,
+        longitude: longitude,
+      );
 
       final response = await http.get(
-        Uri.parse(url),
+        uri,
         headers: {'Accept': 'application/json'},
       ).timeout(
         const Duration(seconds: _timeoutSeconds),
@@ -133,7 +176,7 @@ class NativeLandService {
       } else if (response.statusCode == 404) {
         return [];
       } else if (response.statusCode == 401 || response.statusCode == 403) {
-        developer.log('Native Land API authentication failed. Check your API key.');
+        developer.log('Native Land authentication failed. Check NATIVE_LAND_API_KEY.');
         return [];
       } else {
         throw Exception('Failed to fetch languages: ${response.statusCode}');

@@ -1,4 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -10,6 +12,7 @@ import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/services/settings_service.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
+import 'package:pika_patrol/services/native_land_service.dart';
 import 'package:pika_patrol/widgets/my_app.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -30,8 +33,34 @@ Future<void> main() async {
 
   //debugPrintGestureArenaDiagnostics = true;
 
+  WidgetsFlutterBinding.ensureInitialized();
+
   // Load environment variables from .env file
-  await dotenv.load();
+  bool envLoaded = false;
+  try {
+    await dotenv.load(fileName: '.env');
+    envLoaded = true;
+    developer.log('[main] Loaded .env from project root asset path.');
+  } catch (e) {
+    developer.log('[main] Failed to load .env using fileName=.env: $e');
+  }
+
+  if (!envLoaded) {
+    try {
+      await dotenv.load(fileName: 'assets/.env');
+      envLoaded = true;
+      developer.log('[main] Loaded .env from assets/.env path.');
+    } catch (e) {
+      developer.log('[main] Failed to load .env using fileName=assets/.env: $e');
+    }
+  }
+
+  if (!envLoaded) {
+    developer.log('[main] No .env file was loaded. Environment variables may be missing.');
+  }
+
+  // Log key loading state once at startup (never logs the key value).
+  NativeLandService.logApiKeyStatus();
 
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
@@ -41,7 +70,6 @@ Future<void> main() async {
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
-  WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,

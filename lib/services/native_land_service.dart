@@ -69,10 +69,41 @@ class NativeLandService {
     return uri.replace(
       queryParameters: {
         'maps': maps,
-        'position': '$longitude,$latitude',
+        // Native Land expects latitude,longitude ordering.
+        'position': '$latitude,$longitude',
         'key': _apiKey ?? '',
       },
     );
+  }
+
+  static List<Territory> _parseTerritories(String responseBody) {
+    final dynamic decoded = jsonDecode(responseBody);
+
+    // Native Land may return either a FeatureCollection-like map or a top-level feature list.
+    if (decoded is List) {
+      return decoded
+          .whereType<Map<String, dynamic>>()
+          .map(Territory.fromJson)
+          .toList();
+    }
+
+    if (decoded is Map<String, dynamic>) {
+      if (decoded['error'] != null) {
+        developer.log('Native Land API error: ${decoded['error']}');
+        return [];
+      }
+
+      final features = decoded['features'];
+      if (features is List) {
+        return features
+            .whereType<Map<String, dynamic>>()
+            .map(Territory.fromJson)
+            .toList();
+      }
+    }
+
+    developer.log('Native Land API returned an unexpected response shape.');
+    return [];
   }
 
   /// Whether the service can make Native Land requests.
@@ -107,20 +138,7 @@ class NativeLandService {
       );
 
       if (response.statusCode == 200) {
-        // The API returns a FeatureCollection
-        final Map<String, dynamic> data = jsonDecode(response.body);
-
-        // Check for error in response
-        if (data['error'] != null) {
-          developer.log('Native Land API error: ${data['error']}');
-          return [];
-        }
-
-        final List<dynamic> features = data['features'] ?? [];
-
-        return features
-            .map((feature) => Territory.fromJson(feature as Map<String, dynamic>))
-            .toList();
+        return _parseTerritories(response.body);
       } else if (response.statusCode == 404) {
         // No territory found at this location
         return [];
@@ -161,18 +179,7 @@ class NativeLandService {
       );
 
       if (response.statusCode == 200) {
-        final Map<String, dynamic> data = jsonDecode(response.body);
-
-        if (data['error'] != null) {
-          developer.log('Native Land API error: ${data['error']}');
-          return [];
-        }
-
-        final List<dynamic> features = data['features'] ?? [];
-
-        return features
-            .map((feature) => Territory.fromJson(feature as Map<String, dynamic>))
-            .toList();
+        return _parseTerritories(response.body);
       } else if (response.statusCode == 404) {
         return [];
       } else if (response.statusCode == 401 || response.statusCode == 403) {

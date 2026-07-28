@@ -1,16 +1,57 @@
-# pika_patrol
+# Pika Patrol
 
-A new Flutter project.
+Pika Patrol is a Flutter mobile app for recording, caching, and uploading pika observations with images, audio, and location metadata.
 
-## Getting Started
+## Current App Version
 
-This project is a starting point for a Flutter application.
+- Version name: `3.2.0`
+- Version code / build number: `320`
 
-A few resources to get you started if this is your first Flutter project:
+## Release Baselines
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+These values are configured in this repository for current App Store / Google Play submissions:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Android `minSdkVersion`: `23`
+- Android `targetSdkVersion`: `35`
+- Android `compileSdkVersion`: `35`
+- iOS deployment target: `16.0`
+
+## Build Commands
+
+Run from project root unless noted.
+
+### Install dependencies
+
+```zsh
+flutter pub get
+cd ios
+pod install
+cd ..
+```
+
+### Android (Google Play)
+
+Preferred output for Play Console:
+
+```zsh
+flutter build appbundle --release
+```
+
+Optional APK output:
+
+```zsh
+flutter build apk --release
+```
+
+### iOS (App Store)
+
+```zsh
+flutter build ios --release
+```
+
+Then archive and upload in Xcode (`Product` -> `Archive`) using the `Runner` scheme.
+
+## Localization Notes
+
+- "Cached Observations" user-facing text has been renamed to "My Observations" for all supported locales.
+- Observation card button text ("View Observation") now refreshes to match the selected locale.

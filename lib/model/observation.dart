@@ -15,6 +15,8 @@ class Observation extends card.CardModel {
   double? altitudeInMeters;
   double? longitude;
   double? latitude;
+  List<String>? indigenousTerritories;
+  List<String>? indigenousLanguages;
   String? name;
   String? location;
   DateTime? date;

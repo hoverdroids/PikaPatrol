@@ -168,6 +168,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String noRecordingsToPlay = ERROR;
   String fetchingLocation = ERROR;
   String location = ERROR;
+  String indigenousTerritories = ERROR;
+  String indigenousLanguages = ERROR;
+  String lookingUpIndigenousTerritories = ERROR;
+  String noIndigenousTerritoryFound = ERROR;
+  String failedToFetchTerritoryData = ERROR;
   String siteName = ERROR;
   String january = ERROR;
   String february = ERROR;
@@ -182,6 +187,8 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String november = ERROR;
   String december = ERROR;
   String delete = ERROR;
+  String deleteObservationDialogTitle = ERROR;
+  String deleteObservationDialogDescription = ERROR;
   String couldNotOpenRecorder = ERROR;
   String didNotAddImage = ERROR;
   String didNotAddAudio = ERROR;
@@ -222,12 +229,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatPileOnboardingDetails = ERROR;
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
-  String deleteObservationDialogTitle = ERROR;
-  String deleteObservationDialogDescription = ERROR;
-  String observationSavedSuccessfully = ERROR;
-  String unknownErrorUploadingToServerObservationSavedLocally = ERROR;
-  String fillInAllFormFields = ERROR;
-
   String unsureMoreThanOne = ERROR;
   late List<String> pikasDetectedKeys;
   late List<String> pikasDetectedDefaultValues;
@@ -281,6 +282,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 
   String observationDeleted = ERROR;
   String observationNotDeleted = ERROR;
+  String observationSavedSuccessfully = ERROR;
+  String unknownErrorUploadingToServerObservationSavedLocally = ERROR;
+  String fillInAllFormFields = ERROR;
   String initializeGoogleSheets = ERROR;
 
   String localObservationsNeedUploadedDialogTitle = ERROR;
@@ -458,6 +462,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     noRecordingsToPlay =  AppLocalizations.of(context)?.noRecordingsToPlay ?? noRecordingsToPlay;
     fetchingLocation =  AppLocalizations.of(context)?.fetchingLocation ?? fetchingLocation;
     location =  AppLocalizations.of(context)?.location ?? location;
+    indigenousTerritories =  AppLocalizations.of(context)?.indigenousTerritories ?? indigenousTerritories;
+    indigenousLanguages =  AppLocalizations.of(context)?.indigenousLanguages ?? indigenousLanguages;
+    lookingUpIndigenousTerritories =  AppLocalizations.of(context)?.lookingUpIndigenousTerritories ?? lookingUpIndigenousTerritories;
+    noIndigenousTerritoryFound =  AppLocalizations.of(context)?.noIndigenousTerritoryFound ?? noIndigenousTerritoryFound;
+    failedToFetchTerritoryData =  AppLocalizations.of(context)?.failedToFetchTerritoryData ?? failedToFetchTerritoryData;
     siteName =  AppLocalizations.of(context)?.siteName ?? siteName;
     january =  AppLocalizations.of(context)?.january ?? january;
     february =  AppLocalizations.of(context)?.february ?? february;
@@ -703,6 +712,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "noRecordingsToPlay": return noRecordingsToPlay;
       case "fetchingLocation": return fetchingLocation;
       case "location": return location;
+      case "indigenousTerritories": return indigenousTerritories;
+      case "indigenousLanguages": return indigenousLanguages;
+      case "lookingUpIndigenousTerritories": return lookingUpIndigenousTerritories;
+      case "noIndigenousTerritoryFound": return noIndigenousTerritoryFound;
+      case "failedToFetchTerritoryData": return failedToFetchTerritoryData;
       case "siteName": return siteName;
       case "january": return january;
       case "february": return february;

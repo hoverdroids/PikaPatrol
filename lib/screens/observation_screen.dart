@@ -29,6 +29,7 @@ import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
+import '../services/native_land_service.dart';
 
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
@@ -42,6 +43,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
+import '../services/native_land_service.dart';
 import '../utils/firebase_utils.dart';
 import 'home_with_drawer.dart';
 
@@ -497,7 +499,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     showToast(translations.fetchingLocation);
 
     await checkPermissionsAndGetCurrentPosition(translations)
-      .then((Position position) {
+      .then((Position position) async {
         String lat = position.latitude.toStringAsFixed(2);
         String lon = position.longitude.toStringAsFixed(2);
         String alt = position.altitude.toStringAsFixed(2);
@@ -512,10 +514,72 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _hideGeoFields = true;
           resetHideGeoFields();
         });
+
+        // Fetch Indigenous territories for this location
+        _fetchAndSetIndigenousTerritories(position.latitude, position.longitude);
       })
       .catchError((e) {
         showToast("$e");
       });
+  }
+
+  _fetchAndSetIndigenousTerritories(double latitude, double longitude) async {
+    try {
+      showToast(translations.lookingUpIndigenousTerritories ?? "Looking up Indigenous territories...");
+      
+      // Fetch both territories and languages
+      final territories = await NativeLandService.getTerritoriesAt(
+        latitude: latitude,
+        longitude: longitude,
+      );
+      
+      final languages = await NativeLandService.getLanguagesAt(
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      if (territories.isNotEmpty || languages.isNotEmpty) {
+        setState(() {
+          final observation = widget.observationViewModel.observation;
+          
+          // Store territory names
+          observation.indigenousTerritories = territories
+              .map((t) => t.name)
+              .toList();
+          
+          // Store language names
+          observation.indigenousLanguages = languages
+              .map((l) => l.name)
+              .toList();
+        });
+
+        // Show toast with found territories and languages
+        String territoryNames = territories
+            .map((t) => t.name)
+            .join(', ');
+        String languageNames = languages
+            .map((l) => l.name)
+            .join(', ');
+        
+        String message = '';
+        if (territoryNames.isNotEmpty) {
+          message += '${translations.indigenousTerritories ?? "Indigenous Territories"}: $territoryNames';
+        }
+        if (languageNames.isNotEmpty) {
+          if (message.isNotEmpty) message += '\n';
+          message += '${translations.indigenousLanguages ?? "Indigenous Languages"}: $languageNames';
+        }
+        
+        if (message.isNotEmpty) {
+          showToast(message);
+        }
+      } else {
+        showToast(translations.noIndigenousTerritoryFound ?? "No Indigenous territory data found for this location.");
+      }
+    } catch (e) {
+      developer.log('Error fetching Indigenous territories: $e');
+      showToast('Error: ${translations.failedToFetchTerritoryData ?? "Failed to fetch territory data"}');
+    }
   }
 
   resetHideGeoFields() async {
@@ -553,6 +617,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
+          smallTransparentDivider,
+          _buildIndigenousTerritoryInfo(),
           smallTransparentDivider,
           Row(
             children: <Widget>[
@@ -653,6 +719,63 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           _buildComments(),
         ],
       ),
+    );
+  }
+
+  Widget _buildIndigenousTerritoryInfo() {
+    final observation = widget.observationViewModel.observation;
+    final territories = observation.indigenousTerritories ?? <String>[];
+    final languages = observation.indigenousLanguages ?? <String>[];
+
+    // Only show if territories or languages exist
+    if (territories.isEmpty && languages.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (territories.isNotEmpty) ... [
+          ThemedSubTitle(
+            translations.indigenousTerritories ?? "Indigenous Territories",
+            type: ThemeGroupType.POM
+          ),
+          miniTransparentDivider,
+          ...territories.map((territory) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on, size: 16),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: ThemedBody(territory, type: ThemeGroupType.MOM),
+                ),
+              ],
+            ),
+          )).toList(),
+          if (languages.isNotEmpty)
+            smallTransparentDivider,
+        ],
+        if (languages.isNotEmpty) ... [
+          ThemedSubTitle(
+            translations.indigenousLanguages ?? "Indigenous Languages",
+            type: ThemeGroupType.POM
+          ),
+          miniTransparentDivider,
+          ...languages.map((language) => Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4.0),
+            child: Row(
+              children: [
+                const Icon(Icons.language, size: 16),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: ThemedBody(language, type: ThemeGroupType.MOM),
+                ),
+              ],
+            ),
+          )).toList(),
+        ],
+      ],
     );
   }
 

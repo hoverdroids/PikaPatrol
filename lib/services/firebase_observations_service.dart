@@ -98,14 +98,12 @@ class FirebaseObservationsService {
   }
 
   Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
-    var exception = deleteImages ? await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls) : null;
-    if (exception != null) {
-      return exception;
+    if (deleteImages) {
+      await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls);
     }
 
-    exception = deleteAudio ? await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls) : null;
-    if (exception != null) {
-      return exception;
+    if (deleteAudio) {
+      await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls);
     }
 
     var docUid = observation.uid ?? "";
@@ -291,19 +289,29 @@ class FirebaseObservationsService {
     return uploadUrls;
   }
 
-  Future<FirebaseException?> deleteFiles(String folderName, List<String>? fileUrls) async {
-    if (fileUrls == null || fileUrls.isEmpty) return null;
+  // Best-effort: deleting an observation should not get stuck because a Storage file is
+  // already gone (e.g. a previous delete attempt partially succeeded, or a race with another
+  // delete of the same observation) or was never uploaded in the first place (a local-only
+  // file path, not a Storage URL). Each file is attempted independently so one failure doesn't
+  // block cleanup of the rest.
+  Future<void> deleteFiles(String folderName, List<String>? fileUrls) async {
+    if (fileUrls == null || fileUrls.isEmpty) return;
 
-    try {
-      FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
-      for (var fileUrl in fileUrls) {
-          await storage.refFromURL(fileUrl).delete();// .ref().child("$folderName/${basename(fileUrl)}").delete();
+    FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
+    for (var fileUrl in fileUrls) {
+      if (!fileUrl.contains(STORAGE_BUCKET_NAME)) {
+        //Not a Storage URL (e.g. still a local file path because it was never uploaded) - nothing to delete remotely.
+        continue;
       }
-    } on FirebaseException catch(e) {
-      return e;
-    }
 
-    return null;
+      try {
+        await storage.refFromURL(fileUrl).delete();
+      } on FirebaseException catch (e) {
+        if (e.code != 'object-not-found') {
+          developer.log('Failed to delete storage file $fileUrl: $e', name: 'FirebaseObservationsService');
+        }
+      }
+    }
   }
 
   Future<List<Observation>> getAllObservations({int? limit}) async {

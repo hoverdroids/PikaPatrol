@@ -1,5 +1,6 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
 import 'package:pika_patrol/services/observations_service.dart';
@@ -28,6 +29,10 @@ const useEmulators = false;
 Future<void> main() async {
 
   //debugPrintGestureArenaDiagnostics = true;
+
+  // Load environment variables from .env file
+  await dotenv.load();
+
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
   Hive.registerAdapter(GoogleSheetsCredentialAdapter());

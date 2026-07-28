@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'dart:developer' as developer;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Model for territory data from Native Land Digital API
 class Territory {
@@ -22,21 +23,24 @@ class Territory {
 
 /// Service to query Native Land Digital API for Indigenous territories
 /// API Documentation: https://api-docs.native-land.ca/
-///
-/// NOTE: The Native Land Digital API now requires an API key.
-/// To enable this feature, sign up at https://api-docs.native-land.ca/get-and-use-your-api-key
-/// and set your API key as an environment variable or constant below.
+/// 
+/// SETUP INSTRUCTIONS:
+/// 1. Get your free API key from https://api-docs.native-land.ca/get-and-use-your-api-key
+/// 2. Copy .env.example to .env in the project root
+/// 3. Add your API key to the .env file: NATIVE_LAND_API_KEY=your_key_here
+/// 4. The .env file is in .gitignore and won't be committed to version control
 class NativeLandService {
   static const String _baseUrl = 'https://native-land.ca/api/index.php';
   static const int _timeoutSeconds = 10;
-
-  /// API key for Native Land Digital API
-  /// Set this to your API key obtained from https://api-docs.native-land.ca/
-  /// If null, the service will return empty results
-  static const String? _apiKey = null;
-
+  
+  /// Get the API key from environment variables
+  /// Returns null if not configured
+  static String? _getApiKey() {
+    return dotenv.env['NATIVE_LAND_API_KEY'];
+  }
+  
   /// Whether the API service is available (has an API key configured)
-  static bool get isAvailable => _apiKey != null;
+  static bool get isAvailable => _getApiKey() != null && _getApiKey()!.isNotEmpty;
 
   /// Query territories at the given coordinates
   /// Returns a list of territories found at the location
@@ -53,7 +57,7 @@ class NativeLandService {
     }
 
     try {
-      final String url = '$_baseUrl?maps=territories&position=$longitude,$latitude&key=$_apiKey';
+      final String url = '$_baseUrl?maps=territories&position=$longitude,$latitude&key=${_getApiKey()}';
 
       final response = await http.get(
         Uri.parse(url),
@@ -103,7 +107,7 @@ class NativeLandService {
     }
 
     try {
-      final String url = '$_baseUrl?maps=languages&position=$longitude,$latitude&key=$_apiKey';
+      final String url = '$_baseUrl?maps=languages&position=$longitude,$latitude&key=${_getApiKey()}';
 
       final response = await http.get(
         Uri.parse(url),

@@ -56,12 +56,12 @@ android {
     ndkVersion flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     sourceSets {
@@ -93,14 +93,20 @@ android {
     }
 
     buildTypes {
-        def date = new Date();
-        def formattedDate = date.format('yyyyMMddHHmmss')
-
         release {
             shrinkResources false
             minifyEnabled false
             signingConfig signingConfigs.release
-            archivesBaseName = "Pika Patrol - v$flutterVersionCode ($flutterVersionName) $formattedDate"
+        }
+    }
+
+    applicationVariants.configureEach { variant ->
+        if (variant.buildType.name == "release") {
+            def date = new Date()
+            def formattedDate = date.format('yyyyMMddHHmmss')
+            variant.outputs.configureEach { output ->
+                outputFileName = "Pika Patrol - v${flutterVersionCode} (${flutterVersionName}) ${formattedDate}-release.apk"
+            }
         }
     }
 }
@@ -111,8 +117,8 @@ flutter {
 
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'com.android.support:multidex:1.0.3'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.multidex:multidex:2.0.1'
 }
 
 tasks.register('copyNewApksToReleases') {

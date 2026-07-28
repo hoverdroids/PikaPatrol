@@ -15,9 +15,13 @@ class Territory {
   });
 
   factory Territory.fromJson(Map<String, dynamic> json) {
+    final props = json['properties'] as Map<String, dynamic>?;
+    // Native Land returns "Name" (capital N).
+    final name = props?['Name'] as String? ?? props?['name'] as String? ?? 'Unknown Territory';
+    final description = props?['description'] as String? ?? name;
     return Territory(
-      name: json['properties']?['name'] ?? 'Unknown Territory',
-      properties: json['properties']?['description'] ?? json['properties']?['name'],
+      name: name,
+      properties: description,
     );
   }
 }
@@ -129,6 +133,9 @@ class NativeLandService {
         longitude: longitude,
       );
 
+      // Log the request URL with the key redacted for debugging.
+      developer.log('[NativeLandService] territories request: ${uri.replace(queryParameters: {...uri.queryParameters, 'key': '***'})}');
+
       final response = await http.get(
         uri,
         headers: {'Accept': 'application/json'},
@@ -138,9 +145,11 @@ class NativeLandService {
       );
 
       if (response.statusCode == 200) {
-        return _parseTerritories(response.body);
+        final results = _parseTerritories(response.body);
+        developer.log('[NativeLandService] territories result: ${results.length} item(s)');
+        return results;
       } else if (response.statusCode == 404) {
-        // No territory found at this location
+        developer.log('[NativeLandService] territories 404 at this location');
         return [];
       } else if (response.statusCode == 401 || response.statusCode == 403) {
         developer.log('Native Land authentication failed. Check NATIVE_LAND_API_KEY.');
@@ -169,6 +178,9 @@ class NativeLandService {
         latitude: latitude,
         longitude: longitude,
       );
+
+      // Log the request URL with the key redacted for debugging.
+      developer.log('[NativeLandService] languages request: ${uri.replace(queryParameters: {...uri.queryParameters, 'key': '***'})}');
 
       final response = await http.get(
         uri,

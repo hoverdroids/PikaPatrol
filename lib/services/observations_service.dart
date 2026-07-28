@@ -336,6 +336,23 @@ class ObservationsService {
         await saveLocalObservation(remoteObservation);
       }
     }
+
+    // Prune the other direction too: a local observation that was previously synced to Firestore
+    // (it has a uid) but is no longer in this fetch is one that got deleted - by this device before
+    // this listener caught up, or by another device entirely. Without this, deleting an uploaded
+    // observation on one device would never be reflected in another device's local cache. Purely
+    // local, never-uploaded observations (uid == null) are left untouched - they're not ours to
+    // prune based on what Firestore has. No extra network calls: this reuses the already-open
+    // userObservations listener's data instead of asking the server anything new.
+    var deletedRemotely = _localObservations.where((localObservation) {
+      var wasSyncedToFirestore = localObservation.isRemoteObservation();
+      if (!wasSyncedToFirestore) return false;
+      return !remoteObservations.any((remoteObservation) => _isLocallySavedObservation(localObservation, remoteObservation));
+    }).toList();
+
+    for (var staleObservation in deletedRemotely) {
+      await deleteLocalObservation(staleObservation);
+    }
   }
   //endregion
 

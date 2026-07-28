@@ -1,13 +1,13 @@
 # Implementation Summary: Indigenous Territory Lookup Feature
 
 ## What Was Built
-A complete integration of Native Land Digital data into the Pika Patrol app that automatically identifies and displays Indigenous territories and languages when users capture GPS coordinates.
+A complete integration of Native Land Digital data into the Pika Patrol app that automatically identifies and displays Indigenous territories and languages when users capture GPS coordinates, using a local `.env` API key so the secret is not committed to the repo.
 
 ## Files Created/Modified
 
 ### New Files
 1. **`lib/services/native_land_service.dart`** (new)
-   - Service class for querying Native Land Digital API
+   - Service class for querying the Native Land API directly
    - `Territory` model for storing territory data
    - Methods: `getTerritoriesAt()`, `getLanguagesAt()`, `getTerritoriesAndLanguagesAt()`
 
@@ -37,7 +37,7 @@ A complete integration of Native Land Digital data into the Pika Patrol app that
 1. User opens an observation and enters edit mode
 2. User taps the GPS location button (🗺️) in the header image area
 3. App requests location permissions and captures coordinates
-4. **NEW:** App automatically queries Native Land Digital API using the coordinates
+4. **NEW:** App automatically queries the Native Land API using the coordinates
 5. **NEW:** Territories and languages are retrieved and displayed
 6. User sees territories/languages listed with icons
 7. Data is saved with the observation
@@ -66,7 +66,7 @@ A complete integration of Native Land Digital data into the Pika Patrol app that
 - ✅ No new external packages required
 
 ## API Integration
-- **Provider:** Native Land Digital (https://native-land.ca/)
+- **Provider:** Native Land Digital (https://native-land.ca/), accessed directly with a local API key
 - **Endpoints:** 
   - `territories` - Indigenous territory boundaries
   - `languages` - Indigenous language distributions

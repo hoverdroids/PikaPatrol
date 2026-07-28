@@ -6,7 +6,7 @@ This feature integrates Native Land Digital territory data into Pika Patrol. Whe
 ## Components Implemented
 
 ### 1. Native Land Service (`lib/services/native_land_service.dart`)
-A new service that queries the Native Land Digital API to retrieve territorial and language data.
+A service that queries the Native Land Digital API directly using a local `.env` API key.
 
 **Key Methods:**
 - `getTerritoriesAt(latitude, longitude)` - Fetches Indigenous territories at specified coordinates
@@ -14,9 +14,9 @@ A new service that queries the Native Land Digital API to retrieve territorial a
 - `getTerritoriesAndLanguagesAt(latitude, longitude)` - Fetches both territories and languages
 
 **Data Source:**
-- API: https://native-land.ca/api/index.php
-- Documentation: https://native-land.ca/api-docs/
-- The API returns GeoJSON FeatureCollections with territory/language information
+- App client: `NATIVE_LAND_API_KEY` from `.env`
+- Upstream API: https://native-land.ca/api/index.php
+- The upstream API returns GeoJSON FeatureCollections with territory/language information
 
 ### 2. Observation Model Updates (`lib/model/observation.dart`)
 Added two new fields to store territory information:
@@ -36,7 +36,7 @@ Updated the GPS location capture flow to include territory lookup:
 **User Flow:**
 1. User taps GPS button to capture coordinates
 2. App fetches location from device
-3. App automatically queries Native Land Digital API for territories at that location
+3. App automatically queries the Native Land API for territories at that location
 4. Territories and languages are:
    - Stored in the observation object
    - Displayed visually with icons (📍 for territories, 🌐 for languages)
@@ -71,11 +71,13 @@ Users receive toast notifications at each step:
 2. "Looking up Indigenous territories..." - During API call
 3. Territory results or "No Indigenous territory data found for this location."
 
-## API Details
+### API Details
 
 ### Endpoints Used:
-- `GET /api/index.php?maps=territories&position=longitude,latitude` - For territories
-- `GET /api/index.php?maps=languages&position=longitude,latitude` - For languages
+- `GET /api/index.php?maps=territories&position=longitude,latitude&key=YOUR_API_KEY` - For territories
+- `GET /api/index.php?maps=languages&position=longitude,latitude&key=YOUR_API_KEY` - For languages
+
+The API key is loaded from the app's local `.env` file and is not committed to the repo.
 
 ### Response Format:
 ```json
@@ -103,7 +105,7 @@ Users receive toast notifications at each step:
 
 ## Dependencies
 - `http` package (already in pubspec.yaml) - For API calls
-- No additional dependencies required
+- `flutter_dotenv` (already in pubspec.yaml) - For loading `.env`
 
 ## Notes for Developers
 
@@ -114,7 +116,7 @@ This feature honors Native Land Digital's commitment to:
 - Educational awareness about Indigenous lands
 
 ### API Rate Limiting
-Native Land Digital's free API has reasonable rate limits. The current implementation should handle typical usage without issues. Monitor logs if implementing bulk operations.
+Native Land Digital's free API has reasonable rate limits. Monitor logs if implementing bulk operations.
 
 ### Future Enhancements
 Potential improvements:

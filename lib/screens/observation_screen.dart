@@ -41,9 +41,10 @@ import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
-import '../services/native_land_service.dart';
 import '../utils/firebase_utils.dart';
 import 'home_with_drawer.dart';
 
@@ -534,7 +535,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       // Check if the API is available
       if (!NativeLandService.isAvailable) {
         await Future.delayed(const Duration(milliseconds: 1500));
-        showToast('Indigenous territory lookup requires an API key.\nVisit https://api-docs.native-land.ca/ to set one up.');
+        showToast('Indigenous territory lookup requires a Native Land API key.\nAdd NATIVE_LAND_API_KEY to your local .env file.');
         return;
       }
       
@@ -557,14 +558,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         setState(() {
           final observation = widget.observationViewModel.observation;
           
-          // Store territory names
+          // Store territory names and URLs encoded as "name|||url"
           observation.indigenousTerritories = territories
-              .map((t) => t.name)
+              .map((t) => t.properties != null && t.properties != t.name
+                  ? '${t.name}|||${t.properties}'
+                  : t.name)
               .toList();
-          
-          // Store language names
+
+          // Store language names and URLs encoded as "name|||url"
           observation.indigenousLanguages = languages
-              .map((l) => l.name)
+              .map((l) => l.properties != null && l.properties != l.name
+                  ? '${l.name}|||${l.properties}'
+                  : l.name)
               .toList();
         });
 
@@ -639,8 +644,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
-          _buildIndigenousTerritoryInfo(),
-          smallTransparentDivider,
           Row(
             children: <Widget>[
               if(widget.isEditMode) ... [
@@ -714,6 +717,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               ],
             ],
           ),
+          smallTransparentDivider,
+          _buildIndigenousTerritoryInfo(),
         ],
       ),
     );
@@ -748,53 +753,65 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     final territories = observation.indigenousTerritories ?? <String>[];
     final languages = observation.indigenousLanguages ?? <String>[];
 
-    // Only show if territories or languages exist
     if (territories.isEmpty && languages.isEmpty) {
       return const SizedBox.shrink();
+    }
+
+    // Entries are stored as "name|||url" or just "name" for backwards compatibility.
+    Widget _entryRow(String entry, IconData icon) {
+      final parts = entry.split('|||');
+      final name = parts[0];
+      final url = parts.length > 1 ? parts[1] : null;
+
+      final nameWidget = url != null
+          ? GestureDetector(
+              onTap: () async {
+                final uri = Uri.tryParse(url);
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text(
+                name,
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Colors.blue,
+                ),
+              ),
+            )
+          : ThemedBody(name, type: ThemeGroupType.MOM);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            Icon(icon, size: 16),
+            const SizedBox(width: 8),
+            Flexible(child: nameWidget),
+          ],
+        ),
+      );
     }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (territories.isNotEmpty) ... [
+        if (territories.isNotEmpty) ...[
           ThemedSubTitle(
             translations.indigenousTerritories ?? "Indigenous Territories",
-            type: ThemeGroupType.POM
+            type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...territories.map((territory) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              children: [
-                const Icon(Icons.location_on, size: 16),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: ThemedBody(territory, type: ThemeGroupType.MOM),
-                ),
-              ],
-            ),
-          )).toList(),
-          if (languages.isNotEmpty)
-            smallTransparentDivider,
+          ...territories.map((t) => _entryRow(t, Icons.location_on)),
+          if (languages.isNotEmpty) smallTransparentDivider,
         ],
-        if (languages.isNotEmpty) ... [
+        if (languages.isNotEmpty) ...[
           ThemedSubTitle(
             translations.indigenousLanguages ?? "Indigenous Languages",
-            type: ThemeGroupType.POM
+            type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...languages.map((language) => Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              children: [
-                const Icon(Icons.language, size: 16),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: ThemedBody(language, type: ThemeGroupType.MOM),
-                ),
-              ],
-            ),
-          )).toList(),
+          ...languages.map((l) => _entryRow(l, Icons.language)),
         ],
       ],
     );

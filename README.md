@@ -4,8 +4,8 @@ Pika Patrol is a Flutter mobile app for recording, caching, and uploading pika o
 
 ## Current App Version
 
-- Version name: `3.3.0`
-- Version code / build number: `323`
+- Version name: `3.3.1`
+- Version code / build number: `324`
 
 ## Release Baselines
 

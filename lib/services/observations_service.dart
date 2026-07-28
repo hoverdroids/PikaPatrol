@@ -62,14 +62,9 @@ class ObservationsService {
   //region Empty Observations
   StreamController<List<Observation>>? _emptyObservationsStreamController;
   Stream<List<Observation>> get emptyObservationsStream {
-
-    _emptyObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
+    _emptyObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
           _emptyObservationsStreamController?.add([]);
-        },
-        onCancel: () {
-          _emptyObservationsStreamController?.close();
-          _emptyObservationsStreamController = null;
         }
     );
 
@@ -84,20 +79,20 @@ class ObservationsService {
     return _localObservations;
   }
 
-  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
-  // It's fine to let the StreamController be garbage collected once all the
-  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  // Memoized (created once, never recreated/closed) so the widget tree always pushes into the
+  // same controller. Previously this getter created a *new* StreamController on every call - since
+  // it's read fresh inside a StreamBuilder's `stream:` argument, any rebuild handed StreamBuilder a
+  // different Stream instance and it would resubscribe. Meanwhile setLocalObservations() only ever
+  // pushes into whatever controller this field *currently* points to, so a subscriber holding onto
+  // an older controller (or a moment where the field was null after the last listener cancelled)
+  // silently stopped receiving live updates until something else forced a fresh rebuild/resubscribe
+  // (backgrounding/foregrounding the app, or saving a new observation, which happened to trigger one).
   StreamController<List<Observation>>? _localObservationsStreamController; // ignore: close_sinks
 
   Stream<List<Observation>> get localObservationsStream {
-
-    _localObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
+    _localObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
           _localObservationsStreamController?.add(_localObservations);
-        },
-        onCancel: () {
-          _localObservationsStreamController?.close();
-          _localObservationsStreamController = null;
         }
     );
 
@@ -277,20 +272,13 @@ class ObservationsService {
     return _sharedObservations;
   }
 
-  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
-  // It's fine to let the StreamController be garbage collected once all the
-  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  // Memoized for the same reason as _localObservationsStreamController above.
   StreamController<List<Observation>>? _sharedObservationsStreamController; // ignore: close_sinks
 
   Stream<List<Observation>> get sharedObservationsStream {
-
-    _sharedObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
-          _sharedObservationsStreamController?.add(_localObservations);
-        },
-        onCancel: () {
-          _sharedObservationsStreamController?.close();
-          _sharedObservationsStreamController = null;
+    _sharedObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
+          _sharedObservationsStreamController?.add(_sharedObservations);
         }
     );
 

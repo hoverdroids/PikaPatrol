@@ -503,6 +503,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         String lat = position.latitude.toStringAsFixed(2);
         String lon = position.longitude.toStringAsFixed(2);
         String alt = position.altitude.toStringAsFixed(2);
+        
+        // Delay before showing location toast to avoid overlap
+        await Future.delayed(const Duration(milliseconds: 1500));
         showToast("${translations.location}:\n$lat $lon $alt");
 
         setState(() {
@@ -519,12 +522,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         _fetchAndSetIndigenousTerritories(position.latitude, position.longitude);
       })
       .catchError((e) {
-        showToast("$e");
+        // Delay before showing error toast to avoid overlap
+        Future.delayed(const Duration(milliseconds: 1500)).then((_) {
+          showToast("$e");
+        });
       });
   }
 
   _fetchAndSetIndigenousTerritories(double latitude, double longitude) async {
     try {
+      // Delay before showing territory lookup toast
+      await Future.delayed(const Duration(milliseconds: 1500));
       showToast(translations.lookingUpIndigenousTerritories ?? "Looking up Indigenous territories...");
       
       // Fetch both territories and languages
@@ -571,13 +579,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         }
         
         if (message.isNotEmpty) {
+          // Delay before showing territory results toast
+          await Future.delayed(const Duration(milliseconds: 1500));
           showToast(message);
         }
       } else {
+        // Delay before showing no territory found toast
+        await Future.delayed(const Duration(milliseconds: 1500));
         showToast(translations.noIndigenousTerritoryFound ?? "No Indigenous territory data found for this location.");
       }
     } catch (e) {
       developer.log('Error fetching Indigenous territories: $e');
+      // Delay before showing error toast
+      await Future.delayed(const Duration(milliseconds: 1500));
       showToast('Error: ${translations.failedToFetchTerritoryData ?? "Failed to fetch territory data"}');
     }
   }

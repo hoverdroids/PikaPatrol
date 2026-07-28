@@ -531,6 +531,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   _fetchAndSetIndigenousTerritories(double latitude, double longitude) async {
     try {
+      // Check if the API is available
+      if (!NativeLandService.isAvailable) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+        showToast('Indigenous territory lookup requires an API key.\nVisit https://api-docs.native-land.ca/ to set one up.');
+        return;
+      }
+      
       // Delay before showing territory lookup toast
       await Future.delayed(const Duration(milliseconds: 1500));
       showToast(translations.lookingUpIndigenousTerritories ?? "Looking up Indigenous territories...");

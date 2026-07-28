@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'dart:developer' as developer;
 
 /// Model for territory data from Native Land Digital API
 class Territory {
@@ -20,10 +21,22 @@ class Territory {
 }
 
 /// Service to query Native Land Digital API for Indigenous territories
-/// API Documentation: https://native-land.ca/api-docs/
+/// API Documentation: https://api-docs.native-land.ca/
+///
+/// NOTE: The Native Land Digital API now requires an API key.
+/// To enable this feature, sign up at https://api-docs.native-land.ca/get-and-use-your-api-key
+/// and set your API key as an environment variable or constant below.
 class NativeLandService {
   static const String _baseUrl = 'https://native-land.ca/api/index.php';
   static const int _timeoutSeconds = 10;
+
+  /// API key for Native Land Digital API
+  /// Set this to your API key obtained from https://api-docs.native-land.ca/
+  /// If null, the service will return empty results
+  static const String? _apiKey = null;
+
+  /// Whether the API service is available (has an API key configured)
+  static bool get isAvailable => _apiKey != null;
 
   /// Query territories at the given coordinates
   /// Returns a list of territories found at the location
@@ -31,8 +44,16 @@ class NativeLandService {
     required double latitude,
     required double longitude,
   }) async {
+    if (!isAvailable) {
+      developer.log(
+        'Native Land Digital API not configured. '
+        'Get an API key at https://api-docs.native-land.ca/get-and-use-your-api-key',
+      );
+      return [];
+    }
+
     try {
-      final String url = '$_baseUrl?maps=territories&position=$longitude,$latitude';
+      final String url = '$_baseUrl?maps=territories&position=$longitude,$latitude&key=$_apiKey';
 
       final response = await http.get(
         Uri.parse(url),
@@ -45,6 +66,13 @@ class NativeLandService {
       if (response.statusCode == 200) {
         // The API returns a FeatureCollection
         final Map<String, dynamic> data = jsonDecode(response.body);
+
+        // Check for error in response
+        if (data['error'] != null) {
+          developer.log('Native Land API error: ${data['error']}');
+          return [];
+        }
+
         final List<dynamic> features = data['features'] ?? [];
 
         return features
@@ -53,11 +81,14 @@ class NativeLandService {
       } else if (response.statusCode == 404) {
         // No territory found at this location
         return [];
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        developer.log('Native Land API authentication failed. Check your API key.');
+        return [];
       } else {
         throw Exception('Failed to fetch territories: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching territories: $e');
+      developer.log('Error fetching territories: $e');
       return [];
     }
   }
@@ -67,8 +98,12 @@ class NativeLandService {
     required double latitude,
     required double longitude,
   }) async {
+    if (!isAvailable) {
+      return [];
+    }
+
     try {
-      final String url = '$_baseUrl?maps=languages&position=$longitude,$latitude';
+      final String url = '$_baseUrl?maps=languages&position=$longitude,$latitude&key=$_apiKey';
 
       final response = await http.get(
         Uri.parse(url),
@@ -80,6 +115,12 @@ class NativeLandService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = jsonDecode(response.body);
+
+        if (data['error'] != null) {
+          developer.log('Native Land API error: ${data['error']}');
+          return [];
+        }
+
         final List<dynamic> features = data['features'] ?? [];
 
         return features
@@ -87,16 +128,19 @@ class NativeLandService {
             .toList();
       } else if (response.statusCode == 404) {
         return [];
+      } else if (response.statusCode == 401 || response.statusCode == 403) {
+        developer.log('Native Land API authentication failed. Check your API key.');
+        return [];
       } else {
         throw Exception('Failed to fetch languages: ${response.statusCode}');
       }
     } catch (e) {
-      print('Error fetching languages: $e');
+      developer.log('Error fetching languages: $e');
       return [];
     }
   }
 
-  /// Query treaties at the given coordinates
+  /// Query territories and languages at the given coordinates
   static Future<List<Territory>> getTerritoriesAndLanguagesAt({
     required double latitude,
     required double longitude,
@@ -106,7 +150,7 @@ class NativeLandService {
       final languages = await getLanguagesAt(latitude: latitude, longitude: longitude);
       return [...territories, ...languages];
     } catch (e) {
-      print('Error fetching territories and languages: $e');
+      developer.log('Error fetching territories and languages: $e');
       return [];
     }
   }

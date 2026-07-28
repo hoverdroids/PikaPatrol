@@ -235,15 +235,29 @@ class FirebaseObservationsService {
     }).toList();
   }
 
+  // Cached so repeated calls return the same Stream instance rather than creating a new
+  // Firestore listener each time. This widget tree rebuilds this stream's callers via several
+  // nested StreamBuilders (see main.dart), and StreamBuilder tears down and resubscribes
+  // whenever it's handed a *different* Stream object - which, for a fresh .snapshots() listener,
+  // means re-reading every matching document from the server instead of resuming from Firestore's
+  // local cache. Memoizing keeps one long-lived listener per login session so only the initial
+  // hydrate and genuine changes are billed as reads.
+  Stream<List<Observation>>? _sharedObservationsStream;
   Stream<List<Observation>> get observations {
-    return observationsCollection.orderBy(DATE, descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
+    return _sharedObservationsStream ??= observationsCollection.orderBy(DATE, descending: true).limit(5).snapshots().map(_observationsFromSnapshot);
   }
 
+  String? _cachedUserObservationsUserId;
+  Stream<List<Observation>>? _cachedUserObservationsStream;
   Stream<List<Observation>> userObservations(String userId) {
-    return observationsCollection.where(OBSERVER_UID, whereIn: [userId])
-        .orderBy(DATE, descending: true)
-        .snapshots()
-        .map(_observationsFromSnapshot2);
+    if (_cachedUserObservationsStream == null || _cachedUserObservationsUserId != userId) {
+      _cachedUserObservationsUserId = userId;
+      _cachedUserObservationsStream = observationsCollection.where(OBSERVER_UID, whereIn: [userId])
+          .orderBy(DATE, descending: true)
+          .snapshots()
+          .map(_observationsFromSnapshot2);
+    }
+    return _cachedUserObservationsStream!;
   }
 
   Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {

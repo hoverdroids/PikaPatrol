@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
@@ -321,43 +322,32 @@ class ObservationsService {
   }
 
   setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) async {
-    /*if (userObservationsOnFirebase.hasData) {
-      var data = userObservationsOnFirebase.data;
-      if (data != null) {
-        _userObservations = data;
+    if (userObservationsOnFirebase.hasError) {
+      // e.g. a missing Firestore composite index or a security rules rejection - this fails
+      // silently otherwise, so log it to make that class of regression visible.
+      developer.log(
+        'Failed to fetch user observations from Firestore: ${userObservationsOnFirebase.error}',
+        name: 'ObservationsService',
+      );
+      return;
+    }
 
-        _userObservations = _userObservations.reversed.toList();
-        for (var userObservation in _userObservations) {
+    if (!userObservationsOnFirebase.hasData) return;
 
-          var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocallySavedObservation(localObservation, userObservation)).toList();
+    var remoteObservations = userObservationsOnFirebase.data;
+    if (remoteObservations == null) return;
 
-          // There are no local observations matching the remote observations.
-          // So, add the remote observation to the local cache to allow the user to restore their observations from another device,
-          // or after an uninstall and reinstall.
-          if (localVersionsOfObservation.isEmpty) {
-            await saveLocalObservation(userObservation);
-          }
+    for (var remoteObservation in remoteObservations) {
+      var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocallySavedObservation(localObservation, remoteObservation)).toList();
 
-
-          //TODO
-          for (var localObservationWithSameUid in localVersionsOfObservation) {
-            //Is the local observation more up to date?
-            // Trigger remote update
-
-            //Is the remote observation more up to date?
-            //  Don't trigger remote update
-            //  Trigger local update
-
-
-            //Are the local and remote observations the same?
-            //  don't do anything
-          }
-
-
-          userObservation.buttonText = translations.viewObservation;
-        }
+      // There's no local copy of this remote observation yet - e.g. it was created on another
+      // device, or this is a fresh install. Cache it locally so "My Observations" (which only
+      // reads the local cache, not Firestore directly) can show it without another server call.
+      if (localVersionsOfObservation.isEmpty) {
+        remoteObservation.buttonText = translations.viewObservation;
+        await saveLocalObservation(remoteObservation);
       }
-    }*/
+    }
   }
   //endregion
 

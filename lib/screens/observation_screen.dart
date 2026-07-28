@@ -78,6 +78,26 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   // without showing anything in return.
   static const Set<String> _nativeLandMapToggleableCategories = {'languages', 'treaties', 'greetings'};
 
+  // chips_choice's default chip style is identical for selected and unselected, so the two
+  // states are nearly indistinguishable without this. Note: ChipsChoice's own `choiceActiveStyle`
+  // widget parameter isn't actually wired up in the installed package version, so the selected
+  // look has to be set via C2ChipStyle.toned's `selectedStyle` instead, which is. backgroundOpacity
+  // must be set to 1 explicitly - toned()'s default of .12 otherwise washes out these colors into
+  // a barely-visible tint, which is what made selected/unselected hard to tell apart in the first place.
+  static final C2ChipStyle _choiceChipStyle = C2ChipStyle.toned(
+    backgroundColor: Colors.grey.shade200,
+    backgroundOpacity: 1,
+    foregroundColor: Colors.black87,
+    borderColor: Colors.grey.shade400,
+    borderStyle: BorderStyle.solid,
+    selectedStyle: const C2ChipStyle(
+      backgroundColor: Colors.teal,
+      backgroundOpacity: 1,
+      foregroundColor: Colors.white,
+      borderColor: Colors.teal,
+    ),
+  );
+
   final _formKey = GlobalKey<FormState>();
 
   final EdgeInsets _horzPadding = const EdgeInsets.symmetric(horizontal: 20.0);
@@ -1360,6 +1380,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
           value: widget.observationViewModel.observation.species,
           onChanged: (value) => {
             if (widget.isEditMode) {
@@ -1404,6 +1425,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.signs, type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
           value: widget.observationViewModel.observation.signs ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
@@ -1432,6 +1454,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.pikasDetected, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
             value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1460,6 +1483,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.distanceToClosestPika, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
             value: widget.observationViewModel.observation.distanceToClosestPika,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1485,6 +1509,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.searchDuration, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
             value: widget.observationViewModel.observation.searchDuration,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1526,6 +1551,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
             value: widget.observationViewModel.observation.talusArea,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1552,6 +1578,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.temperature, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
           value: widget.observationViewModel.observation.temperature,
           onChanged: (val) => {
             if (widget.isEditMode) {
@@ -1576,6 +1603,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.skies, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
         value: widget.observationViewModel.observation.skies,
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1599,6 +1627,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.wind, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
         value: widget.observationViewModel.observation.wind,
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1630,6 +1659,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ),
       ChipsChoice<String>.multiple(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
         value: widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[],
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1712,6 +1742,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
           ChipsChoice<String>.multiple(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
             value: widget.observationViewModel.observation.sharedWithProjects ?? <String>[],
             onChanged: (updatedSharedWithProjects) =>
             {

@@ -1,4 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:convert';
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
@@ -42,10 +43,13 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
+import '../services/settings_service.dart';
 import '../utils/firebase_utils.dart';
+import '../utils/network_utils.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
@@ -65,6 +69,14 @@ class ObservationScreen extends StatefulWidget {
 }
 
 class ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
+
+  static const String _nativeLandMapUrl = 'https://native-land.ca/maps/native-land';
+
+  // Native Land's map page only has toggleable overlay layers for these
+  // categories (see its `allLayers` list); "territories" isn't one of them,
+  // and passing it as `?category=` clobbers the default `languages` layer
+  // without showing anything in return.
+  static const Set<String> _nativeLandMapToggleableCategories = {'languages', 'treaties', 'greetings'};
 
   final _formKey = GlobalKey<FormState>();
 
@@ -520,7 +532,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         });
 
         // Fetch Indigenous territories for this location
-        _fetchAndSetIndigenousTerritories(position.latitude, position.longitude);
+        await _fetchAndSetIndigenousTerritories(position.latitude, position.longitude);
+
+        // Show the Native Land map in-app when the user opted in and internet is available.
+        await _maybeShowNativeLandMapForGps(position.latitude, position.longitude);
       })
       .catchError((e) {
         // Delay before showing error toast to avoid overlap
@@ -606,6 +621,177 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       await Future.delayed(const Duration(milliseconds: 1500));
       showToast('Error: ${translations.failedToFetchTerritoryData ?? "Failed to fetch territory data"}');
     }
+  }
+
+  Future<void> _maybeShowNativeLandMapForGps(double latitude, double longitude) async {
+    final settings = Provider.of<SettingsService>(context, listen: false);
+    final showMap = await settings.getShowIndigenousMap();
+    if (!showMap) return;
+
+    final hasInternet = await isConnectedToNetwork();
+    if (!hasInternet) return;
+
+    if (!mounted) return;
+
+    final firstSelection = _firstAvailableIndigenousSelection();
+    if (firstSelection != null) {
+      await _showNativeLandMapForSelection(
+        selectionName: firstSelection.value,
+        selectionCategory: firstSelection.key,
+      );
+      return;
+    }
+
+    _showNativeLandMapDialog(
+      mapUrl: _buildFallbackNativeLandMapUrl(latitude: latitude, longitude: longitude),
+      latitude: latitude,
+      longitude: longitude,
+    );
+  }
+
+  MapEntry<String, String>? _firstAvailableIndigenousSelection() {
+    final observation = widget.observationViewModel.observation;
+    final territories = observation.indigenousTerritories ?? <String>[];
+    if (territories.isNotEmpty) {
+      return MapEntry('territories', territories.first.split('|||').first);
+    }
+
+    final languages = observation.indigenousLanguages ?? <String>[];
+    if (languages.isNotEmpty) {
+      return MapEntry('languages', languages.first.split('|||').first);
+    }
+
+    return null;
+  }
+
+  String _buildNativeLandMapUrl({
+    String? category,
+    NativeLandMapSelection? selection,
+  }) {
+    final queryParameters = <String, String>{};
+
+    if (category != null && _nativeLandMapToggleableCategories.contains(category)) {
+      queryParameters['category'] = category;
+    }
+    if (selection != null) {
+      queryParameters['bbox'] = selection.bboxQuery;
+      queryParameters['center'] = selection.centerQuery;
+    }
+
+    if (queryParameters.isEmpty) {
+      return _nativeLandMapUrl;
+    }
+
+    return Uri.parse(_nativeLandMapUrl).replace(queryParameters: queryParameters).toString();
+  }
+
+  String _buildFallbackNativeLandMapUrl({
+    required double latitude,
+    required double longitude,
+  }) {
+    const delta = 0.25;
+    final bbox = [longitude - delta, latitude - delta, longitude + delta, latitude + delta];
+    return Uri.parse(_nativeLandMapUrl).replace(queryParameters: {
+      'bbox': jsonEncode(bbox),
+      'center': '$longitude,$latitude',
+    }).toString();
+  }
+
+  Future<void> _showNativeLandMapForSelection({
+    required String selectionName,
+    required String selectionCategory,
+  }) async {
+    final hasInternet = await isConnectedToNetwork();
+    if (!hasInternet) {
+      showToast('Internet connection is required to open the Native Land map.');
+      return;
+    }
+
+    if (!mounted) return;
+    final observation = widget.observationViewModel.observation;
+    final resolvedSelection = await NativeLandService.resolveMapSelection(
+      name: selectionName,
+      category: selectionCategory,
+    );
+
+    final mapUrl = resolvedSelection != null
+        ? _buildNativeLandMapUrl(
+            category: selectionCategory,
+            selection: resolvedSelection,
+          )
+        : (observation.latitude != null && observation.longitude != null)
+            ? _buildFallbackNativeLandMapUrl(
+                latitude: observation.latitude!,
+                longitude: observation.longitude!,
+              )
+            : _buildNativeLandMapUrl(category: selectionCategory);
+
+    _showNativeLandMapDialog(
+      selectionName: selectionName,
+      mapUrl: mapUrl,
+      latitude: observation.latitude,
+      longitude: observation.longitude,
+    );
+  }
+
+  Future<void> _showNativeLandMapDialog({
+    required String mapUrl,
+    String? selectionName,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(mapUrl));
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          insetPadding: EdgeInsets.zero,
+          clipBehavior: Clip.hardEdge,
+          child: SafeArea(
+            child: Column(
+              children: [
+                // Controls row above the map
+                Container(
+                  color: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  child: Row(
+                    children: [
+                      if (latitude != null && longitude != null) ...[
+                        const Icon(Icons.my_location, size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            selectionName == null
+                                ? 'GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}'
+                                : '$selectionName — GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}',
+                            style: const TextStyle(fontSize: 12),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ] else
+                        const Spacer(),
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.of(dialogContext).pop(),
+                        tooltip: 'Close',
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(height: 1),
+                // Map fills the rest
+                Expanded(
+                  child: WebViewWidget(controller: controller),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   resetHideGeoFields() async {
@@ -758,7 +944,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
 
     // Entries are stored as "name|||url" or just "name" for backwards compatibility.
-    Widget _entryRow(String entry, IconData icon) {
+    Widget entryRow(String entry, IconData icon, String category) {
       final parts = entry.split('|||');
       final name = parts[0];
       final url = parts.length > 1 ? parts[1] : null;
@@ -775,7 +961,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 name,
                 style: const TextStyle(
                   decoration: TextDecoration.underline,
-                  color: Colors.blue,
+                  color: Colors.grey,
                 ),
               ),
             )
@@ -785,8 +971,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         padding: const EdgeInsets.symmetric(vertical: 4.0),
         child: Row(
           children: [
-            Icon(icon, size: 16),
-            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category),
+              child: Icon(icon, size: 32, color: Colors.grey),
+            ),
+            const SizedBox(width: 10),
             Flexible(child: nameWidget),
           ],
         ),
@@ -802,7 +991,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...territories.map((t) => _entryRow(t, Icons.location_on)),
+          ...territories.map((t) => entryRow(t, Icons.map, 'territories')),
           if (languages.isNotEmpty) smallTransparentDivider,
         ],
         if (languages.isNotEmpty) ...[
@@ -811,7 +1000,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...languages.map((l) => _entryRow(l, Icons.language)),
+          ...languages.map((l) => entryRow(l, Icons.map, 'languages')),
         ],
       ],
     );

@@ -75,6 +75,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool loading = false;
   bool isEditingProfile = false;
   bool userAckedGeoTracking = false;
+  bool showIndigenousMapPreference = true;
 
   String? editedEmail;
   String? editedPassword;
@@ -92,6 +93,21 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool? editedDzOptIn;
 
   late Translations translations;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLocalPreferences();
+  }
+
+  Future<void> _loadLocalPreferences() async {
+    final settings = Provider.of<SettingsService>(context, listen: false);
+    final showMap = await settings.getShowIndigenousMap();
+    if (!mounted) return;
+    setState(() {
+      showIndigenousMapPreference = showMap;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -319,7 +335,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               alignment: Alignment.center,
               children: <Widget>[
                 if (user != null) ... [
-                  buildProfileScreen(context, firebaseAuthService, firebaseDatabaseService, user, userProfile),
+                  buildProfilePanel(context, firebaseAuthService, firebaseDatabaseService, user, userProfile),
                 ] else if(showSignIn) ... [
                   buildLoginScreen(context, firebaseAuthService),
                 ] else ... [
@@ -331,6 +347,36 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               ],
             )
         )
+    );
+  }
+
+  Widget buildProfilePanel(
+    BuildContext context,
+    FirebaseAuthService firebaseAuthService,
+    FirebaseDatabaseService firebaseDatabaseService,
+    AppUser? user,
+    AppUserProfile? userProfile,
+  ) {
+    return Column(
+      children: [
+        Expanded(
+          child: buildProfileScreen(context, firebaseAuthService, firebaseDatabaseService, user, userProfile),
+        ),
+        Card(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          child: SwitchListTile(
+            title: const Text("Show Indigenous map"),
+            subtitle: const Text("Show Native Land map after Get GPS when internet is available."),
+            value: showIndigenousMapPreference,
+            onChanged: (enabled) async {
+              setState(() {
+                showIndigenousMapPreference = enabled;
+              });
+              await Provider.of<SettingsService>(context, listen: false).setShowIndigenousMap(enabled);
+            },
+          ),
+        ),
+      ],
     );
   }
 

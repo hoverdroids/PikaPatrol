@@ -26,6 +26,24 @@ class Territory {
   }
 }
 
+/// Resolved map selection data for Native Land's map page.
+class NativeLandMapSelection {
+  final String category;
+  final String name;
+  final List<double> center;
+  final List<double> bbox;
+
+  NativeLandMapSelection({
+    required this.category,
+    required this.name,
+    required this.center,
+    required this.bbox,
+  });
+
+  String get centerQuery => '${center[0]},${center[1]}';
+  String get bboxQuery => jsonEncode(bbox);
+}
+
 /// Service to query Indigenous territory and language data from Native Land.
 ///
 /// The API key is loaded from `.env` at build/run time using `flutter_dotenv`.
@@ -108,6 +126,143 @@ class NativeLandService {
 
     developer.log('Native Land API returned an unexpected response shape.');
     return [];
+  }
+
+  static List<String> _searchQueries(String name) {
+    final normalized = name.trim();
+    final queries = <String>{normalized.toLowerCase()};
+
+    final withoutParenthetical = normalized.replaceAll(RegExp(r'\s*\([^)]*\)\s*'), ' ').replaceAll(RegExp(r'\s+'), ' ').trim();
+    if (withoutParenthetical.isNotEmpty) {
+      queries.add(withoutParenthetical.toLowerCase());
+    }
+
+    final withoutComma = normalized.split(',').first.trim();
+    if (withoutComma.isNotEmpty) {
+      queries.add(withoutComma.toLowerCase());
+    }
+
+    final withoutDash = normalized.split('—').first.trim();
+    if (withoutDash.isNotEmpty) {
+      queries.add(withoutDash.toLowerCase());
+    }
+
+    return queries.where((query) => query.isNotEmpty).toList();
+  }
+
+  static NativeLandMapSelection? _selectionFromSearchResult(
+    Map<String, dynamic> json, {
+    required String category,
+  }) {
+    final name = json['name'] as String?;
+    final centroid = json['centroid'] as Map<String, dynamic>?;
+    final centroidCoordinates = centroid?['coordinates'];
+    final bounds = json['bounds'] as Map<String, dynamic>?;
+    final boundsCoordinates = bounds?['coordinates'];
+
+    if (name == null || centroidCoordinates is! List || centroidCoordinates.length < 2 || boundsCoordinates is! List || boundsCoordinates.isEmpty) {
+      return null;
+    }
+
+    final centerLng = (centroidCoordinates[0] as num?)?.toDouble();
+    final centerLat = (centroidCoordinates[1] as num?)?.toDouble();
+    if (centerLng == null || centerLat == null) {
+      return null;
+    }
+
+    final firstRing = boundsCoordinates.first;
+    if (firstRing is! List || firstRing.isEmpty) {
+      return null;
+    }
+
+    double? minLng;
+    double? minLat;
+    double? maxLng;
+    double? maxLat;
+
+    for (final point in firstRing) {
+      if (point is! List || point.length < 2) continue;
+      final lng = (point[0] as num?)?.toDouble();
+      final lat = (point[1] as num?)?.toDouble();
+      if (lng == null || lat == null) continue;
+
+      minLng = minLng == null || lng < minLng ? lng : minLng;
+      minLat = minLat == null || lat < minLat ? lat : minLat;
+      maxLng = maxLng == null || lng > maxLng ? lng : maxLng;
+      maxLat = maxLat == null || lat > maxLat ? lat : maxLat;
+    }
+
+    if (minLng == null || minLat == null || maxLng == null || maxLat == null) {
+      return null;
+    }
+
+    return NativeLandMapSelection(
+      category: category,
+      name: name,
+      center: [centerLng, centerLat],
+      bbox: [minLng, minLat, maxLng, maxLat],
+    );
+  }
+
+  /// Resolve a Native Land territory/language name to map zoom metadata.
+  static Future<NativeLandMapSelection?> resolveMapSelection({
+    required String name,
+    required String category,
+  }) async {
+    for (final query in _searchQueries(name)) {
+      try {
+        // Native Land's searcher endpoint only recognizes `category` filter
+        // values of languages/treaties/greetings; passing "territories"
+        // (or anything else) silently returns zero results. Search
+        // unfiltered instead and match the desired category client-side —
+        // every result already carries its own `category` field.
+        final uri = Uri.https(
+          'native-land.ca',
+          '/api/entry/searcher',
+          {
+            's': query,
+            'geosearch': 'true',
+          },
+        );
+
+        developer.log('[NativeLandService] map selection search: ${uri.replace(queryParameters: {...uri.queryParameters, 's': query})}');
+
+        final response = await http.get(
+          uri,
+          headers: {'Accept': 'application/json'},
+        ).timeout(
+          const Duration(seconds: _timeoutSeconds),
+          onTimeout: () => throw Exception('Map selection search timeout'),
+        );
+
+        if (response.statusCode != 200) {
+          continue;
+        }
+
+        final decoded = jsonDecode(response.body);
+        if (decoded is! List || decoded.isEmpty) {
+          continue;
+        }
+
+        final matches = decoded
+            .whereType<Map<String, dynamic>>()
+            .where((item) => item['category'] == category)
+            .map((item) => _selectionFromSearchResult(item, category: category))
+            .whereType<NativeLandMapSelection>()
+            .toList();
+        if (matches.isEmpty) {
+          continue;
+        }
+
+        final queryLower = query.toLowerCase();
+        final exactMatch = matches.where((match) => match.name.toLowerCase() == queryLower).toList();
+        return exactMatch.isNotEmpty ? exactMatch.first : matches.first;
+      } catch (e) {
+        developer.log('Error resolving Native Land map selection for "$name": $e');
+      }
+    }
+
+    return null;
   }
 
   /// Whether the service can make Native Land requests.

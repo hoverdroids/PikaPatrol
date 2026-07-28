@@ -152,6 +152,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String denverZooUrl = ERROR;
   String ifThen = ERROR;
   String ifThenUrl = ERROR;
+  String canadianPikaProject = ERROR;
+  String canadianPikaProjectUrl = ERROR;
+  String appVersion = ERROR;
   String ok = ERROR;
   String cancel = ERROR;
   String couldNotSignInWithThoseCredentials = ERROR;
@@ -446,6 +449,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     denverZooUrl =  AppLocalizations.of(context)?.denverZooUrl ?? denverZooUrl;
     ifThen =  AppLocalizations.of(context)?.ifThen ?? ifThen;
     ifThenUrl =  AppLocalizations.of(context)?.ifThenUrl ?? ifThenUrl;
+    canadianPikaProject =  AppLocalizations.of(context)?.canadianPikaProject ?? canadianPikaProject;
+    canadianPikaProjectUrl =  AppLocalizations.of(context)?.canadianPikaProjectUrl ?? canadianPikaProjectUrl;
+    appVersion =  AppLocalizations.of(context)?.appVersion ?? appVersion;
     ok =  AppLocalizations.of(context)?.ok ?? ok;
     cancel = AppLocalizations.of(context)?.cancel ?? cancel;
     couldNotSignInWithThoseCredentials =  AppLocalizations.of(context)?.couldNotSignInWithThoseCredentials ?? couldNotSignInWithThoseCredentials;
@@ -696,6 +702,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "denverZooUrl": return denverZooUrl;
       case "ifThen": return ifThen;
       case "ifThenUrl": return ifThenUrl;
+      case "canadianPikaProject": return canadianPikaProject;
+      case "canadianPikaProjectUrl": return canadianPikaProjectUrl;
+      case "appVersion": return appVersion;
       case "ok": return ok;
       case "cancel": return cancel;
       case "couldNotSignInWithThoseCredentials": return couldNotSignInWithThoseCredentials;

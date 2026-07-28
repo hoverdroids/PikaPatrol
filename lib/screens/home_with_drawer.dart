@@ -16,6 +16,7 @@ import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
 import 'package:material_themes_widgets/screens/profile_screen.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
@@ -77,6 +78,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool userAckedGeoTracking = false;
   bool showIndigenousMapPreference = true;
 
+  String appVersion = '';
+
   String? editedEmail;
   String? editedPassword;
   String? editedFirstName;
@@ -98,6 +101,15 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   void initState() {
     super.initState();
     _loadLocalPreferences();
+    _loadAppVersion();
+  }
+
+  Future<void> _loadAppVersion() async {
+    final packageInfo = await PackageInfo.fromPlatform();
+    if (!mounted) return;
+    setState(() {
+      appVersion = '${packageInfo.version} (${packageInfo.buildNumber})';
+    });
   }
 
   Future<void> _loadLocalPreferences() async {
@@ -290,6 +302,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.denverZoo, itemClickedCallback: () => launchInBrowser(translations.denverZooUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.canadianPikaProject, itemClickedCallback: () => launchInBrowser(translations.canadianPikaProjectUrl ?? ""), margin: indentationLevel1),
+            ListItemModel(title: translations.appVersion, titleType: ThemeGroupType.SOM),
+            ListItemModel(title: appVersion, margin: indentationLevel1),
             if (isAdmin)...[
               ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
               ListItemModel(title: translations.exportFirebaseUserProfilesToGoogleSheets, itemClickedCallback: () => showExportFirebaseUserProfilesToGoogleSheetsDialog(), margin: indentationLevel1),

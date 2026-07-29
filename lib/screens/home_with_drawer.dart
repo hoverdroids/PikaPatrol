@@ -80,6 +80,11 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   String appVersion = '';
 
+  // Tracks which logged-in user's uid we've already offered to associate unassociated local
+  // observations with, so the dialog doesn't reappear on every rebuild while logged in. Reset to
+  // null on logout so the *next* login (even by the same user) asks again, per product intent.
+  String? _promptedToAssociateObservationsForUserUid;
+
   String? editedEmail;
   String? editedPassword;
   String? editedFirstName;
@@ -110,6 +115,34 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     setState(() {
       appVersion = '${packageInfo.version} (${packageInfo.buildNumber})';
     });
+  }
+
+  Future<void> _maybeShowAssociateObservationsDialog(AppUser user) async {
+    final observationsService = Provider.of<ObservationsService>(context, listen: false);
+    final unassociated = observationsService.getUnassociatedLocalObservations();
+    if (unassociated.isEmpty || !mounted) return;
+
+    final shouldAssociate = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(translations.associateLocalObservationsDialogTitle),
+        content: Text(translations.associateLocalObservationsDialogDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(translations.doNotAssociateLocalObservations),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(translations.associateLocalObservations),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldAssociate == true) {
+      await observationsService.associateLocalObservationsWithUser(user.uid);
+    }
   }
 
   Future<void> _loadLocalPreferences() async {
@@ -153,6 +186,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       FirebaseAuthService firebaseAuthService = Provider.of<FirebaseAuthService>(context, listen: false);
       FirebaseDatabaseService firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
       saveProfile(firebaseAuthService, firebaseDatabaseService, user, userProfile, DateTime.now());
+    }
+
+    if (user == null) {
+      _promptedToAssociateObservationsForUserUid = null;
+    } else if (_promptedToAssociateObservationsForUserUid != user.uid) {
+      _promptedToAssociateObservationsForUserUid = user.uid;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _maybeShowAssociateObservationsDialog(user));
     }
 
     return Scaffold(

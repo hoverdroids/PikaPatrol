@@ -99,6 +99,23 @@ class ObservationsService {
     return _localObservationsStreamController!.stream;
   }
 
+  // Reads the Hive box directly rather than _localObservations, because _localObservations is
+  // filtered by LocalObservation.canUserEdit(user) - once a user is logged in, an observation with
+  // no observerUid no longer passes that check (it's neither "this user's" nor "no one's, while no
+  // one's logged in"), so it silently drops out of _localObservations and "My Observations" even
+  // though it's still sitting in the box. This is exactly what needs surfacing at login time.
+  List<LocalObservation> getUnassociatedLocalObservations() {
+    var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+    return box.values.where((localObservation) => localObservation.observerUid.isEmpty).toList();
+  }
+
+  Future<void> associateLocalObservationsWithUser(String userId) async {
+    for (var localObservation in getUnassociatedLocalObservations()) {
+      localObservation.observerUid = userId;
+      await localObservation.save();
+    }
+  }
+
   //TODO - why is this here vs utils?
   bool _isLocallySavedObservation(Observation localObservation, Observation userObservation) {
 
@@ -338,15 +355,22 @@ class ObservationsService {
     }
 
     // Prune the other direction too: a local observation that was previously synced to Firestore
-    // (it has a uid) but is no longer in this fetch is one that got deleted - by this device before
-    // this listener caught up, or by another device entirely. Without this, deleting an uploaded
-    // observation on one device would never be reflected in another device's local cache. Purely
-    // local, never-uploaded observations (uid == null) are left untouched - they're not ours to
-    // prune based on what Firestore has. No extra network calls: this reuses the already-open
-    // userObservations listener's data instead of asking the server anything new.
+    // but is no longer in this fetch is one that got deleted - by this device before this listener
+    // caught up, or by another device entirely. Without this, deleting an uploaded observation on
+    // one device would never be reflected in another device's local cache. Purely local,
+    // never-uploaded observations are left untouched - they're not ours to prune based on what
+    // Firestore has. No extra network calls: this reuses the already-open userObservations
+    // listener's data instead of asking the server anything new.
+    //
+    // Must check isUploaded here, not isRemoteObservation()/uid != null: LocalObservation.uid is a
+    // non-nullable String defaulting to "" (never actually null), so an Observation built from one
+    // via setLocalObservations always has uid != null - isRemoteObservation() was true even for a
+    // brand-new, never-uploaded local observation. That made every local observation look like it
+    // had already been synced and was now "deleted remotely" the moment nothing matched it in the
+    // current fetch, which for a logged-out user (whose fetch is always an empty list) meant any
+    // observation just saved locally got immediately pruned again.
     var deletedRemotely = _localObservations.where((localObservation) {
-      var wasSyncedToFirestore = localObservation.isRemoteObservation();
-      if (!wasSyncedToFirestore) return false;
+      if (!localObservation.isUploaded) return false;
       return !remoteObservations.any((remoteObservation) => _isLocallySavedObservation(localObservation, remoteObservation));
     }).toList();
 
@@ -361,50 +385,56 @@ class ObservationsService {
 
     var returnValue = ValueMessagePair<bool>(true, null);
 
-    // TODO: we need an online/offline widget that triggers updates so that we don't have to ask this question every time
-    // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
-    // saved for others to register sooner
-    var hasConnection = await DataConnectionChecker().hasConnection;
-
     if (user == null) {
+      // Not logged in: this is always a local-only save, so skip the connectivity probe below -
+      // DataConnectionChecker pings real hosts and can take several seconds (much longer when
+      // actually offline), and its result was never used on this branch anyway. Awaiting it here
+      // just delayed the local save (further down) for no reason.
       returnValue = ValueMessagePair(false, translations.youMustLoginToUploadAnObservationObservationSavedLocally);
-    } else if (!hasConnection) {
-      //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
-      //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
-
-      returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
     } else {
-      // "Date" can be set manually by the user to indicate the date the observation was made.
-      // So, do not set the date using DateTime.now!
-      // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
-      // Also, if there is no connection, then all remote updates will fail, so don't worry about trying to update the dateUpdatedInGoogleSheets as it will just be reset to the original value
+      // TODO: we need an online/offline widget that triggers updates so that we don't have to ask this question every time
+      // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
+      // saved for others to register sooner
+      var hasConnection = await DataConnectionChecker().hasConnection;
 
-      //dateUpdatedInGoogleSheets is updated here so that Firebase is up-to-date without having to write twice (second write would occur after Google Sheets is updated)
-      final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-      observation.dateUpdatedInGoogleSheets = DateTime.now();
+      if (!hasConnection) {
+        //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
+        //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
 
-      final firebaseReturnValue = await saveObservationToFirebase(observation);
-      final firebaseException = firebaseReturnValue?.message;
-      final firebaseUpdated = firebaseException == null && observation.uid != null;
-
-      if (firebaseUpdated) {
-        final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
-        final googleSheetsException = googleSheetsReturnValue.first.exception;
-
-        if (googleSheetsException != null) {
-          returnValue = ValueMessagePair(false, googleSheetsException.cause);
-        } else {
-          returnValue = ValueMessagePair(true, translations.observationSavedSuccessfully);
-        }
+        returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
       } else {
-        //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
-        //Or, if the uid is not null, but there was an exception, then don't update Google Sheets because the observation wasn't updated in Firebase
-        observation.dateUpdatedInGoogleSheets = originalDateUpdatedInGoogleSheets;
+        // "Date" can be set manually by the user to indicate the date the observation was made.
+        // So, do not set the date using DateTime.now!
+        // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
+        // Also, if there is no connection, then all remote updates will fail, so don't worry about trying to update the dateUpdatedInGoogleSheets as it will just be reset to the original value
 
-        if (firebaseException != null) {
-          returnValue = ValueMessagePair(false, firebaseException);
+        //dateUpdatedInGoogleSheets is updated here so that Firebase is up-to-date without having to write twice (second write would occur after Google Sheets is updated)
+        final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+        observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+        final firebaseReturnValue = await saveObservationToFirebase(observation);
+        final firebaseException = firebaseReturnValue?.message;
+        final firebaseUpdated = firebaseException == null && observation.uid != null;
+
+        if (firebaseUpdated) {
+          final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
+          final googleSheetsException = googleSheetsReturnValue.first.exception;
+
+          if (googleSheetsException != null) {
+            returnValue = ValueMessagePair(false, googleSheetsException.cause);
+          } else {
+            returnValue = ValueMessagePair(true, translations.observationSavedSuccessfully);
+          }
         } else {
-          returnValue = ValueMessagePair(false, translations.unknownErrorUploadingToServerObservationSavedLocally);
+          //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
+          //Or, if the uid is not null, but there was an exception, then don't update Google Sheets because the observation wasn't updated in Firebase
+          observation.dateUpdatedInGoogleSheets = originalDateUpdatedInGoogleSheets;
+
+          if (firebaseException != null) {
+            returnValue = ValueMessagePair(false, firebaseException);
+          } else {
+            returnValue = ValueMessagePair(false, translations.unknownErrorUploadingToServerObservationSavedLocally);
+          }
         }
       }
     }

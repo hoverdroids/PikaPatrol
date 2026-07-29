@@ -177,6 +177,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String noIndigenousTerritoryFound = ERROR;
   String failedToFetchTerritoryData = ERROR;
   String cannotRequestIndigenousTerritoriesOffline = ERROR;
+  String associateLocalObservationsDialogTitle = ERROR;
+  String associateLocalObservationsDialogDescription = ERROR;
+  String associateLocalObservations = ERROR;
+  String doNotAssociateLocalObservations = ERROR;
   String siteName = ERROR;
   String january = ERROR;
   String february = ERROR;
@@ -475,6 +479,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     noIndigenousTerritoryFound =  AppLocalizations.of(context)?.noIndigenousTerritoryFound ?? noIndigenousTerritoryFound;
     failedToFetchTerritoryData =  AppLocalizations.of(context)?.failedToFetchTerritoryData ?? failedToFetchTerritoryData;
     cannotRequestIndigenousTerritoriesOffline =  AppLocalizations.of(context)?.cannotRequestIndigenousTerritoriesOffline ?? cannotRequestIndigenousTerritoriesOffline;
+    associateLocalObservationsDialogTitle =  AppLocalizations.of(context)?.associateLocalObservationsDialogTitle ?? associateLocalObservationsDialogTitle;
+    associateLocalObservationsDialogDescription =  AppLocalizations.of(context)?.associateLocalObservationsDialogDescription ?? associateLocalObservationsDialogDescription;
+    associateLocalObservations =  AppLocalizations.of(context)?.associateLocalObservations ?? associateLocalObservations;
+    doNotAssociateLocalObservations =  AppLocalizations.of(context)?.doNotAssociateLocalObservations ?? doNotAssociateLocalObservations;
     siteName =  AppLocalizations.of(context)?.siteName ?? siteName;
     january =  AppLocalizations.of(context)?.january ?? january;
     february =  AppLocalizations.of(context)?.february ?? february;
@@ -729,6 +737,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "noIndigenousTerritoryFound": return noIndigenousTerritoryFound;
       case "failedToFetchTerritoryData": return failedToFetchTerritoryData;
       case "cannotRequestIndigenousTerritoriesOffline": return cannotRequestIndigenousTerritoriesOffline;
+      case "associateLocalObservationsDialogTitle": return associateLocalObservationsDialogTitle;
+      case "associateLocalObservationsDialogDescription": return associateLocalObservationsDialogDescription;
+      case "associateLocalObservations": return associateLocalObservations;
+      case "doNotAssociateLocalObservations": return doNotAssociateLocalObservations;
       case "siteName": return siteName;
       case "january": return january;
       case "february": return february;

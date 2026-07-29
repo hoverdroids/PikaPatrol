@@ -122,7 +122,22 @@ class ObservationsService {
   // fire. In particular: logging in (and therefore associating local observations with the
   // account) only ever happens while already online, so a connectivity-*change* listener never
   // fires for it - nothing else was prompting an upload attempt at that moment.
-  Future<void> uploadPendingLocalObservations(AppUser user) async {
+  //
+  // These triggers can overlap in time (e.g. a connectivity-change fires around the same moment
+  // the associate-with-account dialog is accepted). Each call to saveObservation() mints a brand
+  // new Firestore doc for any observation whose uid is still empty, so two overlapping runs over
+  // the same not-yet-uploaded local observation raced to upload it twice under two different
+  // Firestore doc IDs before either run's result made it back into Hive. Caching the in-flight
+  // Future means a second caller just awaits the first run instead of starting its own.
+  Future<void>? _pendingUploadFuture;
+
+  Future<void> uploadPendingLocalObservations(AppUser user) {
+    return _pendingUploadFuture ??= _uploadPendingLocalObservations(user).whenComplete(() {
+      _pendingUploadFuture = null;
+    });
+  }
+
+  Future<void> _uploadPendingLocalObservations(AppUser user) async {
     for (var localObservation in localObservations) {
       if (!localObservation.isUploaded) {
         await saveObservation(localObservation, user);

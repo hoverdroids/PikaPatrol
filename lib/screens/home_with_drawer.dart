@@ -117,10 +117,19 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     });
   }
 
+  // Belt-and-suspenders alongside the build()-level _promptedToAssociateObservationsForUserUid
+  // guard: prevents a second call to this method (from whatever triggered it) from opening a
+  // second dialog on top of one that's still open and waiting on the user's choice.
+  bool _isAssociateDialogShowing = false;
+
   Future<void> _maybeShowAssociateObservationsDialog(AppUser user) async {
+    if (_isAssociateDialogShowing) return;
+
     final observationsService = Provider.of<ObservationsService>(context, listen: false);
     final unassociated = observationsService.getUnassociatedLocalObservations();
     if (unassociated.isEmpty || !mounted) return;
+
+    _isAssociateDialogShowing = true;
 
     final shouldAssociate = await showDialog<bool>(
       context: context,
@@ -139,6 +148,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         ],
       ),
     );
+
+    _isAssociateDialogShowing = false;
 
     if (shouldAssociate == true) {
       await observationsService.associateLocalObservationsWithUser(user.uid);

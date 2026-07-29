@@ -167,6 +167,8 @@ class CardScrollWidget extends StatelessWidget {
     child: Text(
       title ?? "!!! NO TITLE !!!",
       textAlign: cardLayout == CardLayout.bottomLeft ? TextAlign.start : TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
       style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")
     ),
   );

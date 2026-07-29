@@ -176,6 +176,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String lookingUpIndigenousTerritories = ERROR;
   String noIndigenousTerritoryFound = ERROR;
   String failedToFetchTerritoryData = ERROR;
+  String cannotRequestIndigenousTerritoriesOffline = ERROR;
   String siteName = ERROR;
   String january = ERROR;
   String february = ERROR;
@@ -473,6 +474,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     lookingUpIndigenousTerritories =  AppLocalizations.of(context)?.lookingUpIndigenousTerritories ?? lookingUpIndigenousTerritories;
     noIndigenousTerritoryFound =  AppLocalizations.of(context)?.noIndigenousTerritoryFound ?? noIndigenousTerritoryFound;
     failedToFetchTerritoryData =  AppLocalizations.of(context)?.failedToFetchTerritoryData ?? failedToFetchTerritoryData;
+    cannotRequestIndigenousTerritoriesOffline =  AppLocalizations.of(context)?.cannotRequestIndigenousTerritoriesOffline ?? cannotRequestIndigenousTerritoriesOffline;
     siteName =  AppLocalizations.of(context)?.siteName ?? siteName;
     january =  AppLocalizations.of(context)?.january ?? january;
     february =  AppLocalizations.of(context)?.february ?? february;
@@ -726,6 +728,7 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "lookingUpIndigenousTerritories": return lookingUpIndigenousTerritories;
       case "noIndigenousTerritoryFound": return noIndigenousTerritoryFound;
       case "failedToFetchTerritoryData": return failedToFetchTerritoryData;
+      case "cannotRequestIndigenousTerritoriesOffline": return cannotRequestIndigenousTerritoriesOffline;
       case "siteName": return siteName;
       case "january": return january;
       case "february": return february;

@@ -140,6 +140,7 @@
     "lookingUpIndigenousTerritories": "Buscando territorios indígenas...",
     "noIndigenousTerritoryFound": "No se encontró territorio indígena para esta ubicación",
     "failedToFetchTerritoryData": "Error al obtener datos del territorio",
+    "cannotRequestIndigenousTerritoriesOffline": "No se pueden solicitar territorios indígenas sin conexión",
     "siteName": "Nombre del Sitio",
     "january": "Enero",
     "february": "Febrero",

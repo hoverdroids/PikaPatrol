@@ -607,6 +607,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   _fetchAndSetIndigenousTerritories(double latitude, double longitude) async {
     try {
+      final hasInternet = await isConnectedToNetwork();
+      if (!hasInternet) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+        showToast(translations.cannotRequestIndigenousTerritoriesOffline);
+        return;
+      }
+
       // Check if the API is available
       if (!NativeLandService.isAvailable) {
         await Future.delayed(const Duration(milliseconds: 1500));

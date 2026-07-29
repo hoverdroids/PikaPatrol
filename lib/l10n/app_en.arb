@@ -140,6 +140,7 @@
     "lookingUpIndigenousTerritories": "Looking up Indigenous territories...",
     "noIndigenousTerritoryFound": "No Indigenous territory found for this location",
     "failedToFetchTerritoryData": "Failed to fetch territory data",
+    "cannotRequestIndigenousTerritoriesOffline": "Cannot request Indigenous territories when offline",
     "siteName": "Site Name",
     "january": "January",
     "february": "February",

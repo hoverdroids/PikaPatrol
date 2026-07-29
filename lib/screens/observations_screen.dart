@@ -25,7 +25,7 @@ class ObservationsPage extends StatefulWidget {
   ObservationsPageState createState() => ObservationsPageState();
 }
 
-class ObservationsPageState extends State<ObservationsPage> {
+class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingObserver {
 
   late Translations translations;
   late ObservationsService observationsService;
@@ -46,6 +46,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   void initState() {
     super.initState();
 
+    WidgetsBinding.instance.addObserver(this);
+
     // actively listen for status updates
     // this will cause DataConnectionChecker to check periodically
     // with the interval specified in DataConnectionChecker().checkInterval
@@ -65,8 +67,34 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _dataConnectionStatusListener.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // The DataConnectionChecker polling loop above only runs while its timer keeps firing, and
+    // Android suspends Dart timers once the app is backgrounded (especially after Doze kicks in).
+    // So if the device goes offline, the app gets backgrounded, and connectivity comes back while
+    // it's still in the background, the polling loop may never get a chance to notice - nothing
+    // was re-checking on resume. This catches that case: whenever the app comes back to the
+    // foreground, immediately check for a connection and upload anything pending, rather than
+    // waiting on the timer to eventually catch up (which it may never do while backgrounded).
+    if (state == AppLifecycleState.resumed) {
+      _checkConnectionAndUpload();
+    }
+  }
+
+  Future<void> _checkConnectionAndUpload() async {
+    if (!mounted) return;
+    var user = Provider.of<AppUser?>(context, listen: false);
+    if (user == null || !localObservationsNeedUploaded()) return;
+
+    var hasConnection = await DataConnectionChecker().hasConnection;
+    if (hasConnection && mounted) {
+      _uploadLocalObservations(user);
+    }
   }
 
   @override
@@ -261,13 +289,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   Future _uploadLocalObservations(AppUser user) async {
-
-    for (var localObservation in observationsService.localObservations) {
-      if (!localObservation.isUploaded) {
-        final returnValue = await observationsService.saveObservation(localObservation, user);
-        //saving in the background, so don't toast
-      }
-    }
+    //saving in the background, so don't toast
+    await observationsService.uploadPendingLocalObservations(user);
   }
 
 

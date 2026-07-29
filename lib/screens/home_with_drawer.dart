@@ -142,6 +142,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     if (shouldAssociate == true) {
       await observationsService.associateLocalObservationsWithUser(user.uid);
+
+      // Upload right away rather than waiting for the next unrelated trigger (a connectivity
+      // *change*, or the app being backgrounded and resumed) - logging in only ever happens
+      // while already online, so neither of those would otherwise fire for a while.
+      if (await isConnectedToNetwork()) {
+        await observationsService.uploadPendingLocalObservations(user);
+      }
     }
   }
 

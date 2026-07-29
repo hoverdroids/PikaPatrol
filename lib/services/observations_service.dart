@@ -116,6 +116,20 @@ class ObservationsService {
     }
   }
 
+  // Shared by the reconnect-polling listener, the app-resume check, and the post-association
+  // flow - anywhere that just learned "there's a logged-in user and a network, so anything
+  // pending should go up now" rather than waiting for the next unrelated trigger to happen to
+  // fire. In particular: logging in (and therefore associating local observations with the
+  // account) only ever happens while already online, so a connectivity-*change* listener never
+  // fires for it - nothing else was prompting an upload attempt at that moment.
+  Future<void> uploadPendingLocalObservations(AppUser user) async {
+    for (var localObservation in localObservations) {
+      if (!localObservation.isUploaded) {
+        await saveObservation(localObservation, user);
+      }
+    }
+  }
+
   //TODO - why is this here vs utils?
   bool _isLocallySavedObservation(Observation localObservation, Observation userObservation) {
 

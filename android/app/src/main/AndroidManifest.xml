@@ -8,8 +8,6 @@
         tools:targetApi="eclair" />
 
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/><!-- Devices running Android 13 (API level 33) or higher -->
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/><!-- Devices running Android 13 (API level 33) or higher -->
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
 
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>

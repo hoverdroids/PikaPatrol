@@ -112,6 +112,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   var assetsAudioPlayer = AssetsAudioPlayer();
   PlayerState _playerState = PlayerState.stop;
+  int _playingIndex = -1;
 
   bool _isUploading = false;
 
@@ -135,6 +136,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    assetsAudioPlayer.dispose();
+    _scrollController.dispose();
+    _colorAnimationController.dispose();
+    super.dispose();
   }
 
   @override
@@ -341,8 +350,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ),
   );
 
+  // Index 0 - this button always plays the first recording. It shares _playerState/_playingIndex/
+  // assetsAudioPlayer with the per-recording buttons in AudioContentScroll (_buildAudioRecordings)
+  // so both stay in sync - they used to each own a separate player and separate state, which is why
+  // pressing one didn't update the other's icon.
   Widget _buildPlayButton() => ThemedPlayButton(
-    isPlaying: _playerState == PlayerState.play,
+    isPlaying: _playerState == PlayerState.play && _playingIndex == 0,
     pauseIcon: Icon(
         Icons.pause,
         color: context.watch<MaterialThemesManager>().colorPalette().secondary,
@@ -353,7 +366,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     onPressed: () {
       var audioUrls = widget.observationViewModel.observation.audioUrls;
       if (audioUrls != null && audioUrls.isNotEmpty) {
-        _playAudio(audioUrls[0]);
+        _playAudio(0);
       } else {
         showToast(translations.noRecordingsToPlay);
       }
@@ -369,31 +382,58 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  void _playAudio(String audioUrl) {
-    if (_playerState == PlayerState.stop) {
+  void _playAudio(int index) async {
+    var audioUrls = widget.observationViewModel.observation.audioUrls;
+    if (audioUrls == null || index < 0 || index >= audioUrls.length) return;
+
+    if (_playerState == PlayerState.stop || _playingIndex != index) {
+      if (_playerState != PlayerState.stop) {
+        // Await disposal of the previous player before starting the next one - dispose() (like
+        // open()/play()/pause()) is a native platform-channel call, and none of these were being
+        // awaited here before. Firing off "dispose the old player" and "open+play the new player"
+        // without waiting for the first to actually finish let both native player instances end up
+        // alive and fighting over the audio session at the same time, which is what made a second
+        // recording refuse to stop (pause/UI state had moved on to the new player, but the old
+        // native player was still holding the output and never told to release it in time).
+        await assetsAudioPlayer.dispose();
+      }
+
+      var newPlayer = AssetsAudioPlayer();//apparently the audio player needs to be re-instantiated once stopped
+      assetsAudioPlayer = newPlayer;
+      newPlayer.playlistFinished.listen((finished) {
+        // Guard against a stale event from a player that's since been superseded (e.g. the user
+        // tapped another recording again before this one's open/play finished).
+        if (finished && identical(assetsAudioPlayer, newPlayer)) {
+          setState(() {
+            _playerState = PlayerState.stop;
+            _playingIndex = -1;
+          });
+        }
+      });
+
+      var audioUrl = audioUrls[index];
+      await newPlayer.open(audioUrl.contains("http") ? Audio.network(audioUrl) : Audio.file(audioUrl));
+      await newPlayer.play();
+
+      if (!mounted || !identical(assetsAudioPlayer, newPlayer)) return;
       setState(() {
+        _playingIndex = index;
         _playerState = PlayerState.play;
       });
-      assetsAudioPlayer = AssetsAudioPlayer();//apparently the audio player needs to be re-instantiated once stopped
-      assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
-        setState(() {
-          _playerState = PlayerState.stop;
-        });
-      });
-      assetsAudioPlayer.open(audioUrl.contains("http") ? Audio.network(audioUrl) : Audio.file(audioUrl));
-      assetsAudioPlayer.play();
 
     } else if (_playerState == PlayerState.play) {
+      await assetsAudioPlayer.pause();
+      if (!mounted) return;
       setState(() {
         _playerState = PlayerState.pause;
       });
-      assetsAudioPlayer.pause();
 
     } else {
+      await assetsAudioPlayer.play();
+      if (!mounted) return;
       setState(() {
         _playerState = PlayerState.play;
       });
-      assetsAudioPlayer.play();
     }
   }
 
@@ -1083,6 +1123,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
+      playerState: _playerState,
+      playingIndex: _playingIndex,
+      onToggle: _playAudio,
     );
   }
 
@@ -1196,51 +1239,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         }
       }
 
-      if (isAndroid) {
-
-        //Devices running Android 13 (API level 33) and above require the photos permission and don't
-        //even have storage permission. Device before that only have storage permission.
-        //So, if either is accepted then the system has the correct permissions for the given sdk
-        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
-        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
-        var isAudioPermissionGranted = await Permission.audio.request().isGranted;
-
-        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
-        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
-        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
-
-        var allPreSdk33FilePermissionsGranted = isStoragePermissionGranted && isMediaLocationPermissionGranted && isManageExternalStoragePermissionGranted;
-        var allSdk33FilePermissionsGranted = isPhotosPermissionGranted && isVideosPermissionGranted && isAudioPermissionGranted;
-        var allSdkSpecificPermissionsGranted = allPreSdk33FilePermissionsGranted || allSdk33FilePermissionsGranted;
-
-        if (!allSdkSpecificPermissionsGranted) {
-          if (!isPhotosPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
-            return;
-          }
-
-          if (!isStoragePermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-            return;
-          }
-
-          if (!isMediaLocationPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
-            return;
-          }
-
-          if (!isManageExternalStoragePermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
-            return;
-          }
-
-
-          if (!isVideosPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
-            return;
-          }
-        }
-      }
+      // No Android-specific permission gate here: FilePicker.platform.pickFiles() opens the
+      // system's file picker (Storage Access Framework / Photo Picker), which grants scoped
+      // access to whatever the user selects without needing READ_MEDIA_IMAGES/VIDEO/AUDIO or
+      // storage permissions declared or held by this app at all.
 
       if (isIos) {
         var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;

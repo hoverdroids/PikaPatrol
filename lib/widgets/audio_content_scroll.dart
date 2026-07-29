@@ -8,7 +8,12 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
 
-class AudioContentScroll extends StatefulWidget {
+// The player/playback state is owned by the parent (ObservationScreenState) and passed in, rather
+// than this widget having its own AssetsAudioPlayer - it used to, and the observation screen's own
+// "big" play button had a second, separate player with separate state. The two never synced with
+// each other: pressing one didn't update the other's icon, and both held their own native player
+// resources without either being aware of the other.
+class AudioContentScroll extends StatelessWidget {
 
   final List<String> urls;
   final String title;
@@ -18,6 +23,9 @@ class AudioContentScroll extends StatefulWidget {
   final List<Widget> icons;
   final List<VoidCallback> iconsClickedCallbacks;
   final String emptyListMessage;
+  final PlayerState playerState;
+  final int playingIndex;
+  final void Function(int index) onToggle;
 
   const AudioContentScroll({
     super.key,
@@ -28,34 +36,20 @@ class AudioContentScroll extends StatefulWidget {
     this.padding = const EdgeInsets.symmetric(horizontal: 20.0),
     this.icons = const <Widget>[],
     this.iconsClickedCallbacks = const <VoidCallback>[],
-    this.emptyListMessage = ""
+    this.emptyListMessage = "",
+    this.playerState = PlayerState.stop,
+    this.playingIndex = -1,
+    required this.onToggle,
   });
-
-  @override
-  AudioContentScrollState createState() => AudioContentScrollState();
-}
-
-class AudioContentScrollState extends State<AudioContentScroll>{
-
-  AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer();
-
-  PlayerState _playerState = PlayerState.stop;
-  int _playingIndex = -1;
-
-  @override
-  void dispose() {
-    assetsAudioPlayer.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: widget.padding,
+      padding: padding,
       child: Column(
         children: <Widget>[
           _buildHeaderRow(),
-          if (widget.urls.isEmpty) ... [
+          if (urls.isEmpty) ... [
             miniTransparentDivider,
             _buildEmptyRow(context),
           ] else ... [
@@ -69,13 +63,13 @@ class AudioContentScrollState extends State<AudioContentScroll>{
   Widget _buildHeaderRow() {
     return Row(
       children: [
-        ThemedSubTitle(widget.title, type: ThemeGroupType.POM),
-        if (widget.icons.isNotEmpty) ... [
+        ThemedSubTitle(title, type: ThemeGroupType.POM),
+        if (icons.isNotEmpty) ... [
           Expanded(
             flex: 1,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
-              children: widget.icons,
+              children: icons,
             ),
           ),
         ]
@@ -88,9 +82,9 @@ class AudioContentScrollState extends State<AudioContentScroll>{
       color: context.watch<MaterialThemesManager>().getTheme(ThemeGroupType.MOM).cardTheme.color,
       child: SizedBox(
         width: double.infinity,
-        height: widget.imageHeight,
+        height: imageHeight,
         child: Center(
-          child: ThemedTitle(widget.emptyListMessage, type:ThemeGroupType.MOM),
+          child: ThemedTitle(emptyListMessage, type:ThemeGroupType.MOM),
         ),
       ),
     );
@@ -98,17 +92,17 @@ class AudioContentScrollState extends State<AudioContentScroll>{
 
   Widget _buildGridView() {
     return SizedBox(
-      height: widget.imageHeight,
+      height: imageHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        itemCount: widget.urls.length,
+        itemCount: urls.length,
         itemBuilder: (BuildContext context, int index) {
           return Container(
             margin: const EdgeInsets.symmetric(
               horizontal: 10.0,
               vertical: 15.0,
             ),
-            width: widget.imageWidth,
+            width: imageWidth,
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(10.0),
@@ -126,54 +120,15 @@ class AudioContentScrollState extends State<AudioContentScroll>{
                   children: <Widget>[
                     Center(
                         child:ThemedPlayButton(
-                          isPlaying: _playerState == PlayerState.play && _playingIndex == index,
-                          onPressed: () {
-                            if (_playerState == PlayerState.stop || _playingIndex != index) {
-
-                              if (_playerState != PlayerState.stop) {
-                                //Release the currently loaded file
-                                assetsAudioPlayer.stop();
-                              }
-
-                              assetsAudioPlayer = AssetsAudioPlayer();//create a new player after the current file has stopped
-                              assetsAudioPlayer.playlistFinished.listen((finished) {
-                                if(finished) {
-                                  setState(() {
-                                    _playerState = PlayerState.stop;
-                                    _playingIndex = -1;
-                                  });
-                                }
-                              });
-
-                              var url = widget.urls[index];
-                              assetsAudioPlayer.open(url.contains("http") ? Audio.network(url) : Audio.file(url));
-                              assetsAudioPlayer.play();
-
-                              setState(() {
-                                _playingIndex = index;
-                                _playerState = PlayerState.play;
-                              });
-
-                            } else if (_playerState == PlayerState.play) {
-                              assetsAudioPlayer.pause();
-                              setState(() {
-                                _playerState = PlayerState.pause;
-                              });
-
-                            } else {
-                              assetsAudioPlayer.play();
-                              setState(() {
-                                _playerState = PlayerState.play;
-                              });
-                            }
-                          },
+                          isPlaying: playerState == PlayerState.play && playingIndex == index,
+                          onPressed: () => onToggle(index),
                         )
                     ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(
                         padding: const EdgeInsets.all(paddingMini),
-                        child: ThemedTitle(basenameWithoutExtension(widget.urls[index]), type:ThemeGroupType.MOM),
+                        child: ThemedTitle(basenameWithoutExtension(urls[index]), type:ThemeGroupType.MOM),
                       ),
                     ),
                   ],

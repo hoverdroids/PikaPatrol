@@ -138,6 +138,12 @@ class ObservationsService {
   }
 
   Future<void> _uploadPendingLocalObservations(AppUser user) async {
+    // Refresh from the Hive box first: _localObservations is filtered by canUserEdit(user), so an
+    // observation that was just associated with this user (e.g. via associateLocalObservationsWithUser)
+    // may not have made it into that cache yet - nothing else forces a rebuild before this runs.
+    // Without this, the observation is invisible to the loop below and never gets uploaded.
+    setLocalObservations(Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME), user);
+
     for (var localObservation in localObservations) {
       if (!localObservation.isUploaded) {
         await saveObservation(localObservation, user);
@@ -446,6 +452,15 @@ class ObservationsService {
         final firebaseUpdated = firebaseException == null && observation.uid != null;
 
         if (firebaseUpdated) {
+          // Persist the Firebase result (isUploaded + real uid) to Hive right away, before the
+          // slower/less reliable Google Sheets sync runs. Otherwise, if the app is interrupted
+          // during that sync, Hive is left showing isUploaded: false with an empty uid even though
+          // Firebase already has the doc - so any later retry re-uploads it and, because uid is
+          // still empty, mints a second Firebase doc for the same local observation.
+          if (observation.isUserObservation(user) || observation.isNonLoggedInUserObservation(user)) {
+            await saveLocalObservation(observation);
+          }
+
           final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
           final googleSheetsException = googleSheetsReturnValue.first.exception;
 

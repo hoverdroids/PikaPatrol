@@ -124,6 +124,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   // lookup immediately would spam the API (and pop the Native Land map) mid-keystroke.
   Timer? _manualCoordinatesLookupDebounce;
 
+  // Fetched fresh whenever an observation is opened in read-only (view) mode, kept only in local
+  // widget state - unlike the edit-mode flow, this is never written back onto the observation
+  // (nothing to persist for a view that doesn't save), and intentionally skips toasts/the map dialog.
+  List<Territory>? _readOnlyTerritories;
+  List<Territory>? _readOnlyLanguages;
+
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
       _colorAnimationController.animateTo(scrollInfo.metrics.pixels / 350);
@@ -139,6 +145,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   void initState() {
     _scrollController = ScrollController();
     _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
+
+    if (!widget.isEditMode) {
+      _fetchIndigenousTerritoriesForViewing();
+    }
 
     super.initState();
   }
@@ -256,6 +266,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 _isUploading = false;
                 widget.isEditMode = false;
               });
+              _fetchIndigenousTerritoriesForViewing();
             } else {
               //The following isn't required because the form will show the error messages
               //showToast(translations.fillInAllFormFields);
@@ -728,6 +739,34 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
+  // Looks up Indigenous territories/languages for a read-only observation view. Unlike
+  // _fetchAndSetIndigenousTerritories (the edit-mode flow), this never mutates the observation
+  // model and never shows a toast or the Native Land map - it just fetches quietly and updates
+  // local state so _buildIndigenousTerritoryInfo can render the result.
+  Future<void> _fetchIndigenousTerritoriesForViewing() async {
+    final observation = widget.observationViewModel.observation;
+    final latitude = observation.latitude;
+    final longitude = observation.longitude;
+    if (latitude == null || longitude == null) return;
+    if (!NativeLandService.isAvailable) return;
+
+    try {
+      final hasInternet = await isConnectedToNetwork();
+      if (!hasInternet) return;
+
+      final territories = await NativeLandService.getTerritoriesAt(latitude: latitude, longitude: longitude);
+      final languages = await NativeLandService.getLanguagesAt(latitude: latitude, longitude: longitude);
+
+      if (!mounted) return;
+      setState(() {
+        _readOnlyTerritories = territories;
+        _readOnlyLanguages = languages;
+      });
+    } catch (e) {
+      developer.log('Error fetching Indigenous territories for viewing: $e');
+    }
+  }
+
   Future<void> _maybeShowNativeLandMapForGps(double latitude, double longitude) async {
     final settings = Provider.of<SettingsService>(context, listen: false);
     final showMap = await settings.getShowIndigenousMap();
@@ -1065,20 +1104,44 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  Widget _buildIndigenousTerritoryInfo() {
-    final observation = widget.observationViewModel.observation;
-    final territories = observation.indigenousTerritories ?? <String>[];
-    final languages = observation.indigenousLanguages ?? <String>[];
+  // Entries stored on the observation are encoded as "name|||url" or just "name" for
+  // backwards compatibility.
+  MapEntry<String, String?> _decodeIndigenousEntry(String entry) {
+    final parts = entry.split('|||');
+    return MapEntry(parts[0], parts.length > 1 ? parts[1] : null);
+  }
 
-    if (territories.isEmpty && languages.isEmpty) {
+  MapEntry<String, String?> _indigenousEntryFromTerritory(Territory territory) {
+    final url = territory.properties != null && territory.properties != territory.name
+        ? territory.properties
+        : null;
+    return MapEntry(territory.name, url);
+  }
+
+  Widget _buildIndigenousTerritoryInfo() {
+    final List<MapEntry<String, String?>> territoryEntries;
+    final List<MapEntry<String, String?>> languageEntries;
+
+    if (widget.isEditMode) {
+      final observation = widget.observationViewModel.observation;
+      territoryEntries = (observation.indigenousTerritories ?? <String>[]).map(_decodeIndigenousEntry).toList();
+      languageEntries = (observation.indigenousLanguages ?? <String>[]).map(_decodeIndigenousEntry).toList();
+    } else {
+      territoryEntries = (_readOnlyTerritories ?? <Territory>[]).map(_indigenousEntryFromTerritory).toList();
+      languageEntries = (_readOnlyLanguages ?? <Territory>[]).map(_indigenousEntryFromTerritory).toList();
+    }
+
+    if (territoryEntries.isEmpty && languageEntries.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    // Entries are stored as "name|||url" or just "name" for backwards compatibility.
-    Widget entryRow(String entry, IconData icon, String category) {
-      final parts = entry.split('|||');
-      final name = parts[0];
-      final url = parts.length > 1 ? parts[1] : null;
+    // Tapping the icon opens the Native Land map, but only in edit mode - read-only viewing
+    // fetches territories/languages just to display them and shouldn't surface the map.
+    final allowMapTap = widget.isEditMode;
+
+    Widget entryRow(MapEntry<String, String?> entry, IconData icon, String category) {
+      final name = entry.key;
+      final url = entry.value;
 
       final nameWidget = url != null
           ? GestureDetector(
@@ -1103,7 +1166,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         child: Row(
           children: [
             GestureDetector(
-              onTap: () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category),
+              onTap: allowMapTap
+                  ? () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category)
+                  : null,
               child: Icon(icon, size: 32, color: Colors.grey),
             ),
             const SizedBox(width: 10),
@@ -1116,22 +1181,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (territories.isNotEmpty) ...[
+        if (territoryEntries.isNotEmpty) ...[
           ThemedSubTitle(
             translations.indigenousTerritories ?? "Indigenous Territories",
             type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...territories.map((t) => entryRow(t, Icons.map, 'territories')),
-          if (languages.isNotEmpty) smallTransparentDivider,
+          ...territoryEntries.map((t) => entryRow(t, Icons.map, 'territories')),
+          if (languageEntries.isNotEmpty) smallTransparentDivider,
         ],
-        if (languages.isNotEmpty) ...[
+        if (languageEntries.isNotEmpty) ...[
           ThemedSubTitle(
             translations.indigenousLanguages ?? "Indigenous Languages",
             type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
-          ...languages.map((l) => entryRow(l, Icons.map, 'languages')),
+          ...languageEntries.map((l) => entryRow(l, Icons.map, 'languages')),
         ],
       ],
     );

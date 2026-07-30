@@ -119,6 +119,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   bool _hideGeoFields = false;
   final bool _hideDateFields = false;
 
+  // Debounces the Indigenous territory lookup for manually-typed coordinates: onStringChangedCallback
+  // fires on every keystroke, and both latitude and longitude are separate fields, so firing the
+  // lookup immediately would spam the API (and pop the Native Land map) mid-keystroke.
+  Timer? _manualCoordinatesLookupDebounce;
+
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
       _colorAnimationController.animateTo(scrollInfo.metrics.pixels / 350);
@@ -140,6 +145,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   @override
   void dispose() {
+    _manualCoordinatesLookupDebounce?.cancel();
     assetsAudioPlayer.dispose();
     _scrollController.dispose();
     _colorAnimationController.dispose();
@@ -495,7 +501,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     text: editLatitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.latitude = double.parse(value) },
+                    onStringChangedCallback: (value) => _onManualCoordinateChanged(latitude: value),
                     validator: (value) => isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
@@ -523,7 +529,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     text: editLongitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.longitude = double.parse(value) },
+                    onStringChangedCallback: (value) => _onManualCoordinateChanged(longitude: value),
                     validator: (value) => isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
@@ -566,6 +572,38 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         )
       ],
     );
+  }
+
+  // Mirrors what happens after a GPS fix (_getCurrentPositionAndUpdateUi): once both latitude and
+  // longitude are valid numbers, look up Indigenous territories/languages and optionally show the
+  // Native Land map, same as the automatic flow. Debounced because onStringChangedCallback fires on
+  // every keystroke and latitude/longitude are edited as two separate fields.
+  void _onManualCoordinateChanged({String? latitude, String? longitude}) {
+    final observation = widget.observationViewModel.observation;
+
+    if (latitude != null) {
+      final parsed = double.tryParse(latitude);
+      if (parsed == null) return;
+      observation.latitude = parsed;
+    }
+
+    if (longitude != null) {
+      final parsed = double.tryParse(longitude);
+      if (parsed == null) return;
+      observation.longitude = parsed;
+    }
+
+    _manualCoordinatesLookupDebounce?.cancel();
+    _manualCoordinatesLookupDebounce = Timer(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+
+      final currentLatitude = observation.latitude;
+      final currentLongitude = observation.longitude;
+      if (currentLatitude == null || currentLongitude == null) return;
+
+      _fetchAndSetIndigenousTerritories(currentLatitude, currentLongitude);
+      _maybeShowNativeLandMapForGps(currentLatitude, currentLongitude);
+    });
   }
 
   _getCurrentPositionAndUpdateUi() async {

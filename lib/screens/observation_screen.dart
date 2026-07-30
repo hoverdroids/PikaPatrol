@@ -242,6 +242,19 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           if (!widget.isEditMode) {
             setState(() {
               widget.isEditMode = true;
+
+              // Entering edit mode switches the territories/languages display over to the
+              // observation's own fields (since edit mode lets those change via GPS/manual
+              // coordinates). Seed them from what read-only viewing already fetched so the
+              // list doesn't disappear for observations that predate this feature or were
+              // never re-geocoded in edit mode.
+              final observation = widget.observationViewModel.observation;
+              if ((observation.indigenousTerritories?.isEmpty ?? true) && (_readOnlyTerritories?.isNotEmpty ?? false)) {
+                observation.indigenousTerritories = _encodeIndigenousEntries(_readOnlyTerritories!);
+              }
+              if ((observation.indigenousLanguages?.isEmpty ?? true) && (_readOnlyLanguages?.isNotEmpty ?? false)) {
+                observation.indigenousLanguages = _encodeIndigenousEntries(_readOnlyLanguages!);
+              }
             });
           } else {
             if (_formKey.currentState?.validate() == true) {
@@ -688,20 +701,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       if (territories.isNotEmpty || languages.isNotEmpty) {
         setState(() {
           final observation = widget.observationViewModel.observation;
-          
-          // Store territory names and URLs encoded as "name|||url"
-          observation.indigenousTerritories = territories
-              .map((t) => t.properties != null && t.properties != t.name
-                  ? '${t.name}|||${t.properties}'
-                  : t.name)
-              .toList();
-
-          // Store language names and URLs encoded as "name|||url"
-          observation.indigenousLanguages = languages
-              .map((l) => l.properties != null && l.properties != l.name
-                  ? '${l.name}|||${l.properties}'
-                  : l.name)
-              .toList();
+          observation.indigenousTerritories = _encodeIndigenousEntries(territories);
+          observation.indigenousLanguages = _encodeIndigenousEntries(languages);
         });
 
         // Show toast with found territories and languages
@@ -1118,6 +1119,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     return MapEntry(territory.name, url);
   }
 
+  // Encodes territories/languages as "name|||url" (or just "name") to match the format
+  // persisted on the observation and understood by _decodeIndigenousEntry.
+  List<String> _encodeIndigenousEntries(List<Territory> entries) {
+    return entries
+        .map((e) => e.properties != null && e.properties != e.name ? '${e.name}|||${e.properties}' : e.name)
+        .toList();
+  }
+
   Widget _buildIndigenousTerritoryInfo() {
     final List<MapEntry<String, String?>> territoryEntries;
     final List<MapEntry<String, String?>> languageEntries;
@@ -1134,10 +1143,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     if (territoryEntries.isEmpty && languageEntries.isEmpty) {
       return const SizedBox.shrink();
     }
-
-    // Tapping the icon opens the Native Land map, but only in edit mode - read-only viewing
-    // fetches territories/languages just to display them and shouldn't surface the map.
-    final allowMapTap = widget.isEditMode;
 
     Widget entryRow(MapEntry<String, String?> entry, IconData icon, String category) {
       final name = entry.key;
@@ -1166,9 +1171,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         child: Row(
           children: [
             GestureDetector(
-              onTap: allowMapTap
-                  ? () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category)
-                  : null,
+              onTap: () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category),
               child: Icon(icon, size: 32, color: Colors.grey),
             ),
             const SizedBox(width: 10),

@@ -239,7 +239,11 @@ class NativeLandService {
           continue;
         }
 
-        final decoded = jsonDecode(response.body);
+        // Native Land's API doesn't send a charset in Content-Type, so
+        // http's response.body falls back to Latin-1 and mangles the
+        // multi-byte UTF-8 diacritics/apostrophes in territory/language
+        // names. Decode the raw bytes as UTF-8 explicitly instead.
+        final decoded = jsonDecode(utf8.decode(response.bodyBytes));
         if (decoded is! List || decoded.isEmpty) {
           continue;
         }
@@ -300,7 +304,8 @@ class NativeLandService {
       );
 
       if (response.statusCode == 200) {
-        final results = _parseTerritories(response.body);
+        // Decode as UTF-8 explicitly; see note in resolveMapSelection above.
+        final results = _parseTerritories(utf8.decode(response.bodyBytes));
         developer.log('[NativeLandService] territories result: ${results.length} item(s)');
         return results;
       } else if (response.statusCode == 404) {
@@ -346,7 +351,8 @@ class NativeLandService {
       );
 
       if (response.statusCode == 200) {
-        return _parseTerritories(response.body);
+        // Decode as UTF-8 explicitly; see note in resolveMapSelection above.
+        return _parseTerritories(utf8.decode(response.bodyBytes));
       } else if (response.statusCode == 404) {
         return [];
       } else if (response.statusCode == 401 || response.statusCode == 403) {

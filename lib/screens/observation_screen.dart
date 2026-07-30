@@ -849,51 +849,77 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..loadRequest(Uri.parse(mapUrl));
 
+    final settings = Provider.of<SettingsService>(context, listen: false);
+    var autoOpenMap = await settings.getShowIndigenousMap();
+    if (!mounted) return;
+
     await showDialog(
       context: context,
       builder: (dialogContext) {
-        return Dialog(
-          insetPadding: EdgeInsets.zero,
-          clipBehavior: Clip.hardEdge,
-          child: SafeArea(
-            child: Column(
-              children: [
-                // Controls row above the map
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: Row(
-                    children: [
-                      if (latitude != null && longitude != null) ...[
-                        const Icon(Icons.my_location, size: 16),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            selectionName == null
-                                ? 'GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}'
-                                : '$selectionName — GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}',
-                            style: const TextStyle(fontSize: 12),
-                            overflow: TextOverflow.ellipsis,
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return Dialog(
+              insetPadding: EdgeInsets.zero,
+              clipBehavior: Clip.hardEdge,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Controls row above the map
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          if (latitude != null && longitude != null) ...[
+                            const Icon(Icons.my_location, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                selectionName == null
+                                    ? 'GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}'
+                                    : '$selectionName — GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}',
+                                style: const TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ] else
+                            const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            tooltip: 'Close',
                           ),
-                        ),
-                      ] else
-                        const Spacer(),
-                      IconButton(
-                        icon: const Icon(Icons.close),
-                        onPressed: () => Navigator.of(dialogContext).pop(),
-                        tooltip: 'Close',
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const Divider(height: 1),
+                    // Map fills the rest
+                    Expanded(
+                      child: WebViewWidget(controller: controller),
+                    ),
+                    const Divider(height: 1),
+                    Container(
+                      color: Colors.white,
+                      child: CheckboxListTile(
+                        dense: true,
+                        activeColor: Colors.teal,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: const Text('Automatically open map'),
+                        value: autoOpenMap,
+                        onChanged: (enabled) async {
+                          final newValue = enabled ?? false;
+                          setDialogState(() {
+                            autoOpenMap = newValue;
+                          });
+                          await settings.setShowIndigenousMap(newValue);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
-                const Divider(height: 1),
-                // Map fills the rest
-                Expanded(
-                  child: WebViewWidget(controller: controller),
-                ),
-              ],
-            ),
-          ),
+              ),
+            );
+          },
         );
       },
     );

@@ -65,8 +65,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   final Key _editProfileNullKey = UniqueKey();
   final Key _profileKey = UniqueKey();
   final Key _nullProfileKey = UniqueKey();
-  final Key _leftDrawerKey = UniqueKey();
-  final Key _nullLeftDrawerKey = UniqueKey();
 
   //TODO - replace the following with liquidController eventually
   PageController pageController = PageController(initialPage: initialPage);
@@ -76,7 +74,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   bool loading = false;
   bool isEditingProfile = false;
   bool userAckedGeoTracking = false;
-  bool showIndigenousMapPreference = true;
 
   String appVersion = '';
 
@@ -105,7 +102,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
   @override
   void initState() {
     super.initState();
-    _loadLocalPreferences();
     _loadAppVersion();
   }
 
@@ -161,15 +157,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         await observationsService.uploadPendingLocalObservations(user);
       }
     }
-  }
-
-  Future<void> _loadLocalPreferences() async {
-    final settings = Provider.of<SettingsService>(context, listen: false);
-    final showMap = await settings.getShowIndigenousMap();
-    if (!mounted) return;
-    setState(() {
-      showIndigenousMapPreference = showMap;
-    });
   }
 
   @override
@@ -330,6 +317,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
     var canInitializeGoogleSheets = userProfile?.tagline == "initializer";
 
+    final settingsService = Provider.of<SettingsService>(context);
+    final showIndigenousMapPreference = settingsService.showIndigenousMap;
+    final showSplashScreenPreference = settingsService.showSplashScreen;
+
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
       widthPercent: .92,
@@ -355,6 +346,27 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             }),
             ListItemModel(title: translations.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(translations.mapOfPikaObservationsUrl ?? "")),
             ListItemModel(title: translations.takeClimateAction, itemClickedCallback: () => launchInBrowser(translations.takeClimateActionUrl ?? "")),
+            ListItemModel(title: "User Settings", titleType: ThemeGroupType.SOM),
+            ListItemModel(
+              title: "Show Indigenous map",
+              subtitle: "Automatically open the Native Land map after Get GPS",
+              margin: indentationLevel1,
+              trailingIcon: showIndigenousMapPreference ? Icons.check_box : Icons.check_box_outline_blank,
+              trailingIconType: ThemeGroupType.POM,
+              trailingEmphasis: Emphasis.HIGH,
+              trailingIconClickedCallback: () => settingsService.setShowIndigenousMap(!showIndigenousMapPreference),
+              itemClickedCallback: () => settingsService.setShowIndigenousMap(!showIndigenousMapPreference),
+            ),
+            ListItemModel(
+              title: "Show splash screen",
+              subtitle: "Show the sponsor intro screens when the app opens",
+              margin: indentationLevel1,
+              trailingIcon: showSplashScreenPreference ? Icons.check_box : Icons.check_box_outline_blank,
+              trailingIconType: ThemeGroupType.POM,
+              trailingEmphasis: Emphasis.HIGH,
+              trailingIconClickedCallback: () => settingsService.setShowSplashScreen(!showSplashScreenPreference),
+              itemClickedCallback: () => settingsService.setShowSplashScreen(!showSplashScreenPreference),
+            ),
             ListItemModel(title: translations.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
             ListItemModel(title: translations.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(translations.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
@@ -373,7 +385,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               /*TODO - CHRIS - show user profiles so that they can be delted or have admin access granted. the later will require me interacting with node.js scripts locally*/
             ],
           ],
-          key: userProfile == null ? _nullLeftDrawerKey: _leftDrawerKey,
+          // HeaderList caches listItems in initState and never refreshes it in didUpdateWidget, so a
+          // stable key would leave the checkbox rows permanently showing their first-render state.
+          // Keying on the values that actually change forces a full remount to pick up the update.
+          key: ValueKey('${userProfile == null}-$showIndigenousMapPreference-$showSplashScreenPreference'),
           imageUrl: "assets/images/pika3.jpg",
           avatarImageUrl: "assets/images/pika4.jpg",
           avatarTitle: avatarTitle,
@@ -430,27 +445,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     AppUser? user,
     AppUserProfile? userProfile,
   ) {
-    return Column(
-      children: [
-        Expanded(
-          child: buildProfileScreen(context, firebaseAuthService, firebaseDatabaseService, user, userProfile),
-        ),
-        Card(
-          margin: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-          child: SwitchListTile(
-            title: const Text("Show Indigenous map"),
-            subtitle: const Text("Show Native Land map after Get GPS when internet is available."),
-            value: showIndigenousMapPreference,
-            onChanged: (enabled) async {
-              setState(() {
-                showIndigenousMapPreference = enabled;
-              });
-              await Provider.of<SettingsService>(context, listen: false).setShowIndigenousMap(enabled);
-            },
-          ),
-        ),
-      ],
-    );
+    return buildProfileScreen(context, firebaseAuthService, firebaseDatabaseService, user, userProfile);
   }
 
   Widget buildProfileScreen(

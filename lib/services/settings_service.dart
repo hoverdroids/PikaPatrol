@@ -11,6 +11,7 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
   static const String PREFERENCE_LANGUAGE_CODE = "languageCode";
   static const String PREFERENCE_IS_ADMIN = "isAdmin";
   static const String PREFERENCE_SHOW_INDIGENOUS_MAP = "showIndigenousMap";
+  static const String PREFERENCE_SHOW_SPLASH_SCREEN = "showSplashScreen";
 
   SettingsService() {
     init();
@@ -20,6 +21,16 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
   Locale get locale => _locale;
   set locale(Locale locale) {
     _locale = locale;
+    notifyListeners();
+  }
+
+  bool _showSplashScreen = true;
+  bool get showSplashScreen => _showSplashScreen;
+
+  Future<void> setShowSplashScreen(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(PREFERENCE_SHOW_SPLASH_SCREEN, enabled);
+    _showSplashScreen = enabled;
     notifyListeners();
   }
 
@@ -43,14 +54,16 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
     await prefs.setBool(PREFERENCE_IS_ADMIN, isAdmin);
   }
 
-  Future<bool> getShowIndigenousMap() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(PREFERENCE_SHOW_INDIGENOUS_MAP) ?? true;
-  }
+  bool _showIndigenousMap = true;
+  bool get showIndigenousMap => _showIndigenousMap;
+
+  Future<bool> getShowIndigenousMap() async => _showIndigenousMap;
 
   Future<void> setShowIndigenousMap(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(PREFERENCE_SHOW_INDIGENOUS_MAP, enabled);
+    _showIndigenousMap = enabled;
+    notifyListeners();
   }
 
   updateLocale(Locale locale) async {
@@ -63,5 +76,8 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
     final prefs = await SharedPreferences.getInstance();
     String languageCode = prefs.getString(PREFERENCE_LANGUAGE_CODE) ?? L10n.ENGLISH.languageCode;
     locale = Locale(languageCode);
+    _showSplashScreen = prefs.getBool(PREFERENCE_SHOW_SPLASH_SCREEN) ?? true;
+    _showIndigenousMap = prefs.getBool(PREFERENCE_SHOW_INDIGENOUS_MAP) ?? true;
+    notifyListeners();
   }
 }

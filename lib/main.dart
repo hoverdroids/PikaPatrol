@@ -4,6 +4,7 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
 import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
@@ -74,6 +75,12 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Read this ahead of runApp() so MyApp knows on its very first build whether to show the
+  // splash screens - by the time SettingsService's own (async) load finishes, the Navigator has
+  // already built its initial route and switching MaterialApp's `home` afterward has no effect.
+  final prefs = await SharedPreferences.getInstance();
+  final showSplashScreen = prefs.getBool(SettingsService.PREFERENCE_SHOW_SPLASH_SCREEN) ?? true;
 
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
@@ -176,7 +183,7 @@ Future<void> main() async {
                                             value: googleSheetsCredentials
                                         )
                                       ],
-                                      child: const MyApp()
+                                      child: MyApp(showSplashScreen: showSplashScreen)
                                   );
                                 }
                               );

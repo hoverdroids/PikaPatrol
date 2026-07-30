@@ -118,7 +118,7 @@
   "ifThen": "IF/THEN",
   "ifThenUrl": "http://www.ifthenshecan.org/",
   "canadianPikaProject": "Canadian Pika Project",
-  "canadianPikaProjectUrl": "",
+  "canadianPikaProjectUrl": "https://blogs.ubc.ca/russellolab/canadian-pika-project/",
   "appVersion": "Version de l'application",
   "ok": "OK",
   "couldNotSignInWithThoseCredentials": "Impossible de se connecter avec ces identifiants",

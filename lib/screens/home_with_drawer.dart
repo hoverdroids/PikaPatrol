@@ -1,16 +1,17 @@
 // ignore_for_file: depend_on_referenced_packages
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:dash_flags/dash_flags.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:language_code_icons/language_code_icons.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/appbars/icon_title_icon_icon_appbar.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/drawers/simple_clip_path_drawer.dart';
 import 'package:material_themes_widgets/forms/loading.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
+import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/lists/header_list.dart';
 import 'package:material_themes_widgets/lists/list_item_model.dart';
 import 'package:material_themes_widgets/screens/login_register_screen.dart';
@@ -223,25 +224,51 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   PreferredSizeWidget buildAppBar(BuildContext context) {
     var locale = Provider.of<SettingsService>(context, listen: true).locale;
-    var localeIcon = locale == L10n.ENGLISH ? LanguageCodeIcons.EN : LanguageCodeIcons.ES;
+    var language = Language.fromCode(locale.languageCode);
 
-    return IconTitleIconIconAppBar(
-      title: translations.appName,
-      titleType: ThemeGroupType.MOP,
-      leftIconClickedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
-      leftIconType: ThemeGroupType.MOP,
-      rightIconClickedCallback: (){ _scaffoldKey.currentState?.openEndDrawer(); },
-      rightIconType: ThemeGroupType.MOP,
-      rightIcon2: localeIcon,
-      rightIcon2ClickedCallback: (){ _toggleLanguage(); },
-      rightIcon2Type: ThemeGroupType.MOP,
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0.0,
+      centerTitle: true,
+      leading: ThemedIconButton(
+        Icons.menu,
+        type: ThemeGroupType.MOP,
+        emphasis: Emphasis.HIGH,
+        onPressedCallback: (){ _scaffoldKey.currentState?.openDrawer(); },
+      ),
+      title: ThemedTitle(
+        translations.appName,
+        type: ThemeGroupType.MOP,
+        emphasis: Emphasis.HIGH,
+      ),
+      actions: <Widget>[
+        IconButton(
+          tooltip: locale.languageCode,
+          onPressed: (){ _toggleLanguage(); },
+          icon: LanguageFlag(language: language, height: 24),
+        ),
+        ThemedIconButton(
+          Icons.account_circle,
+          type: ThemeGroupType.MOP,
+          emphasis: Emphasis.HIGH,
+          onPressedCallback: (){ _scaffoldKey.currentState?.openEndDrawer(); },
+        ),
+      ],
     );
   }
 
   _toggleLanguage() async {
     var settingsService = Provider.of<SettingsService>(context, listen: false);
     var locale = settingsService.locale;
-    settingsService.updateLocale(locale == L10n.ENGLISH ? L10n.SPANISH : L10n.ENGLISH);
+    Locale nextLocale;
+    if (locale == L10n.ENGLISH) {
+      nextLocale = L10n.SPANISH;
+    } else if (locale == L10n.SPANISH) {
+      nextLocale = L10n.FRENCH;
+    } else {
+      nextLocale = L10n.ENGLISH;
+    }
+    settingsService.updateLocale(nextLocale);
   }
 
   Widget buildBody(BuildContext context, double width) {

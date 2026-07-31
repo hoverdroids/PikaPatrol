@@ -917,14 +917,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.8.1"
-  language_code_icons:
-    dependency: "direct main"
-    description:
-      name: language_code_icons
-      sha256: "49e8b6bda5e89ff6d07faaa831f90f97021efc4af2d811e7c1fbdab8542005a9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.0"
   leak_tracker:
     dependency: transitive
     description:

@@ -12,6 +12,12 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
   static const String PREFERENCE_IS_ADMIN = "isAdmin";
   static const String PREFERENCE_SHOW_INDIGENOUS_MAP = "showIndigenousMap";
   static const String PREFERENCE_SHOW_SPLASH_SCREEN = "showSplashScreen";
+  static const String PREFERENCE_UNITS = "units";
+  static const String PREFERENCE_DEFAULT_OBSERVATION_TEMPLATE = "defaultObservationTemplate";
+  static const String PREFERENCE_SHOW_HINTS = "showHints";
+
+  static const String UNITS_IMPERIAL = "imperial";
+  static const String UNITS_METRIC = "metric";
 
   SettingsService() {
     init();
@@ -66,6 +72,41 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
     notifyListeners();
   }
 
+  //Whether choice fields that offer hints (e.g. talus area sizes as tennis court/football field
+  //comparisons) show them; persisted so the user's choice sticks across observations and sessions.
+  bool _showHints = false;
+  bool get showHints => _showHints;
+
+  Future<void> setShowHints(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(PREFERENCE_SHOW_HINTS, enabled);
+    _showHints = enabled;
+    notifyListeners();
+  }
+
+  String _units = UNITS_IMPERIAL;
+  String get units => _units;
+  bool get isMetric => _units == UNITS_METRIC;
+
+  Future<void> setUnits(String units) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PREFERENCE_UNITS, units);
+    _units = units;
+    notifyListeners();
+  }
+
+  // The default observation template, stored as JSON; see observation_utils.dart for the
+  // Observation encode/decode helpers.
+  String? _defaultObservationTemplateJson;
+  String? get defaultObservationTemplateJson => _defaultObservationTemplateJson;
+
+  Future<void> setDefaultObservationTemplateJson(String json) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(PREFERENCE_DEFAULT_OBSERVATION_TEMPLATE, json);
+    _defaultObservationTemplateJson = json;
+    notifyListeners();
+  }
+
   updateLocale(Locale locale) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(PREFERENCE_LANGUAGE_CODE, locale.languageCode);
@@ -78,6 +119,9 @@ class SettingsService with ChangeNotifier, DiagnosticableTreeMixin {
     locale = Locale(languageCode);
     _showSplashScreen = prefs.getBool(PREFERENCE_SHOW_SPLASH_SCREEN) ?? true;
     _showIndigenousMap = prefs.getBool(PREFERENCE_SHOW_INDIGENOUS_MAP) ?? true;
+    _units = prefs.getString(PREFERENCE_UNITS) ?? UNITS_IMPERIAL;
+    _showHints = prefs.getBool(PREFERENCE_SHOW_HINTS) ?? false;
+    _defaultObservationTemplateJson = prefs.getString(PREFERENCE_DEFAULT_OBSERVATION_TEMPLATE);
     notifyListeners();
   }
 }

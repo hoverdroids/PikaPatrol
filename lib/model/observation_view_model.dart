@@ -33,13 +33,14 @@ class ObservationViewModel {
   //region Distance to closest pika
   List<String> getDistanceToClosestPikaDefaults() => translations.distanceToClosestPikaDefaultValues;
 
-  String getDistanceToClosestPikaLabel(int index, String value) {
+  String getDistanceToClosestPikaLabel(int index, String value, {bool metric = false}) {
     var defaultIndex = getDistanceToClosestPikaDefaults().indexOf(value);
     if (defaultIndex == -1) {
       //Can't find the animal in the defaults, so, can't translate it
       return value;
     }
-    return translations.get(translations.distanceToClosestPikaKeys[defaultIndex]);
+    var key = translations.distanceToClosestPikaKeys[defaultIndex];
+    return translations.get(metric ? "${key}Metric" : key);
   }
 
   List<String> getDistanceToClosestPikaValues() {
@@ -153,14 +154,16 @@ class ObservationViewModel {
 
   List<String> getTalusAreaHintsDefaults() => translations.talusAreaHintsDefaultValues;
 
-  String getTalusAreaLabel(int index, String value, bool showHints) {
+  String getTalusAreaLabel(int index, String value, bool showHints, {bool metric = false}) {
     var defaultIndex = getTalusAreaDefaults().indexOf(value);
     if (defaultIndex == -1) {
       //Can't find the animal in the defaults, so, can't translate it
       return value;
     }
     var keys = showHints ? translations.talusAreaHintsKeys : translations.talusAreaKeys;
-    return translations.get(keys[defaultIndex]);
+    var key = keys[defaultIndex];
+    //Hints (tennis court, football field, etc.) aren't unit-based, so only the area labels have metric variants
+    return translations.get(!showHints && metric ? "${key}Metric" : key);
   }
 
   List<String> getTalusAreaValues() {
@@ -174,13 +177,14 @@ class ObservationViewModel {
   //region Temperature
   List<String> getTemperatureDefaults() => translations.temperatureDefaultValues;
 
-  String getTemperatureLabel(int index, String value) {
+  String getTemperatureLabel(int index, String value, {bool metric = false}) {
     var defaultIndex = getTemperatureDefaults().indexOf(value);
     if (defaultIndex == -1) {
       //Can't find the animal in the defaults, so, can't translate it
       return value;
     }
-    return translations.get(translations.temperatureKeys[defaultIndex]);
+    var key = translations.temperatureKeys[defaultIndex];
+    return translations.get(metric ? "${key}Metric" : key);
   }
 
   List<String> getTemperatureValues() {

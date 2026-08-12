@@ -56,9 +56,15 @@ import 'home_with_drawer.dart';
 class ObservationScreen extends StatefulWidget {
 
   final ObservationViewModel observationViewModel;
+
+  //When true, this screen edits the default observation template (the values applied to every new
+  //observation) instead of a real observation: images/audio are hidden and saving writes the
+  //template to preferences rather than uploading.
+  final bool isTemplate;
+
   late bool isEditMode;
 
-  ObservationScreen(this.observationViewModel, {super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
+  ObservationScreen(this.observationViewModel, {this.isTemplate = false, super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
     //When opening after a user clicks a card, show a previously created observation in viewing mode.
     //When opening after a user clicks the add observation button, show a new observation in edit mode.
     isEditMode = observationViewModel.observation.isNewObservation();
@@ -119,6 +125,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   bool _hideGeoFields = false;
   final bool _hideDateFields = false;
 
+  // Display-only units preference; backing data is unchanged by this choice (altitude is always
+  // stored in meters, and the choice values for distance/talus/temperature are always stored as
+  // their imperial English strings).
+  bool _isMetric = false;
+
   // Debounces the Indigenous territory lookup for manually-typed coordinates: onStringChangedCallback
   // fires on every keystroke, and both latitude and longitude are separate fields, so firing the
   // lookup immediately would spam the API (and pop the Native Land map) mid-keystroke.
@@ -165,6 +176,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   @override
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
+    final settingsService = Provider.of<SettingsService>(context);
+    _isMetric = settingsService.isMetric;
+    showTalusAreaHints = settingsService.showHints;
 
     final user = Provider.of<AppUser?>(context);
 
@@ -192,13 +206,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     _buildHeaderImage(context),
                     _buildHeader(),
                     _buildFields(),
-                    smallTransparentDivider,
-                    _buildImages(
-                        context.watch<MaterialThemesManager>().colorPalette().primary,
-                        context.watch<MaterialThemesManager>().colorPalette().primary
-                    ),
-                    smallTransparentDivider,
-                    _buildAudioRecordings(),
+                    if (!widget.isTemplate) ... [
+                      smallTransparentDivider,
+                      _buildImages(
+                          context.watch<MaterialThemesManager>().colorPalette().primary,
+                          context.watch<MaterialThemesManager>().colorPalette().primary
+                      ),
+                      smallTransparentDivider,
+                      _buildAudioRecordings(),
+                    ],
                     if (showDeleteButton) ... [
                       _buildDeleteButtonForForm(context)
                     ],
@@ -230,7 +246,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),
         backgroundColor: _colorTween.value,
-        title: translations.makeObservation,
+        title: widget.isTemplate ? translations.defaultObservation : translations.makeObservation,
         titleType: ThemeGroupType.MOS,
         leftIcon: Icons.arrow_back,
         leftIconType: ThemeGroupType.MOS,
@@ -259,6 +275,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           } else {
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
+
+              if (widget.isTemplate) {
+                //Persist the template values instead of uploading an observation
+                final settingsService = Provider.of<SettingsService>(context, listen: false);
+                await settingsService.setDefaultObservationTemplateJson(widget.observationViewModel.observation.toTemplateJson());
+                showToast(translations.defaultObservationSaved);
+                if (context.mounted) Navigator.pop(context);
+                return;
+              }
 
               setState((){
                 _isUploading = true;
@@ -303,7 +328,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildHeaderImage(BuildContext context) => GestureDetector(
-    onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
+    //The template stores no images, so don't let the user pick one from its page
+    onTap: () => widget.isEditMode && !widget.isTemplate ? _openFileExplorer(true, FileType.image, [], true) : {},
     child: SizedBox(
       height: 330,
       child: Stack(
@@ -320,19 +346,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               child: _buildImage(),
             ),
           ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: RawMaterialButton(
-                //padding: EdgeInsets.all(0.0),
-                //elevation: 12.0,
-                onPressed: () => developer.log('Play Video'),
-                shape: const CircleBorder(),
-                fillColor: Colors.white,
-                child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
+          //The template stores no audio, so don't show its record button
+          if (!widget.isTemplate) ... [
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RawMaterialButton(
+                  //padding: EdgeInsets.all(0.0),
+                  //elevation: 12.0,
+                  onPressed: () => developer.log('Play Video'),
+                  shape: const CircleBorder(),
+                  fillColor: Colors.white,
+                  child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
+                ),
               ),
             ),
-          ),
+          ],
           /*Positioned( //TODO
             bottom: 10.0,
             left: 10.0,
@@ -470,11 +499,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   Widget _buildImage() {
     var imageUrls = widget.observationViewModel.observation.imageUrls ?? <String>[];
     if(imageUrls.isEmpty) {
-      return const Image(
+      //The template page doesn't allow adding images, so show a pika instead of the +image prompt
+      return Image(
         height: 300.0,
         width: double.infinity,
         fit: BoxFit.cover,
-        image: AssetImage("assets/images/add_image.png"),
+        image: AssetImage(widget.isTemplate ? "assets/images/pika3.jpg" : "assets/images/add_image.png"),
       );
     } else if(imageUrls[0].contains("https://")) {
       return Image.network(
@@ -501,8 +531,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     String editLongitude = observation.longitude?.toStringAsFixed(5) ?? "";
 
     double? altMeters = observation.altitudeInMeters;
-    String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
-    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";    //Editable altitude is full length
+    String altitudeDisplay = altMeters != null ? (_isMetric ? altMeters : metersToFeet(altMeters)).toStringAsFixed(2) : "";//Display altitude is shortened
+    String editAltitudeDisplay = altitudeDisplay;    //Editable altitude is full length
 
     return Row(
       children: <Widget>[
@@ -526,7 +556,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => _onManualCoordinateChanged(latitude: value),
-                    validator: (value) => isValidGeo(value, translations.latitude),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -554,7 +584,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) => _onManualCoordinateChanged(longitude: value),
-                    validator: (value) => isValidGeo(value, translations.longitude),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -569,26 +599,28 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerLeft,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle(translations.altitude, type: ThemeGroupType.POM),
+                ThemedSubTitle(_isMetric ? translations.altitudeMetric : translations.altitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeDisplay, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ] else if (widget.isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: editAltitudeInMeters,
+                    text: editAltitudeDisplay,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) {
-                      var altitudeInFeet = double.parse(value);
-                      widget.observationViewModel.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
+                      //tryParse so that clearing the field (or typing mid-edit garbage) clears the
+                      //value instead of throwing; in normal mode the validator still requires a number
+                      var altitude = double.tryParse(value);
+                      widget.observationViewModel.observation.altitudeInMeters = altitude == null ? null : (_isMetric ? altitude : feetToMeters(altitude));
                     },
-                    validator: (value) => isValidGeo(value, translations.altitude),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.altitude),
                   )
                 ] else ...[
-                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeDisplay, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
               ],
             ),
@@ -606,12 +638,21 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     final observation = widget.observationViewModel.observation;
 
     if (latitude != null) {
+      if (latitude.trim().isEmpty) {
+        //Clearing the field clears the value (e.g. removing a default from the observation template)
+        observation.latitude = null;
+        return;
+      }
       final parsed = double.tryParse(latitude);
       if (parsed == null) return;
       observation.latitude = parsed;
     }
 
     if (longitude != null) {
+      if (longitude.trim().isEmpty) {
+        observation.longitude = null;
+        return;
+      }
       final parsed = double.tryParse(longitude);
       if (parsed == null) return;
       observation.longitude = parsed;
@@ -993,7 +1034,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               textType: ThemeGroupType.POM,
               hintText: translations.siteName,
               onStringChangedCallback: (value) => { widget.observationViewModel.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, translations.siteName, true),
+              //The template is all optional - it only pre-fills new observations
+              validator: (value) => widget.isTemplate ? null : nonEmptyValidator(value, translations.siteName, true),
             )
           ] else ... [
             ThemedH5(widget.observationViewModel.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
@@ -1634,7 +1676,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             choiceItems: C2Choice.listFrom<String, String>(
               source: widget.observationViewModel.getDistanceToClosestPikaValues(),
               value: (i, v) => v,
-              label: (i, v) => widget.observationViewModel.getDistanceToClosestPikaLabel(i, v),
+              label: (i, v) => widget.observationViewModel.getDistanceToClosestPikaLabel(i, v, metric: _isMetric),
               tooltip: (i, v) => v,
             )
         )
@@ -1668,7 +1710,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  bool showTalusAreaHints = false;
+  bool showTalusAreaHints = false;//seeded from the persisted preference in build
   Widget _buildTalusAreaChoices() {
 
     return Column(
@@ -1686,6 +1728,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 value: showTalusAreaHints,
                 onChanged: (boolVal) {
                   setState(() => showTalusAreaHints = boolVal);
+                  //Persist so the choice sticks across observations and app restarts
+                  Provider.of<SettingsService>(context, listen: false).setShowHints(boolVal);
                 }
             )
           ],
@@ -1702,8 +1746,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             choiceItems: C2Choice.listFrom<String, String>(
               source: widget.observationViewModel.getTalusAreaValues(),
               value: (i, v) => v,
-              label: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
-              tooltip: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
+              label: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints, metric: _isMetric),
+              tooltip: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints, metric: _isMetric),
             )
         )
       ],
@@ -1729,7 +1773,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceItems: C2Choice.listFrom<String, String>(
             source: widget.observationViewModel.getTemperatureValues(),
             value: (i, v) => v,
-            label: (i, v) => widget.observationViewModel.getTemperatureLabel(i, v),
+            label: (i, v) => widget.observationViewModel.getTemperatureLabel(i, v, metric: _isMetric),
             tooltip: (i, v) => v,
           )
         )

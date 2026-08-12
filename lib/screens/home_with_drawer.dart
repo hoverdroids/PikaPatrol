@@ -21,7 +21,6 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:pika_patrol/model/app_user.dart';
 import 'package:pika_patrol/model/app_user_profile.dart';
-import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
@@ -29,6 +28,7 @@ import 'package:pika_patrol/services/firebase_user_profiles_database_service.dar
 import 'package:pika_patrol/services/google_sheets_service.dart';
 import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
+import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
@@ -347,6 +347,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     final settingsService = Provider.of<SettingsService>(context);
     final showIndigenousMapPreference = settingsService.showIndigenousMap;
     final showSplashScreenPreference = settingsService.showSplashScreen;
+    final isMetricPreference = settingsService.isMetric;
 
     return SimpleClipPathDrawer(
       padding: EdgeInsets.fromLTRB(0, 0, 0, bottom),
@@ -373,10 +374,10 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             }),
             ListItemModel(title: translations.mapOfPikaObservations, itemClickedCallback: () => launchInBrowser(translations.mapOfPikaObservationsUrl ?? "")),
             ListItemModel(title: translations.takeClimateAction, itemClickedCallback: () => launchInBrowser(translations.takeClimateActionUrl ?? "")),
-            ListItemModel(title: "User Settings", titleType: ThemeGroupType.SOM),
+            ListItemModel(title: translations.userSettings, titleType: ThemeGroupType.SOM),
             ListItemModel(
-              title: "Show Indigenous map",
-              subtitle: "Automatically open the Native Land map after Get GPS",
+              title: translations.indigenousMap,
+              subtitle: translations.indigenousMapDescription,
               margin: indentationLevel1,
               trailingIcon: showIndigenousMapPreference ? Icons.check_box : Icons.check_box_outline_blank,
               trailingIconType: ThemeGroupType.POM,
@@ -385,14 +386,39 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               itemClickedCallback: () => settingsService.setShowIndigenousMap(!showIndigenousMapPreference),
             ),
             ListItemModel(
-              title: "Show splash screen",
-              subtitle: "Show the sponsor intro screens when the app opens",
+              title: translations.splashScreen,
+              subtitle: translations.splashScreenDescription,
               margin: indentationLevel1,
               trailingIcon: showSplashScreenPreference ? Icons.check_box : Icons.check_box_outline_blank,
               trailingIconType: ThemeGroupType.POM,
               trailingEmphasis: Emphasis.HIGH,
               trailingIconClickedCallback: () => settingsService.setShowSplashScreen(!showSplashScreenPreference),
               itemClickedCallback: () => settingsService.setShowSplashScreen(!showSplashScreenPreference),
+            ),
+            ListItemModel(title: translations.units, margin: indentationLevel1),
+            ListItemModel(
+              title: "${translations.imperial} (${translations.feet})",
+              margin: indentationLevel2,
+              trailingIcon: isMetricPreference ? Icons.radio_button_unchecked : Icons.radio_button_checked,
+              trailingIconType: ThemeGroupType.POM,
+              trailingEmphasis: Emphasis.HIGH,
+              trailingIconClickedCallback: () => settingsService.setUnits(SettingsService.UNITS_IMPERIAL),
+              itemClickedCallback: () => settingsService.setUnits(SettingsService.UNITS_IMPERIAL),
+            ),
+            ListItemModel(
+              title: "${translations.metric} (${translations.meters})",
+              margin: indentationLevel2,
+              trailingIcon: isMetricPreference ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+              trailingIconType: ThemeGroupType.POM,
+              trailingEmphasis: Emphasis.HIGH,
+              trailingIconClickedCallback: () => settingsService.setUnits(SettingsService.UNITS_METRIC),
+              itemClickedCallback: () => settingsService.setUnits(SettingsService.UNITS_METRIC),
+            ),
+            ListItemModel(
+              title: translations.defaultObservation,
+              subtitle: translations.defaultObservationDescription,
+              margin: indentationLevel1,
+              itemClickedCallback: () => showDefaultObservationTemplateScreen(context),
             ),
             ListItemModel(title: translations.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
             ListItemModel(title: translations.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(translations.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
@@ -415,7 +441,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
           // HeaderList caches listItems in initState and never refreshes it in didUpdateWidget, so a
           // stable key would leave the checkbox rows permanently showing their first-render state.
           // Keying on the values that actually change forces a full remount to pick up the update.
-          key: ValueKey('${userProfile == null}-$showIndigenousMapPreference-$showSplashScreenPreference'),
+          key: ValueKey('${userProfile == null}-$showIndigenousMapPreference-$showSplashScreenPreference-$isMetricPreference-${settingsService.locale.languageCode}'),
           imageUrl: "assets/images/pika3.jpg",
           avatarImageUrl: "assets/images/pika4.jpg",
           avatarTitle: avatarTitle,
@@ -771,9 +797,30 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       MaterialPageRoute(
         builder: (_) {
           final translations = Provider.of<Translations>(context);
-          final observation = Observation(observerUid: user?.uid, date: DateTime.now());
+          final settingsService = Provider.of<SettingsService>(context, listen: false);
+          //New observations start from the user's default observation template
+          final observation = observationFromTemplateJson(
+            settingsService.defaultObservationTemplateJson,
+            observerUid: user?.uid,
+            date: DateTime.now(),
+          );
           final observationViewModel = ObservationViewModel(observation, translations);
           return ObservationScreen(observationViewModel);
+        }
+      ),
+    );
+  }
+
+  showDefaultObservationTemplateScreen(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) {
+          final translations = Provider.of<Translations>(context);
+          final settingsService = Provider.of<SettingsService>(context, listen: false);
+          final observation = observationFromTemplateJson(settingsService.defaultObservationTemplateJson, date: DateTime.now());
+          final observationViewModel = ObservationViewModel(observation, translations);
+          return ObservationScreen(observationViewModel, isTemplate: true);
         }
       ),
     );

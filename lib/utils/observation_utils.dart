@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:material_themes_widgets/utils/collection_utils.dart';
 import '../l10n/translations.dart';
 import '../model/app_user.dart';
@@ -222,6 +224,70 @@ extension Wind on Observation {
     var defaults = getWindDefaults(translations);
     return (defaults + selected).toTrimmedUniqueList();
   }
+}
+//endregion
+
+//region Default observation template
+//The default observation template is the set of user-preferred field values applied to every new
+//observation. Identity (uid/observerUid/dbId), date, images, and audio are intentionally excluded -
+//they are always per-observation.
+extension ObservationTemplate on Observation {
+  String toTemplateJson() => jsonEncode({
+    "location": location,
+    "latitude": latitude,
+    "longitude": longitude,
+    "altitudeInMeters": altitudeInMeters,
+    "species": species,
+    "signs": signs,
+    "pikasDetected": pikasDetected,
+    "distanceToClosestPika": distanceToClosestPika,
+    "searchDuration": searchDuration,
+    "talusArea": talusArea,
+    "temperature": temperature,
+    "skies": skies,
+    "wind": wind,
+    "otherAnimalsPresent": otherAnimalsPresent,
+    "sharedWithProjects": sharedWithProjects,
+    "notSharedWithProjects": notSharedWithProjects,
+    "siteHistory": siteHistory,
+    "comments": comments,
+  });
+}
+
+Observation observationFromTemplateJson(String? templateJson, {String? observerUid, DateTime? date}) {
+  Map<String, dynamic> template = <String, dynamic>{};
+  if (templateJson != null && templateJson.isNotEmpty) {
+    try {
+      template = jsonDecode(templateJson) as Map<String, dynamic>;
+    } catch (e) {
+      //A malformed template shouldn't block making an observation; fall back to a blank one
+    }
+  }
+
+  List<String>? stringList(String key) => (template[key] as List?)?.cast<String>();
+
+  return Observation(
+    observerUid: observerUid,
+    date: date,
+    location: template["location"] as String? ?? "",
+    latitude: (template["latitude"] as num?)?.toDouble(),
+    longitude: (template["longitude"] as num?)?.toDouble(),
+    altitudeInMeters: (template["altitudeInMeters"] as num?)?.toDouble(),
+    species: template["species"] as String? ?? Observation.SPECIES_DEFAULT,
+    signs: stringList("signs"),
+    pikasDetected: template["pikasDetected"] as String? ?? "",
+    distanceToClosestPika: template["distanceToClosestPika"] as String? ?? "",
+    searchDuration: template["searchDuration"] as String? ?? "",
+    talusArea: template["talusArea"] as String? ?? "",
+    temperature: template["temperature"] as String? ?? "",
+    skies: template["skies"] as String? ?? "",
+    wind: template["wind"] as String? ?? "",
+    otherAnimalsPresent: stringList("otherAnimalsPresent"),
+    sharedWithProjects: stringList("sharedWithProjects"),
+    notSharedWithProjects: stringList("notSharedWithProjects"),
+    siteHistory: template["siteHistory"] as String? ?? "",
+    comments: template["comments"] as String? ?? "",
+  );
 }
 //endregion
 

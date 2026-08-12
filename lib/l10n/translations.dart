@@ -298,41 +298,36 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String localObservationsNeedUploadedDialogTitle = ERROR;
   String localObservationsNeedUploadedDialogDescription = ERROR;
 
+  String userSettings = ERROR;
+  String indigenousMap = ERROR;
+  String indigenousMapDescription = ERROR;
+  String splashScreen = ERROR;
+  String splashScreenDescription = ERROR;
+  String units = ERROR;
+  String imperial = ERROR;
+  String metric = ERROR;
+  String feet = ERROR;
+  String meters = ERROR;
+  String altitudeMetric = ERROR;
+  String defaultObservation = ERROR;
+  String defaultObservationDescription = ERROR;
+  String defaultObservationSaved = ERROR;
+  String coldMetric = ERROR;
+  String coolMetric = ERROR;
+  String warmMetric = ERROR;
+  String hotMetric = ERROR;
+  String lessThan3000FeetMetric = ERROR;
+  String threeThousandToTenThousandFeetMetric = ERROR;
+  String tenThousandToFiftyThousandFeetMetric = ERROR;
+  String greaterThanOneAcreMetric = ERROR;
+  String lessThan10FeetMetric = ERROR;
+  String tenTo30FeetMetric = ERROR;
+  String thirtyToOneHundredFeetMetric = ERROR;
+  String moreThanOneHundredFeetMetric = ERROR;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
-    otherAnimalsPresentKeys = ["bats", "brownCappedRosyFinch", "cattle", "marmots", "mountainGoats", "ptarmigans", "raptors", "weasels", "woodrats", "other"];
-    otherAnimalsPresentDefaultValues = [bats, brownCappedRosyFinch, cattle, marmots, mountainGoats, ptarmigans, raptors, weasels, woodrats, other];
-
-    pikasDetectedKeys = ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
-    pikasDetectedDefaultValues = ["0", "1", "2", "3", "4", "5", ">5", ">10", unsureMoreThanOne];
-
-    signsKeys = ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
-    signsDefaultValues = [sawPika, heardPikaCalls, haypileOld, haypileNew, haypileOther, scatOld, scatNew, scatOther];
-
-    skiesKeys = ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
-    skiesDefaultValues = [clear, partlyCloudy, overcast, rainDrizzle, snow];
-
-    speciesKeys = ["americanPika", "collaredPika"];
-    speciesDefaultValues = [americanPika, collaredPika];
-
-    talusAreaKeys = ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
-    talusAreaDefaultValues = [lessThan3000Feet, threeThousandToTenThousandFeet, tenThousandToFiftyThousandFeet, greaterThanOneAcre];
-
-    talusAreaHintsKeys = ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
-    talusAreaHintsDefaultValues = [smallerThanTennisCourt, tennisCourtToBaseballInfield, baseballInfieldToFootballField, largerThanFootballField];
-    
-    temperatureKeys = ["cold", "cool", "warm", "hot"];
-    temperatureDefaultValues = [cold, cool, warm, hot];
-
-    windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
-    windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
-
-    distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
-    distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
-
-    searchDurationKeys = ["lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
-    searchDurationDefaultValues = [lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   update (BuildContext context) {
@@ -588,6 +583,70 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     observationSavedSuccessfully = AppLocalizations.of(context)?.observationSavedSuccessfully ?? observationSavedSuccessfully;
     unknownErrorUploadingToServerObservationSavedLocally = AppLocalizations.of(context)?.unknownErrorUploadingToServerObservationSavedLocally ?? unknownErrorUploadingToServerObservationSavedLocally;
     fillInAllFormFields = AppLocalizations.of(context)?.fillInAllFormFields ?? fillInAllFormFields;
+    userSettings = AppLocalizations.of(context)?.userSettings ?? userSettings;
+    indigenousMap = AppLocalizations.of(context)?.indigenousMap ?? indigenousMap;
+    indigenousMapDescription = AppLocalizations.of(context)?.indigenousMapDescription ?? indigenousMapDescription;
+    splashScreen = AppLocalizations.of(context)?.splashScreen ?? splashScreen;
+    splashScreenDescription = AppLocalizations.of(context)?.splashScreenDescription ?? splashScreenDescription;
+    units = AppLocalizations.of(context)?.units ?? units;
+    imperial = AppLocalizations.of(context)?.imperial ?? imperial;
+    metric = AppLocalizations.of(context)?.metric ?? metric;
+    feet = AppLocalizations.of(context)?.feet ?? feet;
+    meters = AppLocalizations.of(context)?.meters ?? meters;
+    altitudeMetric = AppLocalizations.of(context)?.altitudeMetric ?? altitudeMetric;
+    defaultObservation = AppLocalizations.of(context)?.defaultObservation ?? defaultObservation;
+    defaultObservationDescription = AppLocalizations.of(context)?.defaultObservationDescription ?? defaultObservationDescription;
+    defaultObservationSaved = AppLocalizations.of(context)?.defaultObservationSaved ?? defaultObservationSaved;
+    coldMetric = AppLocalizations.of(context)?.coldMetric ?? coldMetric;
+    coolMetric = AppLocalizations.of(context)?.coolMetric ?? coolMetric;
+    warmMetric = AppLocalizations.of(context)?.warmMetric ?? warmMetric;
+    hotMetric = AppLocalizations.of(context)?.hotMetric ?? hotMetric;
+    lessThan3000FeetMetric = AppLocalizations.of(context)?.lessThan3000FeetMetric ?? lessThan3000FeetMetric;
+    threeThousandToTenThousandFeetMetric = AppLocalizations.of(context)?.threeThousandToTenThousandFeetMetric ?? threeThousandToTenThousandFeetMetric;
+    tenThousandToFiftyThousandFeetMetric = AppLocalizations.of(context)?.tenThousandToFiftyThousandFeetMetric ?? tenThousandToFiftyThousandFeetMetric;
+    greaterThanOneAcreMetric = AppLocalizations.of(context)?.greaterThanOneAcreMetric ?? greaterThanOneAcreMetric;
+    lessThan10FeetMetric = AppLocalizations.of(context)?.lessThan10FeetMetric ?? lessThan10FeetMetric;
+    tenTo30FeetMetric = AppLocalizations.of(context)?.tenTo30FeetMetric ?? tenTo30FeetMetric;
+    thirtyToOneHundredFeetMetric = AppLocalizations.of(context)?.thirtyToOneHundredFeetMetric ?? thirtyToOneHundredFeetMetric;
+    moreThanOneHundredFeetMetric = AppLocalizations.of(context)?.moreThanOneHundredFeetMetric ?? moreThanOneHundredFeetMetric;
+
+    //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
+    //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
+    //change at runtime. A stale list left the choice-chip values in the previously loaded language,
+    //so a stored value like "American Pika" no longer matched any default and showed up as a
+    //duplicate chip instead of selecting the existing one.
+    otherAnimalsPresentKeys = ["bats", "brownCappedRosyFinch", "cattle", "marmots", "mountainGoats", "ptarmigans", "raptors", "weasels", "woodrats", "other"];
+    otherAnimalsPresentDefaultValues = [bats, brownCappedRosyFinch, cattle, marmots, mountainGoats, ptarmigans, raptors, weasels, woodrats, other];
+
+    pikasDetectedKeys = ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
+    pikasDetectedDefaultValues = ["0", "1", "2", "3", "4", "5", ">5", ">10", unsureMoreThanOne];
+
+    signsKeys = ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
+    signsDefaultValues = [sawPika, heardPikaCalls, haypileOld, haypileNew, haypileOther, scatOld, scatNew, scatOther];
+
+    skiesKeys = ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
+    skiesDefaultValues = [clear, partlyCloudy, overcast, rainDrizzle, snow];
+
+    speciesKeys = ["americanPika", "collaredPika"];
+    speciesDefaultValues = [americanPika, collaredPika];
+
+    talusAreaKeys = ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
+    talusAreaDefaultValues = [lessThan3000Feet, threeThousandToTenThousandFeet, tenThousandToFiftyThousandFeet, greaterThanOneAcre];
+
+    talusAreaHintsKeys = ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
+    talusAreaHintsDefaultValues = [smallerThanTennisCourt, tennisCourtToBaseballInfield, baseballInfieldToFootballField, largerThanFootballField];
+
+    temperatureKeys = ["cold", "cool", "warm", "hot"];
+    temperatureDefaultValues = [cold, cool, warm, hot];
+
+    windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
+    windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
+
+    distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
+    distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
+
+    searchDurationKeys = ["lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
+    searchDurationDefaultValues = [lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -846,6 +905,32 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "observationSavedSuccessfully": return observationSavedSuccessfully;
       case "unknownErrorUploadingToServerObservationSavedLocally": return unknownErrorUploadingToServerObservationSavedLocally;
       case "fillInAllFormFields": return fillInAllFormFields;
+      case "userSettings": return userSettings;
+      case "indigenousMap": return indigenousMap;
+      case "indigenousMapDescription": return indigenousMapDescription;
+      case "splashScreen": return splashScreen;
+      case "splashScreenDescription": return splashScreenDescription;
+      case "units": return units;
+      case "imperial": return imperial;
+      case "metric": return metric;
+      case "feet": return feet;
+      case "meters": return meters;
+      case "altitudeMetric": return altitudeMetric;
+      case "defaultObservation": return defaultObservation;
+      case "defaultObservationDescription": return defaultObservationDescription;
+      case "defaultObservationSaved": return defaultObservationSaved;
+      case "coldMetric": return coldMetric;
+      case "coolMetric": return coolMetric;
+      case "warmMetric": return warmMetric;
+      case "hotMetric": return hotMetric;
+      case "lessThan3000FeetMetric": return lessThan3000FeetMetric;
+      case "threeThousandToTenThousandFeetMetric": return threeThousandToTenThousandFeetMetric;
+      case "tenThousandToFiftyThousandFeetMetric": return tenThousandToFiftyThousandFeetMetric;
+      case "greaterThanOneAcreMetric": return greaterThanOneAcreMetric;
+      case "lessThan10FeetMetric": return lessThan10FeetMetric;
+      case "tenTo30FeetMetric": return tenTo30FeetMetric;
+      case "thirtyToOneHundredFeetMetric": return thirtyToOneHundredFeetMetric;
+      case "moreThanOneHundredFeetMetric": return moreThanOneHundredFeetMetric;
       default: return key;
     }
   }

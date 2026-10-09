@@ -24,6 +24,7 @@ Every request made for Pika Patrol, collected from the project email history (20
 
 ## 1. Release blockers (must fix before the next store release)
 
+- [ ] **Security: stop shipping the Google service-account private key to every app user.** The Firestore `googleSheets` collection holds a full service-account key (`pika-patrol@pikajoe-97c5c.iam.gserviceaccount.com`), and the rules let *any signed-in user* read it. Anyone can register, so anyone can take the key. Fix: move the Sheets sync to a server-side Cloud Function triggered by Firestore writes (this also closes GitHub #68), make `googleSheets` admin-only or delete it, then delete that key in Google Cloud and check the service account's roles. Found 2026-10-09 while checking the Firebase console.
 - [x] **Target Android 15 (API 35).** Now targets API 36, which Play requires from Aug 31 2026 (branch `doing/3.5.0-store-blockers`). Google Play blocks every update until this is done. The repo is on 34 because a July 2026 commit lowered it. Megan, Jun 2026, "FW: Update on Pika Patrol APP"; GitHub #73.
 - [x] **Support 16 KB memory page sizes.** All native libraries checked at 16 KB alignment after the toolchain upgrade. Play Console shows this as an error on the 3.3.8 build. The toolchain needs upgrading: Flutter 3.19.6, AGP 7.4.2, Kotlin 1.7.10. Megan, Aug 6 2026, "Please accept Apple policy updates".
 - [ ] **Find out why 3.3.8 drops 915 previously supported devices.** Megan asked to hold the release until this is checked. Same thread, Aug 6 2026.
@@ -79,6 +80,7 @@ Every request made for Pika Patrol, collected from the project email history (20
 - [ ] **Firebase-to-Sheets gaps.** If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
 - [x] Admin-only "export all" and "initialize sheets" (3.0.0).
 - [ ] **Backfill older Canadian observations into the Canadian sheet** if Mike or Leigh Anne want them. Chris, Jul 2026.
+- [ ] **Remove stale rows from the master sheet.** Rows for observations already deleted from Firebase remain. For example, four 2024 test observations under spragucm@gmail.com are in the sheet but not in Firestore (checked 2026-10-09).
 - [ ] **Clean up the partner sheets** made before the default changed to "none". Each one received every observation. Also decide whether the IF/THEN, Denver Zoo and RMW sheets should still exist. **Owner:** Jo and Megan. Chris, Jul 2024.
 
 ## 5. Indigenous content (UBC grant)
@@ -167,7 +169,7 @@ Every request made for Pika Patrol, collected from the project email history (20
 - [ ] **Review Storage rules.** Unauthenticated read was turned on in Sep 2024 to work around broken image tokens. Decide whether that is acceptable, or switch to unique file names and authenticated reads.
 - [ ] **Restrict Google API keys** (Android and iOS app restrictions). Google flagged a "Publicly accessible API key" in Feb 2025. Native Land key moved to `.env` in Jul 2026.
 - [ ] **Blaze plan safeguards:** a $1 budget alert, a check that the Storage bucket is in a free-tier region, and an optional automatic cap. Megan added RMW's card on Aug 6 2026, and RMW can't afford surprise bills. Chris, Jul–Aug 2026.
-- [ ] **Decide a storage strategy** (image size limits and compression, retention). Chris, Jun 2025.
+- [ ] **Decide a storage strategy** (image size limits and compression, retention). Chris, Jun 2025. As of 2026-10-09 Storage holds 6.45 GB, which is over the 5 GB free tier, so the project is already paying a little for storage on the Blaze plan.
 - [ ] **Clean up unused OAuth clients.** Google notices, Jun 2025 and Aug 2026.
 - [ ] **Look into Google for Nonprofits / Cloud credits.** **Owner:** Megan. Aug 2023 and Oct 2024.
 

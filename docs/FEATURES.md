@@ -25,6 +25,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 9 — checklist tidy**: ticked items already covered by earlier passes or decisions; units check.
 - **Pass 10 — Chris's test feedback**: form no longer goes blank after saving; first photo stays the cover; photo cards fill without stretching; confirm before deleting a photo or recording; removed files are deleted from Storage (retried when offline); admins page back through every shared observation; photos cached on the phone.
 - **Pass 11 — unused files cleanup**: admin-only "Unused files" screen in the left menu shows Storage photos and recordings that no observation uses, in a grid to preview, select and delete.
+- **Pass 12 — correlate files**: admin "Correlate files" screen pairs broken photo and recording links with the stored file most likely to be the right one, for bulk repair; Unused files now only shows files that match nothing; fixed a pass 10 cleanup bug that compared URLs instead of paths; repaired links reach the owner's phone.
 
 ## People
 
@@ -64,7 +65,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **The form looks the same before and after saving.** Fixed in pass 10: the screen made a fresh observation whenever Flutter rebuilt its page (for example when the keyboard closed), wiping the form. This may also be the cause of the offline-edits report above. Chris, 2026-10-09.
 - [x] **Admins can scroll back through every observation** in Shared observations. Older ones load ten at a time as the admin nears the end, loaded pages stay in memory, and only the cards near the current one are drawn. Everyone else still sees the newest five. Chris, 2026-10-09 (pass 10).
 - [ ] **Old data model:** observations saved before 3.0 have no "uploaded" flag. Confirm the migration covers them. Chris, Jul 2024.
-- [ ] **Check that broken image links are fixed for older observations.** Images broke when Firebase gave a re-uploaded image a new access token, and saved local copies kept the broken URL. Chris, Jun–Sep 2024.
+- [ ] **Check that broken image links are fixed for older observations.** Pass 12 adds the tools: admin "Correlate files" finds links whose token changed, phone paths saved instead of Storage links, and links to missing files, and proposes the matching stored file (same name, or uploaded near when the observation was made or saved) for bulk repair. Phones now take repaired links from the server when their copy has no unsent edits. Still to do: an admin runs it and checks the results. Images broke when Firebase gave a re-uploaded image a new access token, and saved local copies kept the broken URL. Chris, Jun–Sep 2024.
 
 ## 3. Observation form
 
@@ -166,6 +167,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **Ask before deleting a photo or recording,** since it can't be undone (EN/ES/FR). Chris, 2026-10-09 (pass 10).
 - [x] **Removed photos and recordings are deleted from Firebase Storage,** not just from the observation. Deleting an observation deletes its files too. Deletes that fail, for example offline, are retried when the app is next online. New uploads get a unique name so two observations never share a file. Chris, 2026-10-09 (pass 10).
 - [x] **Admins can find and delete unused files** left in Storage by older app versions. Left menu → Admin settings → Unused files: a grid of photos (tap to enlarge) and recordings (tap to play), with sizes and dates, select all, and a confirmation before deleting. It reads every observation from the server and stops on any error, so files in use never look unused; files from the last day are skipped. Chris, 2026-10-09 (pass 11).
+- [x] **Admins can re-link stored files to observations with broken photos** (the white image with a red X volunteers reported). Left menu → Admin settings → Correlate files: each broken link with its most likely file, a reason (link expired, same file name, or uploaded N minutes from the observation) and a confidence (certain, likely, possible); check rows, then fix together. Fixes replace the broken entry in place, so the cover stays first, and update the sheets. Unused files now leaves out files that have a likely match. Chris, 2026-10-09 (pass 12).
 
 ## 11. Apple App Store compliance
 

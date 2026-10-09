@@ -953,7 +953,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Photos et enregistrements stockés qu\'aucune observation n\'utilise. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.';
+      'Photos et enregistrements stockés qu\'aucune observation n\'utilise et que Associer les fichiers n\'a pu rattacher à aucune. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.';
 
   @override
   String get unusedFilesSelected => '%count% sélectionnés, %size%';
@@ -981,4 +981,56 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get someFilesNotDeleted =>
       'Certains fichiers n\'ont pas pu être supprimés. Réessayez plus tard.';
+
+  @override
+  String get correlateFiles => 'Associer les fichiers';
+
+  @override
+  String get correlateFilesDescription =>
+      'Liens de photos et d\'enregistrements brisés, chacun avec le fichier stocké le plus probable. Cochez ceux qui semblent corrects, puis réparez-les ensemble. %observations% observations et %files% fichiers vérifiés.';
+
+  @override
+  String get checkingFiles => 'Vérification des fichiers : %done% sur %total%';
+
+  @override
+  String get fixReasonRefreshLink => 'Même fichier ; son lien a expiré';
+
+  @override
+  String get fixReasonSameName => 'Même nom que le lien brisé';
+
+  @override
+  String get fixReasonUploadedNearby =>
+      'Envoyé à %time% du moment où cette observation a été faite ou enregistrée';
+
+  @override
+  String get fixConfidenceHigh => 'Certain';
+
+  @override
+  String get fixConfidenceLikely => 'Probable';
+
+  @override
+  String get fixConfidencePossible => 'Possible';
+
+  @override
+  String get fixSelectedLinks => 'Réparer les liens sélectionnés';
+
+  @override
+  String get fixLinksDialogTitle => 'Réparer %count% liens ?';
+
+  @override
+  String get fixLinksDialogDescription =>
+      'Chaque fichier sélectionné remplace le lien brisé de son observation. Rien d\'autre ne change et aucun fichier n\'est supprimé.';
+
+  @override
+  String get noBrokenLinksFound => 'Aucun lien brisé trouvé.';
+
+  @override
+  String get linksFixed => 'Liens réparés sur %count% observations.';
+
+  @override
+  String get someLinksNotFixed =>
+      '%count% observations n\'ont pas pu être mises à jour. Réessayez plus tard.';
+
+  @override
+  String get selectCertain => 'Sélectionner les certains';
 }

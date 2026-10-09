@@ -345,6 +345,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String deleteUnusedFilesDialogDescription = ERROR;
   String couldNotFindUnusedFiles = ERROR;
   String someFilesNotDeleted = ERROR;
+  String correlateFiles = ERROR;
+  String correlateFilesDescription = ERROR;
+  String checkingFiles = ERROR;
+  String fixReasonRefreshLink = ERROR;
+  String fixReasonSameName = ERROR;
+  String fixReasonUploadedNearby = ERROR;
+  String fixConfidenceHigh = ERROR;
+  String fixConfidenceLikely = ERROR;
+  String fixConfidencePossible = ERROR;
+  String fixSelectedLinks = ERROR;
+  String fixLinksDialogTitle = ERROR;
+  String fixLinksDialogDescription = ERROR;
+  String noBrokenLinksFound = ERROR;
+  String linksFixed = ERROR;
+  String someLinksNotFixed = ERROR;
+  String selectCertain = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -651,6 +667,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     deleteUnusedFilesDialogDescription =  AppLocalizations.of(context)?.deleteUnusedFilesDialogDescription ?? deleteUnusedFilesDialogDescription;
     couldNotFindUnusedFiles =  AppLocalizations.of(context)?.couldNotFindUnusedFiles ?? couldNotFindUnusedFiles;
     someFilesNotDeleted =  AppLocalizations.of(context)?.someFilesNotDeleted ?? someFilesNotDeleted;
+    correlateFiles =  AppLocalizations.of(context)?.correlateFiles ?? correlateFiles;
+    correlateFilesDescription =  AppLocalizations.of(context)?.correlateFilesDescription ?? correlateFilesDescription;
+    checkingFiles =  AppLocalizations.of(context)?.checkingFiles ?? checkingFiles;
+    fixReasonRefreshLink =  AppLocalizations.of(context)?.fixReasonRefreshLink ?? fixReasonRefreshLink;
+    fixReasonSameName =  AppLocalizations.of(context)?.fixReasonSameName ?? fixReasonSameName;
+    fixReasonUploadedNearby =  AppLocalizations.of(context)?.fixReasonUploadedNearby ?? fixReasonUploadedNearby;
+    fixConfidenceHigh =  AppLocalizations.of(context)?.fixConfidenceHigh ?? fixConfidenceHigh;
+    fixConfidenceLikely =  AppLocalizations.of(context)?.fixConfidenceLikely ?? fixConfidenceLikely;
+    fixConfidencePossible =  AppLocalizations.of(context)?.fixConfidencePossible ?? fixConfidencePossible;
+    fixSelectedLinks =  AppLocalizations.of(context)?.fixSelectedLinks ?? fixSelectedLinks;
+    fixLinksDialogTitle =  AppLocalizations.of(context)?.fixLinksDialogTitle ?? fixLinksDialogTitle;
+    fixLinksDialogDescription =  AppLocalizations.of(context)?.fixLinksDialogDescription ?? fixLinksDialogDescription;
+    noBrokenLinksFound =  AppLocalizations.of(context)?.noBrokenLinksFound ?? noBrokenLinksFound;
+    linksFixed =  AppLocalizations.of(context)?.linksFixed ?? linksFixed;
+    someLinksNotFixed =  AppLocalizations.of(context)?.someLinksNotFixed ?? someLinksNotFixed;
+    selectCertain =  AppLocalizations.of(context)?.selectCertain ?? selectCertain;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -995,6 +1027,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "deleteUnusedFilesDialogDescription": return deleteUnusedFilesDialogDescription;
       case "couldNotFindUnusedFiles": return couldNotFindUnusedFiles;
       case "someFilesNotDeleted": return someFilesNotDeleted;
+      case "correlateFiles": return correlateFiles;
+      case "correlateFilesDescription": return correlateFilesDescription;
+      case "checkingFiles": return checkingFiles;
+      case "fixReasonRefreshLink": return fixReasonRefreshLink;
+      case "fixReasonSameName": return fixReasonSameName;
+      case "fixReasonUploadedNearby": return fixReasonUploadedNearby;
+      case "fixConfidenceHigh": return fixConfidenceHigh;
+      case "fixConfidenceLikely": return fixConfidenceLikely;
+      case "fixConfidencePossible": return fixConfidencePossible;
+      case "fixSelectedLinks": return fixSelectedLinks;
+      case "fixLinksDialogTitle": return fixLinksDialogTitle;
+      case "fixLinksDialogDescription": return fixLinksDialogDescription;
+      case "noBrokenLinksFound": return noBrokenLinksFound;
+      case "linksFixed": return linksFixed;
+      case "someLinksNotFixed": return someLinksNotFixed;
+      case "selectCertain": return selectCertain;
       default: return key;
     }
   }

@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 import 'dart:io';
+import 'dart:math';
 import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -7,8 +8,18 @@ import 'package:pika_patrol/utils/firebase_utils.dart';
 
 import '../model/observation.dart';
 import '../model/storage_file.dart';
+import 'storage_file_correlator.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
+
+class StorageScan {
+  final List<FileFix> fixes;
+  final List<StorageFile> unused;
+  final int observationCount;
+  final int totalFileCount;
+
+  const StorageScan({required this.fixes, required this.unused, required this.observationCount, required this.totalFileCount});
+}
 
 class FirebaseObservationsService {
 
@@ -100,8 +111,13 @@ class FirebaseObservationsService {
       return e;
     }
 
-    final currentFileUrls = {...?observation.imageUrls, ...?observation.audioUrls};
-    final removedFileUrls = previousFileUrls.where((url) => !currentFileUrls.contains(url)).toList();
+    // Compare Storage paths, not URLs: the same file can have a new URL (a refreshed access
+    // token), and comparing URLs would delete a file the observation still uses
+    final currentFilePaths = {
+      for (var url in [...?observation.imageUrls, ...?observation.audioUrls])
+        storagePathFromUrl(url) ?? url
+    };
+    final removedFileUrls = previousFileUrls.where((url) => !currentFilePaths.contains(storagePathFromUrl(url) ?? url)).toList();
     final failedDeletes = await deleteFiles(removedFileUrls);
     await onFileDeletesFailed?.call(failedDeletes);
 
@@ -344,39 +360,84 @@ class FirebaseObservationsService {
     return failed;
   }
 
-  // Files in images/ and audio/ that no observation points to, for the admin cleanup screen.
-  // Reads every observation once (one read each) and lists both folders, so it only runs when an
-  // admin opens that screen. Files from the last day are skipped, because an upload in progress
-  // has its file in Storage before its observation is saved.
-  // Also returns how many observations and files it checked, so the admin can sanity-check it.
-  Future<({List<StorageFile> unused, int observationCount, int totalFileCount})> findUnusedFiles() async {
-    // Straight from the server, and any error stops the scan: a partial or cached list of
-    // observations would make files that are in use look unused
+  // Everything the admin file tools need: every observation and every Storage file, with
+  // proposed link repairs and the files nothing uses. Reads every observation once (one read
+  // each), lists both folders, and makes one small Storage request per file, so it only runs
+  // when an admin opens one of those screens.
+  //
+  // Observations come straight from the server and any error stops the scan: a partial or
+  // cached list would make files that are in use look unused.
+  Future<StorageScan> scanStorage({void Function(int done, int total)? onProgress}) async {
     final snapshot = await observationsCollection.get(const GetOptions(source: Source.server));
     final observations = _observationsFromSnapshot(snapshot);
+
+    final refs = <Reference>[
+      for (var folder in [IMAGES_FOLDER_NAME, AUDIO_FOLDER_NAME]) ...await _listAll(_storage.ref(folder)),
+    ];
+    final listedPaths = {for (var ref in refs) ref.fullPath};
     final usedPaths = <String>{
       for (var observation in observations)
         for (var url in [...?observation.imageUrls, ...?observation.audioUrls])
           if (storagePathFromUrl(url) case final path?) path,
     };
 
-    final cutoff = DateTime.now().subtract(const Duration(days: 1));
-    final unused = <StorageFile>[];
-    var totalFileCount = 0;
-    for (var folder in [IMAGES_FOLDER_NAME, AUDIO_FOLDER_NAME]) {
-      final refs = await _listAll(_storage.ref(folder));
-      totalFileCount += refs.length;
-      for (var ref in refs) {
-        if (usedPaths.contains(ref.fullPath)) continue;
-        final metadata = await ref.getMetadata();
-        final created = metadata.timeCreated;
-        if (created != null && created.isAfter(cutoff)) continue;
-        unused.add(StorageFile(ref: ref, isImage: folder == IMAGES_FOLDER_NAME, sizeBytes: metadata.size ?? 0, created: created));
+    // Files outside images/ and audio/ that observations point to: check they exist
+    for (var path in usedPaths.difference(listedPaths)) {
+      try {
+        await _storage.ref(path).getMetadata();
+        refs.add(_storage.ref(path));
+      } on FirebaseException catch (e) {
+        if (e.code != 'object-not-found') rethrow;
       }
     }
-    unused.sort((a, b) => (b.created ?? DateTime(0)).compareTo(a.created ?? DateTime(0)));
-    return (unused: unused, observationCount: observations.length, totalFileCount: totalFileCount);
+
+    // Used files: a current download URL, to find links whose token changed.
+    // Unused files: size and upload time, to match them to observations.
+    final filesByPath = <String, StorageFile>{};
+    final currentUrlsByPath = <String, String>{};
+    var done = 0;
+    const batchSize = 25;
+    for (var i = 0; i < refs.length; i += batchSize) {
+      await Future.wait(refs.skip(i).take(batchSize).map((ref) async {
+        final isImage = !ref.fullPath.startsWith("$AUDIO_FOLDER_NAME/");
+        if (usedPaths.contains(ref.fullPath)) {
+          currentUrlsByPath[ref.fullPath] = await ref.getDownloadURL();
+          filesByPath[ref.fullPath] = StorageFile(path: ref.fullPath, isImage: isImage, sizeBytes: 0);
+        } else {
+          final metadata = await ref.getMetadata();
+          filesByPath[ref.fullPath] = StorageFile(path: ref.fullPath, isImage: isImage, sizeBytes: metadata.size ?? 0, created: metadata.timeCreated);
+        }
+      }));
+      done = min(i + batchSize, refs.length);
+      onProgress?.call(done, refs.length);
+    }
+
+    final result = StorageFileCorrelator(
+      observations: observations,
+      filesByPath: filesByPath,
+      currentUrlsByPath: currentUrlsByPath,
+      storagePathFromUrl: storagePathFromUrl,
+    ).correlate();
+
+    // Files from the last day are left out of the unused list, because an upload in progress
+    // has its file in Storage before its observation is saved
+    final cutoff = DateTime.now().subtract(const Duration(days: 1));
+    final unused = result.unmatched.where((file) => file.created == null || file.created!.isBefore(cutoff)).toList()
+      ..sort((a, b) => (b.created ?? DateTime(0)).compareTo(a.created ?? DateTime(0)));
+
+    return StorageScan(
+      fixes: result.fixes,
+      unused: unused,
+      observationCount: observations.length,
+      totalFileCount: refs.length,
+    );
   }
+
+  Future<String> downloadUrl(String path) => _storage.ref(path).getDownloadURL();
+
+  // Writes only the photo and recording lists, so nothing else on the observation changes
+  Future<void> updateMediaUrls(String observationUid, List<String> imageUrls, List<String> audioUrls) =>
+      observationsCollection.doc(observationUid).update({IMAGE_URLS: imageUrls, AUDIO_URLS: audioUrls});
 
   Future<List<Reference>> _listAll(Reference folder) async {
     final refs = <Reference>[];
@@ -403,10 +464,10 @@ class FirebaseObservationsService {
     final failed = <StorageFile>[];
     for (var file in files) {
       try {
-        await file.ref.delete();
+        await _storage.ref(file.path).delete();
       } on FirebaseException catch (e) {
         if (e.code != 'object-not-found') {
-          developer.log('Failed to delete storage file ${file.ref.fullPath}: $e', name: 'FirebaseObservationsService');
+          developer.log('Failed to delete storage file ${file.path}: $e', name: 'FirebaseObservationsService');
           failed.add(file);
         }
       }

@@ -1843,7 +1843,7 @@ abstract class AppLocalizations {
   /// No description provided for @unusedFilesDescription.
   ///
   /// In en, this message translates to:
-  /// **'Photos and recordings in storage that no observation uses. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.'**
+  /// **'Photos and recordings in storage that no observation uses and that Correlate files could not match to one. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.'**
   String get unusedFilesDescription;
 
   /// No description provided for @unusedFilesSelected.
@@ -1893,6 +1893,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Some files could not be deleted. Try again later.'**
   String get someFilesNotDeleted;
+
+  /// No description provided for @correlateFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Correlate files'**
+  String get correlateFiles;
+
+  /// No description provided for @correlateFilesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Broken photo and recording links, each with the stored file most likely to be the right one. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.'**
+  String get correlateFilesDescription;
+
+  /// No description provided for @checkingFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking files: %done% of %total%'**
+  String get checkingFiles;
+
+  /// No description provided for @fixReasonRefreshLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Same file; its link expired'**
+  String get fixReasonRefreshLink;
+
+  /// No description provided for @fixReasonSameName.
+  ///
+  /// In en, this message translates to:
+  /// **'Same file name as the broken link'**
+  String get fixReasonSameName;
+
+  /// No description provided for @fixReasonUploadedNearby.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded %time% from when this observation was made or saved'**
+  String get fixReasonUploadedNearby;
+
+  /// No description provided for @fixConfidenceHigh.
+  ///
+  /// In en, this message translates to:
+  /// **'Certain'**
+  String get fixConfidenceHigh;
+
+  /// No description provided for @fixConfidenceLikely.
+  ///
+  /// In en, this message translates to:
+  /// **'Likely'**
+  String get fixConfidenceLikely;
+
+  /// No description provided for @fixConfidencePossible.
+  ///
+  /// In en, this message translates to:
+  /// **'Possible'**
+  String get fixConfidencePossible;
+
+  /// No description provided for @fixSelectedLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix selected links'**
+  String get fixSelectedLinks;
+
+  /// No description provided for @fixLinksDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Fix %count% links?'**
+  String get fixLinksDialogTitle;
+
+  /// No description provided for @fixLinksDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Each selected file takes the place of its observation\'s broken link. Nothing else on the observations changes, and no files are deleted.'**
+  String get fixLinksDialogDescription;
+
+  /// No description provided for @noBrokenLinksFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No broken links found.'**
+  String get noBrokenLinksFound;
+
+  /// No description provided for @linksFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'Fixed links on %count% observations.'**
+  String get linksFixed;
+
+  /// No description provided for @someLinksNotFixed.
+  ///
+  /// In en, this message translates to:
+  /// **'%count% observations could not be updated. Try again later.'**
+  String get someLinksNotFixed;
+
+  /// No description provided for @selectCertain.
+  ///
+  /// In en, this message translates to:
+  /// **'Select certain'**
+  String get selectCertain;
 }
 
 class _AppLocalizationsDelegate

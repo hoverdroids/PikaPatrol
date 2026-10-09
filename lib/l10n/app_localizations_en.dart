@@ -941,7 +941,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Photos and recordings in storage that no observation uses. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.';
+      'Photos and recordings in storage that no observation uses and that Correlate files could not match to one. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.';
 
   @override
   String get unusedFilesSelected => '%count% selected, %size%';
@@ -969,4 +969,56 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get someFilesNotDeleted =>
       'Some files could not be deleted. Try again later.';
+
+  @override
+  String get correlateFiles => 'Correlate files';
+
+  @override
+  String get correlateFilesDescription =>
+      'Broken photo and recording links, each with the stored file most likely to be the right one. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.';
+
+  @override
+  String get checkingFiles => 'Checking files: %done% of %total%';
+
+  @override
+  String get fixReasonRefreshLink => 'Same file; its link expired';
+
+  @override
+  String get fixReasonSameName => 'Same file name as the broken link';
+
+  @override
+  String get fixReasonUploadedNearby =>
+      'Uploaded %time% from when this observation was made or saved';
+
+  @override
+  String get fixConfidenceHigh => 'Certain';
+
+  @override
+  String get fixConfidenceLikely => 'Likely';
+
+  @override
+  String get fixConfidencePossible => 'Possible';
+
+  @override
+  String get fixSelectedLinks => 'Fix selected links';
+
+  @override
+  String get fixLinksDialogTitle => 'Fix %count% links?';
+
+  @override
+  String get fixLinksDialogDescription =>
+      'Each selected file takes the place of its observation\'s broken link. Nothing else on the observations changes, and no files are deleted.';
+
+  @override
+  String get noBrokenLinksFound => 'No broken links found.';
+
+  @override
+  String get linksFixed => 'Fixed links on %count% observations.';
+
+  @override
+  String get someLinksNotFixed =>
+      '%count% observations could not be updated. Try again later.';
+
+  @override
+  String get selectCertain => 'Select certain';
 }

@@ -948,7 +948,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Fotos y grabaciones en el almacenamiento que ninguna observación usa. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.';
+      'Fotos y grabaciones en el almacenamiento que ninguna observación usa y que Relacionar archivos no pudo asignar. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.';
 
   @override
   String get unusedFilesSelected => '%count% seleccionados, %size%';
@@ -976,4 +976,56 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get someFilesNotDeleted =>
       'Algunos archivos no se pudieron eliminar. Inténtelo más tarde.';
+
+  @override
+  String get correlateFiles => 'Relacionar archivos';
+
+  @override
+  String get correlateFilesDescription =>
+      'Enlaces rotos de fotos y grabaciones, cada uno con el archivo guardado que probablemente le corresponde. Marque los que parezcan correctos y repárelos juntos. Se revisaron %observations% observaciones y %files% archivos.';
+
+  @override
+  String get checkingFiles => 'Revisando archivos: %done% de %total%';
+
+  @override
+  String get fixReasonRefreshLink => 'Mismo archivo; su enlace caducó';
+
+  @override
+  String get fixReasonSameName => 'Mismo nombre que el enlace roto';
+
+  @override
+  String get fixReasonUploadedNearby =>
+      'Subido a %time% de cuando se hizo o guardó esta observación';
+
+  @override
+  String get fixConfidenceHigh => 'Seguro';
+
+  @override
+  String get fixConfidenceLikely => 'Probable';
+
+  @override
+  String get fixConfidencePossible => 'Posible';
+
+  @override
+  String get fixSelectedLinks => 'Reparar enlaces seleccionados';
+
+  @override
+  String get fixLinksDialogTitle => '¿Reparar %count% enlaces?';
+
+  @override
+  String get fixLinksDialogDescription =>
+      'Cada archivo seleccionado reemplaza el enlace roto de su observación. Nada más cambia en las observaciones y no se borra ningún archivo.';
+
+  @override
+  String get noBrokenLinksFound => 'No se encontraron enlaces rotos.';
+
+  @override
+  String get linksFixed => 'Se repararon enlaces en %count% observaciones.';
+
+  @override
+  String get someLinksNotFixed =>
+      'No se pudieron actualizar %count% observaciones. Inténtelo más tarde.';
+
+  @override
+  String get selectCertain => 'Seleccionar seguros';
 }

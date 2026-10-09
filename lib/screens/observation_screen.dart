@@ -36,6 +36,7 @@ import '../services/native_land_service.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
+import 'package:pika_patrol/widgets/confirm_dialog.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
 import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:pika_patrol/primitives/overlay_mode.dart';
@@ -1296,29 +1297,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   // Removing a photo or recording can't be undone once the observation is saved, so ask first
   Future<bool> _confirmDeleteMedia(String title) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text(title),
-        content: Text(translations.deleteMediaDialogDescription),
-        actions: [
-          TextButton(
-            child: Text(translations.cancel),
-            onPressed: () => Navigator.pop(context, false),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              backgroundColor: Colors.red,
-              shape: const StadiumBorder(),
-            ),
-            child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
-          ),
-        ],
-      ),
+    final confirmed = await showConfirmDialog(
+      context,
+      title: title,
+      description: translations.deleteMediaDialogDescription,
+      confirmLabel: translations.delete,
+      cancelLabel: translations.cancel,
     );
-    return confirmed == true && mounted;
+    return confirmed && mounted;
   }
 
   _removeImage(path) async {

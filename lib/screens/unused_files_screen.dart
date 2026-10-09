@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
-import 'package:material_themes_widgets/forms/loading.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
@@ -10,13 +8,15 @@ import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../model/storage_file.dart';
-import '../primitives/overlay_mode.dart';
 import '../services/firebase_database_service.dart';
-import '../widgets/universal_image.dart';
+import '../services/firebase_observations_service.dart';
+import '../widgets/confirm_dialog.dart';
+import '../widgets/scan_progress.dart';
+import '../widgets/storage_file_thumbnail.dart';
 
-// Admin-only cleanup: photos and recordings in Storage that no observation uses, shown in a grid
-// to check and delete. A plain GridView is used because Syncfusion has no media grid; SfDataGrid
-// is a table of rows.
+// Admin-only cleanup: photos and recordings in Storage that no observation uses and that
+// Correlate files could not match to one, shown in a grid to check and delete. A plain GridView
+// is used because Syncfusion has no media grid; SfDataGrid is a table of rows.
 class UnusedFilesScreen extends StatefulWidget {
   const UnusedFilesScreen({super.key});
 
@@ -27,45 +27,41 @@ class UnusedFilesScreen extends StatefulWidget {
 class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
 
   late Translations translations;
+  late final FirebaseObservationsService _service =
+      Provider.of<FirebaseDatabaseService>(context, listen: false).observationsService;
 
   bool _isLoading = true;
+  bool _isDeleting = false;
   bool _hasError = false;
+  int _scanDone = 0;
+  int _scanTotal = 0;
   List<StorageFile> _files = [];
   int _observationCount = 0;
   int _totalFileCount = 0;
   final Set<StorageFile> _selected = {};
 
-  // Download URLs are fetched once per file, only for tiles that are shown
-  final Map<String, Future<String>> _downloadUrls = {};
-
-  final AudioPlayer _audioPlayer = AudioPlayer();
-  StorageFile? _playingFile;
-
   @override
   void initState() {
     super.initState();
-    _findUnusedFiles();
+    _scan();
   }
 
-  @override
-  void dispose() {
-    _audioPlayer.dispose();
-    super.dispose();
-  }
-
-  Future<void> _findUnusedFiles() async {
+  Future<void> _scan() async {
     setState(() {
       _isLoading = true;
       _hasError = false;
+      _scanDone = 0;
+      _scanTotal = 0;
     });
     try {
-      final service = Provider.of<FirebaseDatabaseService>(context, listen: false).observationsService;
-      final result = await service.findUnusedFiles();
+      final scan = await _service.scanStorage(onProgress: (done, total) {
+        if (mounted) setState(() { _scanDone = done; _scanTotal = total; });
+      });
       if (!mounted) return;
       setState(() {
-        _files = result.unused;
-        _observationCount = result.observationCount;
-        _totalFileCount = result.totalFileCount;
+        _files = scan.unused;
+        _observationCount = scan.observationCount;
+        _totalFileCount = scan.totalFileCount;
         _selected.clear();
         _isLoading = false;
       });
@@ -76,15 +72,6 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
         _isLoading = false;
       });
     }
-  }
-
-  Future<String> _downloadUrl(StorageFile file) =>
-      _downloadUrls.putIfAbsent(file.ref.fullPath, () => file.ref.getDownloadURL());
-
-  String _formatSize(int bytes) {
-    if (bytes >= 1024 * 1024 * 1024) return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} GB";
-    if (bytes >= 1024 * 1024) return "${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB";
-    return "${(bytes / 1024).toStringAsFixed(0)} KB";
   }
 
   @override
@@ -98,7 +85,7 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
       appBar: AppBar(
         title: Text(translations.unusedFiles),
         actions: [
-          if (_files.isNotEmpty) ...[
+          if (!_isLoading && !_isDeleting && _files.isNotEmpty) ...[
             IconButton(
               icon: Icon(allSelected ? Icons.deselect : Icons.select_all),
               tooltip: translations.selectAll,
@@ -119,7 +106,14 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
   }
 
   Widget _buildBody() {
-    if (_isLoading) return const Loading();
+    if (_isDeleting) return const Center(child: CircularProgressIndicator());
+
+    if (_isLoading) {
+      return ScanProgress(
+        translations.checkingFiles.replaceAll('%done%', '$_scanDone').replaceAll('%total%', '$_scanTotal'),
+        value: _scanTotal == 0 ? null : _scanDone / _scanTotal,
+      );
+    }
 
     if (_hasError) {
       return _buildMessage(translations.couldNotFindUnusedFiles, showRetry: true);
@@ -145,10 +139,10 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
               const SizedBox(height: 8.0),
               ThemedSubTitle(
                 _selected.isEmpty
-                    ? "${_files.length} ${translations.unusedFiles.toLowerCase()}, ${_formatSize(totalBytes)}"
+                    ? "${_files.length} ${translations.unusedFiles.toLowerCase()}, ${formatFileSize(totalBytes)}"
                     : translations.unusedFilesSelected
                         .replaceAll('%count%', '${_selected.length}')
-                        .replaceAll('%size%', _formatSize(selectedBytes)),
+                        .replaceAll('%size%', formatFileSize(selectedBytes)),
                 type: ThemeGroupType.POM,
               ),
             ],
@@ -158,7 +152,7 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
           child: _files.isEmpty
               ? _buildMessage(translations.noUnusedFiles)
               : RefreshIndicator(
-                  onRefresh: _findUnusedFiles,
+                  onRefresh: _scan,
                   child: GridView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
@@ -184,7 +178,7 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
           ThemedTitle(message, type: ThemeGroupType.MOM),
           if (showRetry) ...[
             const SizedBox(height: 16.0),
-            IconButton(icon: const Icon(Icons.refresh), onPressed: _findUnusedFiles),
+            IconButton(icon: const Icon(Icons.refresh), onPressed: _scan),
           ],
         ],
       ),
@@ -193,123 +187,63 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
 
   Widget _buildTile(StorageFile file) {
     final isSelected = _selected.contains(file);
-    return GestureDetector(
-      onTap: () => file.isImage ? _showImage(file) : _toggleAudio(file),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10.0),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (file.isImage)
-              FutureBuilder<String>(
-                future: _downloadUrl(file),
-                builder: (context, snapshot) => snapshot.hasData
-                    ? UniversalImage(snapshot.data!, overlayMode: OverlayMode.never, height: double.infinity)
-                    : Container(color: Colors.black12),
-              )
-            else
-              Container(
-                color: Colors.teal.shade800,
-                child: Icon(
-                  _playingFile == file ? Icons.stop : Icons.play_arrow,
-                  color: Colors.white,
-                  size: 48.0,
-                ),
-              ),
-            Container(
+    return ClipRRect(
+      key: ValueKey(file.path),
+      borderRadius: BorderRadius.circular(10.0),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          StorageFileThumbnail(file, downloadUrl: _service.downloadUrl),
+          IgnorePointer(
+            child: Container(
               decoration: BoxDecoration(
                 border: Border.all(color: isSelected ? Colors.red : Colors.transparent, width: 4.0),
                 borderRadius: BorderRadius.circular(10.0),
               ),
             ),
-            Align(
-              alignment: Alignment.topRight,
-              child: ThemedOverlayIconButton(
-                isSelected ? Icons.check_box : Icons.check_box_outline_blank,
-                onPressedCallback: () => setState(() {
-                  isSelected ? _selected.remove(file) : _selected.add(file);
-                }),
-              ),
+          ),
+          Align(
+            alignment: Alignment.topRight,
+            child: ThemedOverlayIconButton(
+              isSelected ? Icons.check_box : Icons.check_box_outline_blank,
+              onPressedCallback: () => setState(() {
+                isSelected ? _selected.remove(file) : _selected.add(file);
+              }),
             ),
-            Align(
-              alignment: Alignment.bottomLeft,
+          ),
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: IgnorePointer(
               child: Container(
                 color: Colors.black54,
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 2.0),
                 child: Text(
-                  "${file.created == null ? "" : "${file.created!.toLocal().toString().substring(0, 10)}  "}${_formatSize(file.sizeBytes)}",
+                  "${file.created == null ? "" : "${file.created!.toLocal().toString().substring(0, 10)}  "}${formatFileSize(file.sizeBytes)}",
                   style: const TextStyle(color: Colors.white, fontSize: 11.0),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Future<void> _showImage(StorageFile file) async {
-    final url = await _downloadUrl(file);
-    if (!mounted) return;
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: InteractiveViewer(
-          child: UniversalImage(url, overlayMode: OverlayMode.never, boxFit: BoxFit.contain, height: 500.0),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _toggleAudio(StorageFile file) async {
-    if (_playingFile == file) {
-      await _audioPlayer.stop();
-      if (mounted) setState(() => _playingFile = null);
-      return;
-    }
-    setState(() => _playingFile = file);
-    try {
-      await _audioPlayer.setUrl(await _downloadUrl(file));
-      await _audioPlayer.play();
-    } catch (_) {
-      // Unplayable file; nothing to show beyond stopping
-    }
-    if (mounted && _playingFile == file) setState(() => _playingFile = null);
-  }
-
-  Future<void> _confirmAndDeleteSelected() async {
-    final service = Provider.of<FirebaseDatabaseService>(context, listen: false).observationsService;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(translations.deleteUnusedFilesDialogTitle.replaceAll('%count%', '${_selected.length}')),
-        content: Text(translations.deleteUnusedFilesDialogDescription),
-        actions: [
-          TextButton(child: Text(translations.cancel), onPressed: () => Navigator.pop(context, false)),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
-              backgroundColor: Colors.red,
-              shape: const StadiumBorder(),
-            ),
-            child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
           ),
         ],
       ),
     );
-    if (confirmed != true || !mounted) return;
+  }
 
-    await _audioPlayer.stop();
-    setState(() {
-      _playingFile = null;
-      _isLoading = true;
-    });
+  Future<void> _confirmAndDeleteSelected() async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: translations.deleteUnusedFilesDialogTitle.replaceAll('%count%', '${_selected.length}'),
+      description: translations.deleteUnusedFilesDialogDescription,
+      confirmLabel: translations.delete,
+      cancelLabel: translations.cancel,
+    );
+    if (!confirmed || !mounted) return;
 
-    final failed = await service.deleteStorageFiles(_selected.toList());
+    setState(() => _isDeleting = true);
+    final failed = await _service.deleteStorageFiles(_selected.toList());
     if (!mounted) return;
 
     if (failed.isNotEmpty) showToast(translations.someFilesNotDeleted);
@@ -320,7 +254,7 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
       _selected
         ..clear()
         ..addAll(failed);
-      _isLoading = false;
+      _isDeleting = false;
     });
   }
 }

@@ -3,6 +3,7 @@ import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
@@ -22,6 +23,7 @@ import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
+import 'storage_file_correlator.dart';
 
 class ObservationsService {
 
@@ -523,6 +525,21 @@ class ObservationsService {
       }
     }
 
+    // Refresh photo and recording links on local copies that have no unsent edits, so links an
+    // admin repaired (or that changed on another device) reach this phone too. Older versions kept
+    // the local copy's broken links forever.
+    for (var remoteObservation in remoteObservations) {
+      for (var localObservation in _localObservations.where((local) => local.isUploaded && local.uid == remoteObservation.uid)) {
+        final imagesChanged = !listEquals(localObservation.imageUrls, remoteObservation.imageUrls);
+        final audioChanged = !listEquals(localObservation.audioUrls, remoteObservation.audioUrls);
+        if (imagesChanged || audioChanged) {
+          localObservation.imageUrls = [...?remoteObservation.imageUrls];
+          localObservation.audioUrls = [...?remoteObservation.audioUrls];
+          await saveLocalObservation(localObservation);
+        }
+      }
+    }
+
     // Prune the other direction too: a local observation that was previously synced to Firestore
     // but is no longer in this fetch is one that got deleted - by this device before this listener
     // caught up, or by another device entirely. Without this, deleting an uploaded observation on
@@ -548,6 +565,42 @@ class ObservationsService {
     }
   }
   //endregion
+
+  // Applies the admin's chosen link repairs (see StorageFileCorrelator), one observation at a
+  // time: only the photo and recording lists are written, then its sheets are updated.
+  // Returns how many observations could not be updated.
+  Future<int> applyFileFixes(List<FileFix> fixes) async {
+    final service = firebaseDatabaseService.observationsService;
+    final fixesByObservation = <String, List<FileFix>>{};
+    for (var fix in fixes) {
+      final uid = fix.observation.uid;
+      if (uid == null || uid.isEmpty) continue;
+      fixesByObservation.putIfAbsent(uid, () => []).add(fix);
+    }
+
+    var failures = 0;
+    for (var observationFixes in fixesByObservation.values) {
+      final observation = observationFixes.first.observation;
+      try {
+        final newUrlsByPath = {
+          for (var fix in observationFixes) fix.file.path: await service.downloadUrl(fix.file.path),
+        };
+        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath);
+        await service.updateMediaUrls(observation.uid!, lists.imageUrls, lists.audioUrls);
+        observation.imageUrls = lists.imageUrls;
+        observation.audioUrls = lists.audioUrls;
+      } on FirebaseException catch (e) {
+        developer.log('Could not repair links for ${observation.uid}: $e', name: 'ObservationsService');
+        failures++;
+        continue;
+      }
+
+      _updateOlderSharedObservation(observation);
+      final results = await saveObservationToGoogleSheets(observation);
+      await _setPendingGoogleSheetsSync(observation.uid, results.any((result) => result.exception != null));
+    }
+    return failures;
+  }
 
   //region Observation CRUD
   Future<ValueMessagePair?> saveObservation(Observation observation, AppUser? user) async {

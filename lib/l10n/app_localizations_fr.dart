@@ -369,7 +369,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get ifThen => 'IF/THEN';
 
   @override
-  String get ifThenUrl => 'http://www.ifthenshecan.org/';
+  String get ifThenUrl => 'https://www.ifthenshecan.org/';
 
   @override
   String get canadianPikaProject => 'Canadian Pika Project';
@@ -632,7 +632,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get soundOnboardingDetails =>
-      'Les pikas émettent des cris d\'alarme pour plusieurs raisons : avertir les autres pikas de la présence de prédateurs comme les faucons et empêcher les intrus d\'entrer sur leur territoire. Les mâles adultes peuvent aussi pousser de longs cris, légèrement plus aigus que les cris courts, pouvant durer jusqu\'à une minute ! Les cris varient selon les régions ; celui que vous entendez dans une partie de l\'État peut donc être différent de ceux entendus ailleurs.';
+      'Les pikas émettent des cris d\'alarme pour plusieurs raisons : avertir les autres pikas de la présence de prédateurs comme les faucons et empêcher les intrus d\'entrer sur leur territoire. Les mâles adultes peuvent aussi pousser de longs cris, légèrement plus aigus que les cris courts, pouvant durer jusqu\'à une minute ! Les cris varient selon les régions ; celui que vous entendez dans une partie de l\'État peut donc être différent de ceux entendus ailleurs. Astuce : les pikas répondent souvent aux cris enregistrés. Si vous n\'en voyez pas, essayez de faire jouer ce cri avec le son de votre haut-parleur au maximum !';
 
   @override
   String get haypilesOnboardingTitle => 'Meules de foin';
@@ -822,7 +822,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get observationSavedSuccessfully =>
-      'Observation enregistrée avec succès';
+      'Merci ! Votre observation a été téléversée.';
 
   @override
   String get unknownErrorUploadingToServerObservationSavedLocally =>
@@ -928,4 +928,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get couldNotSignIn => 'Connexion impossible. Veuillez réessayer.';
+
+  @override
+  String get traditionalTerritoryOf => 'Territoire traditionnel du peuple %s';
+
+  @override
+  String get nativeLandSource => 'Source : Native Land Digital';
+
+  @override
+  String get incidental => 'Fortuite';
 }

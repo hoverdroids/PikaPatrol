@@ -116,7 +116,7 @@
   "denverZoo": "Zoo de Denver",
   "denverZooUrl": "https://denverzoo.org/",
   "ifThen": "IF/THEN",
-  "ifThenUrl": "http://www.ifthenshecan.org/",
+  "ifThenUrl": "https://www.ifthenshecan.org/",
   "canadianPikaProject": "Canadian Pika Project",
   "canadianPikaProjectUrl": "https://blogs.ubc.ca/russellolab/canadian-pika-project/",
   "appVersion": "Version de l'application",
@@ -192,7 +192,7 @@
   "juvenileOnboardingTitle": "Juvéniles",
   "juvenileOnboardingDetails": "Les pikas juvéniles sont généralement plus petits et d'une couleur grise plus uniforme. Cela s'explique par le fait qu'ils portent leur première fourrure et n'ont donc pas encore mué. Leurs cris sont également plus doux et plus aigus que ceux des adultes.",
   "soundOnboardingTitle": "Écoutez leurs cris !",
-  "soundOnboardingDetails": "Les pikas émettent des cris d'alarme pour plusieurs raisons : avertir les autres pikas de la présence de prédateurs comme les faucons et empêcher les intrus d'entrer sur leur territoire. Les mâles adultes peuvent aussi pousser de longs cris, légèrement plus aigus que les cris courts, pouvant durer jusqu'à une minute ! Les cris varient selon les régions ; celui que vous entendez dans une partie de l'État peut donc être différent de ceux entendus ailleurs.",
+  "soundOnboardingDetails": "Les pikas émettent des cris d'alarme pour plusieurs raisons : avertir les autres pikas de la présence de prédateurs comme les faucons et empêcher les intrus d'entrer sur leur territoire. Les mâles adultes peuvent aussi pousser de longs cris, légèrement plus aigus que les cris courts, pouvant durer jusqu'à une minute ! Les cris varient selon les régions ; celui que vous entendez dans une partie de l'État peut donc être différent de ceux entendus ailleurs. Astuce : les pikas répondent souvent aux cris enregistrés. Si vous n'en voyez pas, essayez de faire jouer ce cri avec le son de votre haut-parleur au maximum !",
   "haypilesOnboardingTitle": "Meules de foin",
   "haypilesOnboardingDetails": "Les pikas construisent de grandes réserves de nourriture pour survivre à l'hiver, en commençant pendant l'été et en continuant jusqu'à ce que la végétation meure à l'automne. Les meules actives se composent généralement de brins d'herbe et de fleurs sauvages fraîchement coupés et verts, tassés sous ou entre les rochers. Habituellement, les pikas construisent une nouvelle meule au-dessus des brindilles ou des feuilles restantes des années précédentes, qui paraissent brunes.",
   "scatPileOnboardingTitle": "Tas de crottes",
@@ -248,7 +248,7 @@
   "initializeGoogleSheets": "Initialiser Google Sheets",
   "localObservationsNeedUploadedDialogTitle": "Les observations hors ligne doivent être téléversées",
   "localObservationsNeedUploadedDialogDescription": "Les observations effectuées hors ligne n'ont pas encore été téléversées. Téléverser maintenant ?",
-  "observationSavedSuccessfully": "Observation enregistrée avec succès",
+  "observationSavedSuccessfully": "Merci ! Votre observation a été téléversée.",
   "unknownErrorUploadingToServerObservationSavedLocally": "Erreur inconnue lors du téléversement vers le serveur. Observation enregistrée localement.",
   "fillInAllFormFields": "Remplissez tout le formulaire",
   "userSettings": "Paramètres utilisateur",
@@ -281,5 +281,8 @@
   "deleteAccountWrongPassword": "Ce mot de passe n'a pas fonctionné, votre compte n'a donc pas été supprimé.",
   "signInWithGoogle": "Se connecter avec Google",
   "signInWithApple": "Se connecter avec Apple",
-  "couldNotSignIn": "Connexion impossible. Veuillez réessayer."
+  "couldNotSignIn": "Connexion impossible. Veuillez réessayer.",
+  "traditionalTerritoryOf": "Territoire traditionnel du peuple %s",
+  "nativeLandSource": "Source : Native Land Digital",
+  "incidental": "Fortuite"
 }

@@ -18,6 +18,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 2 — audio delete and icon contrast** (`65d9395`): trash can on audio recordings while creating or editing an observation; delete icons on photos and audio cards drawn on a dark circle so they show on any background.
 - **Pass 3 — data fixes**: hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
 - **Pass 4 — Sheets retry and social sign-in**: failed Sheets updates retried when back online; Sign in with Google (all phones) and Apple (iPhone).
+- **Pass 5 — content and look**: territory wording and Native Land source link; call pro-tip; chip selection beyond color; "Incidental" search duration; https IF/THEN link; splash file names; stub and TODO cleanup; thank-you message.
 
 ## People
 
@@ -60,19 +61,19 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 ## 3. Observation form
 
 - [x] Species limited to American pika (first and default) and Collared pika. Other Asian species stay hidden. Jo and Megan, Jan and Feb 2024, "More Pika species!" and "iOS build submitted".
-- [ ] **Remove the leftover TODO about American pika showing twice** (observation_screen.dart:1550), after checking it no longer happens.
+- [x] Done in pass 5. **Remove the leftover TODO about American pika showing twice** (observation_screen.dart:1550), after checking it no longer happens.
 - [x] "Other" option for other animals, with free text. Jo, Sep 2023.
 - [x] **Latitude and longitude at 5 decimal places everywhere.** Fixed in pass 3: GPS and typed values are rounded to 5 places and shown with 5. Editing and the map header show 5, but the read-only view shows 3, and typed input is not limited. Jo, Aug 2022 and Jun 2024, "List of projects to include in the app"; GitHub #50 and #58.
 - [x] Altitude in feet, plus an imperial/metric preference. Jo, Sep 2023; Leigh Anne, Aug 2026. Done in 3.4.0.
-- [ ] **Show Celsius next to Fahrenheit for temperature** (for example "45°F (7°C)"), or have the units setting cover temperature. Leigh Anne, Aug 2026.
+- [x] Covered by the units setting added in 3.4.0, which shows temperature in Celsius when Metric is chosen. **Show Celsius next to Fahrenheit for temperature** (for example "45°F (7°C)"), or have the units setting cover temperature. Leigh Anne, Aug 2026.
 - [ ] **Units in Google Sheets stay imperial.** The display setting must not change stored data. Jo, Aug 2026. Check this holds.
 - [x] Altitude no longer shows 0 offline on Android 13. Jo, Sep 2023 (2.0.0 rework). Retest.
 - [x] Date can be changed with the calendar button. GitHub #23.
 - [x] Default observation template, with default species and default projects. Chris, Aug 2026; agreed by Jo, Mike, Megan and Leigh Anne. Done in 3.4.0.
-- [ ] **Add a search duration option for incidental sightings that were not a standard search.** Leigh Anne, Aug 2026. Jo deferred to Megan, since the field comes from CPP. **Decision:** Megan.
+- [x] **Add a search duration option for incidental sightings that were not a standard search.** Done in pass 5: "Incidental" is the first option. Leigh Anne, Aug 2026. Jo deferred to Megan, since the field comes from CPP. **Decision:** Megan.
 - [x] Talus area hints in sports-field sizes ("Show hints").
-- [ ] **Make the selected state of choice chips visible in sunlight, and not by color alone.** Chips now swap color (teal with white text versus grey). The request was a dark background with light text, **and** a thicker or darker border or a check icon, so that color is not the only cue. Test this outdoors. Volunteer via Jo, Aug 2025; GitHub #72 (still open).
-- [ ] **Show a "Thank you for submitting your observation" message** after upload. Today there is only a "saved successfully" toast. GitHub #71 (low priority, needs funding).
+- [x] **Make the selected state of choice chips visible in sunlight, and not by color alone.** Done in pass 5: dark fill, thick black border, bold text and a check mark. Chips now swap color (teal with white text versus grey). The request was a dark background with light text, **and** a thicker or darker border or a check icon, so that color is not the only cue. Test this outdoors. Volunteer via Jo, Aug 2025; GitHub #72 (still open).
+- [x] Done in pass 5: "Thank you! Your observation was uploaded." in EN/ES/FR. **Show a "Thank you for submitting your observation" message** after upload. Today there is only a "saved successfully" toast. GitHub #71 (low priority, needs funding).
 - [ ] **Minor form changes from the Canadian partner meetings** (to be decided). Jo, Oct 2025, "Canadian pika project updates to Pika Patrol app". **Owner:** Jo and Mike, to send the list.
 
 ## 4. Projects and data sharing (Google Sheets)
@@ -97,8 +98,8 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Look up territories for manually typed coordinates too. Mike, Jul 2026.
 - [x] Clickable territory links, and an in-app Native Land map (an extra, beyond the request).
 - [x] The map's auto-open can be turned off on the map screen itself, as well as in User Settings. Mike found the auto-open distracting. Jul 2026.
-- [ ] **Use the agreed wording, "Traditional territory of the XX, YY, ZZ people".** The app now shows "Indigenous Territories" and "Indigenous Languages" headings. Jo, Apr 30 2026, "Pika Patrol Indigenous Content".
-- [ ] **Show the Native Land Digital source with a link to how they map territories.** Leigh Anne asked for the reference, and Jo thought it was shown, but the code has no attribution. Aug 2026.
+- [x] **Use the agreed wording, "Traditional territory of the XX, YY, ZZ people".** Done in pass 5, in the observation and the pop-up, in EN/ES/FR. The app now shows "Indigenous Territories" and "Indigenous Languages" headings. Jo, Apr 30 2026, "Pika Patrol Indigenous Content".
+- [x] **Show the Native Land Digital source with a link to how they map territories.** Done in pass 5: "Source: Native Land Digital" links to native-land.ca/about/how-it-works. Leigh Anne asked for the reference, and Jo thought it was shown, but the code has no attribution. Aug 2026.
 - [ ] **Year 2 extra: Indigenous names for American and Collared pikas**, if funding and content come in. Mike, Jan 2025; Jo, Apr 2026.
 
 ## 6. Languages
@@ -115,7 +116,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Collared pika page, with an image and text that tells it apart from the American pika. Jo, Nov 2023.
 - [ ] **Add the Collared pika call audio to its page.** Jo sent a call recording, but species pages have no audio. Jo, Nov 2023.
 - [ ] **Credit the Collared pika photo to Katie Christie (optional).** Jo, Nov 2023.
-- [ ] **Add the "Hear them roar" pro-tip:** "Pikas often respond to recorded calls, so if you don't see any, try playing this call with your speaker sound up!" Add it in English, Spanish (Annika's version) and French. Jo, Jan 2024; Megan approved.
+- [x] Done in pass 5 (French is a first draft for Turi to check). **Add the "Hear them roar" pro-tip:** "Pikas often respond to recorded calls, so if you don't see any, try playing this call with your speaker sound up!" Add it in English, Spanish (Annika's version) and French. Jo, Jan 2024; Megan approved.
 - [ ] **Add a link to the on-demand trip leader training in the main menu.** IF/THEN report, Sep 2024.
 
 ## 8. Menu, branding and links
@@ -124,12 +125,12 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Map of Pika Observations link (https://pikapartners.org/pikapatrolmap/).
 - [x] Take Climate Action link (formerly "Carbon"). GitHub #13.
 - [x] Sponsors and Support: Colorado Pika Project, RMW, Denver Zoo, IF/THEN, Canadian Pika Project (https://blogs.ubc.ca/russellolab/canadian-pika-project/).
-- [ ] **Change the IF/THEN link to https.** The app uses `http://www.ifthenshecan.org/`; Jo asked for `https://www.ifthenshecan.org`. Mar 2022.
-- [ ] **Replace the "Front Range Pika Project" splash with the Colorado Pika Project name and logo.** The project was renamed in 2022, but the splash still shows the old name. Megan, Feb 2022.
+- [x] **Change the IF/THEN link to https.** Done in pass 5. The app uses `http://www.ifthenshecan.org/`; Jo asked for `https://www.ifthenshecan.org`. Mar 2022.
+- [x] **Replace the "Front Range Pika Project" splash with the Colorado Pika Project name and logo.** The splash already showed the CPP logo; pass 5 renamed the leftover Front Range file and class names. The project was renamed in 2022, but the splash still shows the old name. Megan, Feb 2022.
 - [x] IF/THEN logo (orange on white) on the splash. Jo, Mar 2022.
 - [x] Splash screen can be turned off in User Settings (2026).
 - [x] App version shown in the menu (3.2.1).
-- [ ] **Remove the leftover `developer.log('Play Video')` stub,** or link the Kristi Odom tutorial video (https://vimeo.com/1011836237) from App Help if wanted. Sep 2024.
+- [x] Stub removed in pass 5. **Remove the leftover `developer.log('Play Video')` stub,** or link the Kristi Odom tutorial video (https://vimeo.com/1011836237) from App Help if wanted. Sep 2024.
 - [ ] **Possible future: Oregon Zoo on the splash.** Jo, May 2024 (only if they join).
 
 ## 9. Accounts and login
@@ -203,7 +204,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 ## 16. Future ideas (out of current scope)
 
 - [ ] Share observations to iNaturalist, either automatically or by batch CSV. Needs a privacy policy update. Mike, Aug 2026.
-- [ ] Thank-you message after submitting. GitHub #71.
+- [x] Thank-you message after submitting. GitHub #71 (pass 5).
 - [ ] More pika species (the Asian species are coded but hidden). Kept to North American species for now. Jo and Megan, Jan 2024.
 - [ ] Two-way sync, where edits in Sheets flow back to Firebase. Chris, Feb 2024.
 

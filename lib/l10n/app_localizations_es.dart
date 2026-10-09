@@ -368,7 +368,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ifThen => 'IF/THEN';
 
   @override
-  String get ifThenUrl => 'http://www.ifthenshecan.org/';
+  String get ifThenUrl => 'https://www.ifthenshecan.org/';
 
   @override
   String get canadianPikaProject => 'Canadian Pika Project';
@@ -628,7 +628,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get soundOnboardingDetails =>
-      'Las pikas emiten chirridos de alarma por varias razones: para advertir a otras pikas sobre depredadores como los halcones y para mantener a otros fuera de su territorio. Los machos adultos también pueden hacer llamadas largas, que tienen un tono ligeramente más alto que las llamadas cortas y pueden durar hasta un minuto. Las llamadas varían regionalmente, por lo que la llamada que escuche en una parte del estado puede no sonar igual que las llamadas que escuche en otras partes.';
+      'Las pikas emiten chirridos de alarma por varias razones: para advertir a otras pikas sobre depredadores como los halcones y para mantener a otros fuera de su territorio. Los machos adultos también pueden hacer llamadas largas, que tienen un tono ligeramente más alto que las llamadas cortas y pueden durar hasta un minuto. Las llamadas varían regionalmente, por lo que la llamada que escuche en una parte del estado puede no sonar igual que las llamadas que escuche en otras partes. Consejo profesional: muchas veces los pikas responden a llamadas grabadas, así que si no los ves, ¡intenta reproducir esta llamada con el volumen alto!';
 
   @override
   String get haypilesOnboardingTitle => 'Montones de Heno';
@@ -817,7 +817,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get observationSavedSuccessfully =>
-      'Observación guardada exitosamente';
+      '¡Gracias! Tu observación se subió.';
 
   @override
   String get unknownErrorUploadingToServerObservationSavedLocally =>
@@ -923,4 +923,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get couldNotSignIn => 'No se pudo iniciar sesión. Inténtalo de nuevo.';
+
+  @override
+  String get traditionalTerritoryOf => 'Territorio tradicional del pueblo %s';
+
+  @override
+  String get nativeLandSource => 'Fuente: Native Land Digital';
+
+  @override
+  String get incidental => 'Incidental';
 }

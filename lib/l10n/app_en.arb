@@ -116,7 +116,7 @@
     "denverZoo": "Denver Zoo",
     "denverZooUrl": "https://denverzoo.org/",
     "ifThen": "IF/THEN",
-    "ifThenUrl": "http://www.ifthenshecan.org/",
+    "ifThenUrl": "https://www.ifthenshecan.org/",
     "canadianPikaProject": "Canadian Pika Project",
     "canadianPikaProjectUrl": "https://blogs.ubc.ca/russellolab/canadian-pika-project/",
     "appVersion": "App Version",
@@ -192,7 +192,7 @@
     "juvenileOnboardingTitle": "Juveniles",
     "juvenileOnboardingDetails": "Juvenile pikas tend to be smaller and a more uniform gray color. This is because they are on their first coat of fur, so they have not yet molted. Their calls are also softer and higher-pitched than adults.",
     "soundOnboardingTitle": "Hear them roar!",
-    "soundOnboardingDetails": "Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts.",
+    "soundOnboardingDetails": "Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts. Pro-tip: pikas often respond to recorded calls, so if you don't see any, try playing this call with your speaker sound up!",
     "haypilesOnboardingTitle": "Haypiles",
     "haypilesOnboardingDetails": "Pikas construct large food caches to survive the winter, beginning in the summer and continuing until vegetation dies in the fall. Active haypiles usually consist of fresh green clippings of grass and wildflowers, packed under or between rocks. Usually, pikas build a fresh haypile on top of leftover twigs or leaves from previous years, which appear brown.",
     "scatPileOnboardingTitle": "Scat Pile",
@@ -248,7 +248,7 @@
     "initializeGoogleSheets": "Initialize Google Sheets",
     "localObservationsNeedUploadedDialogTitle": "Offline observations need uploaded",
     "localObservationsNeedUploadedDialogDescription": "Observations that were made offline have not been uploaded yet. Upload now?",
-    "observationSavedSuccessfully": "Observation saved successfully",
+    "observationSavedSuccessfully": "Thank you! Your observation was uploaded.",
     "unknownErrorUploadingToServerObservationSavedLocally": "Unknown error uploading to server. Observation saved locally",
     "fillInAllFormFields": "Fill in all form fields",
     "userSettings": "User Settings",
@@ -281,5 +281,8 @@
     "deleteAccountWrongPassword": "That password didn't work, so your account was not deleted.",
     "signInWithGoogle": "Sign in with Google",
     "signInWithApple": "Sign in with Apple",
-    "couldNotSignIn": "Could not sign in. Please try again."
+    "couldNotSignIn": "Could not sign in. Please try again.",
+    "traditionalTerritoryOf": "Traditional territory of the %s people",
+    "nativeLandSource": "Source: Native Land Digital",
+    "incidental": "Incidental"
 }

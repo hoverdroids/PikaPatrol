@@ -368,7 +368,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ifThen => 'IF/THEN';
 
   @override
-  String get ifThenUrl => 'http://www.ifthenshecan.org/';
+  String get ifThenUrl => 'https://www.ifthenshecan.org/';
 
   @override
   String get canadianPikaProject => 'Canadian Pika Project';
@@ -625,7 +625,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get soundOnboardingDetails =>
-      'Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts.';
+      'Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts. Pro-tip: pikas often respond to recorded calls, so if you don\'t see any, try playing this call with your speaker sound up!';
 
   @override
   String get haypilesOnboardingTitle => 'Haypiles';
@@ -810,7 +810,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Observations that were made offline have not been uploaded yet. Upload now?';
 
   @override
-  String get observationSavedSuccessfully => 'Observation saved successfully';
+  String get observationSavedSuccessfully =>
+      'Thank you! Your observation was uploaded.';
 
   @override
   String get unknownErrorUploadingToServerObservationSavedLocally =>
@@ -915,4 +916,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get couldNotSignIn => 'Could not sign in. Please try again.';
+
+  @override
+  String get traditionalTerritoryOf => 'Traditional territory of the %s people';
+
+  @override
+  String get nativeLandSource => 'Source: Native Land Digital';
+
+  @override
+  String get incidental => 'Incidental';
 }

@@ -805,7 +805,7 @@ abstract class AppLocalizations {
   /// No description provided for @ifThenUrl.
   ///
   /// In en, this message translates to:
-  /// **'http://www.ifthenshecan.org/'**
+  /// **'https://www.ifthenshecan.org/'**
   String get ifThenUrl;
 
   /// No description provided for @canadianPikaProject.
@@ -1261,7 +1261,7 @@ abstract class AppLocalizations {
   /// No description provided for @soundOnboardingDetails.
   ///
   /// In en, this message translates to:
-  /// **'Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts.'**
+  /// **'Pikas make squeaky alarm calls for several reasons: to warn other pikas about predators like hawks and to keep others out of their territory. Adult males may also make long calls, which have a slightly higher pitch than short calls and may last up to one minute! Calls are regionally variable – so the call you hear in one part of the state may not sound quite the same as calls you hear in other parts. Pro-tip: pikas often respond to recorded calls, so if you don\'t see any, try playing this call with your speaker sound up!'**
   String get soundOnboardingDetails;
 
   /// No description provided for @haypilesOnboardingTitle.
@@ -1597,7 +1597,7 @@ abstract class AppLocalizations {
   /// No description provided for @observationSavedSuccessfully.
   ///
   /// In en, this message translates to:
-  /// **'Observation saved successfully'**
+  /// **'Thank you! Your observation was uploaded.'**
   String get observationSavedSuccessfully;
 
   /// No description provided for @unknownErrorUploadingToServerObservationSavedLocally.
@@ -1797,6 +1797,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not sign in. Please try again.'**
   String get couldNotSignIn;
+
+  /// No description provided for @traditionalTerritoryOf.
+  ///
+  /// In en, this message translates to:
+  /// **'Traditional territory of the %s people'**
+  String get traditionalTerritoryOf;
+
+  /// No description provided for @nativeLandSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source: Native Land Digital'**
+  String get nativeLandSource;
+
+  /// No description provided for @incidental.
+  ///
+  /// In en, this message translates to:
+  /// **'Incidental'**
+  String get incidental;
 }
 
 class _AppLocalizationsDelegate

@@ -329,6 +329,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String signInWithGoogle = ERROR;
   String signInWithApple = ERROR;
   String couldNotSignIn = ERROR;
+  String traditionalTerritoryOf = ERROR;
+  String nativeLandSource = ERROR;
+  String incidental = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -619,6 +622,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     signInWithGoogle =  AppLocalizations.of(context)?.signInWithGoogle ?? signInWithGoogle;
     signInWithApple =  AppLocalizations.of(context)?.signInWithApple ?? signInWithApple;
     couldNotSignIn =  AppLocalizations.of(context)?.couldNotSignIn ?? couldNotSignIn;
+    traditionalTerritoryOf =  AppLocalizations.of(context)?.traditionalTerritoryOf ?? traditionalTerritoryOf;
+    nativeLandSource =  AppLocalizations.of(context)?.nativeLandSource ?? nativeLandSource;
+    incidental =  AppLocalizations.of(context)?.incidental ?? incidental;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -655,8 +661,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
     distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
 
-    searchDurationKeys = ["lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
-    searchDurationDefaultValues = [lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
+    // "Incidental" is for sightings that weren't part of a standardized search
+    searchDurationKeys = ["incidental", "lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
+    searchDurationDefaultValues = [incidental, lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -946,6 +953,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "signInWithGoogle": return signInWithGoogle;
       case "signInWithApple": return signInWithApple;
       case "couldNotSignIn": return couldNotSignIn;
+      case "traditionalTerritoryOf": return traditionalTerritoryOf;
+      case "nativeLandSource": return nativeLandSource;
+      case "incidental": return incidental;
       default: return key;
     }
   }

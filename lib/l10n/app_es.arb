@@ -116,7 +116,7 @@
     "denverZoo": "Denver Zoo",
     "denverZooUrl": "https://denverzoo.org/",
     "ifThen": "IF/THEN",
-    "ifThenUrl": "http://www.ifthenshecan.org/",
+    "ifThenUrl": "https://www.ifthenshecan.org/",
     "canadianPikaProject": "Canadian Pika Project",
     "canadianPikaProjectUrl": "https://blogs.ubc.ca/russellolab/canadian-pika-project/",
     "appVersion": "Versión de la Aplicación",
@@ -192,7 +192,7 @@
     "juvenileOnboardingTitle": "Juveniles",
     "juvenileOnboardingDetails": "Las pikas juveniles tienden a ser más pequeñas y de un color gris más uniforme. Esto se debe a que están en su primera capa de pelaje, por lo que aún no han mudado. Sus llamadas también son más suaves y agudas que las de los adultos.",
     "soundOnboardingTitle": "¡Escúchalos Rugir!",
-    "soundOnboardingDetails": "Las pikas emiten chirridos de alarma por varias razones: para advertir a otras pikas sobre depredadores como los halcones y para mantener a otros fuera de su territorio. Los machos adultos también pueden hacer llamadas largas, que tienen un tono ligeramente más alto que las llamadas cortas y pueden durar hasta un minuto. Las llamadas varían regionalmente, por lo que la llamada que escuche en una parte del estado puede no sonar igual que las llamadas que escuche en otras partes.",
+    "soundOnboardingDetails": "Las pikas emiten chirridos de alarma por varias razones: para advertir a otras pikas sobre depredadores como los halcones y para mantener a otros fuera de su territorio. Los machos adultos también pueden hacer llamadas largas, que tienen un tono ligeramente más alto que las llamadas cortas y pueden durar hasta un minuto. Las llamadas varían regionalmente, por lo que la llamada que escuche en una parte del estado puede no sonar igual que las llamadas que escuche en otras partes. Consejo profesional: muchas veces los pikas responden a llamadas grabadas, así que si no los ves, ¡intenta reproducir esta llamada con el volumen alto!",
     "haypilesOnboardingTitle": "Montones de Heno",
     "haypilesOnboardingDetails": "Los pikas construyen grandes depósitos de alimentos para sobrevivir el invierno, comenzando en el verano y continuando hasta que la vegetación muere en el otoño. Los montones de heno activos generalmente consisten en recortes verdes frescos de pasto y flores silvestres, empaquetados debajo o entre rocas. Por lo general, las pikas construyen un montón de heno nuevo encima de las ramitas u hojas sobrantes de años anteriores, que parecen marrones.",
     "scatPileOnboardingTitle": "Pila de Caca",
@@ -248,7 +248,7 @@
     "initializeGoogleSheets": "Inicializar hojas de cálculo de Google",
     "localObservationsNeedUploadedDialogTitle": "Es necesario cargar las observaciones fuera de línea.",
     "localObservationsNeedUploadedDialogDescription": "Las observaciones que se realizaron fuera de línea aún no se han cargado. ¿Cargar ahora?",
-    "observationSavedSuccessfully": "Observación guardada exitosamente",
+    "observationSavedSuccessfully": "¡Gracias! Tu observación se subió.",
     "unknownErrorUploadingToServerObservationSavedLocally": "Error desconocido al subir al servidor.\nObservación guardada localmente.",
     "fillInAllFormFields": "Rellene todos los campos del formulario",
     "userSettings": "Configuración de Usuario",
@@ -281,5 +281,8 @@
     "deleteAccountWrongPassword": "Esa contraseña no funcionó, así que tu cuenta no se eliminó.",
     "signInWithGoogle": "Iniciar sesión con Google",
     "signInWithApple": "Iniciar sesión con Apple",
-    "couldNotSignIn": "No se pudo iniciar sesión. Inténtalo de nuevo."
+    "couldNotSignIn": "No se pudo iniciar sesión. Inténtalo de nuevo.",
+    "traditionalTerritoryOf": "Territorio tradicional del pueblo %s",
+    "nativeLandSource": "Fuente: Native Land Digital",
+    "incidental": "Incidental"
 }

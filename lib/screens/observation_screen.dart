@@ -98,11 +98,17 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     foregroundColor: Colors.black87,
     borderColor: Colors.grey.shade400,
     borderStyle: BorderStyle.solid,
-    selectedStyle: const C2ChipStyle(
-      backgroundColor: Colors.teal,
+    // Selected chips differ by more than color (GitHub #72): dark fill, thick dark border, bold
+    // text and a check mark, so they read clearly in sunlight, with polarized sunglasses, or
+    // with limited color vision.
+    selectedStyle: C2ChipStyle(
+      backgroundColor: Colors.teal.shade800,
       backgroundOpacity: 1,
       foregroundColor: Colors.white,
-      borderColor: Colors.teal,
+      foregroundStyle: const TextStyle(fontWeight: FontWeight.bold),
+      borderColor: Colors.black,
+      borderWidth: 3,
+      checkmarkColor: Colors.white,
     ),
   );
 
@@ -360,7 +366,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 child: RawMaterialButton(
                   //padding: EdgeInsets.all(0.0),
                   //elevation: 12.0,
-                  onPressed: () => developer.log('Play Video'),
+                  // The record/play button inside handles the tap; this only draws the white circle
+                  onPressed: () {},
                   shape: const CircleBorder(),
                   fillColor: Colors.white,
                   child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
@@ -762,7 +769,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         
         String message = '';
         if (territoryNames.isNotEmpty) {
-          message += '${translations.indigenousTerritories ?? "Indigenous Territories"}: $territoryNames';
+          message += translations.traditionalTerritoryOf.replaceAll('%s', territoryNames);
         }
         if (languageNames.isNotEmpty) {
           if (message.isNotEmpty) message += '\n';
@@ -1238,6 +1245,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             type: ThemeGroupType.POM,
           ),
           miniTransparentDivider,
+          ThemedBody(
+            translations.traditionalTerritoryOf.replaceAll('%s', territoryEntries.map((t) => t.key).join(', ')),
+            type: ThemeGroupType.MOM,
+          ),
+          miniTransparentDivider,
           ...territoryEntries.map((t) => entryRow(t, Icons.map, 'territories')),
           if (languageEntries.isNotEmpty) smallTransparentDivider,
         ],
@@ -1248,6 +1260,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           ),
           miniTransparentDivider,
           ...languageEntries.map((l) => entryRow(l, Icons.map, 'languages')),
+        ],
+        if (territoryEntries.isNotEmpty || languageEntries.isNotEmpty) ...[
+          miniTransparentDivider,
+          GestureDetector(
+            onTap: () => launchUrl(Uri.parse("https://native-land.ca/about/how-it-works/"), mode: LaunchMode.externalApplication),
+            child: Text(
+              translations.nativeLandSource,
+              style: const TextStyle(fontSize: 12, decoration: TextDecoration.underline, color: Colors.grey),
+            ),
+          ),
         ],
       ],
     );
@@ -1603,7 +1625,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildPikaSpecies() {
-    var speciesValues = widget.observationViewModel.getSpeciesValues();//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
+    // Keep in a local: calling getSpeciesValues() inline listed American Pika twice
+    var speciesValues = widget.observationViewModel.getSpeciesValues();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1620,6 +1643,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.species,
           onChanged: (value) => {
             if (widget.isEditMode) {
@@ -1665,6 +1689,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.signs ?? <String>[],
           onChanged: (val) => {
             if (widget.isEditMode) {
@@ -1694,6 +1719,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1723,6 +1749,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.distanceToClosestPika,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1749,6 +1776,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.searchDuration,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1793,6 +1821,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.talusArea,
             onChanged: (val) => {
               if (widget.isEditMode) {
@@ -1820,6 +1849,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
           choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.temperature,
           onChanged: (val) => {
             if (widget.isEditMode) {
@@ -1845,6 +1875,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.skies,
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1869,6 +1900,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.wind,
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1901,6 +1933,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ChipsChoice<String>.multiple(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
         choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[],
         onChanged: (val) => {
           if (widget.isEditMode) {
@@ -1984,6 +2017,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           ChipsChoice<String>.multiple(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
             choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.sharedWithProjects ?? <String>[],
             onChanged: (updatedSharedWithProjects) =>
             {

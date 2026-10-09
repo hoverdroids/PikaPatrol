@@ -4,9 +4,9 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:pika_patrol/screens/home_with_drawer.dart';
 
-class FrontRangePikaProjectSplashScreen extends Container {
+class ColoradoPikaProjectSplashScreen extends Container {
 
-  FrontRangePikaProjectSplashScreen({super.key});
+  ColoradoPikaProjectSplashScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +21,7 @@ class FrontRangePikaProjectSplashScreen extends Container {
             children: [
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-                child: Image.asset("assets/images/front_range_pika_project_logo.png"),
+                child: Image.asset("assets/images/colorado_pika_project_logo.png"),
               ),
               Align(
                 alignment: Alignment.topRight,

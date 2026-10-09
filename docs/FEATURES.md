@@ -21,6 +21,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 5 — content and look**: territory wording and Native Land source link; call pro-tip; chip selection beyond color; "Incidental" search duration; https IF/THEN link; splash file names; stub and TODO cleanup; thank-you message.
 - **Pass 6 — Firebase rules and billing cap**: Firestore and proposed Storage rules in `firebase/`; billing kill-switch function in its own repo; `docs/firebase-runbook.md` with the console checklist.
 - **Pass 7 — card status, string tool, version 3.5.0**: clearer upload status icons and info text; `tool/add_strings.py`; version 3.5.0+335.
+- **Pass 8 — App Check**: the app activates Firebase App Check so enforcement can be turned on later.
 
 ## People
 
@@ -183,6 +184,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [ ] **Restrict Google API keys** (Android and iOS app restrictions). Google flagged a "Publicly accessible API key" in Feb 2025. Native Land key moved to `.env` in Jul 2026.
 - [ ] **Blaze plan safeguards:** Pass 6: kill-switch Cloud Function and $1 budget setup written (repo `firebase-billing-kill-switch`, local only so far) plus a runbook. **Owner:** Chris to push the repo, add it as a submodule, and run the setup. Originally: a $1 budget alert, a check that the Storage bucket is in a free-tier region, and an optional automatic cap. Megan added RMW's card on Aug 6 2026, and RMW can't afford surprise bills. Chris, Jul–Aug 2026.
 - [ ] **Decide a storage strategy** (image size limits and compression, retention). Chris, Jun 2025. As of 2026-10-09 Storage holds 6.45 GB, which is over the 5 GB free tier, so the project is already paying a little for storage on the Blaze plan.
+- [x] **App Check in the app.** Pass 8: the app sends App Check tokens (Play Integrity on Android, App Attest with DeviceCheck fallback on iOS). **Owner:** Chris to register the apps under App Check in the Firebase console, then turn on enforcement for Firestore and Storage once most users have 3.5.0.
 - [ ] **Clean up unused OAuth clients.** Google notices, Jun 2025 and Aug 2026.
 - [ ] **Look into Google for Nonprofits / Cloud credits.** **Owner:** Megan. Aug 2023 and Oct 2024.
 

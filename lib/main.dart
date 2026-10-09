@@ -25,7 +25,9 @@ import 'model/app_user_profile.dart';
 import 'model/google_sheets_credential.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 
 import 'model/observation.dart';
@@ -82,6 +84,13 @@ Future<void> main() async {
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // App Check lets Firebase reject requests that don't come from the real app. It has no effect
+  // until enforcement is turned on in the Firebase console (docs/firebase-runbook.md).
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider(),
+    providerApple: kDebugMode ? const AppleDebugProvider() : const AppleAppAttestWithDeviceCheckFallbackProvider(),
   );
 
   // Read this ahead of runApp() so MyApp knows on its very first build whether to show the

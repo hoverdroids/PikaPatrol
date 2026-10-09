@@ -1767,6 +1767,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'>30 m'**
   String get moreThanOneHundredFeetMetric;
+
+  /// No description provided for @deleteAccountEnterPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your password to confirm.'**
+  String get deleteAccountEnterPassword;
+
+  /// No description provided for @deleteAccountWrongPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'That password didn\'t work, so your account was not deleted.'**
+  String get deleteAccountWrongPassword;
 }
 
 class _AppLocalizationsDelegate

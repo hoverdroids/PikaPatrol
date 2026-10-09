@@ -543,11 +543,26 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       },
       deleteAccount: translations.deleteAccount,
       onTapDeleteAccount: () async {
+        final passwordController = TextEditingController();
+
+        Widget cancelButton = TextButton(
+          child: Text(translations.cancel),
+          onPressed: () => Navigator.pop(context, false),
+        );
+
         Widget okButton = TextButton(
           child: Text(translations.ok),
           onPressed:  () async {
             //Hide the alert
             Navigator.pop(context, true);
+
+            // Confirm the password first. Firebase refuses to delete an account without a recent
+            // sign-in, and deleting the profile before that check left a login with no profile.
+            var reauthResult = await firebaseAuthService.reauthenticateWithPassword(passwordController.text);
+            if (reauthResult != null) {
+              showToast(translations.deleteAccountWrongPassword);
+              return;
+            }
 
             setState(() { showSignIn = true; });//makes more sense to show signIn than register after signOut
 
@@ -560,14 +575,30 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               showToast(message);
               return;
             }
-              showToast(translations.accountDeleted);
-            },
+            showToast(translations.accountDeleted);
+          },
         );
 
         AlertDialog alert = AlertDialog(
           title: Text(translations.deleteAccountDialogTitle),
-          content: Text(translations.deleteAccountDialogDetails),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(translations.deleteAccountDialogDetails),
+              const SizedBox(height: 16),
+              Text(translations.deleteAccountEnterPassword),
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                autocorrect: false,
+                enableSuggestions: false,
+                decoration: InputDecoration(labelText: translations.password),
+              ),
+            ],
+          ),
           actions: [
+            cancelButton,
             okButton,
           ],
         );
@@ -962,9 +993,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
 
     if (context.mounted) {
-      //TODO - CHRIS - it would be best to check what organization the data can be shared with and then share in those lists only
+      // Names and emails go to the master sheet only, never to partner sheets (data use agreement)
       var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-      for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+      for (var service in googleSheetsService.masterSpreadsheetServices) {
         await service.userProfilesWorksheetService?.addOrUpdateAppUserProfiles(appUserProfiles, service.organization);
       }
     }
@@ -1085,8 +1116,9 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       if (uid != null && (emailUpdated || profileUpdated || isAdminChanged)) {
         var profile = updatedUserProfile ?? userProfile;
         if (profile != null && context.mounted) {
+          // Names and emails go to the master sheet only, never to partner sheets (data use agreement)
           var googleSheetsService = Provider.of<GoogleSheetsService>(context, listen: false);
-          for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
+          for (var service in googleSheetsService.masterSpreadsheetServices) {
             await service.userProfilesWorksheetService?.addOrUpdateAppUserProfile(user, profile);
           }
         }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'package:gal/gal.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:file_picker/file_picker.dart';
@@ -530,10 +531,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildLatLonAltitude() {
     final observation = widget.observationViewModel.observation;
-    String latitude = observation.latitude?.toStringAsFixed(3) ?? "";
-    String editLatitude = observation.latitude?.toStringAsFixed(5) ?? "";
-    String longitude = observation.longitude?.toStringAsFixed(3) ?? "";
-    String editLongitude = observation.longitude?.toStringAsFixed(5) ?? "";
+    String latitude = formatCoordinate(observation.latitude);
+    String editLatitude = latitude;
+    String longitude = formatCoordinate(observation.longitude);
+    String editLongitude = longitude;
 
     double? altMeters = observation.altitudeInMeters;
     String altitudeDisplay = altMeters != null ? (_isMetric ? altMeters : metersToFeet(altMeters)).toStringAsFixed(2) : "";//Display altitude is shortened
@@ -650,7 +651,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       }
       final parsed = double.tryParse(latitude);
       if (parsed == null) return;
-      observation.latitude = parsed;
+      observation.latitude = roundCoordinate(parsed);
     }
 
     if (longitude != null) {
@@ -660,7 +661,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       }
       final parsed = double.tryParse(longitude);
       if (parsed == null) return;
-      observation.longitude = parsed;
+      observation.longitude = roundCoordinate(parsed);
     }
 
     _manualCoordinatesLookupDebounce?.cancel();
@@ -681,8 +682,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     await checkPermissionsAndGetCurrentPosition(translations)
       .then((Position position) async {
-        String lat = position.latitude.toStringAsFixed(2);
-        String lon = position.longitude.toStringAsFixed(2);
+        String lat = formatCoordinate(position.latitude);
+        String lon = formatCoordinate(position.longitude);
         String alt = position.altitude.toStringAsFixed(2);
         
         // Delay before showing location toast to avoid overlap
@@ -691,8 +692,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
         setState(() {
           final observation = widget.observationViewModel.observation;
-          observation.latitude = position.latitude;
-          observation.longitude = position.longitude;
+          observation.latitude = roundCoordinate(position.latitude);
+          observation.longitude = roundCoordinate(position.longitude);
           observation.altitudeInMeters = position.altitude;
 
           _hideGeoFields = true;
@@ -1402,7 +1403,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     List<PlatformFile> result = await FilePicker.pickFiles(
         type: pickingType,
-        allowedExtensions: allowedExtensions
+        allowedExtensions: allowedExtensions,
+        compressionQuality: pickingType == FileType.image ? photoQuality : 0
     );
 
     // Result is empty if user cancelled
@@ -1420,7 +1422,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     PlatformFile? result = await FilePicker.pickFile(
         type: pickingType,
-        allowedExtensions: allowedExtensions
+        allowedExtensions: allowedExtensions,
+        compressionQuality: pickingType == FileType.image ? photoQuality : 0
     );
 
     // Result is null if user cancelled
@@ -1481,6 +1484,21 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       }
     } on PlatformException catch (e) {
       developer.log("${translations.unsupportedOperation}: $e");
+    }
+  }
+
+  static const double maxPhotoDimension = 2560;
+  static const int photoQuality = 85;
+
+  Future<void> _savePhotoToGallery(String path) async {
+    try {
+      if (!await Gal.hasAccess()) {
+        await Gal.requestAccess();
+      }
+      await Gal.putImage(path, album: translations.appName);
+    } catch (e) {
+      // Saving to the gallery is a convenience; the photo is still added to the observation
+      developer.log("Unable to save photo to gallery: $e");
     }
   }
 
@@ -1551,13 +1569,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     //Take picture with camera ...
     var imagePicker = ImagePicker();
-    XFile? selected = await imagePicker.pickImage(source: ImageSource.camera);
+    // Large phone photos are slow to upload and fill Firebase Storage, so cap the size
+    XFile? selected = await imagePicker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: maxPhotoDimension,
+      maxHeight: maxPhotoDimension,
+      imageQuality: photoQuality,
+    );
 
     var selectedPath = selected?.path;
     
     if (selectedPath == null) {
       showToast(translations.errorWhenTryingToTakePicture);
     } else {
+      // Keep a copy in the phone's photo gallery so the volunteer never loses the picture
+      _savePhotoToGallery(selectedPath);
+
       _cropImage(
           selectedPath,
           toolbarColor,

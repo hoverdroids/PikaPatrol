@@ -18,7 +18,15 @@ class GoogleSheetsService {
   static const int WRITE_THEN_TOAST_DELAY_MS = 1000;
 
 
+  /// The master project: every observation goes to its sheet, and users never see it in the app
+  static const String MASTER_PROJECT = "Pika Patrol";
+
   List<PikaPatrolSpreadsheetService> pikaPatrolSpreadsheetServices = [];
+
+  /// Only the master sheet holds user profiles (names and emails). Partner sheets get observations only.
+  Iterable<PikaPatrolSpreadsheetService> get masterSpreadsheetServices {
+    return pikaPatrolSpreadsheetServices.where((service) => service.organization == MASTER_PROJECT);
+  }
 
   List<String> get organizations {
     return pikaPatrolSpreadsheetServices.map((service) => service.organization).nonNulls.toList();

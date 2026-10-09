@@ -54,3 +54,14 @@ double FEET_PER_METER = 3.28084;
 double feetToMeters(double feet) => feet / FEET_PER_METER;
 
 double metersToFeet(double meter) => meter * FEET_PER_METER;
+
+/// Latitude and longitude are kept to 5 decimal places (about 1.1 m), which is as precise as phone GPS gets
+const int coordinateDecimalPlaces = 5;
+
+double roundCoordinate(double value) {
+  return double.parse(value.toStringAsFixed(coordinateDecimalPlaces));
+}
+
+String formatCoordinate(double? value) {
+  return value?.toStringAsFixed(coordinateDecimalPlaces) ?? "";
+}

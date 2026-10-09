@@ -221,6 +221,21 @@ class FirebaseAuthService {
     }
   }
 
+  /// Firebase only deletes an account after a recent sign-in, so confirm the password first
+  Future<FirebaseAuthException?> reauthenticateWithPassword(String password) async {
+    try {
+      User? user = _auth.currentUser;
+      var email = user?.email;
+      if (user == null || email == null) {
+        return FirebaseAuthException(code: "no-current-user");
+      }
+      await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: email, password: password));
+      return null;
+    } on FirebaseAuthException catch(e) {
+      return e;
+    }
+  }
+
   Future<FirebaseAuthException?> deleteUser() async {
       try {
         User? user = _auth.currentUser;

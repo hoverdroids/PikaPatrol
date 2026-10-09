@@ -899,4 +899,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get moreThanOneHundredFeetMetric => '>30 m';
+
+  @override
+  String get deleteAccountEnterPassword => 'Enter your password to confirm.';
+
+  @override
+  String get deleteAccountWrongPassword =>
+      'That password didn\'t work, so your account was not deleted.';
 }

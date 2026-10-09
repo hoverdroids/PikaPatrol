@@ -906,4 +906,12 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get moreThanOneHundredFeetMetric => '>30 m';
+
+  @override
+  String get deleteAccountEnterPassword =>
+      'Ingresa tu contraseña para confirmar.';
+
+  @override
+  String get deleteAccountWrongPassword =>
+      'Esa contraseña no funcionó, así que tu cuenta no se eliminó.';
 }

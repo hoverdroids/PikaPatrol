@@ -28,6 +28,7 @@ dependencies:
   provider: ^6.0.5
   image_cropper: ^12.2.1
   image_picker: ^1.2.4
+  gal: ^2.3.3
   image_picker_android: ^0.8.13
   image_picker_platform_interface: ^2.11.0
   file_picker: ^13.1.0

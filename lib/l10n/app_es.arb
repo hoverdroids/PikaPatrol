@@ -204,9 +204,9 @@
     "tennisCourtToBaseballInfield": "Desde Cancha de Tenis Hasta Campo de Béisbol",
     "baseballInfieldToFootballField": "Del Campo de Béisbol al Campo de Fútbol",
     "largerThanFootballField": "Más Grande que un Campo de Fútbol",
-    "lessThan3000Feet": "<3,000 pie\u00B2",
-    "threeThousandToTenThousandFeet": "3,000 - 10,000 pie\u00B2",
-    "tenThousandToFiftyThousandFeet": "10,000 - 50,000 pie\u00B2",
+    "lessThan3000Feet": "<3,000 pie²",
+    "threeThousandToTenThousandFeet": "3,000 - 10,000 pie²",
+    "tenThousandToFiftyThousandFeet": "10,000 - 50,000 pie²",
     "greaterThanOneAcre": "> 1 acre",
     "lessThan10Feet": "<10ft",
     "tenTo30Feet": "10 - 30 ft",
@@ -276,5 +276,7 @@
     "lessThan10FeetMetric": "<3 m",
     "tenTo30FeetMetric": "3 - 9 m",
     "thirtyToOneHundredFeetMetric": "9 - 30 m",
-    "moreThanOneHundredFeetMetric": ">30 m"
+    "moreThanOneHundredFeetMetric": ">30 m",
+    "deleteAccountEnterPassword": "Ingresa tu contraseña para confirmar.",
+    "deleteAccountWrongPassword": "Esa contraseña no funcionó, así que tu cuenta no se eliminó."
 }

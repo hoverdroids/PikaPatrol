@@ -16,6 +16,7 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 
 - **Pass 1 — store blockers** (`344fa2b`): Flutter 3.47.7 with FVM, target API 36, 16 KB pages, reCAPTCHA 18.6.1, Photo Picker, permissions trimmed, iOS privacy manifest, Swift Package Manager, `record` and `just_audio`.
 - **Pass 2 — audio delete and icon contrast** (`65d9395`): trash can on audio recordings while creating or editing an observation; delete icons on photos and audio cards drawn on a dark circle so they show on any background.
+- **Pass 3 — data fixes** (`37eb761`): hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
 
 ## People
 
@@ -43,7 +44,7 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 ## 2. Offline and cached observations, and sync
 
 - [ ] **Cached observations keep asking to upload after they have already uploaded.** Reported on iOS and Android by Jo, Julie, Megan and several volunteers. The 2026 commits fix several causes, but volunteers still reported it in Jul and Oct 2026 (possibly on old builds). Confirm the fix on the newest build. GitHub #64; "Pika patrol issues/questions" (May 2024); "FW: Pika patrol bug feedback - still not seeing a fix…" (Oct 2026).
-- [ ] **Editing cached observations offline must save.** A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
+- [ ] **Editing cached observations offline must save.** Pass 3 review: the save path does mark edited observations for re-upload; the report may predate the July 2026 fixes. Needs a hands-on test on the newest build: airplane mode, create, edit text, save, reopen, then go online and check Firebase. A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
 - [ ] **Make edits to an already-uploaded observation reach the server, and show which version is on the server.** Volunteer, Oct 2024, "FW: Pika Patrol app problems and questions".
 - [ ] **Show a clear status on each card: uploaded, waiting to upload, or failed.** A volunteer could not tell what the cloud icon meant. Oct 2024 (same thread); Chris, Aug 2025.
 - [x] Users see all of their own observations on every device, including after a reinstall. Chris, Sep 2024; done 2026-07-28.
@@ -60,7 +61,7 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 - [x] Species limited to American pika (first and default) and Collared pika. Other Asian species stay hidden. Jo and Megan, Jan and Feb 2024, "More Pika species!" and "iOS build submitted".
 - [ ] **Remove the leftover TODO about American pika showing twice** (observation_screen.dart:1550), after checking it no longer happens.
 - [x] "Other" option for other animals, with free text. Jo, Sep 2023.
-- [ ] **Latitude and longitude at 5 decimal places everywhere.** Editing and the map header show 5, but the read-only view shows 3, and typed input is not limited. Jo, Aug 2022 and Jun 2024, "List of projects to include in the app"; GitHub #50 and #58.
+- [x] **Latitude and longitude at 5 decimal places everywhere.** Fixed in pass 3: GPS and typed values are rounded to 5 places and shown with 5. Editing and the map header show 5, but the read-only view shows 3, and typed input is not limited. Jo, Aug 2022 and Jun 2024, "List of projects to include in the app"; GitHub #50 and #58.
 - [x] Altitude in feet, plus an imperial/metric preference. Jo, Sep 2023; Leigh Anne, Aug 2026. Done in 3.4.0.
 - [ ] **Show Celsius next to Fahrenheit for temperature** (for example "45°F (7°C)"), or have the units setting cover temperature. Leigh Anne, Aug 2026.
 - [ ] **Units in Google Sheets stay imperial.** The display setting must not change stored data. Jo, Aug 2026. Check this holds.
@@ -78,9 +79,9 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 - [x] Projects list: Colorado Pika Project, Cascades Pika Watch, PikaNET, Glacier NP, Mt. Rainier NP, Cascades Forest Conservancy, Montana Pika Project, Nevada Pika Atlas, Canadian Pika Project, Utah Pika Watch. Jo, Apr–Jun 2024, Nov 2024 and Jul 2026.
 - [x] Denver Zoo, RMW and IF/THEN removed from the projects list. Jo, Feb 2024.
 - [x] New observations start with no projects selected. Jo, Jul 2024 (3.0.3).
-- [ ] **Hidden "Pika Patrol" project always on, so every observation reaches the master sheet.** Today it is added only while syncing to Sheets, and it is skipped when the project list is empty (observations_service.dart:527). It also changes the observation's own list. Jo, Feb and Jul 2024.
+- [x] **Hidden "Pika Patrol" project always on, so every observation reaches the master sheet.** Fixed in pass 3: always added during sync, never written into the observation itself. Today it is added only while syncing to Sheets, and it is skipped when the project list is empty (observations_service.dart:527). It also changes the observation's own list. Jo, Feb and Jul 2024.
 - [x] Each project gets its own sheet, updated on add, edit and delete, and an observation is removed from a project's sheet when that project is unticked (3.0.0).
-- [ ] **Remove observer names and emails from the sheets shared with partners.** Today the User Profiles tab is written to every project's sheet. Megan wants partner sheets to have no personal data. Chris proposed one master sheet that feeds the others. Megan, Feb 2026, "a couple of questions about app data use agreement".
+- [x] **Remove observer names and emails from the sheets shared with partners.** Fixed in pass 3: user profiles are written to the master sheet only. Partner sheets that already have a User Profiles tab still need it cleared by hand (**Owner:** Jo or Megan). Today the User Profiles tab is written to every project's sheet. Megan wants partner sheets to have no personal data. Chris proposed one master sheet that feeds the others. Megan, Feb 2026, "a couple of questions about app data use agreement".
 - [ ] **Add a sheet (or filter) of all Collared pika observations** for provincial governments and land managers. Yukon partner via Jo, Oct 2025. Chris: a filtered sheet or a simple API, depending on how they read data.
 - [ ] **Send observations made in Canada to the Canadian Pika Project automatically**, even if the observer picks another project or none. Megan says the privacy policy likely allows it. Leigh Anne and Jo, Aug 2026. **Decision:** confirm the approach, then build it.
 - [ ] **Firebase-to-Sheets gaps.** If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
@@ -136,18 +137,20 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 - [x] Change email and password in the profile (3.0.0).
 - [x] Profile no longer asks for the password again right after registering (3.0.2).
 - [x] Required profile fields are enforced after login (2.0.0).
-- [ ] **Account deletion must remove the login as well as the profile.** Today the profile is deleted first. If Firebase needs a recent sign-in, the login stays, so the user can still sign in but can't edit a profile. Reported by a volunteer, Sep 2024. Apple 5.1.1(v).
+- [x] **Account deletion must remove the login as well as the profile.** Fixed in pass 3: the user confirms their password first, so Firebase always allows the deletion; nothing is deleted if the password is wrong. (Google and Apple sign-in users will need the same step when those are added.) Today the profile is deleted first. If Firebase needs a recent sign-in, the login stays, so the user can still sign in but can't edit a profile. Reported by a volunteer, Sep 2024. Apple 5.1.1(v).
 - [ ] **Sign in with Google and with Apple.** Chris listed both in Sep 2024, and Jo listed them in the UBC "misc" items. `google_sign_in` is in pubspec but unused. If Google sign-in ships, Apple sign-in is required on iOS. **Decision:** build both or remove the unused package.
 - [ ] **Turn on email enumeration protection in Firebase Auth.** Firebase notice, Feb 2024 (no reply in the thread).
 
 ## 10. Photos and media
 
-- [ ] **Save photos taken in the app to the phone's camera roll.** A volunteer lost photos because of this. Jul 2026, "FW: New ideas about Pika Patrol app bug on iPhone…".
+- [x] **Save photos taken in the app to the phone's camera roll.** Fixed in pass 3: saved to a "Pika Patrol" album with `gal`. A volunteer lost photos because of this. Jul 2026, "FW: New ideas about Pika Patrol app bug on iPhone…".
 - [ ] **Cache images** (for example cached_network_image) so cards don't stay blank while loading. Chris, Jun 2024.
-- [ ] **Resize or compress photos before upload.** Large phone photos are slow, and Firebase Storage was at 89 percent of the free limit. Chris and Megan, Jun 2024 and Jun 2025.
+- [x] **Resize or compress photos before upload.** Fixed in pass 3: camera photos capped at 2560 px and 85% quality; library photos compressed to 85% quality. Existing photos in Storage are unchanged. Large phone photos are slow, and Firebase Storage was at 89 percent of the free limit. Chris and Megan, Jun 2024 and Jun 2025.
 - [ ] **Recheck GitHub #31** ("Audio recording won't save") **and #30** ("Can't take a picture after choosing to upload a photo"). Both are still open, marked "can't repro", and the file picker and audio were reworked in Jul 2026. Close or fix them.
 - [x] Camera crash and image cropper fixed. GitHub #1.
 - [x] Unused media permissions removed (Jul 2026).
+- [x] Delete button on audio recordings while creating or editing an observation. Chris, 2026-10-09 (pass 2).
+- [x] Delete icons on photo and audio cards drawn on a dark circle with a light outline, so they show on any background. Chris, 2026-10-09 (pass 2).
 
 ## 11. Apple App Store compliance
 

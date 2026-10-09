@@ -523,15 +523,16 @@ class ObservationsService {
 
     List<GSheetsValue> returnValues = [];
 
-    var sharedWithProjects = observation.sharedWithProjects;
-    sharedWithProjects?.add("Pika Patrol");
+    // Every observation goes to the master sheet, even when it isn't shared with any project.
+    // Copy the list so the observation itself never gets the hidden master project added to it.
+    var sharedWithProjects = {...?observation.sharedWithProjects, GoogleSheetsService.MASTER_PROJECT};
 
     GSheetsException? firstException;
 
     //Update all organization's spreadsheets even if an exception is thrown for one of them, since a single sheet can have an error while others are don't
     for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
       GSheetsValue<bool>? returnValue;
-      if (sharedWithProjects?.contains(service.organization) == true) {
+      if (sharedWithProjects.contains(service.organization)) {
         returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
       } else {
         //TODO - it would be nice if we could know if the observation was previously shared with the organization, but now isn't

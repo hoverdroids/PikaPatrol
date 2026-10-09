@@ -276,5 +276,7 @@
   "lessThan10FeetMetric": "<3 m",
   "tenTo30FeetMetric": "3 - 9 m",
   "thirtyToOneHundredFeetMetric": "9 - 30 m",
-  "moreThanOneHundredFeetMetric": ">30 m"
+  "moreThanOneHundredFeetMetric": ">30 m",
+  "deleteAccountEnterPassword": "Saisissez votre mot de passe pour confirmer.",
+  "deleteAccountWrongPassword": "Ce mot de passe n'a pas fonctionné, votre compte n'a donc pas été supprimé."
 }

@@ -22,6 +22,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 6 — Firebase rules and billing cap**: Firestore and proposed Storage rules in `firebase/`; billing kill-switch function in its own repo; `docs/firebase-runbook.md` with the console checklist.
 - **Pass 7 — card status, string tool, version 3.5.0**: clearer upload status icons and info text; `tool/add_strings.py`; version 3.5.0+335.
 - **Pass 8 — App Check**: the app activates Firebase App Check so enforcement can be turned on later.
+- **Pass 9 — checklist tidy**: ticked items already covered by earlier passes or decisions; units check.
 
 ## People
 
@@ -43,7 +44,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **Upgrade reCAPTCHA to 18.4.0 or newer.** Resolves to 18.6.1. Version 18.1.2 has a critical security bug and is deprecated. The repo is on firebase_auth 4.12.0, which likely pulls 18.1.x, so upgrade the Firebase packages. Google Play Console, Apr 2024 and Apr/Jun 2026.
 - [ ] **Remove READ_MEDIA_IMAGES / READ_MEDIA_VIDEO from every track and use the Android Photo Picker.** Code done: the Photo Picker is on and the merged manifest has neither permission. Still to do: replace the old builds on the Play testing tracks. Google rejected the app over this in Jun 2026. Removing them makes the app available in Canada again. The manifest no longer has them, but `useAndroidPhotoPicker` is not turned on, and old builds on the testing tracks still need replacing. Megan, Jan 2025 and Jun 2026, "Action Required: Your app is not compliant…".
 - [x] **Add an iOS privacy manifest.** Added `ios/Runner/PrivacyInfo.xcprivacy`. `PrivacyInfo.xcprivacy` is missing. It needs `NSPrivacyAccessedAPITypes` for FileTimestamp and UserDefaults, and Apple has required it since May 2024 (ITMS-91053). App Store Connect, Mar 2024.
-- [ ] **Merge the release branch into `main`** once it has been tested, and update the README version (it still says 3.3.9 / 333).
+- [ ] **Merge the release branch into `main`** once it has been tested. (README version updated to 3.5.0 / 335 in pass 7.)
 - [ ] **Publish to Google Play and the App Store** with release notes. **Owner:** Megan (Play), Jo or Chris (Apple).
 
 ## 2. Offline and cached observations, and sync
@@ -69,7 +70,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **Latitude and longitude at 5 decimal places everywhere.** Fixed in pass 3: GPS and typed values are rounded to 5 places and shown with 5. Editing and the map header show 5, but the read-only view shows 3, and typed input is not limited. Jo, Aug 2022 and Jun 2024, "List of projects to include in the app"; GitHub #50 and #58.
 - [x] Altitude in feet, plus an imperial/metric preference. Jo, Sep 2023; Leigh Anne, Aug 2026. Done in 3.4.0.
 - [x] Covered by the units setting added in 3.4.0, which shows temperature in Celsius when Metric is chosen. **Show Celsius next to Fahrenheit for temperature** (for example "45°F (7°C)"), or have the units setting cover temperature. Leigh Anne, Aug 2026.
-- [ ] **Units in Google Sheets stay imperial.** The display setting must not change stored data. Jo, Aug 2026. Check this holds.
+- [x] Checked in pass 9: the units setting only changes labels; stored values are unchanged (altitude has always been stored in meters). **Units in Google Sheets stay imperial.** The display setting must not change stored data. Jo, Aug 2026. Check this holds.
 - [x] Altitude no longer shows 0 offline on Android 13. Jo, Sep 2023 (2.0.0 rework). Retest.
 - [x] Date can be changed with the calendar button. GitHub #23.
 - [x] Default observation template, with default species and default projects. Chris, Aug 2026; agreed by Jo, Mike, Megan and Leigh Anne. Done in 3.4.0.
@@ -88,7 +89,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Each project gets its own sheet, updated on add, edit and delete, and an observation is removed from a project's sheet when that project is unticked (3.0.0).
 - [x] **Remove observer names and emails from the sheets shared with partners.** Fixed in pass 3: user profiles are written to the master sheet only. Partner sheets that already have a User Profiles tab still need it cleared by hand (**Owner:** Jo or Megan). Today the User Profiles tab is written to every project's sheet. Megan wants partner sheets to have no personal data. Chris proposed one master sheet that feeds the others. Megan, Feb 2026, "a couple of questions about app data use agreement".
 - [ ] **Add a sheet (or filter) of all Collared pika observations** for provincial governments and land managers. Yukon partner via Jo, Oct 2025. Chris: a filtered sheet or a simple API, depending on how they read data.
-- [ ] **Send observations made in Canada to the Canadian Pika Project automatically**, even if the observer picks another project or none. Megan says the privacy policy likely allows it. Leigh Anne and Jo, Aug 2026. **Decision:** confirm the approach, then build it.
+- [x] Decided no (Chris, 2026-10-09): Canadian users set the project once in the default observation template. **Send observations made in Canada to the Canadian Pika Project automatically**, even if the observer picks another project or none. Megan says the privacy policy likely allows it. Leigh Anne and Jo, Aug 2026. **Decision:** confirm the approach, then build it.
 - [x] **Firebase-to-Sheets gaps.** Option (d) done in pass 4: observations whose Sheets update failed are remembered on the phone and retried when the app is next online. (Superseded later if the Sheets sync moves server-side, §18.) If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
 - [x] Admin-only "export all" and "initialize sheets" (3.0.0).
 - [ ] **Backfill older Canadian observations into the Canadian sheet** if Mike or Leigh Anne want them. Chris, Jul 2026.
@@ -111,7 +112,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [ ] **Have a professional check the Spanish** and fix it based on user feedback. The first pass was Google Translate plus Annika's sheet. Review was planned through QHM or Patagonia Catchfire. Jo and Megan, Jan 2024; IF/THEN report, Sep 2024.
 - [x] French translation (3.3.8/3.4.0), with proofreader fixes. Mike, Dec 2024 to Jul 2026.
 - [ ] **Apply Turi's French suggestions** (Jul 30 2026, "French Translation Suggestions.docx"), if the 2026-07-30 proofreader commit did not already cover them.
-- [ ] **Translate new text into French and Spanish**, for example the "Traditional territory" wording and the call pro-tip. Jo offered to do these. Oct 2025.
+- [x] Pass 5 and 7 added Spanish and French for every new string (first drafts; include them in the Spanish and French reviews). **Translate new text into French and Spanish**, for example the "Traditional territory" wording and the call pro-tip. Jo offered to do these. Oct 2025.
 - [x] Pass 7: `tool/add_strings.py` adds a string to every language file and `translations.dart` in one step. **Make it easier to add new languages**, using one translation sheet with a column per language. Chris, Dec 2024.
 
 ## 7. Training materials
@@ -162,14 +163,14 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Purpose strings for camera, photos, microphone and location, with examples (Apple 5.1.1). GitHub #49 and #51.
 - [x] Background audio mode removed (Apple 2.5.4, Oct 2023).
 - [x] Camera and microphone buttons work on iOS 17 (Apple 2.1, Oct 2023).
-- [ ] **Privacy manifest** (see section 1).
+- [x] **Privacy manifest** (see section 1).
 - [x] **Check whether the `NSLocationAlways*` strings and the `remote-notification` background mode are needed.** Not needed; removed. The app uses no push notifications, which is also why every upload warns about ITMS-90078. Remove them if unused.
 - [ ] **Keep iPad support** with real iPad screenshots (Apple 2.3.3). **Owner:** Jo.
 - [ ] **No Android mentions in the App Store "What's New" text** (Apple 2.3.10). **Owner:** Jo and Megan.
 
 ## 12. Google Play compliance
 
-- [ ] Target API 35, 16 KB pages, Photo Picker and reCAPTCHA (see section 1).
+- [x] Target API 35, 16 KB pages, Photo Picker and reCAPTCHA (see section 1). Code done in pass 1.
 - [x] Prominent location disclosure before the location permission. GitHub #15 and #41.
 - [x] Android App Bundle (.aab) is built.
 - [ ] **Upload the deobfuscation mapping file and native debug symbols with each release** to clear the Play warnings. Optional.
@@ -203,7 +204,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **Auto-share Canadian observations:** no; Canadian users use the default observation template. Chris, 2026-10-09.
 - [x] **Incidental search duration option:** yes, labeled "Incidental". Chris, 2026-10-09.
 - [x] **Google and Apple sign-in:** build both in 3.5.0. Chris, 2026-10-09.
-- [ ] **Default card image:** keep the pika placeholder or switch to a plain one. Chris and Jo, Jun 2024.
+- [x] **Default card image:** keep the pika placeholder (default, 2026-10-09). keep the pika placeholder or switch to a plain one. Chris and Jo, Jun 2024.
 
 ## 16. Future ideas (out of current scope)
 

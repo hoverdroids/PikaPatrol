@@ -284,5 +284,8 @@
   "couldNotSignIn": "Connexion impossible. Veuillez réessayer.",
   "traditionalTerritoryOf": "Territoire traditionnel du peuple %s",
   "nativeLandSource": "Source : Native Land Digital",
-  "incidental": "Fortuite"
+  "incidental": "Fortuite",
+  "deleteImageDialogTitle": "Supprimer cette photo ?",
+  "deleteAudioDialogTitle": "Supprimer cet enregistrement ?",
+  "deleteMediaDialogDescription": "Cette action est irréversible. Le fichier est supprimé du serveur lorsque vous enregistrez l'observation."
 }

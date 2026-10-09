@@ -81,6 +81,10 @@ class FirebaseObservationsService {
     observation.uid = originalUid == null || originalUid.isEmpty ? generateNewObservationUid() : originalUid;
     DocumentReference doc = observationsCollection.doc(observation.uid);
 
+    // The files this observation pointed to before this save, so the ones the user removed can be
+    // deleted from Storage after the save works. One read per save.
+    final previousFileUrls = originalUid == null || originalUid.isEmpty ? <String>[] : await _getFileUrls(doc);
+
     try {
       // Calling "set" when a doc with the Id doesn't exist will create it.
       // If a doc exists with the given uid, it will be updated
@@ -94,17 +98,41 @@ class FirebaseObservationsService {
 
       return e;
     }
+
+    final currentFileUrls = {...?observation.imageUrls, ...?observation.audioUrls};
+    final removedFileUrls = previousFileUrls.where((url) => !currentFileUrls.contains(url)).toList();
+    final failedDeletes = await deleteFiles(removedFileUrls);
+    await onFileDeletesFailed?.call(failedDeletes);
+
     return null;
   }
 
-  Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
-    if (deleteImages) {
-      await deleteFiles(IMAGES_FOLDER_NAME, observation.imageUrls);
+  Future<List<String>> _getFileUrls(DocumentReference doc) async {
+    try {
+      final snapshot = await doc.get();
+      final data = snapshot.data() as Map<String, dynamic>?;
+      if (data == null) return <String>[];
+      return [
+        ...(data[IMAGE_URLS] as List<dynamic>? ?? []).cast<String>(),
+        ...(data[AUDIO_URLS] as List<dynamic>? ?? []).cast<String>(),
+      ];
+    } on FirebaseException catch (e) {
+      developer.log('Could not read the previous files for ${doc.id}: $e', name: 'FirebaseObservationsService');
+      return <String>[];
     }
+  }
 
-    if (deleteAudio) {
-      await deleteFiles(AUDIO_FOLDER_NAME, observation.audioUrls);
-    }
+  // Called with Storage files that could not be deleted (for example while offline), so the
+  // caller can retry later instead of leaving files that are still billed for.
+  Future<void> Function(List<String> fileUrls)? onFileDeletesFailed;
+
+  Future<FirebaseException?> deleteObservation(Observation observation, bool deleteImages, bool deleteAudio) async {
+    final fileUrls = [
+      if (deleteImages) ...?observation.imageUrls,
+      if (deleteAudio) ...?observation.audioUrls,
+    ];
+    final failedDeletes = await deleteFiles(fileUrls);
+    await onFileDeletesFailed?.call(failedDeletes);
 
     var docUid = observation.uid ?? "";
     if (docUid.isNotEmpty) {
@@ -258,46 +286,45 @@ class FirebaseObservationsService {
     return _cachedUserObservationsStream!;
   }
 
+  // Returns the download URLs in the same order as filepaths, so the first image stays the cover.
+  // (Adding URLs as each upload finished put them in finish order, which moved the cover.)
   Future<List<String>> uploadFiles(List<String> filepaths, bool areImages) async {
-    List<String> uploadUrls = [];
+    var folder = areImages ? IMAGES_FOLDER_NAME : AUDIO_FOLDER_NAME;
 
-    await Future.wait(filepaths.map((String filepath) async {
-      //TODO - base on mime
-      /*String mimeStr = lookupMimeType(filepath);
-      var fileType = mimeStr.split('/');
-      developer.log('file type ${fileType}');*/
-      var folder = areImages ? IMAGES_FOLDER_NAME : AUDIO_FOLDER_NAME;
-      if(filepath.contains(STORAGE_BUCKET_NAME)) {
+    return await Future.wait(filepaths.map((String filepath) async {
+      if (filepath.contains(STORAGE_BUCKET_NAME)) {
         //Do not try to upload an image that has already been uploaded
-        uploadUrls.add(filepath);
-      } else {
-        try {
-          FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
-          UploadTask uploadTask = storage.ref().child("$folder/${basename(filepath)}").putFile(File(filepath));
-
-          var snapshot = await uploadTask;
-
-          var storageTaskSnapshot = snapshot;
-          final String downloadUrl = await storageTaskSnapshot.ref.getDownloadURL();
-          uploadUrls.add(downloadUrl);
-        } on FirebaseException {
-          throw ('This file is not an image');
-        }
+        return filepath;
       }
-    }), eagerError: true, cleanUp: (_) {});
 
-    return uploadUrls;
+      try {
+        // A random prefix keeps two observations from sharing one Storage file (for example the
+        // same gallery photo added to both), so deleting one never breaks the other
+        final name = "${generateNewObservationUid()}_${basename(filepath)}";
+        var snapshot = await _storage.ref().child("$folder/$name").putFile(File(filepath));
+        return await snapshot.ref.getDownloadURL();
+      } on FirebaseException {
+        throw ('This file is not an image');
+      }
+    }), eagerError: true);
+  }
+
+  FirebaseStorage get _storage {
+    final storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
+    // Fail fast when offline instead of retrying for two minutes; failed deletes are retried later
+    storage.setMaxOperationRetryTime(const Duration(seconds: 10));
+    return storage;
   }
 
   // Best-effort: deleting an observation should not get stuck because a Storage file is
   // already gone (e.g. a previous delete attempt partially succeeded, or a race with another
   // delete of the same observation) or was never uploaded in the first place (a local-only
   // file path, not a Storage URL). Each file is attempted independently so one failure doesn't
-  // block cleanup of the rest.
-  Future<void> deleteFiles(String folderName, List<String>? fileUrls) async {
-    if (fileUrls == null || fileUrls.isEmpty) return;
+  // block cleanup of the rest. Returns the files that could not be deleted, to retry later.
+  Future<List<String>> deleteFiles(List<String>? fileUrls) async {
+    final failed = <String>[];
+    if (fileUrls == null || fileUrls.isEmpty) return failed;
 
-    FirebaseStorage storage = FirebaseStorage.instanceFor(bucket: STORAGE_BUCKET_URL);
     for (var fileUrl in fileUrls) {
       if (!fileUrl.contains(STORAGE_BUCKET_NAME)) {
         //Not a Storage URL (e.g. still a local file path because it was never uploaded) - nothing to delete remotely.
@@ -305,13 +332,32 @@ class FirebaseObservationsService {
       }
 
       try {
-        await storage.refFromURL(fileUrl).delete();
+        await _storage.refFromURL(fileUrl).delete();
       } on FirebaseException catch (e) {
         if (e.code != 'object-not-found') {
           developer.log('Failed to delete storage file $fileUrl: $e', name: 'FirebaseObservationsService');
+          failed.add(fileUrl);
         }
       }
     }
+    return failed;
+  }
+
+  // One page of all observations, newest first, for admins scrolling back through every
+  // observation. Pass the previous page's lastDocument to get the next one.
+  Future<({List<Observation> observations, DocumentSnapshot? lastDocument})> getObservationsPage({
+    DocumentSnapshot? startAfter,
+    required int pageSize,
+  }) async {
+    Query query = observationsCollection.orderBy(DATE, descending: true);
+    if (startAfter != null) {
+      query = query.startAfterDocument(startAfter);
+    }
+    final snapshot = await query.limit(pageSize).get();
+    return (
+      observations: _observationsFromSnapshot(snapshot),
+      lastDocument: snapshot.docs.isEmpty ? startAfter : snapshot.docs.last,
+    );
   }
 
   Future<List<Observation>> getAllObservations({int? limit}) async {

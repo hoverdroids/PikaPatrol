@@ -31,13 +31,16 @@ class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingO
   late ObservationsService observationsService;
 
   final Key _emptySharedObservationsScrollerKey = UniqueKey();
+  // Stays the same as pages load, so the scroller keeps its place
+  final Key _sharedObservationsScrollerKey = UniqueKey();
   final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool _isLocalObservationsDialogShowing = false;
 
+  // Also true when a Sheets sync or Storage delete is waiting to be retried
   bool localObservationsNeedUploaded() {
     final localObservations = observationsService.localObservations;
-    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
+    return observationsService.hasPendingRetries || localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
   late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
@@ -144,20 +147,13 @@ class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingO
                           final observations = observationsService.sharedObservations;
 
                           if (observations.isNotEmpty) {
+                            // Admins can scroll back through every observation, a page at a time
+                            final isAdmin = Provider.of<AppUser?>(context, listen: false)?.isAdmin == true;
                             return CardScroller(
                               observations,
-                              key: Key(observations.hashCode.toString()),
-                              onTapCard: (index) => {
-                                Navigator.push( context,
-                                  MaterialPageRoute(
-                                    builder: (_) {
-                                      final translations = Provider.of<Translations>(context);
-                                      final viewModel = ObservationViewModel(observations[index].copy(), translations);
-                                      return ObservationScreen(viewModel);
-                                    },
-                                  ),
-                                )
-                              }
+                              key: _sharedObservationsScrollerKey,
+                              onTapCard: (index) => _openObservation(context, observations[index]),
+                              onNearStart: isAdmin ? observationsService.loadMoreSharedObservations : null
                             );
                           }
 
@@ -208,20 +204,8 @@ class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingO
                             return CardScroller(
                                 localObservations,
                                 key: Key(localObservations.hashCode.toString()),//using hash for key so that build is called and stack is correctly displayed after observations change
-                                onTapCard: (index) => {
-                                  Navigator.push( context,
-                                    MaterialPageRoute(
-                                      builder: (_) {
-                                        //Open the observation screen with a previously created local observation
-                                        //This observation may or may not have been uploaded
-                                        final translations = Provider.of<Translations>(context);
-                                        final observation = localObservations[index].copy();
-                                        final observationViewModel = ObservationViewModel(observation, translations);
-                                        return ObservationScreen(observationViewModel);
-                                      },
-                                    ),
-                                  )
-                                }
+                                //The local observation may or may not have been uploaded
+                                onTapCard: (index) => _openObservation(context, localObservations[index])
                             );
                           }
 
@@ -239,6 +223,13 @@ class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingO
           ],
         )
     );
+  }
+
+  // Copies the observation once, outside the route builder, so a rebuilt route keeps the user's
+  // edits instead of making a fresh copy.
+  void _openObservation(BuildContext context, Observation observation) {
+    final viewModel = ObservationViewModel(observation.copy(), translations);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ObservationScreen(viewModel)));
   }
 
   List<Observation> _createDefaultObservations() => [

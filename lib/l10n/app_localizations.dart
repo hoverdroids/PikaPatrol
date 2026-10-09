@@ -1815,6 +1815,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Incidental'**
   String get incidental;
+
+  /// No description provided for @deleteImageDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this photo?'**
+  String get deleteImageDialogTitle;
+
+  /// No description provided for @deleteAudioDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete this recording?'**
+  String get deleteAudioDialogTitle;
+
+  /// No description provided for @deleteMediaDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This can\'t be undone. It is removed from the server when you save the observation.'**
+  String get deleteMediaDialogDescription;
 }
 
 class _AppLocalizationsDelegate

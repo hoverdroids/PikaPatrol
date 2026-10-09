@@ -932,4 +932,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get incidental => 'Incidental';
+
+  @override
+  String get deleteImageDialogTitle => '¿Eliminar esta foto?';
+
+  @override
+  String get deleteAudioDialogTitle => '¿Eliminar esta grabación?';
+
+  @override
+  String get deleteMediaDialogDescription =>
+      'Esto no se puede deshacer. Se borra del servidor cuando guarde la observación.';
 }

@@ -54,7 +54,11 @@ class CardScrollWidget extends StatelessWidget {
 
       List<Widget> cardList = <Widget>[];
 
-      for (var cardIndex = 0; cardIndex < cards.length; cardIndex++) {
+      // Only the cards near the current one are visible: older ones hide behind it and newer ones
+      // are off screen. Building just these keeps long lists fast and only loads their images.
+      final firstCard = max(0, currentCardPosition.floor() - 4);
+      final lastCard = min(cards.length - 1, currentCardPosition.ceil() + 1);
+      for (var cardIndex = firstCard; cardIndex <= lastCard; cardIndex++) {
         cardList.add(_buildCard(cardIndex, primaryCardLeft, horizontalInset));
       }
 

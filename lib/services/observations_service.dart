@@ -27,7 +27,31 @@ class ObservationsService {
 
   late Translations translations;
   late GoogleSheetsService googleSheetsService;
-  late FirebaseDatabaseService firebaseDatabaseService;//TODO - should this be firebase_observations_service?
+  late FirebaseDatabaseService _firebaseDatabaseService;//TODO - should this be firebase_observations_service?
+  FirebaseDatabaseService get firebaseDatabaseService => _firebaseDatabaseService;
+  set firebaseDatabaseService(FirebaseDatabaseService service) {
+    _firebaseDatabaseService = service;
+    service.observationsService.onFileDeletesFailed = _addPendingFileDeletes;
+    _loadHasPendingRetries();
+  }
+
+  // True when a Sheets sync or a Storage delete still needs retrying, so the app retries when it
+  // comes online even if every observation is already uploaded
+  bool _hasPendingRetries = false;
+  bool get hasPendingRetries => _hasPendingRetries;
+  bool _hasLoadedPendingRetries = false;
+
+  Future<void> _loadHasPendingRetries() async {
+    if (_hasLoadedPendingRetries) return;
+    _hasLoadedPendingRetries = true;
+    await _refreshHasPendingRetries();
+  }
+
+  Future<void> _refreshHasPendingRetries() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hasPendingRetries = (prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY)?.isNotEmpty ?? false)
+        || (prefs.getStringList(_PENDING_FILE_DELETES_KEY)?.isNotEmpty ?? false);
+  }
 
   void refreshLocalizedCardText() {
     final localizedViewObservation = translations.viewObservation;
@@ -152,6 +176,29 @@ class ObservationsService {
     }
 
     await _retryPendingGoogleSheetsSyncs();
+    await _retryPendingFileDeletes();
+  }
+
+  // Storage files that could not be deleted (for example while offline) are remembered on the
+  // device and retried the next time the app is online, so removed photos and recordings never
+  // stay in Storage, where they would keep costing money.
+  static const String _PENDING_FILE_DELETES_KEY = "pendingFileDeletes";
+
+  Future<void> _addPendingFileDeletes(List<String> fileUrls) async {
+    if (fileUrls.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final pending = (prefs.getStringList(_PENDING_FILE_DELETES_KEY) ?? <String>[]).toSet()..addAll(fileUrls);
+    await prefs.setStringList(_PENDING_FILE_DELETES_KEY, pending.toList());
+    await _refreshHasPendingRetries();
+  }
+
+  Future<void> _retryPendingFileDeletes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList(_PENDING_FILE_DELETES_KEY) ?? <String>[];
+    if (pending.isEmpty) return;
+    final failed = await firebaseDatabaseService.observationsService.deleteFiles(pending);
+    await prefs.setStringList(_PENDING_FILE_DELETES_KEY, failed);
+    await _refreshHasPendingRetries();
   }
 
   // Google Sheets can be unreachable when an observation is saved, after Firebase already has it.
@@ -166,6 +213,7 @@ class ObservationsService {
     final changed = isPending ? pending.add(observationUid) : pending.remove(observationUid);
     if (changed) {
       await prefs.setStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY, pending.toList());
+      await _refreshHasPendingRetries();
     }
   }
 
@@ -370,20 +418,73 @@ class ObservationsService {
     return _sharedObservationsStreamController!.stream;
   }
 
+  // Everyone gets a live view of the newest observations. Admins can also scroll back through
+  // every observation: older ones load one small page at a time as they near the end, and pages
+  // already loaded stay in memory, so nothing is read twice in a session.
+  static const int SHARED_OBSERVATIONS_PAGE_SIZE = 10;
+
+  List<Observation> _liveSharedObservations = [];
+  final List<Observation> _olderSharedObservations = [];
+  DocumentSnapshot? _lastSharedObservationsPageDocument;
+  bool _hasMoreSharedObservations = true;
+  bool _isLoadingSharedObservations = false;
+
   setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
     if (sharedObservationsOnFirebase.hasData) {
       var data = sharedObservationsOnFirebase.data;
       if (data != null) {
-        _sharedObservations = data;
-
-        _sharedObservations = _sharedObservations.reversed.toList();
-        for (var sharedObservation in  _sharedObservations) {
-          sharedObservation.buttonText = translations.viewObservation;
-        }
-
-        _sharedObservationsStreamController?.add(_sharedObservations);
+        _liveSharedObservations = data;
+        _publishSharedObservations();
       }
     }
+  }
+
+  Future<void> loadMoreSharedObservations() async {
+    if (_isLoadingSharedObservations || !_hasMoreSharedObservations) return;
+    _isLoadingSharedObservations = true;
+    try {
+      final page = await firebaseDatabaseService.observationsService.getObservationsPage(
+        startAfter: _lastSharedObservationsPageDocument,
+        pageSize: SHARED_OBSERVATIONS_PAGE_SIZE,
+      );
+      _lastSharedObservationsPageDocument = page.lastDocument;
+      _hasMoreSharedObservations = page.observations.length == SHARED_OBSERVATIONS_PAGE_SIZE;
+      _olderSharedObservations.addAll(page.observations);
+      _publishSharedObservations();
+    } on FirebaseException catch (e) {
+      developer.log('Could not load more shared observations: $e', name: 'ObservationsService');
+    } finally {
+      _isLoadingSharedObservations = false;
+    }
+  }
+
+  // Keeps loaded pages in step with this device's saves and deletes, without reading them again
+  void _updateOlderSharedObservation(Observation observation, {bool deleted = false}) {
+    final index = _olderSharedObservations.indexWhere((older) => older.uid != null && older.uid == observation.uid);
+    if (index < 0) return;
+    if (deleted) {
+      _olderSharedObservations.removeAt(index);
+    } else {
+      _olderSharedObservations[index] = observation.copy();
+    }
+    _publishSharedObservations();
+  }
+
+  void _publishSharedObservations() {
+    // Newest first: the live observations, then older pages without the ones already shown
+    final liveUids = _liveSharedObservations.map((observation) => observation.uid).toSet();
+    final newestFirst = [
+      ..._liveSharedObservations,
+      ..._olderSharedObservations.where((observation) => !liveUids.contains(observation.uid)),
+    ];
+
+    // The card stack shows the last card on top, so the newest goes last
+    _sharedObservations = newestFirst.reversed.toList();
+    for (var sharedObservation in  _sharedObservations) {
+      sharedObservation.buttonText = translations.viewObservation;
+    }
+
+    _sharedObservationsStreamController?.add(_sharedObservations);
   }
   //endregion
 
@@ -493,6 +594,7 @@ class ObservationsService {
           if (observation.isUserObservation(user) || observation.isNonLoggedInUserObservation(user)) {
             await saveLocalObservation(observation);
           }
+          _updateOlderSharedObservation(observation);
 
           final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
           final googleSheetsException = googleSheetsReturnValue.where((value) => value.exception != null).firstOrNull?.exception;
@@ -542,10 +644,7 @@ class ObservationsService {
       observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);//TODO - do not upload if no chane
     }
 
-    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
-
-    //TODO - modify files in the file host now, based on the updated observation files list
-
+    // addOrUpdateObservation also deletes Storage files the user removed from the observation
     return await firebaseDatabaseService.observationsService.addOrUpdateObservation(observation);
   }
 
@@ -595,35 +694,13 @@ class ObservationsService {
       await deleteLocalObservation(observation);
     }
 
-    //TODO -  this is where we need to delete the observation images and audio, not in the collection
-
+    // Deleting from Firebase also deletes the observation's photos and recordings from Storage
     FirebaseException? firebaseException;
     if (context.mounted && deleteFromFirebase) {
       var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
       firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+      _updateOlderSharedObservation(observation, deleted: true);
     }
-
-    /*
-    TODO - figure out where I was going with the following
-      if (bool deleteImages, bool deleteAudio) {
-        //delete files here instead of in the observationCollection in order to separate concerns
-        //if for example, we change the file host, then there will not be a need to change the code other than swapping out the file host implementation
-
-        //for this to work, need a list of urls for the files
-
-        var exception = deleteImages ? await deleteFiles(FOLDER_NAME, observation.imageUrls) : null;
-        if (exception != null) {
-          return exception;
-        }
-
-        exception = deleteAudio ? await deleteFiles(FOLDER_NAME, observation.audioUrls) : null;
-        if (exception != null) {
-          return exception;
-        }
-      }
-
-
-     */
 
     if (context.mounted && deleteFromGoogleSheets) {
       var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);

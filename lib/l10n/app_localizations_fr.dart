@@ -937,4 +937,14 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get incidental => 'Fortuite';
+
+  @override
+  String get deleteImageDialogTitle => 'Supprimer cette photo ?';
+
+  @override
+  String get deleteAudioDialogTitle => 'Supprimer cet enregistrement ?';
+
+  @override
+  String get deleteMediaDialogDescription =>
+      'Cette action est irréversible. Le fichier est supprimé du serveur lorsque vous enregistrez l\'observation.';
 }

@@ -284,5 +284,8 @@
     "couldNotSignIn": "Could not sign in. Please try again.",
     "traditionalTerritoryOf": "Traditional territory of the %s people",
     "nativeLandSource": "Source: Native Land Digital",
-    "incidental": "Incidental"
+    "incidental": "Incidental",
+    "deleteImageDialogTitle": "Delete this photo?",
+    "deleteAudioDialogTitle": "Delete this recording?",
+    "deleteMediaDialogDescription": "This can't be undone. It is removed from the server when you save the observation."
 }

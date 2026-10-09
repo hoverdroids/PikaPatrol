@@ -284,5 +284,8 @@
     "couldNotSignIn": "No se pudo iniciar sesión. Inténtalo de nuevo.",
     "traditionalTerritoryOf": "Territorio tradicional del pueblo %s",
     "nativeLandSource": "Fuente: Native Land Digital",
-    "incidental": "Incidental"
+    "incidental": "Incidental",
+    "deleteImageDialogTitle": "¿Eliminar esta foto?",
+    "deleteAudioDialogTitle": "¿Eliminar esta grabación?",
+    "deleteMediaDialogDescription": "Esto no se puede deshacer. Se borra del servidor cuando guarde la observación."
 }

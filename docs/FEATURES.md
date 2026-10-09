@@ -23,6 +23,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 7 — card status, string tool, version 3.5.0**: clearer upload status icons and info text; `tool/add_strings.py`; version 3.5.0+335.
 - **Pass 8 — App Check**: the app activates Firebase App Check so enforcement can be turned on later.
 - **Pass 9 — checklist tidy**: ticked items already covered by earlier passes or decisions; units check.
+- **Pass 10 — Chris's test feedback**: form no longer goes blank after saving; first photo stays the cover; photo cards fill without stretching; confirm before deleting a photo or recording; removed files are deleted from Storage (retried when offline); admins page back through every shared observation; photos cached on the phone.
 
 ## People
 
@@ -50,7 +51,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 ## 2. Offline and cached observations, and sync
 
 - [ ] **Cached observations keep asking to upload after they have already uploaded.** Reported on iOS and Android by Jo, Julie, Megan and several volunteers. The 2026 commits fix several causes, but volunteers still reported it in Jul and Oct 2026 (possibly on old builds). Confirm the fix on the newest build. GitHub #64; "Pika patrol issues/questions" (May 2024); "FW: Pika patrol bug feedback - still not seeing a fix…" (Oct 2026).
-- [ ] **Editing cached observations offline must save.** Pass 3 review: the save path does mark edited observations for re-upload; the report may predate the July 2026 fixes. Needs a hands-on test on the newest build: airplane mode, create, edit text, save, reopen, then go online and check Firebase. A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
+- [ ] **Editing cached observations offline must save.** Pass 10 found a likely cause: the screen could swap in a fresh copy of the observation when the keyboard closed, losing edits (fixed). Pass 3 review: the save path does mark edited observations for re-upload; the report may predate the July 2026 fixes. Needs a hands-on test on the newest build: airplane mode, create, edit text, save, reopen, then go online and check Firebase. A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
 - [ ] **Make edits to an already-uploaded observation reach the server, and show which version is on the server.** Volunteer, Oct 2024, "FW: Pika Patrol app problems and questions".
 - [x] **Show a clear status on each card: uploaded, waiting to upload, or failed.** Done in pass 7: a cloud with a check mark means uploaded, a clock means waiting; both drawn on a dark circle; the My observations info text now explains them (EN/ES/FR) and no longer says uploaded observations stay off the device. A volunteer could not tell what the cloud icon meant. Oct 2024 (same thread); Chris, Aug 2025.
 - [x] Users see all of their own observations on every device, including after a reinstall. Chris, Sep 2024; done 2026-07-28.
@@ -59,6 +60,8 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Deletions sync across devices (3.3.2).
 - [x] "Cached Observations" renamed to "My observations", with an info button. Jo and Megan, Oct 2023; renamed again Jul 2026.
 - [x] Users can delete their own observations; admins can edit or delete any (3.0.0).
+- [x] **The form looks the same before and after saving.** Fixed in pass 10: the screen made a fresh observation whenever Flutter rebuilt its page (for example when the keyboard closed), wiping the form. This may also be the cause of the offline-edits report above. Chris, 2026-10-09.
+- [x] **Admins can scroll back through every observation** in Shared observations. Older ones load ten at a time as the admin nears the end, loaded pages stay in memory, and only the cards near the current one are drawn. Everyone else still sees the newest five. Chris, 2026-10-09 (pass 10).
 - [ ] **Old data model:** observations saved before 3.0 have no "uploaded" flag. Confirm the migration covers them. Chris, Jul 2024.
 - [ ] **Check that broken image links are fixed for older observations.** Images broke when Firebase gave a re-uploaded image a new access token, and saved local copies kept the broken URL. Chris, Jun–Sep 2024.
 
@@ -150,13 +153,17 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 ## 10. Photos and media
 
 - [x] **Save photos taken in the app to the phone's camera roll.** Fixed in pass 3: saved to a "Pika Patrol" album with `gal`. A volunteer lost photos because of this. Jul 2026, "FW: New ideas about Pika Patrol app bug on iPhone…".
-- [ ] **Cache images** (for example cached_network_image) so cards don't stay blank while loading. Chris, Jun 2024.
+- [x] **Cache images** (for example cached_network_image) so cards don't stay blank while loading. Done in pass 10 with cached_network_image: each photo downloads once, which also cuts Storage download costs. Chris, Jun 2024.
 - [x] **Resize or compress photos before upload.** Fixed in pass 3: camera photos capped at 2560 px and 85% quality; library photos compressed to 85% quality. Existing photos in Storage are unchanged. Large phone photos are slow, and Firebase Storage was at 89 percent of the free limit. Chris and Megan, Jun 2024 and Jun 2025.
 - [ ] **Recheck GitHub #31** ("Audio recording won't save") **and #30** ("Can't take a picture after choosing to upload a photo"). Both are still open, marked "can't repro", and the file picker and audio were reworked in Jul 2026. Close or fix them.
 - [x] Camera crash and image cropper fixed. GitHub #1.
 - [x] Unused media permissions removed (Jul 2026).
 - [x] Delete button on audio recordings while creating or editing an observation. Chris, 2026-10-09 (pass 2).
 - [x] Delete icons on photo and audio cards drawn on a dark circle with a light outline, so they show on any background. Chris, 2026-10-09 (pass 2).
+- [x] **Photo cards fill their slot** without stretching or bars, so the shadow sits under the photo. Chris, 2026-10-09 (pass 10).
+- [x] **The first photo added stays the cover** after uploading. Uploads finished in random order and were saved in that order. Chris, 2026-10-09 (pass 10).
+- [x] **Ask before deleting a photo or recording,** since it can't be undone (EN/ES/FR). Chris, 2026-10-09 (pass 10).
+- [x] **Removed photos and recordings are deleted from Firebase Storage,** not just from the observation. Deleting an observation deletes its files too. Deletes that fail, for example offline, are retried when the app is next online. New uploads get a unique name so two observations never share a file. Chris, 2026-10-09 (pass 10).
 
 ## 11. Apple App Store compliance
 

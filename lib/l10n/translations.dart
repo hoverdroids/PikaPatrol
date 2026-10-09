@@ -332,6 +332,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String traditionalTerritoryOf = ERROR;
   String nativeLandSource = ERROR;
   String incidental = ERROR;
+  String deleteImageDialogTitle = ERROR;
+  String deleteAudioDialogTitle = ERROR;
+  String deleteMediaDialogDescription = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -625,6 +628,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     traditionalTerritoryOf =  AppLocalizations.of(context)?.traditionalTerritoryOf ?? traditionalTerritoryOf;
     nativeLandSource =  AppLocalizations.of(context)?.nativeLandSource ?? nativeLandSource;
     incidental =  AppLocalizations.of(context)?.incidental ?? incidental;
+    deleteImageDialogTitle =  AppLocalizations.of(context)?.deleteImageDialogTitle ?? deleteImageDialogTitle;
+    deleteAudioDialogTitle =  AppLocalizations.of(context)?.deleteAudioDialogTitle ?? deleteAudioDialogTitle;
+    deleteMediaDialogDescription =  AppLocalizations.of(context)?.deleteMediaDialogDescription ?? deleteMediaDialogDescription;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -956,6 +962,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "traditionalTerritoryOf": return traditionalTerritoryOf;
       case "nativeLandSource": return nativeLandSource;
       case "incidental": return incidental;
+      case "deleteImageDialogTitle": return deleteImageDialogTitle;
+      case "deleteAudioDialogTitle": return deleteAudioDialogTitle;
+      case "deleteMediaDialogDescription": return deleteMediaDialogDescription;
       default: return key;
     }
   }

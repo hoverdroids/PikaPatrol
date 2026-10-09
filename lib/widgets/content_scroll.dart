@@ -1,10 +1,11 @@
 // ignore_for_file: depend_on_referenced_packages
-import 'dart:io' show File;
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:pika_patrol/primitives/overlay_mode.dart';
+import 'package:pika_patrol/widgets/universal_image.dart';
 import 'package:provider/provider.dart';
 
 class ContentScroll extends StatelessWidget {
@@ -107,20 +108,18 @@ class ContentScroll extends StatelessWidget {
             ),
             child: Stack(
               children: [
-                ClipRRect(
-                  clipBehavior: Clip.antiAlias,
-                  borderRadius: BorderRadius.circular(10.0),
-                  child: images[index].contains("https://")
-                      ? Image.network(
-                          images[index],
-                          fit: BoxFit.cover,
-                        )
-                      : Image.file(
-                          File(images[index]),
-                          fit: BoxFit.cover,
-                          width: imageWidth,
-                          height: imageHeight,
-                        ),
+                // Fills the whole card, cropping the photo instead of stretching it or leaving bars
+                Positioned.fill(
+                  child: ClipRRect(
+                    clipBehavior: Clip.antiAlias,
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: UniversalImage(
+                      images[index],
+                      overlayMode: OverlayMode.never,
+                      width: double.infinity,
+                      height: double.infinity,
+                    ),
+                  ),
                 ),
                 if (showDeleteButtonOnCard)...[
                   Align(

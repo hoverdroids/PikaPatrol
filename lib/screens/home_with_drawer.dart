@@ -879,38 +879,33 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
+  // The observation is made once, outside the route builder. Flutter can call a route's builder
+  // again whenever the route's dependencies change, and making the observation in there swapped
+  // the open form for a blank one, for example right after an upload.
   showObservationScreen(BuildContext context, AppUser? user) {
+    final translations = Provider.of<Translations>(context, listen: false);
+    final settingsService = Provider.of<SettingsService>(context, listen: false);
+    //New observations start from the user's default observation template
+    final observation = observationFromTemplateJson(
+      settingsService.defaultObservationTemplateJson,
+      observerUid: user?.uid,
+      date: DateTime.now(),
+    );
+    final observationViewModel = ObservationViewModel(observation, translations);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) {
-          final translations = Provider.of<Translations>(context);
-          final settingsService = Provider.of<SettingsService>(context, listen: false);
-          //New observations start from the user's default observation template
-          final observation = observationFromTemplateJson(
-            settingsService.defaultObservationTemplateJson,
-            observerUid: user?.uid,
-            date: DateTime.now(),
-          );
-          final observationViewModel = ObservationViewModel(observation, translations);
-          return ObservationScreen(observationViewModel);
-        }
-      ),
+      MaterialPageRoute(builder: (_) => ObservationScreen(observationViewModel)),
     );
   }
 
   showDefaultObservationTemplateScreen(BuildContext context) {
+    final translations = Provider.of<Translations>(context, listen: false);
+    final settingsService = Provider.of<SettingsService>(context, listen: false);
+    final observation = observationFromTemplateJson(settingsService.defaultObservationTemplateJson, date: DateTime.now());
+    final observationViewModel = ObservationViewModel(observation, translations);
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) {
-          final translations = Provider.of<Translations>(context);
-          final settingsService = Provider.of<SettingsService>(context, listen: false);
-          final observation = observationFromTemplateJson(settingsService.defaultObservationTemplateJson, date: DateTime.now());
-          final observationViewModel = ObservationViewModel(observation, translations);
-          return ObservationScreen(observationViewModel, isTemplate: true);
-        }
-      ),
+      MaterialPageRoute(builder: (_) => ObservationScreen(observationViewModel, isTemplate: true)),
     );
   }
 

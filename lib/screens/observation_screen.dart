@@ -37,12 +37,13 @@ import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
+import 'package:pika_patrol/widgets/universal_image.dart';
+import 'package:pika_patrol/primitives/overlay_mode.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -64,13 +65,7 @@ class ObservationScreen extends StatefulWidget {
   //template to preferences rather than uploading.
   final bool isTemplate;
 
-  late bool isEditMode;
-
-  ObservationScreen(this.observationViewModel, {this.isTemplate = false, super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
-    //When opening after a user clicks a card, show a previously created observation in viewing mode.
-    //When opening after a user clicks the add observation button, show a new observation in edit mode.
-    isEditMode = observationViewModel.observation.isNewObservation();
-  }
+  const ObservationScreen(this.observationViewModel, {this.isTemplate = false, super.key});
 
   @override
   ObservationScreenState createState() => ObservationScreenState();
@@ -161,12 +156,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   late Translations translations;
 
+  // Kept in the state, not the widget, so a rebuilt widget can't flip the screen out of edit mode
+  late bool _isEditMode;
+
   @override
   void initState() {
+    //When opening after a user clicks a card, show a previously created observation in viewing mode.
+    //When opening after a user clicks the add observation button, show a new observation in edit mode.
+    _isEditMode = widget.observationViewModel.observation.isNewObservation();
     _scrollController = ScrollController();
     _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
 
-    if (!widget.isEditMode) {
+    if (!_isEditMode) {
       _fetchIndigenousTerritoriesForViewing();
     }
 
@@ -263,13 +264,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         leftIcon: Icons.arrow_back,
         leftIconType: ThemeGroupType.MOS,
         leftIconClickedCallback: () => Navigator.pop(context),
-        rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
+        rightIcon: _isEditMode ? Icons.check : Icons.edit,
         showRightIcon: showRightIcon,
         rightIconType: ThemeGroupType.MOS,
         rightIconClickedCallback: () async {
-          if (!widget.isEditMode) {
+          if (!_isEditMode) {
             setState(() {
-              widget.isEditMode = true;
+              _isEditMode = true;
 
               // Entering edit mode switches the territories/languages display over to the
               // observation's own fields (since edit mode lets those change via GPS/manual
@@ -314,7 +315,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
               setState((){
                 _isUploading = false;
-                widget.isEditMode = false;
+                _isEditMode = false;
               });
               _fetchIndigenousTerritoriesForViewing();
             } else {
@@ -341,7 +342,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildHeaderImage(BuildContext context) => GestureDetector(
     //The template stores no images, so don't let the user pick one from its page
-    onTap: () => widget.isEditMode && !widget.isTemplate ? _openFileExplorer(true, FileType.image, [], true) : {},
+    onTap: () => _isEditMode && !widget.isTemplate ? _openFileExplorer(true, FileType.image, [], true) : {},
     child: SizedBox(
       height: 330,
       child: Stack(
@@ -370,7 +371,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   onPressed: () {},
                   shape: const CircleBorder(),
                   fillColor: Colors.white,
-                  child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
+                  child: _isEditMode ? _buildRecordButton() : _buildPlayButton(),
                 ),
               ),
             ),
@@ -384,7 +385,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
             )
         ),*/
-          if(widget.isEditMode) ... [
+          if(_isEditMode) ... [
             Positioned(
               bottom: 10.0,
               left: 10.0,
@@ -509,31 +510,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
+  // The first image is always the cover
   Widget _buildImage() {
     var imageUrls = widget.observationViewModel.observation.imageUrls ?? <String>[];
-    if(imageUrls.isEmpty) {
-      //The template page doesn't allow adding images, so show a pika instead of the +image prompt
-      return Image(
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        image: AssetImage(widget.isTemplate ? "assets/images/pika3.jpg" : "assets/images/add_image.png"),
-      );
-    } else if(imageUrls[0].contains("https://")) {
-      return Image.network(
-        imageUrls[0],
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      return Image.file(
-        File(imageUrls[0]),
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    }
+    //The template page doesn't allow adding images, so show a pika instead of the +image prompt
+    var emptyAssetPath = widget.isTemplate ? "assets/images/pika3.jpg" : "assets/images/add_image.png";
+    return UniversalImage(
+      imageUrls.isEmpty ? emptyAssetPath : imageUrls[0],
+      overlayMode: OverlayMode.never,
+      height: 300.0,
+    );
   }
 
   Widget _buildLatLonAltitude() {
@@ -562,7 +548,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
-                else if (widget.isEditMode) ...[
+                else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: editLatitude,
@@ -590,7 +576,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                ] else if (widget.isEditMode) ...[
+                ] else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: editLongitude,
@@ -618,7 +604,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ThemedTitle(altitudeDisplay, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                ] else if (widget.isEditMode) ...[
+                ] else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: editAltitudeDisplay,
@@ -1040,7 +1026,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         children: <Widget>[
           _buildLatLonAltitude(),
           smallTransparentDivider,
-          if(widget.isEditMode) ... [
+          if(_isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
               text: widget.observationViewModel.observation.location ?? "",
@@ -1058,7 +1044,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           smallTransparentDivider,
           Row(
             children: <Widget>[
-              if(widget.isEditMode) ... [
+              if(_isEditMode) ... [
                 ThemedIconButton(
                     Icons.date_range,
                     iconSize: IconSize.MEDIUM,
@@ -1120,7 +1106,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     ),
                   ),
               ),
-              if(widget.isEditMode) ... [
+              if(_isEditMode) ... [
                 ThemedIconButton(
                     null,
                     iconSize: IconSize.MEDIUM,
@@ -1186,7 +1172,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     final List<MapEntry<String, String?>> territoryEntries;
     final List<MapEntry<String, String?>> languageEntries;
 
-    if (widget.isEditMode) {
+    if (_isEditMode) {
       final observation = widget.observationViewModel.observation;
       territoryEntries = (observation.indigenousTerritories ?? <String>[]).map(_decodeIndigenousEntry).toList();
       languageEntries = (observation.indigenousLanguages ?? <String>[]).map(_decodeIndigenousEntry).toList();
@@ -1277,7 +1263,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Widget _buildImages(Color color1, Color color2) {
 
-    var icons = !widget.isEditMode ? <Widget>[] : [
+    var icons = !_isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [], true)),
       ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
         _takePictureAndCrop(
@@ -1304,23 +1290,50 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageWidth: 250.0,
       icons: icons,
       onDeleteClickedCallback: (value) => { _removeImage(value) },
-      showDeleteButtonOnCard: widget.isEditMode
+      showDeleteButtonOnCard: _isEditMode
     );
   }
 
-  _removeImage(path) {
+  // Removing a photo or recording can't be undone once the observation is saved, so ask first
+  Future<bool> _confirmDeleteMedia(String title) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text(title),
+        content: Text(translations.deleteMediaDialogDescription),
+        actions: [
+          TextButton(
+            child: Text(translations.cancel),
+            onPressed: () => Navigator.pop(context, false),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+              backgroundColor: Colors.red,
+              shape: const StadiumBorder(),
+            ),
+            child: ThemedTitle(translations.delete, type: ThemeGroupType.MOP),
+          ),
+        ],
+      ),
+    );
+    return confirmed == true && mounted;
+  }
+
+  _removeImage(path) async {
+    if (!await _confirmDeleteMedia(translations.deleteImageDialogTitle)) return;
+
     setState(() {
       //remove image from the observation
       widget.observationViewModel.observation.imageUrls?.remove(path);
       needsUpdated = true;
     });
-
-    showToast("${translations.delete} $path");
   }
 
   Widget _buildAudioRecordings() {
 
-    var icons = !widget.isEditMode ? <Widget>[] : [
+    var icons = !_isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.custom, ['3gp','aa','aac','aax','act','aiff','alac','amr','ape','au','awb','dss','dvf','flac','gsm','iklax','kvs','m4a','m4b','m4p','mmf','movpkg','mp3','mpc','msv','nmf','ogg','oga','mogg','opus','ra','rm','raw','rf64','sln','tta','voc','vox','wav','wma','wv','webm','8svx','cda'], false)),
       ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder()})
     ];
@@ -1336,13 +1349,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       playingIndex: _playingIndex,
       onToggle: _playAudio,
       onDeleteClickedCallback: _removeAudio,
-      showDeleteButtonOnCard: widget.isEditMode,
+      showDeleteButtonOnCard: _isEditMode,
     );
   }
 
   void _removeAudio(String url) async {
     var audioUrls = widget.observationViewModel.observation.audioUrls;
     if (audioUrls == null) return;
+
+    if (!await _confirmDeleteMedia(translations.deleteAudioDialogTitle)) return;
 
     // Stop playback first if this recording, or one after it, is selected: removing it shifts the indexes
     var index = audioUrls.indexOf(url);
@@ -1359,8 +1374,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       audioUrls.remove(url);
       needsUpdated = true;
     });
-
-    showToast("${translations.delete} ${path.basenameWithoutExtension(url)}");
   }
 
   void showAudioRecorderDialog() {
@@ -1635,7 +1648,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-            /*if (widget.isEditMode)...[
+            /*if (_isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
           ]*/
           ],
@@ -1646,7 +1659,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
           value: widget.observationViewModel.observation.species,
           onChanged: (value) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.species = value)
             }
           },
@@ -1692,7 +1705,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
           value: widget.observationViewModel.observation.signs ?? <String>[],
           onChanged: (val) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.signs = val)
             }
           },
@@ -1722,7 +1735,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
             value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() {
                   //If selected the same value as before, unset the value
                   widget.observationViewModel.observation.pikasDetected = widget.observationViewModel.observation.pikasDetected == val ? null : val;
@@ -1752,7 +1765,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
             value: widget.observationViewModel.observation.distanceToClosestPika,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.distanceToClosestPika = val)
               }
             },
@@ -1779,7 +1792,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
             value: widget.observationViewModel.observation.searchDuration,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.searchDuration = val)
               }
             },
@@ -1824,7 +1837,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
             value: widget.observationViewModel.observation.talusArea,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.talusArea = val)
               }
             },
@@ -1852,7 +1865,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
           value: widget.observationViewModel.observation.temperature,
           onChanged: (val) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.temperature = val)
             }
           },
@@ -1878,7 +1891,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
         value: widget.observationViewModel.observation.skies,
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.skies = val)
           }
         },
@@ -1903,7 +1916,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
         value: widget.observationViewModel.observation.wind,
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.wind = val)
           }
         },
@@ -1925,7 +1938,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ThemedSubTitle(translations.otherAnimalsPresent, type: ThemeGroupType.POM),
-          if (widget.isEditMode)...[
+          if (_isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
           ]
         ],
@@ -1936,7 +1949,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           choiceCheckmark: true,
         value: widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[],
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.otherAnimalsPresent = val)
           }
         },
@@ -2008,7 +2021,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
-            // if (widget.isEditMode)...[
+            // if (_isEditMode)...[
             //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
             // ]
           ],
@@ -2021,7 +2034,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             value: widget.observationViewModel.observation.sharedWithProjects ?? <String>[],
             onChanged: (updatedSharedWithProjects) =>
             {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState((){
                   final observation = widget.observationViewModel.observation;
                   sharedWithProjects = updatedSharedWithProjects;
@@ -2077,7 +2090,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         smallTransparentDivider,
         ThemedSubTitle(translations.siteHistory, type: ThemeGroupType.POM),
         miniTransparentDivider,
-        if(widget.isEditMode) ... [
+        if(_isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observationViewModel.observation.siteHistory ?? "",
@@ -2112,7 +2125,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         smallTransparentDivider,
         ThemedSubTitle(translations.comments, type: ThemeGroupType.POM),
         miniTransparentDivider,
-        if(widget.isEditMode) ... [
+        if(_isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observationViewModel.observation.comments ?? "",

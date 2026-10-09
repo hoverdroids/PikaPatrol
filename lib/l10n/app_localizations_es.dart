@@ -35,7 +35,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cachedObservationsDialogDetails =>
-      'Mis observaciones son aquellas creadas en el dispositivo actual. Borrar el caché, eliminar datos de la aplicación o eliminar la aplicación eliminará permanentemente estas observaciones del dispositivo. Si las observaciones se cargaron en el servidor de Pika Patrol (es decir, hay un icono de nube en la parte superior izquierda de la tarjeta), las observaciones permanecerán en el servidor pero no volverán al dispositivo.';
+      'Mis observaciones muestra todas las observaciones que has hecho, en este dispositivo y en cualquier otro donde hayas iniciado sesión. Una nube con una marca de verificación (arriba a la izquierda de la tarjeta) significa que se subió y está segura en el servidor. Un reloj significa que solo está guardada en este teléfono y se subirá la próxima vez que tengas conexión. Si eliminas la aplicación antes, se perderán las observaciones que no se hayan subido.';
 
   @override
   String get viewObservation => 'Ver Observación';

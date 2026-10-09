@@ -7,7 +7,7 @@
     "cachedObservationsLine1": "My",
     "cachedObservationsLine2": "Observations",
     "cachedObservationsDialogTitle": "My Observations",
-    "cachedObservationsDialogDetails": "My observations are those created on the current device. Clearing cache, deleting app data, or removing the app will permanently remove these observations from the device. If the observations were uploaded to the Pika Patrol server (i.e. there is a cloud icon in the top left of the card), then the observations will remain on the server but will not be pulled back onto the device.",
+    "cachedObservationsDialogDetails": "My observations shows every observation you've made, on this device and on any other device where you're signed in. A cloud with a check mark (top left of the card) means it's uploaded and safe on the server. A clock means it's saved only on this phone and will upload the next time you're online. Deleting the app before then removes observations that haven't uploaded.",
     "viewObservation": "View Observation",
     "makeObservation": "Make Observation",
     "latitude": "Latitude",

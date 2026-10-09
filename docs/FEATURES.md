@@ -20,6 +20,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 4 — Sheets retry and social sign-in**: failed Sheets updates retried when back online; Sign in with Google (all phones) and Apple (iPhone).
 - **Pass 5 — content and look**: territory wording and Native Land source link; call pro-tip; chip selection beyond color; "Incidental" search duration; https IF/THEN link; splash file names; stub and TODO cleanup; thank-you message.
 - **Pass 6 — Firebase rules and billing cap**: Firestore and proposed Storage rules in `firebase/`; billing kill-switch function in its own repo; `docs/firebase-runbook.md` with the console checklist.
+- **Pass 7 — card status, string tool, version 3.5.0**: clearer upload status icons and info text; `tool/add_strings.py`; version 3.5.0+335.
 
 ## People
 
@@ -49,7 +50,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [ ] **Cached observations keep asking to upload after they have already uploaded.** Reported on iOS and Android by Jo, Julie, Megan and several volunteers. The 2026 commits fix several causes, but volunteers still reported it in Jul and Oct 2026 (possibly on old builds). Confirm the fix on the newest build. GitHub #64; "Pika patrol issues/questions" (May 2024); "FW: Pika patrol bug feedback - still not seeing a fix…" (Oct 2026).
 - [ ] **Editing cached observations offline must save.** Pass 3 review: the save path does mark edited observations for re-upload; the report may predate the July 2026 fixes. Needs a hands-on test on the newest build: airplane mode, create, edit text, save, reopen, then go online and check Firebase. A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
 - [ ] **Make edits to an already-uploaded observation reach the server, and show which version is on the server.** Volunteer, Oct 2024, "FW: Pika Patrol app problems and questions".
-- [ ] **Show a clear status on each card: uploaded, waiting to upload, or failed.** A volunteer could not tell what the cloud icon meant. Oct 2024 (same thread); Chris, Aug 2025.
+- [x] **Show a clear status on each card: uploaded, waiting to upload, or failed.** Done in pass 7: a cloud with a check mark means uploaded, a clock means waiting; both drawn on a dark circle; the My observations info text now explains them (EN/ES/FR) and no longer says uploaded observations stay off the device. A volunteer could not tell what the cloud icon meant. Oct 2024 (same thread); Chris, Aug 2025.
 - [x] Users see all of their own observations on every device, including after a reinstall. Chris, Sep 2024; done 2026-07-28.
 - [x] With two accounts on one phone, only the logged-in account's observations show, and the other account's local observations are never deleted. Chris, Sep 2024, "Fwd: Correction on recent bug report…".
 - [x] Logged-out observations are no longer deleted, and offline duplicates are fixed (3.3.4 to 3.3.9, Jul 2026).
@@ -110,7 +111,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] French translation (3.3.8/3.4.0), with proofreader fixes. Mike, Dec 2024 to Jul 2026.
 - [ ] **Apply Turi's French suggestions** (Jul 30 2026, "French Translation Suggestions.docx"), if the 2026-07-30 proofreader commit did not already cover them.
 - [ ] **Translate new text into French and Spanish**, for example the "Traditional territory" wording and the call pro-tip. Jo offered to do these. Oct 2025.
-- [ ] **Make it easier to add new languages**, using one translation sheet with a column per language. Chris, Dec 2024.
+- [x] Pass 7: `tool/add_strings.py` adds a string to every language file and `translations.dart` in one step. **Make it easier to add new languages**, using one translation sheet with a column per language. Chris, Dec 2024.
 
 ## 7. Training materials
 

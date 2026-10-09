@@ -84,7 +84,7 @@ class Observation extends card.CardModel {
     this.isUploaded = false,
     super.buttonText,
     super.cardLayout,
-    IconData? uploadedIcon = Icons.cloud_upload,
+    IconData? uploadedIcon = Icons.cloud_done,
     IconData? notUploadedIcon = Icons.access_time_filled
   }){
     this.signs = signs ?? <String>[];
@@ -169,7 +169,7 @@ class Observation extends card.CardModel {
     isUploaded: isUploaded ?? this.isUploaded,
     buttonText: buttonText ?? this.buttonText,
     cardLayout: cardLayout ?? this.cardLayout,
-    uploadedIcon: uploadedIcon ?? Icons.cloud_upload,
+    uploadedIcon: uploadedIcon ?? Icons.cloud_done,
     notUploadedIcon: notUploadedIcon ?? Icons.access_time_filled
   );
 }

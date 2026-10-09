@@ -35,7 +35,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get cachedObservationsDialogDetails =>
-      'Mes observations sont celles créées sur l\'appareil actuel. Vider le cache, supprimer les données de l\'application ou désinstaller l\'application supprimera définitivement ces observations de l\'appareil. Si les observations ont été téléversées sur le serveur de Pika Patrol (c.-à-d. qu\'une icône de nuage apparaît en haut à gauche de la carte), elles resteront sur le serveur mais ne seront pas rechargées sur l\'appareil.';
+      'Mes observations affiche toutes vos observations, sur cet appareil et sur tout autre appareil où vous êtes connecté. Un nuage avec une coche (en haut à gauche de la carte) signifie qu\'elle est téléversée et en sécurité sur le serveur. Une horloge signifie qu\'elle est enregistrée uniquement sur ce téléphone et sera téléversée la prochaine fois que vous serez en ligne. Si vous supprimez l\'application avant, les observations non téléversées seront perdues.';
 
   @override
   String get viewObservation => 'Voir l\'observation';

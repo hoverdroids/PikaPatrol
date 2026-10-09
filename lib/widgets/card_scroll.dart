@@ -142,7 +142,8 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildIcon(IconData? icon) => Align(
     alignment: Alignment.topLeft,
-    child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+    // Status only (uploaded or waiting), drawn on a dark circle so it shows on any photo
+    child: icon == null ? const SizedBox.shrink() : ThemedOverlayIconButton(icon, onPressedCallback: () {}),
   );
 
   Widget _buildTitleAndMoreDetailsButton(String? title, String? buttonText, CardLayout cardLayout) => Align(

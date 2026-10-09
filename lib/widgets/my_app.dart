@@ -22,19 +22,19 @@ class MyApp extends StatelessWidget {
 
   const MyApp({super.key, this.showSplashScreen = true});
 
+  // The brand colors. Set once when the MaterialThemesManager is created (see main()), because
+  // setting them during build notifies listeners mid-build, which Flutter rejects.
+  static final ColorPalette colorPalette = ColorPalette(
+      primary: Colors.teal,
+      primaryAccent: Colors.tealAccent,
+      secondary: const Color.fromARGB(255, 139, 69, 19),
+      secondaryAccent: const Color.fromARGB(255, 111, 55, 15),
+      lightPrimaryContrast: Colors.white,
+      lightContrastImportant: Colors.grey
+  );
+
   @override
   Widget build(BuildContext context) {
-
-    //First things first...set our theme to fit our brand!
-    ColorPalette colorPalette = ColorPalette(
-        primary: Colors.teal,
-        primaryAccent: Colors.tealAccent,
-        secondary: const Color.fromARGB(255, 139, 69, 19),
-        secondaryAccent: const Color.fromARGB(255, 111, 55, 15),
-        lightPrimaryContrast: Colors.white,
-        lightContrastImportant: Colors.grey
-    );
-    context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 
     //Lock the app to one orientation
     SystemChrome.setPreferredOrientations([

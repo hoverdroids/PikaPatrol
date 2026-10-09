@@ -105,7 +105,7 @@ Future<void> main() async {
       // Globally useful providers that don't depend on other provider values or build context
       providers: [
         ChangeNotifierProvider(
-            create: (_) => MaterialThemesManager()
+            create: (_) => MaterialThemesManager()..updateColorPalette(MyApp.colorPalette)
         ),
         Provider<FirebaseAuthService>(
             create: (_) => FirebaseAuthService(useEmulators)//Only one service to avoid multiple connections to firebase

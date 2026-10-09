@@ -123,11 +123,11 @@ class ContentScroll extends StatelessWidget {
                         ),
                 ),
                 if (showDeleteButtonOnCard)...[
-                  ThemedIconButton(Icons.delete, type: ThemeGroupType.MOI, onPressedCallback: () => {
-                      if (onDeleteClickedCallback != null) {
-                        onDeleteClickedCallback!(images[index])
-                      }
-                    }
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: ThemedOverlayIconButton(Icons.delete, onPressedCallback: () {
+                      onDeleteClickedCallback?.call(images[index]);
+                    }),
                   )
                 ]
               ],

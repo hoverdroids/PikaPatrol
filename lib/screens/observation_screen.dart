@@ -41,6 +41,7 @@ import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -1311,7 +1312,32 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       playerState: _playerState,
       playingIndex: _playingIndex,
       onToggle: _playAudio,
+      onDeleteClickedCallback: _removeAudio,
+      showDeleteButtonOnCard: widget.isEditMode,
     );
+  }
+
+  void _removeAudio(String url) async {
+    var audioUrls = widget.observationViewModel.observation.audioUrls;
+    if (audioUrls == null) return;
+
+    // Stop playback first if this recording, or one after it, is selected: removing it shifts the indexes
+    var index = audioUrls.indexOf(url);
+    if (index >= 0 && _playingIndex >= index) {
+      await _audioPlayer.stop();
+    }
+    if (!mounted) return;
+
+    setState(() {
+      if (index >= 0 && _playingIndex >= index) {
+        _playerState = AudioPlaybackState.stop;
+        _playingIndex = -1;
+      }
+      audioUrls.remove(url);
+      needsUpdated = true;
+    });
+
+    showToast("${translations.delete} ${path.basenameWithoutExtension(url)}");
   }
 
   void showAudioRecorderDialog() {

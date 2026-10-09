@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
 import 'package:material_themes_widgets/fundamental/buttons_media.dart';
+import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
@@ -27,6 +28,8 @@ class AudioContentScroll extends StatelessWidget {
   final AudioPlaybackState playerState;
   final int playingIndex;
   final void Function(int index) onToggle;
+  final void Function(String url)? onDeleteClickedCallback;
+  final bool showDeleteButtonOnCard;
 
   const AudioContentScroll({
     super.key,
@@ -41,6 +44,8 @@ class AudioContentScroll extends StatelessWidget {
     this.playerState = AudioPlaybackState.stop,
     this.playingIndex = -1,
     required this.onToggle,
+    this.onDeleteClickedCallback,
+    this.showDeleteButtonOnCard = false,
   });
 
   @override
@@ -125,6 +130,14 @@ class AudioContentScroll extends StatelessWidget {
                           onPressed: () => onToggle(index),
                         )
                     ),
+                    if (showDeleteButtonOnCard) ... [
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: ThemedOverlayIconButton(Icons.delete, onPressedCallback: () {
+                          onDeleteClickedCallback?.call(urls[index]);
+                        }),
+                      ),
+                    ],
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(

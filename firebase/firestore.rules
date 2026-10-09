@@ -1,0 +1,34 @@
+// Copied from the live PikaPatrol project on 2026-10-09 (published Feb 4, 2024).
+// Deploy from this folder with: firebase deploy --only firestore:rules
+//
+// KNOWN ISSUE (FEATURES.md §18, held for the final step): any signed-in user can read
+// /googleSheets, which holds a service-account private key.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /observations/{observation} {
+      allow create: if request.auth != null;
+      allow update, delete: if request.auth != null && (request.auth.uid == resource.data.observerUid || request.auth.token.admin);
+      allow read: if true;
+    }
+    match /googleSheets/{credential} {
+      allow create: if false;
+      allow update, delete: if false;
+      allow read: if request.auth != null;
+      allow get: if request.auth != null;
+    }
+    match /userProfiles/{userId} {
+      // Applies to writes to nonexistent documents
+      allow create: if request.auth != null;
+
+      // Applies to writes to existing documents
+      allow read, update, delete: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin);
+
+      // Applies to single document read requests
+      allow get: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin);
+
+      // Applies to queries and collection read requests
+      allow list: if request.auth != null && request.auth.token.admin;
+    }
+  }
+}

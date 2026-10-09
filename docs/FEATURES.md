@@ -19,6 +19,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 3 — data fixes**: hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
 - **Pass 4 — Sheets retry and social sign-in**: failed Sheets updates retried when back online; Sign in with Google (all phones) and Apple (iPhone).
 - **Pass 5 — content and look**: territory wording and Native Land source link; call pro-tip; chip selection beyond color; "Incidental" search duration; https IF/THEN link; splash file names; stub and TODO cleanup; thank-you message.
+- **Pass 6 — Firebase rules and billing cap**: Firestore and proposed Storage rules in `firebase/`; billing kill-switch function in its own repo; `docs/firebase-runbook.md` with the console checklist.
 
 ## People
 
@@ -176,10 +177,10 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 
 ## 13. Firebase, security and billing
 
-- [ ] **Keep Firestore and Storage security rules in the repo.** There are no `firestore.rules`, `storage.rules` or `firebase.json` files, so the rules can't be reviewed or versioned. Chris said they were fixed in Dec 2024. IF/THEN report, Sep 2024.
-- [ ] **Review Storage rules.** Unauthenticated read was turned on in Sep 2024 to work around broken image tokens. Decide whether that is acceptable, or switch to unique file names and authenticated reads.
+- [x] **Keep Firestore and Storage security rules in the repo.** Done in pass 6: `firebase/` holds the live Firestore rules and proposed Storage rules (see docs/firebase-runbook.md). There are no `firestore.rules`, `storage.rules` or `firebase.json` files, so the rules can't be reviewed or versioned. Chris said they were fixed in Dec 2024. IF/THEN report, Sep 2024.
+- [ ] **Review Storage rules.** Pass 6: proposed rules keep public reads, limit uploads to `images/` and `audio/` under 15 MB. **Owner:** Chris to deploy. Originally: Unauthenticated read was turned on in Sep 2024 to work around broken image tokens. Decide whether that is acceptable, or switch to unique file names and authenticated reads.
 - [ ] **Restrict Google API keys** (Android and iOS app restrictions). Google flagged a "Publicly accessible API key" in Feb 2025. Native Land key moved to `.env` in Jul 2026.
-- [ ] **Blaze plan safeguards:** a $1 budget alert, a check that the Storage bucket is in a free-tier region, and an optional automatic cap. Megan added RMW's card on Aug 6 2026, and RMW can't afford surprise bills. Chris, Jul–Aug 2026.
+- [ ] **Blaze plan safeguards:** Pass 6: kill-switch Cloud Function and $1 budget setup written (repo `firebase-billing-kill-switch`, local only so far) plus a runbook. **Owner:** Chris to push the repo, add it as a submodule, and run the setup. Originally: a $1 budget alert, a check that the Storage bucket is in a free-tier region, and an optional automatic cap. Megan added RMW's card on Aug 6 2026, and RMW can't afford surprise bills. Chris, Jul–Aug 2026.
 - [ ] **Decide a storage strategy** (image size limits and compression, retention). Chris, Jun 2025. As of 2026-10-09 Storage holds 6.45 GB, which is over the 5 GB free tier, so the project is already paying a little for storage on the Blaze plan.
 - [ ] **Clean up unused OAuth clients.** Google notices, Jun 2025 and Aug 2026.
 - [ ] **Look into Google for Nonprofits / Cloud credits.** **Owner:** Megan. Aug 2023 and Oct 2024.

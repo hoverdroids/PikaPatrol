@@ -48,6 +48,12 @@ android {
     buildTypes {
         release {
             signingConfig = signingConfigs.getByName("release")
+            // Puts native debug symbols in the app bundle, so Play can show readable native crash
+            // reports and stops warning about missing symbols. The R8 mapping file is already
+            // included in the bundle automatically.
+            ndk {
+                debugSymbolLevel = "SYMBOL_TABLE"
+            }
         }
     }
 }

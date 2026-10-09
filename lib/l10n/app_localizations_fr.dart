@@ -947,4 +947,38 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get deleteMediaDialogDescription =>
       'Cette action est irréversible. Le fichier est supprimé du serveur lorsque vous enregistrez l\'observation.';
+
+  @override
+  String get unusedFiles => 'Fichiers inutilisés';
+
+  @override
+  String get unusedFilesDescription =>
+      'Photos et enregistrements stockés qu\'aucune observation n\'utilise. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.';
+
+  @override
+  String get unusedFilesSelected => '%count% sélectionnés, %size%';
+
+  @override
+  String get noUnusedFiles => 'Aucun fichier inutilisé.';
+
+  @override
+  String get selectAll => 'Tout sélectionner';
+
+  @override
+  String get deleteSelected => 'Supprimer la sélection';
+
+  @override
+  String get deleteUnusedFilesDialogTitle => 'Supprimer %count% fichiers ?';
+
+  @override
+  String get deleteUnusedFilesDialogDescription =>
+      'Ils sont supprimés définitivement du stockage. Cette action est irréversible.';
+
+  @override
+  String get couldNotFindUnusedFiles =>
+      'Impossible de vérifier les fichiers. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get someFilesNotDeleted =>
+      'Certains fichiers n\'ont pas pu être supprimés. Réessayez plus tard.';
 }

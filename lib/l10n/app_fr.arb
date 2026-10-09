@@ -287,5 +287,15 @@
   "incidental": "Fortuite",
   "deleteImageDialogTitle": "Supprimer cette photo ?",
   "deleteAudioDialogTitle": "Supprimer cet enregistrement ?",
-  "deleteMediaDialogDescription": "Cette action est irréversible. Le fichier est supprimé du serveur lorsque vous enregistrez l'observation."
+  "deleteMediaDialogDescription": "Cette action est irréversible. Le fichier est supprimé du serveur lorsque vous enregistrez l'observation.",
+  "unusedFiles": "Fichiers inutilisés",
+  "unusedFilesDescription": "Photos et enregistrements stockés qu'aucune observation n'utilise. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.",
+  "unusedFilesSelected": "%count% sélectionnés, %size%",
+  "noUnusedFiles": "Aucun fichier inutilisé.",
+  "selectAll": "Tout sélectionner",
+  "deleteSelected": "Supprimer la sélection",
+  "deleteUnusedFilesDialogTitle": "Supprimer %count% fichiers ?",
+  "deleteUnusedFilesDialogDescription": "Ils sont supprimés définitivement du stockage. Cette action est irréversible.",
+  "couldNotFindUnusedFiles": "Impossible de vérifier les fichiers. Vérifiez votre connexion et réessayez.",
+  "someFilesNotDeleted": "Certains fichiers n'ont pas pu être supprimés. Réessayez plus tard."
 }

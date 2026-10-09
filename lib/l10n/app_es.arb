@@ -287,5 +287,15 @@
     "incidental": "Incidental",
     "deleteImageDialogTitle": "¿Eliminar esta foto?",
     "deleteAudioDialogTitle": "¿Eliminar esta grabación?",
-    "deleteMediaDialogDescription": "Esto no se puede deshacer. Se borra del servidor cuando guarde la observación."
+    "deleteMediaDialogDescription": "Esto no se puede deshacer. Se borra del servidor cuando guarde la observación.",
+    "unusedFiles": "Archivos sin usar",
+    "unusedFilesDescription": "Fotos y grabaciones en el almacenamiento que ninguna observación usa. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.",
+    "unusedFilesSelected": "%count% seleccionados, %size%",
+    "noUnusedFiles": "No se encontraron archivos sin usar.",
+    "selectAll": "Seleccionar todo",
+    "deleteSelected": "Eliminar selección",
+    "deleteUnusedFilesDialogTitle": "¿Eliminar %count% archivos?",
+    "deleteUnusedFilesDialogDescription": "Se eliminan del almacenamiento de forma permanente. Esto no se puede deshacer.",
+    "couldNotFindUnusedFiles": "No se pudieron revisar los archivos. Compruebe su conexión e inténtelo de nuevo.",
+    "someFilesNotDeleted": "Algunos archivos no se pudieron eliminar. Inténtelo más tarde."
 }

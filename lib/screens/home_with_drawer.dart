@@ -39,6 +39,7 @@ import '../model/firebase_registration_result.dart';
 import '../services/settings_service.dart';
 import 'observation_screen.dart';
 import 'observations_screen.dart';
+import 'unused_files_screen.dart';
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -434,6 +435,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               ListItemModel(title: translations.adminSettings, titleType: ThemeGroupType.SOM),
               ListItemModel(title: translations.exportFirebaseUserProfilesToGoogleSheets, itemClickedCallback: () => showExportFirebaseUserProfilesToGoogleSheetsDialog(), margin: indentationLevel1),
               ListItemModel(title: translations.exportFirebaseObservationsToGoogleSheets, itemClickedCallback: () => showExportFirebaseObservationsToGoogleSheetsDialog(), margin: indentationLevel1),
+              ListItemModel(title: translations.unusedFiles, itemClickedCallback: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UnusedFilesScreen())), margin: indentationLevel1),
               if (canInitializeGoogleSheets) ... [
                 ListItemModel(title: translations.initializeGoogleSheets, itemClickedCallback: () => initializeGoogleSheets(), margin: indentationLevel1),
               ]

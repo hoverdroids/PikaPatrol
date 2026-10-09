@@ -287,5 +287,15 @@
     "incidental": "Incidental",
     "deleteImageDialogTitle": "Delete this photo?",
     "deleteAudioDialogTitle": "Delete this recording?",
-    "deleteMediaDialogDescription": "This can't be undone. It is removed from the server when you save the observation."
+    "deleteMediaDialogDescription": "This can't be undone. It is removed from the server when you save the observation.",
+    "unusedFiles": "Unused files",
+    "unusedFilesDescription": "Photos and recordings in storage that no observation uses. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.",
+    "unusedFilesSelected": "%count% selected, %size%",
+    "noUnusedFiles": "No unused files found.",
+    "selectAll": "Select all",
+    "deleteSelected": "Delete selected",
+    "deleteUnusedFilesDialogTitle": "Delete %count% files?",
+    "deleteUnusedFilesDialogDescription": "They are deleted from storage for good. This can't be undone.",
+    "couldNotFindUnusedFiles": "Could not check the files. Check your connection and try again.",
+    "someFilesNotDeleted": "Some files could not be deleted. Try again later."
 }

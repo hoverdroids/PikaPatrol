@@ -335,6 +335,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String deleteImageDialogTitle = ERROR;
   String deleteAudioDialogTitle = ERROR;
   String deleteMediaDialogDescription = ERROR;
+  String unusedFiles = ERROR;
+  String unusedFilesDescription = ERROR;
+  String unusedFilesSelected = ERROR;
+  String noUnusedFiles = ERROR;
+  String selectAll = ERROR;
+  String deleteSelected = ERROR;
+  String deleteUnusedFilesDialogTitle = ERROR;
+  String deleteUnusedFilesDialogDescription = ERROR;
+  String couldNotFindUnusedFiles = ERROR;
+  String someFilesNotDeleted = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -631,6 +641,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     deleteImageDialogTitle =  AppLocalizations.of(context)?.deleteImageDialogTitle ?? deleteImageDialogTitle;
     deleteAudioDialogTitle =  AppLocalizations.of(context)?.deleteAudioDialogTitle ?? deleteAudioDialogTitle;
     deleteMediaDialogDescription =  AppLocalizations.of(context)?.deleteMediaDialogDescription ?? deleteMediaDialogDescription;
+    unusedFiles =  AppLocalizations.of(context)?.unusedFiles ?? unusedFiles;
+    unusedFilesDescription =  AppLocalizations.of(context)?.unusedFilesDescription ?? unusedFilesDescription;
+    unusedFilesSelected =  AppLocalizations.of(context)?.unusedFilesSelected ?? unusedFilesSelected;
+    noUnusedFiles =  AppLocalizations.of(context)?.noUnusedFiles ?? noUnusedFiles;
+    selectAll =  AppLocalizations.of(context)?.selectAll ?? selectAll;
+    deleteSelected =  AppLocalizations.of(context)?.deleteSelected ?? deleteSelected;
+    deleteUnusedFilesDialogTitle =  AppLocalizations.of(context)?.deleteUnusedFilesDialogTitle ?? deleteUnusedFilesDialogTitle;
+    deleteUnusedFilesDialogDescription =  AppLocalizations.of(context)?.deleteUnusedFilesDialogDescription ?? deleteUnusedFilesDialogDescription;
+    couldNotFindUnusedFiles =  AppLocalizations.of(context)?.couldNotFindUnusedFiles ?? couldNotFindUnusedFiles;
+    someFilesNotDeleted =  AppLocalizations.of(context)?.someFilesNotDeleted ?? someFilesNotDeleted;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -965,6 +985,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "deleteImageDialogTitle": return deleteImageDialogTitle;
       case "deleteAudioDialogTitle": return deleteAudioDialogTitle;
       case "deleteMediaDialogDescription": return deleteMediaDialogDescription;
+      case "unusedFiles": return unusedFiles;
+      case "unusedFilesDescription": return unusedFilesDescription;
+      case "unusedFilesSelected": return unusedFilesSelected;
+      case "noUnusedFiles": return noUnusedFiles;
+      case "selectAll": return selectAll;
+      case "deleteSelected": return deleteSelected;
+      case "deleteUnusedFilesDialogTitle": return deleteUnusedFilesDialogTitle;
+      case "deleteUnusedFilesDialogDescription": return deleteUnusedFilesDialogDescription;
+      case "couldNotFindUnusedFiles": return couldNotFindUnusedFiles;
+      case "someFilesNotDeleted": return someFilesNotDeleted;
       default: return key;
     }
   }

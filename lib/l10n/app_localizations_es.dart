@@ -942,4 +942,38 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get deleteMediaDialogDescription =>
       'Esto no se puede deshacer. Se borra del servidor cuando guarde la observación.';
+
+  @override
+  String get unusedFiles => 'Archivos sin usar';
+
+  @override
+  String get unusedFilesDescription =>
+      'Fotos y grabaciones en el almacenamiento que ninguna observación usa. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.';
+
+  @override
+  String get unusedFilesSelected => '%count% seleccionados, %size%';
+
+  @override
+  String get noUnusedFiles => 'No se encontraron archivos sin usar.';
+
+  @override
+  String get selectAll => 'Seleccionar todo';
+
+  @override
+  String get deleteSelected => 'Eliminar selección';
+
+  @override
+  String get deleteUnusedFilesDialogTitle => '¿Eliminar %count% archivos?';
+
+  @override
+  String get deleteUnusedFilesDialogDescription =>
+      'Se eliminan del almacenamiento de forma permanente. Esto no se puede deshacer.';
+
+  @override
+  String get couldNotFindUnusedFiles =>
+      'No se pudieron revisar los archivos. Compruebe su conexión e inténtelo de nuevo.';
+
+  @override
+  String get someFilesNotDeleted =>
+      'Algunos archivos no se pudieron eliminar. Inténtelo más tarde.';
 }

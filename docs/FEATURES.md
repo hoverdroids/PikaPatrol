@@ -24,6 +24,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 8 — App Check**: the app activates Firebase App Check so enforcement can be turned on later.
 - **Pass 9 — checklist tidy**: ticked items already covered by earlier passes or decisions; units check.
 - **Pass 10 — Chris's test feedback**: form no longer goes blank after saving; first photo stays the cover; photo cards fill without stretching; confirm before deleting a photo or recording; removed files are deleted from Storage (retried when offline); admins page back through every shared observation; photos cached on the phone.
+- **Pass 11 — unused files cleanup**: admin-only "Unused files" screen in the left menu shows Storage photos and recordings that no observation uses, in a grid to preview, select and delete.
 
 ## People
 
@@ -164,6 +165,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] **The first photo added stays the cover** after uploading. Uploads finished in random order and were saved in that order. Chris, 2026-10-09 (pass 10).
 - [x] **Ask before deleting a photo or recording,** since it can't be undone (EN/ES/FR). Chris, 2026-10-09 (pass 10).
 - [x] **Removed photos and recordings are deleted from Firebase Storage,** not just from the observation. Deleting an observation deletes its files too. Deletes that fail, for example offline, are retried when the app is next online. New uploads get a unique name so two observations never share a file. Chris, 2026-10-09 (pass 10).
+- [x] **Admins can find and delete unused files** left in Storage by older app versions. Left menu → Admin settings → Unused files: a grid of photos (tap to enlarge) and recordings (tap to play), with sizes and dates, select all, and a confirmation before deleting. It reads every observation from the server and stops on any error, so files in use never look unused; files from the last day are skipped. Chris, 2026-10-09 (pass 11).
 
 ## 11. Apple App Store compliance
 

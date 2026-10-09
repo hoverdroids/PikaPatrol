@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:pika_patrol/utils/firebase_utils.dart';
 
 import '../model/observation.dart';
+import '../model/storage_file.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
 
@@ -337,6 +338,76 @@ class FirebaseObservationsService {
         if (e.code != 'object-not-found') {
           developer.log('Failed to delete storage file $fileUrl: $e', name: 'FirebaseObservationsService');
           failed.add(fileUrl);
+        }
+      }
+    }
+    return failed;
+  }
+
+  // Files in images/ and audio/ that no observation points to, for the admin cleanup screen.
+  // Reads every observation once (one read each) and lists both folders, so it only runs when an
+  // admin opens that screen. Files from the last day are skipped, because an upload in progress
+  // has its file in Storage before its observation is saved.
+  // Also returns how many observations and files it checked, so the admin can sanity-check it.
+  Future<({List<StorageFile> unused, int observationCount, int totalFileCount})> findUnusedFiles() async {
+    // Straight from the server, and any error stops the scan: a partial or cached list of
+    // observations would make files that are in use look unused
+    final snapshot = await observationsCollection.get(const GetOptions(source: Source.server));
+    final observations = _observationsFromSnapshot(snapshot);
+    final usedPaths = <String>{
+      for (var observation in observations)
+        for (var url in [...?observation.imageUrls, ...?observation.audioUrls])
+          if (storagePathFromUrl(url) case final path?) path,
+    };
+
+    final cutoff = DateTime.now().subtract(const Duration(days: 1));
+    final unused = <StorageFile>[];
+    var totalFileCount = 0;
+    for (var folder in [IMAGES_FOLDER_NAME, AUDIO_FOLDER_NAME]) {
+      final refs = await _listAll(_storage.ref(folder));
+      totalFileCount += refs.length;
+      for (var ref in refs) {
+        if (usedPaths.contains(ref.fullPath)) continue;
+        final metadata = await ref.getMetadata();
+        final created = metadata.timeCreated;
+        if (created != null && created.isAfter(cutoff)) continue;
+        unused.add(StorageFile(ref: ref, isImage: folder == IMAGES_FOLDER_NAME, sizeBytes: metadata.size ?? 0, created: created));
+      }
+    }
+    unused.sort((a, b) => (b.created ?? DateTime(0)).compareTo(a.created ?? DateTime(0)));
+    return (unused: unused, observationCount: observations.length, totalFileCount: totalFileCount);
+  }
+
+  Future<List<Reference>> _listAll(Reference folder) async {
+    final refs = <Reference>[];
+    String? pageToken;
+    do {
+      final page = await folder.list(ListOptions(maxResults: 1000, pageToken: pageToken));
+      refs.addAll(page.items);
+      pageToken = page.nextPageToken;
+    } while (pageToken != null);
+    return refs;
+  }
+
+  // "images/abc.jpg" from a download URL such as
+  // https://firebasestorage.googleapis.com/v0/b/<bucket>/o/images%2Fabc.jpg?alt=media&token=...
+  static String? storagePathFromUrl(String url) {
+    final uri = Uri.tryParse(url);
+    if (uri == null || !url.contains(STORAGE_BUCKET_NAME)) return null;
+    final index = uri.pathSegments.indexOf("o");
+    if (index < 0 || index + 1 >= uri.pathSegments.length) return null;
+    return uri.pathSegments.sublist(index + 1).join("/");
+  }
+
+  Future<List<StorageFile>> deleteStorageFiles(List<StorageFile> files) async {
+    final failed = <StorageFile>[];
+    for (var file in files) {
+      try {
+        await file.ref.delete();
+      } on FirebaseException catch (e) {
+        if (e.code != 'object-not-found') {
+          developer.log('Failed to delete storage file ${file.ref.fullPath}: $e', name: 'FirebaseObservationsService');
+          failed.add(file);
         }
       }
     }

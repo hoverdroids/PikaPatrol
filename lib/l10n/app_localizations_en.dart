@@ -935,4 +935,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get deleteMediaDialogDescription =>
       'This can\'t be undone. It is removed from the server when you save the observation.';
+
+  @override
+  String get unusedFiles => 'Unused files';
+
+  @override
+  String get unusedFilesDescription =>
+      'Photos and recordings in storage that no observation uses. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.';
+
+  @override
+  String get unusedFilesSelected => '%count% selected, %size%';
+
+  @override
+  String get noUnusedFiles => 'No unused files found.';
+
+  @override
+  String get selectAll => 'Select all';
+
+  @override
+  String get deleteSelected => 'Delete selected';
+
+  @override
+  String get deleteUnusedFilesDialogTitle => 'Delete %count% files?';
+
+  @override
+  String get deleteUnusedFilesDialogDescription =>
+      'They are deleted from storage for good. This can\'t be undone.';
+
+  @override
+  String get couldNotFindUnusedFiles =>
+      'Could not check the files. Check your connection and try again.';
+
+  @override
+  String get someFilesNotDeleted =>
+      'Some files could not be deleted. Try again later.';
 }

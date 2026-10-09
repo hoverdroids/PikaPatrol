@@ -1833,6 +1833,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This can\'t be undone. It is removed from the server when you save the observation.'**
   String get deleteMediaDialogDescription;
+
+  /// No description provided for @unusedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Unused files'**
+  String get unusedFiles;
+
+  /// No description provided for @unusedFilesDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos and recordings in storage that no observation uses. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.'**
+  String get unusedFilesDescription;
+
+  /// No description provided for @unusedFilesSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'%count% selected, %size%'**
+  String get unusedFilesSelected;
+
+  /// No description provided for @noUnusedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'No unused files found.'**
+  String get noUnusedFiles;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAll;
+
+  /// No description provided for @deleteSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete selected'**
+  String get deleteSelected;
+
+  /// No description provided for @deleteUnusedFilesDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete %count% files?'**
+  String get deleteUnusedFilesDialogTitle;
+
+  /// No description provided for @deleteUnusedFilesDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'They are deleted from storage for good. This can\'t be undone.'**
+  String get deleteUnusedFilesDialogDescription;
+
+  /// No description provided for @couldNotFindUnusedFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not check the files. Check your connection and try again.'**
+  String get couldNotFindUnusedFiles;
+
+  /// No description provided for @someFilesNotDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Some files could not be deleted. Try again later.'**
+  String get someFilesNotDeleted;
 }
 
 class _AppLocalizationsDelegate

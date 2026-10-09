@@ -117,7 +117,7 @@ class _CorrelateFilesScreenState extends State<CorrelateFilesScreen> {
   }
 
   Widget _buildBody() {
-    if (_isFixing) return const Center(child: CircularProgressIndicator());
+    if (_isFixing) return Center(child: CircularProgressIndicator(color: context.watch<MaterialThemesManager>().colorPalette().primary));
 
     if (_isLoading) {
       return ScanProgress(
@@ -183,7 +183,7 @@ class _CorrelateFilesScreenState extends State<CorrelateFilesScreen> {
       key: ValueKey('${observation.uid}-${fix.file.path}-${fix.brokenUrl}'),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10.0),
-        side: BorderSide(color: isSelected ? Colors.teal.shade800 : Colors.transparent, width: 3.0),
+        side: BorderSide(color: isSelected ? Colors.teal : Colors.transparent, width: 3.0),
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -249,7 +249,7 @@ class _CorrelateFilesScreenState extends State<CorrelateFilesScreen> {
 
   Widget _buildConfidence(FileFixConfidence confidence) {
     final (label, color) = switch (confidence) {
-      FileFixConfidence.high => (translations.fixConfidenceHigh, Colors.green.shade800),
+      FileFixConfidence.high => (translations.fixConfidenceHigh, Colors.teal),
       FileFixConfidence.likely => (translations.fixConfidenceLikely, Colors.orange.shade800),
       FileFixConfidence.possible => (translations.fixConfidencePossible, Colors.grey.shade700),
     };
@@ -273,7 +273,7 @@ class _CorrelateFilesScreenState extends State<CorrelateFilesScreen> {
       description: translations.fixLinksDialogDescription,
       confirmLabel: translations.fixSelectedLinks,
       cancelLabel: translations.cancel,
-      confirmColor: Colors.teal.shade800,
+      confirmColor: Colors.teal,
     );
     if (!confirmed || !mounted) return;
 

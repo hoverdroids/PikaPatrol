@@ -98,7 +98,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     // text and a check mark, so they read clearly in sunlight, with polarized sunglasses, or
     // with limited color vision.
     selectedStyle: C2ChipStyle(
-      backgroundColor: Colors.teal.shade800,
+      backgroundColor: Colors.teal,
       backgroundOpacity: 1,
       foregroundColor: Colors.white,
       foregroundStyle: const TextStyle(fontWeight: FontWeight.bold),

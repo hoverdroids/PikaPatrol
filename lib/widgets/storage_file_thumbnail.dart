@@ -40,7 +40,7 @@ class _StorageFileThumbnailState extends State<StorageFileThumbnail> {
                 : Container(color: Colors.black12),
           )
         : Container(
-            color: Colors.teal.shade800,
+            color: Colors.teal,
             child: Icon(_isPlaying ? Icons.stop : Icons.play_arrow, color: Colors.white, size: 48.0),
           ),
   );

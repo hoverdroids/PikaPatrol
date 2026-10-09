@@ -1155,7 +1155,7 @@ packages:
       path: "../flutter-material-themes-manager"
       relative: true
     source: path
-    version: "1.5.0"
+    version: "1.6.0"
   material_themes_widgets:
     dependency: "direct main"
     description:

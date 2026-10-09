@@ -106,7 +106,7 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> {
   }
 
   Widget _buildBody() {
-    if (_isDeleting) return const Center(child: CircularProgressIndicator());
+    if (_isDeleting) return Center(child: CircularProgressIndicator(color: context.watch<MaterialThemesManager>().colorPalette().primary));
 
     if (_isLoading) {
       return ScanProgress(

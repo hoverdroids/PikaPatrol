@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
+import 'package:provider/provider.dart';
 
 // Progress for the admin Storage scan, which can take a minute with thousands of files
 class ScanProgress extends StatelessWidget {
@@ -16,7 +17,7 @@ class ScanProgress extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          LinearProgressIndicator(value: value),
+          LinearProgressIndicator(value: value, color: context.watch<MaterialThemesManager>().colorPalette().primary),
           const SizedBox(height: 16.0),
           ThemedSubTitle(message, type: ThemeGroupType.MOM),
         ],

@@ -26,6 +26,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 10 — Chris's test feedback**: form no longer goes blank after saving; first photo stays the cover; photo cards fill without stretching; confirm before deleting a photo or recording; removed files are deleted from Storage (retried when offline); admins page back through every shared observation; photos cached on the phone.
 - **Pass 11 — unused files cleanup**: admin-only "Unused files" screen in the left menu shows Storage photos and recordings that no observation uses, in a grid to preview, select and delete.
 - **Pass 12 — correlate files**: admin "Correlate files" screen pairs broken photo and recording links with the stored file most likely to be the right one, for bulk repair; Unused files now only shows files that match nothing; fixed a pass 10 cleanup bug that compared URLs instead of paths; repaired links reach the owner's phone.
+- **Pass 13 — brand colors**: chips, badges and admin screens back to the app's teal (pass 5 had darkened chips to a shade that read as green); app theme now has a color scheme from the palette (material_themes_manager 1.6.0), so progress bars, dialog buttons and checkboxes are teal instead of Flutter's default purple.
 
 ## People
 

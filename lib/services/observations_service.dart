@@ -567,25 +567,26 @@ class ObservationsService {
   //endregion
 
   // Applies the admin's chosen link repairs (see StorageFileCorrelator), one observation at a
-  // time: only the photo and recording lists are written, then its sheets are updated.
-  // Returns how many observations could not be updated.
-  Future<int> applyFileFixes(List<FileFix> fixes) async {
+  // time: only the photo and recording lists are written, then its sheets are updated. Fixed
+  // files leave the cached scan. Returns how many observations could not be updated.
+  Future<int> applyFileFixes(StorageScan scan, List<FileFix> fixes) async {
     final service = firebaseDatabaseService.observationsService;
-    final fixesByObservation = <String, List<FileFix>>{};
+    final fixesByObservation = <Observation, List<FileFix>>{};
     for (var fix in fixes) {
       final uid = fix.observation.uid;
       if (uid == null || uid.isEmpty) continue;
-      fixesByObservation.putIfAbsent(uid, () => []).add(fix);
+      fixesByObservation.putIfAbsent(fix.observation, () => []).add(fix);
     }
 
     var failures = 0;
-    for (var observationFixes in fixesByObservation.values) {
-      final observation = observationFixes.first.observation;
+    for (var entry in fixesByObservation.entries) {
+      final observation = entry.key;
+      final observationFixes = entry.value;
       try {
         final newUrlsByPath = {
           for (var fix in observationFixes) fix.file.path: await service.downloadUrl(fix.file.path),
         };
-        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath);
+        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath, scan.isBroken);
         await service.updateMediaUrls(observation.uid!, lists.imageUrls, lists.audioUrls);
         observation.imageUrls = lists.imageUrls;
         observation.audioUrls = lists.audioUrls;
@@ -595,6 +596,7 @@ class ObservationsService {
         continue;
       }
 
+      scan.removeFixes(observationFixes);
       _updateOlderSharedObservation(observation);
       final results = await saveObservationToGoogleSheets(observation);
       await _setPendingGoogleSheetsSync(observation.uid, results.any((result) => result.exception != null));

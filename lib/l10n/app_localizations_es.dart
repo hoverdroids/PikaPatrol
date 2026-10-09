@@ -948,7 +948,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Fotos y grabaciones en el almacenamiento que ninguna observación usa y que Relacionar archivos no pudo asignar. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.';
+      'Fotos y grabaciones en el almacenamiento que ninguna observación usa y que no coinciden con ninguna en un 20% o más. Se omiten los archivos del último día por si una subida aún no ha terminado. Se revisaron %observations% observaciones y %files% archivos.';
 
   @override
   String get unusedFilesSelected => '%count% seleccionados, %size%';
@@ -982,7 +982,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get correlateFilesDescription =>
-      'Enlaces rotos de fotos y grabaciones, cada uno con el archivo guardado que probablemente le corresponde. Marque los que parezcan correctos y repárelos juntos. Se revisaron %observations% observaciones y %files% archivos.';
+      'Archivos guardados que ninguna observación usa, o cuyo enlace se rompió, cada uno con la observación a la que probablemente pertenece y qué tan segura es la coincidencia. Toque una observación para elegir otra. Marque las que parezcan correctas y repárelas juntas. Se revisaron %observations% observaciones y %files% archivos.';
 
   @override
   String get checkingFiles => 'Revisando archivos: %done% de %total%';
@@ -992,19 +992,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get fixReasonSameName => 'Mismo nombre que el enlace roto';
-
-  @override
-  String get fixReasonUploadedNearby =>
-      'Subido a %time% de cuando se hizo o guardó esta observación';
-
-  @override
-  String get fixConfidenceHigh => 'Seguro';
-
-  @override
-  String get fixConfidenceLikely => 'Probable';
-
-  @override
-  String get fixConfidencePossible => 'Posible';
 
   @override
   String get fixSelectedLinks => 'Reparar enlaces seleccionados';
@@ -1027,5 +1014,39 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudieron actualizar %count% observaciones. Inténtelo más tarde.';
 
   @override
-  String get selectCertain => 'Seleccionar seguros';
+  String get matchUploadedWithLinkedFile =>
+      'Subido a %time% de un archivo que ya está en esta observación';
+
+  @override
+  String get matchMadeNearObservationStart =>
+      'Su nombre muestra que se creó a %time% de cuando se empezó esta observación';
+
+  @override
+  String get matchUploadedNearSave =>
+      'Subido a %time% de cuando se guardó por última vez esta observación';
+
+  @override
+  String get matchUploadedAfterObservationDate =>
+      'Subido a %time% de la fecha de esta observación';
+
+  @override
+  String get matchObservationHasBrokenLink =>
+      'Esta observación tiene un enlace roto del mismo tipo';
+
+  @override
+  String get matchCloseRunnerUp =>
+      'Otra observación coincide casi igual de bien';
+
+  @override
+  String get selectAbove90 => 'Seleccionar 90% o más';
+
+  @override
+  String get clearSelection => 'Borrar selección';
+
+  @override
+  String get otherPossibleObservations => 'Elija la observación';
+
+  @override
+  String get scannedAgo =>
+      'Revisado hace %time%. Deslice hacia abajo para revisar de nuevo.';
 }

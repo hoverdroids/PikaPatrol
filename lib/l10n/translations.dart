@@ -350,17 +350,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String checkingFiles = ERROR;
   String fixReasonRefreshLink = ERROR;
   String fixReasonSameName = ERROR;
-  String fixReasonUploadedNearby = ERROR;
-  String fixConfidenceHigh = ERROR;
-  String fixConfidenceLikely = ERROR;
-  String fixConfidencePossible = ERROR;
   String fixSelectedLinks = ERROR;
   String fixLinksDialogTitle = ERROR;
   String fixLinksDialogDescription = ERROR;
   String noBrokenLinksFound = ERROR;
   String linksFixed = ERROR;
   String someLinksNotFixed = ERROR;
-  String selectCertain = ERROR;
+  String matchUploadedWithLinkedFile = ERROR;
+  String matchMadeNearObservationStart = ERROR;
+  String matchUploadedNearSave = ERROR;
+  String matchUploadedAfterObservationDate = ERROR;
+  String matchObservationHasBrokenLink = ERROR;
+  String matchCloseRunnerUp = ERROR;
+  String selectAbove90 = ERROR;
+  String clearSelection = ERROR;
+  String otherPossibleObservations = ERROR;
+  String scannedAgo = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -672,17 +677,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     checkingFiles =  AppLocalizations.of(context)?.checkingFiles ?? checkingFiles;
     fixReasonRefreshLink =  AppLocalizations.of(context)?.fixReasonRefreshLink ?? fixReasonRefreshLink;
     fixReasonSameName =  AppLocalizations.of(context)?.fixReasonSameName ?? fixReasonSameName;
-    fixReasonUploadedNearby =  AppLocalizations.of(context)?.fixReasonUploadedNearby ?? fixReasonUploadedNearby;
-    fixConfidenceHigh =  AppLocalizations.of(context)?.fixConfidenceHigh ?? fixConfidenceHigh;
-    fixConfidenceLikely =  AppLocalizations.of(context)?.fixConfidenceLikely ?? fixConfidenceLikely;
-    fixConfidencePossible =  AppLocalizations.of(context)?.fixConfidencePossible ?? fixConfidencePossible;
     fixSelectedLinks =  AppLocalizations.of(context)?.fixSelectedLinks ?? fixSelectedLinks;
     fixLinksDialogTitle =  AppLocalizations.of(context)?.fixLinksDialogTitle ?? fixLinksDialogTitle;
     fixLinksDialogDescription =  AppLocalizations.of(context)?.fixLinksDialogDescription ?? fixLinksDialogDescription;
     noBrokenLinksFound =  AppLocalizations.of(context)?.noBrokenLinksFound ?? noBrokenLinksFound;
     linksFixed =  AppLocalizations.of(context)?.linksFixed ?? linksFixed;
     someLinksNotFixed =  AppLocalizations.of(context)?.someLinksNotFixed ?? someLinksNotFixed;
-    selectCertain =  AppLocalizations.of(context)?.selectCertain ?? selectCertain;
+    matchUploadedWithLinkedFile =  AppLocalizations.of(context)?.matchUploadedWithLinkedFile ?? matchUploadedWithLinkedFile;
+    matchMadeNearObservationStart =  AppLocalizations.of(context)?.matchMadeNearObservationStart ?? matchMadeNearObservationStart;
+    matchUploadedNearSave =  AppLocalizations.of(context)?.matchUploadedNearSave ?? matchUploadedNearSave;
+    matchUploadedAfterObservationDate =  AppLocalizations.of(context)?.matchUploadedAfterObservationDate ?? matchUploadedAfterObservationDate;
+    matchObservationHasBrokenLink =  AppLocalizations.of(context)?.matchObservationHasBrokenLink ?? matchObservationHasBrokenLink;
+    matchCloseRunnerUp =  AppLocalizations.of(context)?.matchCloseRunnerUp ?? matchCloseRunnerUp;
+    selectAbove90 =  AppLocalizations.of(context)?.selectAbove90 ?? selectAbove90;
+    clearSelection =  AppLocalizations.of(context)?.clearSelection ?? clearSelection;
+    otherPossibleObservations =  AppLocalizations.of(context)?.otherPossibleObservations ?? otherPossibleObservations;
+    scannedAgo =  AppLocalizations.of(context)?.scannedAgo ?? scannedAgo;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1032,17 +1042,22 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "checkingFiles": return checkingFiles;
       case "fixReasonRefreshLink": return fixReasonRefreshLink;
       case "fixReasonSameName": return fixReasonSameName;
-      case "fixReasonUploadedNearby": return fixReasonUploadedNearby;
-      case "fixConfidenceHigh": return fixConfidenceHigh;
-      case "fixConfidenceLikely": return fixConfidenceLikely;
-      case "fixConfidencePossible": return fixConfidencePossible;
       case "fixSelectedLinks": return fixSelectedLinks;
       case "fixLinksDialogTitle": return fixLinksDialogTitle;
       case "fixLinksDialogDescription": return fixLinksDialogDescription;
       case "noBrokenLinksFound": return noBrokenLinksFound;
       case "linksFixed": return linksFixed;
       case "someLinksNotFixed": return someLinksNotFixed;
-      case "selectCertain": return selectCertain;
+      case "matchUploadedWithLinkedFile": return matchUploadedWithLinkedFile;
+      case "matchMadeNearObservationStart": return matchMadeNearObservationStart;
+      case "matchUploadedNearSave": return matchUploadedNearSave;
+      case "matchUploadedAfterObservationDate": return matchUploadedAfterObservationDate;
+      case "matchObservationHasBrokenLink": return matchObservationHasBrokenLink;
+      case "matchCloseRunnerUp": return matchCloseRunnerUp;
+      case "selectAbove90": return selectAbove90;
+      case "clearSelection": return clearSelection;
+      case "otherPossibleObservations": return otherPossibleObservations;
+      case "scannedAgo": return scannedAgo;
       default: return key;
     }
   }

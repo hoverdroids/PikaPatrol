@@ -1843,7 +1843,7 @@ abstract class AppLocalizations {
   /// No description provided for @unusedFilesDescription.
   ///
   /// In en, this message translates to:
-  /// **'Photos and recordings in storage that no observation uses and that Correlate files could not match to one. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.'**
+  /// **'Photos and recordings in storage that no observation uses and that match no observation by 20% or more. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.'**
   String get unusedFilesDescription;
 
   /// No description provided for @unusedFilesSelected.
@@ -1903,7 +1903,7 @@ abstract class AppLocalizations {
   /// No description provided for @correlateFilesDescription.
   ///
   /// In en, this message translates to:
-  /// **'Broken photo and recording links, each with the stored file most likely to be the right one. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.'**
+  /// **'Stored files that no observation uses, or whose link broke, each with the observation it most likely belongs to and how sure the match is. Tap an observation to choose another. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.'**
   String get correlateFilesDescription;
 
   /// No description provided for @checkingFiles.
@@ -1923,30 +1923,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Same file name as the broken link'**
   String get fixReasonSameName;
-
-  /// No description provided for @fixReasonUploadedNearby.
-  ///
-  /// In en, this message translates to:
-  /// **'Uploaded %time% from when this observation was made or saved'**
-  String get fixReasonUploadedNearby;
-
-  /// No description provided for @fixConfidenceHigh.
-  ///
-  /// In en, this message translates to:
-  /// **'Certain'**
-  String get fixConfidenceHigh;
-
-  /// No description provided for @fixConfidenceLikely.
-  ///
-  /// In en, this message translates to:
-  /// **'Likely'**
-  String get fixConfidenceLikely;
-
-  /// No description provided for @fixConfidencePossible.
-  ///
-  /// In en, this message translates to:
-  /// **'Possible'**
-  String get fixConfidencePossible;
 
   /// No description provided for @fixSelectedLinks.
   ///
@@ -1984,11 +1960,65 @@ abstract class AppLocalizations {
   /// **'%count% observations could not be updated. Try again later.'**
   String get someLinksNotFixed;
 
-  /// No description provided for @selectCertain.
+  /// No description provided for @matchUploadedWithLinkedFile.
   ///
   /// In en, this message translates to:
-  /// **'Select certain'**
-  String get selectCertain;
+  /// **'Uploaded %time% from a file already on this observation'**
+  String get matchUploadedWithLinkedFile;
+
+  /// No description provided for @matchMadeNearObservationStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Its file name shows it was made %time% from when this observation was started'**
+  String get matchMadeNearObservationStart;
+
+  /// No description provided for @matchUploadedNearSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded %time% from when this observation was last saved'**
+  String get matchUploadedNearSave;
+
+  /// No description provided for @matchUploadedAfterObservationDate.
+  ///
+  /// In en, this message translates to:
+  /// **'Uploaded %time% from this observation\'s date'**
+  String get matchUploadedAfterObservationDate;
+
+  /// No description provided for @matchObservationHasBrokenLink.
+  ///
+  /// In en, this message translates to:
+  /// **'This observation has a broken link of the same kind'**
+  String get matchObservationHasBrokenLink;
+
+  /// No description provided for @matchCloseRunnerUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Another observation matches almost as well'**
+  String get matchCloseRunnerUp;
+
+  /// No description provided for @selectAbove90.
+  ///
+  /// In en, this message translates to:
+  /// **'Select 90% and up'**
+  String get selectAbove90;
+
+  /// No description provided for @clearSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get clearSelection;
+
+  /// No description provided for @otherPossibleObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the observation'**
+  String get otherPossibleObservations;
+
+  /// No description provided for @scannedAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'Scanned %time% ago. Pull down to scan again.'**
+  String get scannedAgo;
 }
 
 class _AppLocalizationsDelegate

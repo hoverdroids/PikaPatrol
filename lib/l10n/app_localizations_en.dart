@@ -941,7 +941,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Photos and recordings in storage that no observation uses and that Correlate files could not match to one. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.';
+      'Photos and recordings in storage that no observation uses and that match no observation by 20% or more. Files from the last day are left out in case an upload is still finishing. Checked %observations% observations and %files% files.';
 
   @override
   String get unusedFilesSelected => '%count% selected, %size%';
@@ -975,7 +975,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get correlateFilesDescription =>
-      'Broken photo and recording links, each with the stored file most likely to be the right one. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.';
+      'Stored files that no observation uses, or whose link broke, each with the observation it most likely belongs to and how sure the match is. Tap an observation to choose another. Check the ones that look right, then fix them together. Checked %observations% observations and %files% files.';
 
   @override
   String get checkingFiles => 'Checking files: %done% of %total%';
@@ -985,19 +985,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fixReasonSameName => 'Same file name as the broken link';
-
-  @override
-  String get fixReasonUploadedNearby =>
-      'Uploaded %time% from when this observation was made or saved';
-
-  @override
-  String get fixConfidenceHigh => 'Certain';
-
-  @override
-  String get fixConfidenceLikely => 'Likely';
-
-  @override
-  String get fixConfidencePossible => 'Possible';
 
   @override
   String get fixSelectedLinks => 'Fix selected links';
@@ -1020,5 +1007,37 @@ class AppLocalizationsEn extends AppLocalizations {
       '%count% observations could not be updated. Try again later.';
 
   @override
-  String get selectCertain => 'Select certain';
+  String get matchUploadedWithLinkedFile =>
+      'Uploaded %time% from a file already on this observation';
+
+  @override
+  String get matchMadeNearObservationStart =>
+      'Its file name shows it was made %time% from when this observation was started';
+
+  @override
+  String get matchUploadedNearSave =>
+      'Uploaded %time% from when this observation was last saved';
+
+  @override
+  String get matchUploadedAfterObservationDate =>
+      'Uploaded %time% from this observation\'s date';
+
+  @override
+  String get matchObservationHasBrokenLink =>
+      'This observation has a broken link of the same kind';
+
+  @override
+  String get matchCloseRunnerUp => 'Another observation matches almost as well';
+
+  @override
+  String get selectAbove90 => 'Select 90% and up';
+
+  @override
+  String get clearSelection => 'Clear';
+
+  @override
+  String get otherPossibleObservations => 'Choose the observation';
+
+  @override
+  String get scannedAgo => 'Scanned %time% ago. Pull down to scan again.';
 }

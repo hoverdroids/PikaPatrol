@@ -1,5 +1,6 @@
 // ignore_for_file: constant_identifier_names
 import 'dart:io';
+import 'dart:isolate';
 import 'dart:math';
 import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,13 +13,49 @@ import 'storage_file_correlator.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
 
+// The result of an admin Storage scan, kept in memory so the file screens can be reopened
+// without scanning again. Fixes and deletes made from those screens update it in place.
 class StorageScan {
   final List<FileFix> fixes;
   final List<StorageFile> unused;
   final int observationCount;
-  final int totalFileCount;
+  int totalFileCount;
+  // Paths of every file in Storage, to tell broken links from working ones
+  final Set<String> existingPaths;
+  final DateTime scannedAt;
 
-  const StorageScan({required this.fixes, required this.unused, required this.observationCount, required this.totalFileCount});
+  StorageScan({
+    required this.fixes,
+    required this.unused,
+    required this.observationCount,
+    required this.totalFileCount,
+    required this.existingPaths,
+    required this.scannedAt,
+  });
+
+  bool isBroken(String url) {
+    final path = FirebaseObservationsService.storagePathFromUrl(url);
+    return path == null || !existingPaths.contains(path);
+  }
+
+  // Applied fixes leave the list, and their files are no longer unused
+  void removeFixes(Iterable<FileFix> applied) {
+    final appliedSet = applied.toSet();
+    final paths = {for (var fix in appliedSet) fix.file.path};
+    fixes.removeWhere(appliedSet.contains);
+    // A file now linked to one observation is no longer a candidate for another
+    fixes.removeWhere((fix) => paths.contains(fix.file.path) && fix.match.brokenUrl == null);
+    unused.removeWhere((file) => paths.contains(file.path));
+  }
+
+  void removeDeletedFiles(Iterable<StorageFile> files) {
+    final paths = {for (var file in files) file.path};
+    fixes.removeWhere((fix) => paths.contains(fix.file.path));
+    unused.removeWhere((file) => paths.contains(file.path));
+    for (var file in files) {
+      if (existingPaths.remove(file.path)) totalFileCount--;
+    }
+  }
 }
 
 class FirebaseObservationsService {
@@ -367,7 +404,13 @@ class FirebaseObservationsService {
   //
   // Observations come straight from the server and any error stops the scan: a partial or
   // cached list would make files that are in use look unused.
-  Future<StorageScan> scanStorage({void Function(int done, int total)? onProgress}) async {
+  StorageScan? _cachedScan;
+
+  // Returns the last scan unless asked to scan again
+  Future<StorageScan> scanStorage({bool rescan = false, void Function(int done, int total)? onProgress}) async {
+    final cached = _cachedScan;
+    if (cached != null && !rescan) return cached;
+
     final snapshot = await observationsCollection.get(const GetOptions(source: Source.server));
     final observations = _observationsFromSnapshot(snapshot);
 
@@ -391,33 +434,25 @@ class FirebaseObservationsService {
       }
     }
 
-    // Used files: a current download URL, to find links whose token changed.
-    // Unused files: size and upload time, to match them to observations.
+    // Every file: size and upload time, to match files to observations.
+    // Used files also: a current download URL, to find links whose token changed.
     final filesByPath = <String, StorageFile>{};
     final currentUrlsByPath = <String, String>{};
-    var done = 0;
     const batchSize = 25;
     for (var i = 0; i < refs.length; i += batchSize) {
       await Future.wait(refs.skip(i).take(batchSize).map((ref) async {
         final isImage = !ref.fullPath.startsWith("$AUDIO_FOLDER_NAME/");
+        final metadata = await ref.getMetadata();
+        filesByPath[ref.fullPath] = StorageFile(path: ref.fullPath, isImage: isImage, sizeBytes: metadata.size ?? 0, created: metadata.timeCreated);
         if (usedPaths.contains(ref.fullPath)) {
           currentUrlsByPath[ref.fullPath] = await ref.getDownloadURL();
-          filesByPath[ref.fullPath] = StorageFile(path: ref.fullPath, isImage: isImage, sizeBytes: 0);
-        } else {
-          final metadata = await ref.getMetadata();
-          filesByPath[ref.fullPath] = StorageFile(path: ref.fullPath, isImage: isImage, sizeBytes: metadata.size ?? 0, created: metadata.timeCreated);
         }
       }));
-      done = min(i + batchSize, refs.length);
-      onProgress?.call(done, refs.length);
+      onProgress?.call(min(i + batchSize, refs.length), refs.length);
     }
 
-    final result = StorageFileCorrelator(
-      observations: observations,
-      filesByPath: filesByPath,
-      currentUrlsByPath: currentUrlsByPath,
-      storagePathFromUrl: storagePathFromUrl,
-    ).correlate();
+    // Scores every unused file against every observation, off the main thread
+    final result = await _correlateInBackground(observations, filesByPath, currentUrlsByPath);
 
     // Files from the last day are left out of the unused list, because an upload in progress
     // has its file in Storage before its observation is saved
@@ -425,13 +460,27 @@ class FirebaseObservationsService {
     final unused = result.unmatched.where((file) => file.created == null || file.created!.isBefore(cutoff)).toList()
       ..sort((a, b) => (b.created ?? DateTime(0)).compareTo(a.created ?? DateTime(0)));
 
-    return StorageScan(
+    return _cachedScan = StorageScan(
       fixes: result.fixes,
       unused: unused,
       observationCount: observations.length,
       totalFileCount: refs.length,
+      existingPaths: filesByPath.keys.toSet(),
+      scannedAt: DateTime.now(),
     );
   }
+
+  // Static, so the background isolate only gets these plain values and not this service
+  static Future<({List<FileFix> fixes, List<StorageFile> unmatched})> _correlateInBackground(
+    List<Observation> observations,
+    Map<String, StorageFile> filesByPath,
+    Map<String, String> currentUrlsByPath,
+  ) => Isolate.run(() => StorageFileCorrelator(
+    observations: observations,
+    filesByPath: filesByPath,
+    currentUrlsByPath: currentUrlsByPath,
+    storagePathFromUrl: storagePathFromUrl,
+  ).correlate());
 
   Future<String> downloadUrl(String path) => _storage.ref(path).getDownloadURL();
 

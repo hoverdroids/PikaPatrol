@@ -953,7 +953,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get unusedFilesDescription =>
-      'Photos et enregistrements stockés qu\'aucune observation n\'utilise et que Associer les fichiers n\'a pu rattacher à aucune. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.';
+      'Photos et enregistrements stockés qu\'aucune observation n\'utilise et qui ne correspondent à aucune à 20 % ou plus. Les fichiers de la dernière journée sont ignorés au cas où un envoi serait encore en cours. %observations% observations et %files% fichiers vérifiés.';
 
   @override
   String get unusedFilesSelected => '%count% sélectionnés, %size%';
@@ -987,7 +987,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get correlateFilesDescription =>
-      'Liens de photos et d\'enregistrements brisés, chacun avec le fichier stocké le plus probable. Cochez ceux qui semblent corrects, puis réparez-les ensemble. %observations% observations et %files% fichiers vérifiés.';
+      'Fichiers stockés qu\'aucune observation n\'utilise, ou dont le lien est brisé, chacun avec l\'observation à laquelle il appartient le plus probablement et le degré de certitude. Touchez une observation pour en choisir une autre. Cochez celles qui semblent correctes, puis réparez-les ensemble. %observations% observations et %files% fichiers vérifiés.';
 
   @override
   String get checkingFiles => 'Vérification des fichiers : %done% sur %total%';
@@ -997,19 +997,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get fixReasonSameName => 'Même nom que le lien brisé';
-
-  @override
-  String get fixReasonUploadedNearby =>
-      'Envoyé à %time% du moment où cette observation a été faite ou enregistrée';
-
-  @override
-  String get fixConfidenceHigh => 'Certain';
-
-  @override
-  String get fixConfidenceLikely => 'Probable';
-
-  @override
-  String get fixConfidencePossible => 'Possible';
 
   @override
   String get fixSelectedLinks => 'Réparer les liens sélectionnés';
@@ -1032,5 +1019,39 @@ class AppLocalizationsFr extends AppLocalizations {
       '%count% observations n\'ont pas pu être mises à jour. Réessayez plus tard.';
 
   @override
-  String get selectCertain => 'Sélectionner les certains';
+  String get matchUploadedWithLinkedFile =>
+      'Envoyé à %time% d\'un fichier déjà sur cette observation';
+
+  @override
+  String get matchMadeNearObservationStart =>
+      'Son nom indique qu\'il a été créé à %time% du début de cette observation';
+
+  @override
+  String get matchUploadedNearSave =>
+      'Envoyé à %time% de la dernière sauvegarde de cette observation';
+
+  @override
+  String get matchUploadedAfterObservationDate =>
+      'Envoyé à %time% de la date de cette observation';
+
+  @override
+  String get matchObservationHasBrokenLink =>
+      'Cette observation a un lien brisé du même type';
+
+  @override
+  String get matchCloseRunnerUp =>
+      'Une autre observation correspond presque aussi bien';
+
+  @override
+  String get selectAbove90 => 'Sélectionner 90 % et plus';
+
+  @override
+  String get clearSelection => 'Effacer';
+
+  @override
+  String get otherPossibleObservations => 'Choisir l\'observation';
+
+  @override
+  String get scannedAgo =>
+      'Vérifié il y a %time%. Tirez vers le bas pour vérifier à nouveau.';
 }

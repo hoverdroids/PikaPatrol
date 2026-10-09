@@ -525,34 +525,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'audio n\'a pas été ajouté. Il est déjà dans la liste.';
 
   @override
-  String get couldNotOpenFilePickerAcceptCameraPermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de la caméra.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptPhotosPermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations photos.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptStoragePermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de stockage.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaPermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de localisation des médias.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptExternalStoragePermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de stockage externe.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptVideosPermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations vidéo.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaLibraryPermissions =>
-      'Impossible d\'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de la médiathèque.';
-
-  @override
   String get unsupportedOperation => 'Opération non prise en charge';
 
   @override
@@ -1054,4 +1026,24 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get scannedAgo =>
       'Vérifié il y a %time%. Tirez vers le bas pour vérifier à nouveau.';
+
+  @override
+  String get recordingNameHint => 'Nom de l\'enregistrement';
+
+  @override
+  String get couldNotSaveRecording =>
+      'L\'enregistrement n\'a pas pu être sauvegardé. Veuillez réessayer.';
+
+  @override
+  String get photoCredit => 'Photo : %s';
+
+  @override
+  String get observationOnServer => 'Sur le serveur. Dernier envoi : %s.';
+
+  @override
+  String get observationOnServerNoDate => 'Sur le serveur.';
+
+  @override
+  String get observationWaitingToUpload =>
+      'Les modifications sont enregistrées sur ce téléphone et seront envoyées lors de votre prochaine connexion.';
 }

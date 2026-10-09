@@ -162,13 +162,6 @@
     "couldNotOpenRecorder": "No se pudo abrir la grabadora.\nDebes aceptar los permisos de audio.",
     "didNotAddImage": "No agregué imagen. Ya está en la lista.",
     "didNotAddAudio": "No agregué audio. Ya está en la lista.",
-    "couldNotOpenFilePickerAcceptCameraPermissions": "No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de la cámara.",
-    "couldNotOpenFilePickerAcceptPhotosPermissions": "No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de las fotos.",
-    "couldNotOpenFilePickerAcceptStoragePermissions": "No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de almacenamiento.",
-    "couldNotOpenFilePickerAcceptMediaPermissions": "No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de ubicación de medios.",
-    "couldNotOpenFilePickerAcceptExternalStoragePermissions": "No se pudo abrir el selector de archivos.\nDebe aceptar permisos de almacenamiento externo.",
-    "couldNotOpenFilePickerAcceptVideosPermissions": "No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de los vídeos.",
-    "couldNotOpenFilePickerAcceptMediaLibraryPermissions": "No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de la biblioteca multimedia.",
     "unsupportedOperation": "Operación no compatible",
     "errorWhenTryingToCropImage": "Error al intentar recortar la imagen",
     "couldNotOpenCameraAcceptCameraPermissions": "No se pudo abrir la cámara.\nDebes aceptar los permisos de la cámara.",
@@ -318,5 +311,11 @@
     "selectAbove90": "Seleccionar 90% o más",
     "clearSelection": "Borrar selección",
     "otherPossibleObservations": "Elija la observación",
-    "scannedAgo": "Revisado hace %time%. Deslice hacia abajo para revisar de nuevo."
+    "scannedAgo": "Revisado hace %time%. Deslice hacia abajo para revisar de nuevo.",
+    "recordingNameHint": "Nombre de la grabación",
+    "couldNotSaveRecording": "No se pudo guardar la grabación. Inténtelo de nuevo.",
+    "photoCredit": "Foto: %s",
+    "observationOnServer": "En el servidor. Última subida: %s.",
+    "observationOnServerNoDate": "En el servidor.",
+    "observationWaitingToUpload": "Los cambios están guardados en este teléfono y se subirán la próxima vez que tenga conexión."
 }

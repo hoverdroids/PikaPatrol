@@ -162,13 +162,6 @@
     "couldNotOpenRecorder": "Could not open recorder.\nYou must accept audio permissions.",
     "didNotAddImage": "Did not add image. It is already in list.",
     "didNotAddAudio": "Did not add audio. It is already in list.",
-    "couldNotOpenFilePickerAcceptCameraPermissions": "Could not open file picker.\nYou must accept camera permissions.",
-    "couldNotOpenFilePickerAcceptPhotosPermissions": "Could not open file picker.\nYou must accept photos permissions.",
-    "couldNotOpenFilePickerAcceptStoragePermissions": "Could not open file picker.\nYou must accept storage permissions.",
-    "couldNotOpenFilePickerAcceptMediaPermissions": "Could not open file picker.\nYou must accept media location permissions.",
-    "couldNotOpenFilePickerAcceptExternalStoragePermissions": "Could not open file picker.\nYou must accept external storage permissions.",
-    "couldNotOpenFilePickerAcceptVideosPermissions": "Could not open file picker.\nYou must accept videos permissions.",
-    "couldNotOpenFilePickerAcceptMediaLibraryPermissions": "Could not open file picker.\nYou must accept media library permissions.",
     "unsupportedOperation": "Unsupported operation",
     "errorWhenTryingToCropImage": "Error when trying to crop image",
     "couldNotOpenCameraAcceptCameraPermissions": "Could not open camera.\nYou must accept camera permissions.",
@@ -318,5 +311,11 @@
     "selectAbove90": "Select 90% and up",
     "clearSelection": "Clear",
     "otherPossibleObservations": "Choose the observation",
-    "scannedAgo": "Scanned %time% ago. Pull down to scan again."
+    "scannedAgo": "Scanned %time% ago. Pull down to scan again.",
+    "recordingNameHint": "Recording name",
+    "couldNotSaveRecording": "The recording could not be saved. Please try again.",
+    "photoCredit": "Photo: %s",
+    "observationOnServer": "On the server. Last uploaded %s.",
+    "observationOnServerNoDate": "On the server.",
+    "observationWaitingToUpload": "Changes are saved on this phone and will upload the next time you're online."
 }

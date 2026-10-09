@@ -39,8 +39,6 @@
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
 	<true/>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>We need access to music so that users can attach the file to an observation</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to the camera and photos so that users can document pika observations by taking photos of pikas or selecting previously taken photos of pikas</string>
 	<key>NSLocationWhenInUseUsageDescription</key>

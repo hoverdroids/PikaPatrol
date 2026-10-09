@@ -200,13 +200,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String couldNotOpenRecorder = ERROR;
   String didNotAddImage = ERROR;
   String didNotAddAudio = ERROR;
-  String couldNotOpenFilePickerAcceptCameraPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptPhotosPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptStoragePermissions = ERROR;
-  String couldNotOpenFilePickerAcceptMediaPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptExternalStoragePermissions = ERROR;
-  String couldNotOpenFilePickerAcceptVideosPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptMediaLibraryPermissions = ERROR;
   String unsupportedOperation = ERROR;
   String errorWhenTryingToCropImage = ERROR;
   String couldNotOpenCameraAcceptCameraPermissions = ERROR;
@@ -366,6 +359,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String clearSelection = ERROR;
   String otherPossibleObservations = ERROR;
   String scannedAgo = ERROR;
+  String recordingNameHint = ERROR;
+  String couldNotSaveRecording = ERROR;
+  String photoCredit = ERROR;
+  String observationOnServer = ERROR;
+  String observationOnServerNoDate = ERROR;
+  String observationWaitingToUpload = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -537,13 +536,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     couldNotOpenRecorder =  AppLocalizations.of(context)?.couldNotOpenRecorder ?? couldNotOpenRecorder;
     didNotAddImage =  AppLocalizations.of(context)?.didNotAddImage ?? didNotAddImage;
     didNotAddAudio =  AppLocalizations.of(context)?.didNotAddAudio ?? didNotAddAudio;
-    couldNotOpenFilePickerAcceptCameraPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptCameraPermissions ?? couldNotOpenFilePickerAcceptCameraPermissions;
-    couldNotOpenFilePickerAcceptPhotosPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptPhotosPermissions ?? couldNotOpenFilePickerAcceptPhotosPermissions;
-    couldNotOpenFilePickerAcceptStoragePermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptStoragePermissions ?? couldNotOpenFilePickerAcceptStoragePermissions;
-    couldNotOpenFilePickerAcceptMediaPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptMediaPermissions ?? couldNotOpenFilePickerAcceptMediaPermissions;
-    couldNotOpenFilePickerAcceptExternalStoragePermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptExternalStoragePermissions ?? couldNotOpenFilePickerAcceptExternalStoragePermissions;
-    couldNotOpenFilePickerAcceptVideosPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptVideosPermissions ?? couldNotOpenFilePickerAcceptVideosPermissions;
-    couldNotOpenFilePickerAcceptMediaLibraryPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptMediaLibraryPermissions ?? couldNotOpenFilePickerAcceptMediaLibraryPermissions;
     unsupportedOperation = AppLocalizations.of(context)?.unsupportedOperation ?? unsupportedOperation;
     errorWhenTryingToCropImage = AppLocalizations.of(context)?.errorWhenTryingToCropImage ?? errorWhenTryingToCropImage;
     couldNotOpenCameraAcceptCameraPermissions = AppLocalizations.of(context)?.couldNotOpenCameraAcceptCameraPermissions ?? couldNotOpenCameraAcceptCameraPermissions;
@@ -693,6 +685,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     clearSelection =  AppLocalizations.of(context)?.clearSelection ?? clearSelection;
     otherPossibleObservations =  AppLocalizations.of(context)?.otherPossibleObservations ?? otherPossibleObservations;
     scannedAgo =  AppLocalizations.of(context)?.scannedAgo ?? scannedAgo;
+    recordingNameHint =  AppLocalizations.of(context)?.recordingNameHint ?? recordingNameHint;
+    couldNotSaveRecording =  AppLocalizations.of(context)?.couldNotSaveRecording ?? couldNotSaveRecording;
+    photoCredit =  AppLocalizations.of(context)?.photoCredit ?? photoCredit;
+    observationOnServer =  AppLocalizations.of(context)?.observationOnServer ?? observationOnServer;
+    observationOnServerNoDate =  AppLocalizations.of(context)?.observationOnServerNoDate ?? observationOnServerNoDate;
+    observationWaitingToUpload =  AppLocalizations.of(context)?.observationWaitingToUpload ?? observationWaitingToUpload;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -902,13 +900,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "couldNotOpenRecorder": return couldNotOpenRecorder;
       case "didNotAddImage": return didNotAddImage;
       case "didNotAddAudio": return didNotAddAudio;
-      case "couldNotOpenFilePickerAcceptCameraPermissions": return couldNotOpenFilePickerAcceptCameraPermissions;
-      case "couldNotOpenFilePickerAcceptPhotosPermissions": return couldNotOpenFilePickerAcceptPhotosPermissions;
-      case "couldNotOpenFilePickerAcceptStoragePermissions": return couldNotOpenFilePickerAcceptStoragePermissions;
-      case "couldNotOpenFilePickerAcceptMediaPermissions": return couldNotOpenFilePickerAcceptMediaPermissions;
-      case "couldNotOpenFilePickerAcceptExternalStoragePermissions": return couldNotOpenFilePickerAcceptExternalStoragePermissions;
-      case "couldNotOpenFilePickerAcceptVideosPermissions": return couldNotOpenFilePickerAcceptVideosPermissions;
-      case "couldNotOpenFilePickerAcceptMediaLibraryPermissions": return couldNotOpenFilePickerAcceptMediaLibraryPermissions;
       case "unsupportedOperation": return unsupportedOperation;
       case "errorWhenTryingToCropImage": return errorWhenTryingToCropImage;
       case "couldNotOpenCameraAcceptCameraPermissions": return couldNotOpenCameraAcceptCameraPermissions;
@@ -1058,6 +1049,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "clearSelection": return clearSelection;
       case "otherPossibleObservations": return otherPossibleObservations;
       case "scannedAgo": return scannedAgo;
+      case "recordingNameHint": return recordingNameHint;
+      case "couldNotSaveRecording": return couldNotSaveRecording;
+      case "photoCredit": return photoCredit;
+      case "observationOnServer": return observationOnServer;
+      case "observationOnServerNoDate": return observationOnServerNoDate;
+      case "observationWaitingToUpload": return observationWaitingToUpload;
       default: return key;
     }
   }

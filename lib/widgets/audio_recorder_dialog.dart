@@ -11,6 +11,8 @@ import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:record/record.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
+import '../l10n/translations.dart';
 import 'dart:developer' as developer;
 
 class AudioRecorderDialog extends StatefulWidget {
@@ -74,7 +76,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                 ],
                 ThemedEditableLabelValue(
                   showLabel: false,
-                  hintText: "Recording Name",
+                  hintText: Provider.of<Translations>(context).recordingNameHint,
                   validator:  (value) => nonEmptyValidator(value, "Name", true),
                   onStringChangedCallback: (value) => setState(() => recordingName = value ),
                 ),
@@ -89,7 +91,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                           backgroundColor: context.watch<MaterialThemesManager>().colorPalette().lightBg,
                           shape: const StadiumBorder(),
                         ),
-                        child: ThemedTitle("Cancel", type: ThemeGroupType.MOM),
+                        child: ThemedTitle(Provider.of<Translations>(context).cancel, type: ThemeGroupType.MOM),
                         onPressed: () {
                           _quitWithoutSaving();
                         },
@@ -103,7 +105,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                               backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
                               shape: const StadiumBorder(),
                             ),
-                            child: ThemedTitle("Save", type: ThemeGroupType.MOP),
+                            child: ThemedTitle(Provider.of<Translations>(context).save, type: ThemeGroupType.MOP),
                             onPressed: () {
                               if (_formKey.currentState?.validate() == true) {
                                 _formKey.currentState?.save();
@@ -184,19 +186,32 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     String? resultPath = await _recorder.stop();
     _setRecordingStatus(RecordState.stop);
 
-    if (resultPath != null && recordingName != null) {
-      String ext = path.extension(resultPath).substring(1);//Need to string dot from .extension
-      String dir = path.dirname(resultPath);
-      String newPath = path.join(dir, '$recordingName.$ext');
+    final name = recordingName;
+    if (resultPath == null || name == null) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
 
-      developer.log("NewPath:$newPath ext:$ext dir:$dir");
+    try {
+      // Each recording gets its own folder, so a name used before never replaces an earlier
+      // recording (Android) or makes the save fail (iPhone). Characters a file name can't hold
+      // become "_". The name shown in the app stays what the volunteer typed. GitHub #31.
+      final ext = path.extension(resultPath);
+      final folder = Directory(path.join(path.dirname(resultPath), 'recordings', '${DateTime.now().millisecondsSinceEpoch}'));
+      await folder.create(recursive: true);
+      final safeName = name.trim().replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1F]'), '_');
+      final newPath = path.join(folder.path, '${safeName.isEmpty ? 'recording' : safeName}$ext');
 
-      File file = File(resultPath);
-      await file.rename(newPath);
+      // Copy rather than rename: the temp file is replaced on the next recording either way
+      await File(resultPath).copy(newPath);
 
       if (mounted) Navigator.pop(context, newPath);
-    } else {
-      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      developer.log("Could not save recording: $e");
+      if (mounted) {
+        showToast(Provider.of<Translations>(context, listen: false).couldNotSaveRecording);
+        Navigator.pop(context);
+      }
     }
   }
 

@@ -15,7 +15,8 @@ class PikaData {
       "collaredPika",
       "collaredPikaDetails",
       "collared_pika.jpg",
-      "https://en.wikipedia.org/wiki/Collared_pika"
+      "https://en.wikipedia.org/wiki/Collared_pika",
+      photoCredit: "Katie Christie"
     )
     /*Pika(
       "Ili Pika",

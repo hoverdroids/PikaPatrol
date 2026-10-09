@@ -1078,48 +1078,6 @@ abstract class AppLocalizations {
   /// **'Did not add audio. It is already in list.'**
   String get didNotAddAudio;
 
-  /// No description provided for @couldNotOpenFilePickerAcceptCameraPermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept camera permissions.'**
-  String get couldNotOpenFilePickerAcceptCameraPermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptPhotosPermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept photos permissions.'**
-  String get couldNotOpenFilePickerAcceptPhotosPermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptStoragePermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept storage permissions.'**
-  String get couldNotOpenFilePickerAcceptStoragePermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptMediaPermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept media location permissions.'**
-  String get couldNotOpenFilePickerAcceptMediaPermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptExternalStoragePermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept external storage permissions.'**
-  String get couldNotOpenFilePickerAcceptExternalStoragePermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptVideosPermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept videos permissions.'**
-  String get couldNotOpenFilePickerAcceptVideosPermissions;
-
-  /// No description provided for @couldNotOpenFilePickerAcceptMediaLibraryPermissions.
-  ///
-  /// In en, this message translates to:
-  /// **'Could not open file picker.\nYou must accept media library permissions.'**
-  String get couldNotOpenFilePickerAcceptMediaLibraryPermissions;
-
   /// No description provided for @unsupportedOperation.
   ///
   /// In en, this message translates to:
@@ -2019,6 +1977,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scanned %time% ago. Pull down to scan again.'**
   String get scannedAgo;
+
+  /// No description provided for @recordingNameHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording name'**
+  String get recordingNameHint;
+
+  /// No description provided for @couldNotSaveRecording.
+  ///
+  /// In en, this message translates to:
+  /// **'The recording could not be saved. Please try again.'**
+  String get couldNotSaveRecording;
+
+  /// No description provided for @photoCredit.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo: %s'**
+  String get photoCredit;
+
+  /// No description provided for @observationOnServer.
+  ///
+  /// In en, this message translates to:
+  /// **'On the server. Last uploaded %s.'**
+  String get observationOnServer;
+
+  /// No description provided for @observationOnServerNoDate.
+  ///
+  /// In en, this message translates to:
+  /// **'On the server.'**
+  String get observationOnServerNoDate;
+
+  /// No description provided for @observationWaitingToUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Changes are saved on this phone and will upload the next time you\'re online.'**
+  String get observationWaitingToUpload;
 }
 
 class _AppLocalizationsDelegate

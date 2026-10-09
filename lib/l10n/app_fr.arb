@@ -162,13 +162,6 @@
   "couldNotOpenRecorder": "Impossible d'ouvrir l'enregistreur.\nVous devez accepter les autorisations audio.",
   "didNotAddImage": "L'image n'a pas été ajoutée. Elle est déjà dans la liste.",
   "didNotAddAudio": "L'audio n'a pas été ajouté. Il est déjà dans la liste.",
-  "couldNotOpenFilePickerAcceptCameraPermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de la caméra.",
-  "couldNotOpenFilePickerAcceptPhotosPermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations photos.",
-  "couldNotOpenFilePickerAcceptStoragePermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de stockage.",
-  "couldNotOpenFilePickerAcceptMediaPermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de localisation des médias.",
-  "couldNotOpenFilePickerAcceptExternalStoragePermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de stockage externe.",
-  "couldNotOpenFilePickerAcceptVideosPermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations vidéo.",
-  "couldNotOpenFilePickerAcceptMediaLibraryPermissions": "Impossible d'ouvrir le sélecteur de fichiers.\nVous devez accepter les autorisations de la médiathèque.",
   "unsupportedOperation": "Opération non prise en charge",
   "errorWhenTryingToCropImage": "Erreur lors du recadrage de l'image",
   "couldNotOpenCameraAcceptCameraPermissions": "Impossible d'ouvrir la caméra.\nVous devez accepter les autorisations de la caméra.",
@@ -318,5 +311,11 @@
   "selectAbove90": "Sélectionner 90 % et plus",
   "clearSelection": "Effacer",
   "otherPossibleObservations": "Choisir l'observation",
-  "scannedAgo": "Vérifié il y a %time%. Tirez vers le bas pour vérifier à nouveau."
+  "scannedAgo": "Vérifié il y a %time%. Tirez vers le bas pour vérifier à nouveau.",
+  "recordingNameHint": "Nom de l'enregistrement",
+  "couldNotSaveRecording": "L'enregistrement n'a pas pu être sauvegardé. Veuillez réessayer.",
+  "photoCredit": "Photo : %s",
+  "observationOnServer": "Sur le serveur. Dernier envoi : %s.",
+  "observationOnServerNoDate": "Sur le serveur.",
+  "observationWaitingToUpload": "Les modifications sont enregistrées sur ce téléphone et seront envoyées lors de votre prochaine connexion."
 }

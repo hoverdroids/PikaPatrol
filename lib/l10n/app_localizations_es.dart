@@ -522,34 +522,6 @@ class AppLocalizationsEs extends AppLocalizations {
   String get didNotAddAudio => 'No agregué audio. Ya está en la lista.';
 
   @override
-  String get couldNotOpenFilePickerAcceptCameraPermissions =>
-      'No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de la cámara.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptPhotosPermissions =>
-      'No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de las fotos.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptStoragePermissions =>
-      'No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de almacenamiento.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaPermissions =>
-      'No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de ubicación de medios.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptExternalStoragePermissions =>
-      'No se pudo abrir el selector de archivos.\nDebe aceptar permisos de almacenamiento externo.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptVideosPermissions =>
-      'No se pudo abrir el selector de archivos.\nDebes aceptar los permisos de los vídeos.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaLibraryPermissions =>
-      'No se pudo abrir el selector de archivos.\nDebe aceptar los permisos de la biblioteca multimedia.';
-
-  @override
   String get unsupportedOperation => 'Operación no compatible';
 
   @override
@@ -1049,4 +1021,24 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get scannedAgo =>
       'Revisado hace %time%. Deslice hacia abajo para revisar de nuevo.';
+
+  @override
+  String get recordingNameHint => 'Nombre de la grabación';
+
+  @override
+  String get couldNotSaveRecording =>
+      'No se pudo guardar la grabación. Inténtelo de nuevo.';
+
+  @override
+  String get photoCredit => 'Foto: %s';
+
+  @override
+  String get observationOnServer => 'En el servidor. Última subida: %s.';
+
+  @override
+  String get observationOnServerNoDate => 'En el servidor.';
+
+  @override
+  String get observationWaitingToUpload =>
+      'Los cambios están guardados en este teléfono y se subirán la próxima vez que tenga conexión.';
 }

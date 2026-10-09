@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import 'local_observation.dart';
+import 'observation.dart';
 import 'dart:developer' as developer;
 
 // DO NOT CHANGE THE READ OR WRITE ORDER BETWEEN ADAPTER VERSIONS!
@@ -70,11 +71,15 @@ class LocalObservationAdapter extends TypeAdapter<LocalObservation> {
           // Trying to do so will throw the error "Not enough bytes available"
           // The fields need to be initialized still, or else Flutter throws an error
           // for "unmodifiable list"
-          localObservation.species = "";
+          // Before 3.0 every observation was an American pika
+          localObservation.species = Observation.SPECIES_DEFAULT;
           localObservation.sharedWithProjects = <String>[];
           localObservation.notSharedWithProjects = <String>[];
           localObservation.dateUpdatedInGoogleSheets = "";
-          localObservation.isUploaded = false;
+          // Firestore makes the uid when an observation is uploaded, so one with a uid is already on
+          // the server. Treating it as not uploaded would re-upload this old copy and blank the
+          // species and projects the server has.
+          localObservation.isUploaded = localObservation.uid.isNotEmpty;
         }
       } catch(e) {
         developer.log("Reader error: $e");

@@ -520,34 +520,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get didNotAddAudio => 'Did not add audio. It is already in list.';
 
   @override
-  String get couldNotOpenFilePickerAcceptCameraPermissions =>
-      'Could not open file picker.\nYou must accept camera permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptPhotosPermissions =>
-      'Could not open file picker.\nYou must accept photos permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptStoragePermissions =>
-      'Could not open file picker.\nYou must accept storage permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaPermissions =>
-      'Could not open file picker.\nYou must accept media location permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptExternalStoragePermissions =>
-      'Could not open file picker.\nYou must accept external storage permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptVideosPermissions =>
-      'Could not open file picker.\nYou must accept videos permissions.';
-
-  @override
-  String get couldNotOpenFilePickerAcceptMediaLibraryPermissions =>
-      'Could not open file picker.\nYou must accept media library permissions.';
-
-  @override
   String get unsupportedOperation => 'Unsupported operation';
 
   @override
@@ -1040,4 +1012,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get scannedAgo => 'Scanned %time% ago. Pull down to scan again.';
+
+  @override
+  String get recordingNameHint => 'Recording name';
+
+  @override
+  String get couldNotSaveRecording =>
+      'The recording could not be saved. Please try again.';
+
+  @override
+  String get photoCredit => 'Photo: %s';
+
+  @override
+  String get observationOnServer => 'On the server. Last uploaded %s.';
+
+  @override
+  String get observationOnServerNoDate => 'On the server.';
+
+  @override
+  String get observationWaitingToUpload =>
+      'Changes are saved on this phone and will upload the next time you\'re online.';
 }

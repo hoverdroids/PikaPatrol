@@ -1014,9 +1014,29 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
+  // Whether the server has this version of the observation, so volunteers know their edits arrived
+  Widget _buildUploadStatus() {
+    final observation = widget.observationViewModel.observation;
+    final uploadedAt = observation.dateUpdatedInGoogleSheets;
+    final locale = Localizations.localeOf(context).toString();
+    final text = !observation.isUploaded
+        ? translations.observationWaitingToUpload
+        : uploadedAt == null
+            ? translations.observationOnServerNoDate
+            : translations.observationOnServer.replaceAll('%s', DateFormat.yMMMd(locale).add_jm().format(uploadedAt.toLocal()));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(observation.isUploaded ? Icons.cloud_done : Icons.access_time_filled, size: 18.0),
+        const SizedBox(width: 6.0),
+        Flexible(child: ThemedBody(text, type: ThemeGroupType.MOM)),
+      ],
+    );
+  }
+
   Widget _buildHeader() {
     var date = widget.observationViewModel.observation.date;
-    String month = date == null ? "" : DateFormat.yMMMMd('en_US').format(date).split(" ")[0];
+    String month = date == null ? "" : DateFormat.MMMM(Localizations.localeOf(context).toString()).format(date);
     String day = date == null ? "" : date.day.toString();
     String year = date == null ? "" : date.year.toString();
 
@@ -1039,6 +1059,10 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             )
           ] else ... [
             ThemedH5(widget.observationViewModel.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+            if (!widget.isTemplate && !widget.observationViewModel.observation.isNewObservation()) ... [
+              smallTransparentDivider,
+              _buildUploadStatus(),
+            ],
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
@@ -1460,44 +1484,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
   
+  // No permission is asked for here. The system photo picker (Android) and PHPicker or document
+  // picker (iOS) give the app only what the user selects, without any permission. Asking for
+  // camera, Photos or media library access first used to stop the gallery from opening when any
+  // was refused, including iPhone's "Select Photos" (limited) choice. GitHub #30.
   void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
     try {
-      var isAndroid = Platform.isAndroid;
-      var isIos = Platform.isIOS;
-
-      if (isAndroid || isIos) {
-        var isCameraPermissionGranted = await Permission.camera.request().isGranted;
-        if (!isCameraPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
-          return;
-        }
-      }
-
-      // No Android-specific permission gate here: FilePicker.platform.pickFiles() opens the
-      // system's file picker (Storage Access Framework / Photo Picker), which grants scoped
-      // access to whatever the user selects without needing READ_MEDIA_IMAGES/VIDEO/AUDIO or
-      // storage permissions declared or held by this app at all.
-
-      if (isIos) {
-        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
-        if (!isMediaLibraryPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
-          return;
-        }
-
-        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
-        if (!isPhotosPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
-          return;
-        }
-
-        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
-        if (!isStoragePermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-          return;
-        }
-      }
-
       if (isMultiPick) {
         await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
       } else {
@@ -1513,8 +1505,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Future<void> _savePhotoToGallery(String path) async {
     try {
-      if (!await Gal.hasAccess()) {
-        await Gal.requestAccess();
+      // Saving into an album needs full Photos access on iPhone; add-only access can't make albums
+      if (!await Gal.hasAccess(toAlbum: true)) {
+        await Gal.requestAccess(toAlbum: true);
       }
       await Gal.putImage(path, album: translations.appName);
     } catch (e) {

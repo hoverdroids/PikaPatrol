@@ -919,4 +919,13 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get deleteAccountWrongPassword =>
       'Ce mot de passe n\'a pas fonctionné, votre compte n\'a donc pas été supprimé.';
+
+  @override
+  String get signInWithGoogle => 'Se connecter avec Google';
+
+  @override
+  String get signInWithApple => 'Se connecter avec Apple';
+
+  @override
+  String get couldNotSignIn => 'Connexion impossible. Veuillez réessayer.';
 }

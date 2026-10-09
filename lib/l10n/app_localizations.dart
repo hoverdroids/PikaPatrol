@@ -1779,6 +1779,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'That password didn\'t work, so your account was not deleted.'**
   String get deleteAccountWrongPassword;
+
+  /// No description provided for @signInWithGoogle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Google'**
+  String get signInWithGoogle;
+
+  /// No description provided for @signInWithApple.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in with Apple'**
+  String get signInWithApple;
+
+  /// No description provided for @couldNotSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not sign in. Please try again.'**
+  String get couldNotSignIn;
 }
 
 class _AppLocalizationsDelegate

@@ -914,4 +914,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get deleteAccountWrongPassword =>
       'Esa contraseña no funcionó, así que tu cuenta no se eliminó.';
+
+  @override
+  String get signInWithGoogle => 'Iniciar sesión con Google';
+
+  @override
+  String get signInWithApple => 'Iniciar sesión con Apple';
+
+  @override
+  String get couldNotSignIn => 'No se pudo iniciar sesión. Inténtalo de nuevo.';
 }

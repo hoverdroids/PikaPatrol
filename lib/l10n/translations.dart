@@ -326,6 +326,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String moreThanOneHundredFeetMetric = ERROR;
   String deleteAccountEnterPassword = ERROR;
   String deleteAccountWrongPassword = ERROR;
+  String signInWithGoogle = ERROR;
+  String signInWithApple = ERROR;
+  String couldNotSignIn = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -613,6 +616,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     moreThanOneHundredFeetMetric = AppLocalizations.of(context)?.moreThanOneHundredFeetMetric ?? moreThanOneHundredFeetMetric;
     deleteAccountEnterPassword =  AppLocalizations.of(context)?.deleteAccountEnterPassword ?? deleteAccountEnterPassword;
     deleteAccountWrongPassword =  AppLocalizations.of(context)?.deleteAccountWrongPassword ?? deleteAccountWrongPassword;
+    signInWithGoogle =  AppLocalizations.of(context)?.signInWithGoogle ?? signInWithGoogle;
+    signInWithApple =  AppLocalizations.of(context)?.signInWithApple ?? signInWithApple;
+    couldNotSignIn =  AppLocalizations.of(context)?.couldNotSignIn ?? couldNotSignIn;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -937,6 +943,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "moreThanOneHundredFeetMetric": return moreThanOneHundredFeetMetric;
       case "deleteAccountEnterPassword": return deleteAccountEnterPassword;
       case "deleteAccountWrongPassword": return deleteAccountWrongPassword;
+      case "signInWithGoogle": return signInWithGoogle;
+      case "signInWithApple": return signInWithApple;
+      case "couldNotSignIn": return couldNotSignIn;
       default: return key;
     }
   }

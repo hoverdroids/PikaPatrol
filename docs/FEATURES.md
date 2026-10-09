@@ -12,11 +12,12 @@ Every request made for Pika Patrol, collected from the project email history (20
 
 ## Progress log
 
-Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished in a pass are ticked in the sections below.
+Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find them with `git log --grep "Pass N"`. Items finished in a pass are ticked in the sections below.
 
 - **Pass 1 — store blockers** (`344fa2b`): Flutter 3.47.7 with FVM, target API 36, 16 KB pages, reCAPTCHA 18.6.1, Photo Picker, permissions trimmed, iOS privacy manifest, Swift Package Manager, `record` and `just_audio`.
 - **Pass 2 — audio delete and icon contrast** (`65d9395`): trash can on audio recordings while creating or editing an observation; delete icons on photos and audio cards drawn on a dark circle so they show on any background.
-- **Pass 3 — data fixes** (`37eb761`): hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
+- **Pass 3 — data fixes**: hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
+- **Pass 4 — Sheets retry and social sign-in**: failed Sheets updates retried when back online; Sign in with Google (all phones) and Apple (iPhone).
 
 ## People
 
@@ -84,7 +85,7 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 - [x] **Remove observer names and emails from the sheets shared with partners.** Fixed in pass 3: user profiles are written to the master sheet only. Partner sheets that already have a User Profiles tab still need it cleared by hand (**Owner:** Jo or Megan). Today the User Profiles tab is written to every project's sheet. Megan wants partner sheets to have no personal data. Chris proposed one master sheet that feeds the others. Megan, Feb 2026, "a couple of questions about app data use agreement".
 - [ ] **Add a sheet (or filter) of all Collared pika observations** for provincial governments and land managers. Yukon partner via Jo, Oct 2025. Chris: a filtered sheet or a simple API, depending on how they read data.
 - [ ] **Send observations made in Canada to the Canadian Pika Project automatically**, even if the observer picks another project or none. Megan says the privacy policy likely allows it. Leigh Anne and Jo, Aug 2026. **Decision:** confirm the approach, then build it.
-- [ ] **Firebase-to-Sheets gaps.** If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
+- [x] **Firebase-to-Sheets gaps.** Option (d) done in pass 4: observations whose Sheets update failed are remembered on the phone and retried when the app is next online. (Superseded later if the Sheets sync moves server-side, §18.) If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
 - [x] Admin-only "export all" and "initialize sheets" (3.0.0).
 - [ ] **Backfill older Canadian observations into the Canadian sheet** if Mike or Leigh Anne want them. Chris, Jul 2026.
 - [ ] **Remove stale rows from the master sheet.** Rows for observations already deleted from Firebase remain. For example, four 2024 test observations under spragucm@gmail.com are in the sheet but not in Firestore (checked 2026-10-09).
@@ -138,7 +139,7 @@ Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished i
 - [x] Profile no longer asks for the password again right after registering (3.0.2).
 - [x] Required profile fields are enforced after login (2.0.0).
 - [x] **Account deletion must remove the login as well as the profile.** Fixed in pass 3: the user confirms their password first, so Firebase always allows the deletion; nothing is deleted if the password is wrong. (Google and Apple sign-in users will need the same step when those are added.) Today the profile is deleted first. If Firebase needs a recent sign-in, the login stays, so the user can still sign in but can't edit a profile. Reported by a volunteer, Sep 2024. Apple 5.1.1(v).
-- [ ] **Sign in with Google and with Apple.** Chris listed both in Sep 2024, and Jo listed them in the UBC "misc" items. `google_sign_in` is in pubspec but unused. If Google sign-in ships, Apple sign-in is required on iOS. **Decision:** build both or remove the unused package.
+- [x] **Sign in with Google and with Apple.** Done in pass 4: Google on all phones, Apple on iPhones; new accounts get a profile; account deletion re-confirms with the matching sign-in. **Console steps for Chris:** turn on the Google and Apple providers in Firebase Authentication; add the debug SHA-1 `DA:2D:C2:F6:8E:FA:D1:D2:40:12:3C:5D:0B:C4:B4:C3:8E:90:DC:4D` and the Play app-signing SHA-1 to the Android app in Firebase; turn on the Sign in with Apple capability for App ID `com.tcubedstudios.pikaPatrol`. Chris listed both in Sep 2024, and Jo listed them in the UBC "misc" items. `google_sign_in` is in pubspec but unused. If Google sign-in ships, Apple sign-in is required on iOS. **Decision:** build both or remove the unused package.
 - [ ] **Turn on email enumeration protection in Firebase Auth.** Firebase notice, Feb 2024 (no reply in the thread).
 
 ## 10. Photos and media

@@ -10,6 +10,7 @@ import 'package:gsheets/gsheets.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:pika_patrol/utils/primitive_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
@@ -148,6 +149,38 @@ class ObservationsService {
       if (!localObservation.isUploaded) {
         await saveObservation(localObservation, user);
       }
+    }
+
+    await _retryPendingGoogleSheetsSyncs();
+  }
+
+  // Google Sheets can be unreachable when an observation is saved, after Firebase already has it.
+  // Remember those observations on the device and retry them the next time the app is online,
+  // instead of re-checking every observation (which would cost far more reads).
+  static const String _PENDING_GOOGLE_SHEETS_SYNC_KEY = "pendingGoogleSheetsSync";
+
+  Future<void> _setPendingGoogleSheetsSync(String? observationUid, bool isPending) async {
+    if (observationUid == null || observationUid.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final pending = (prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY) ?? <String>[]).toSet();
+    final changed = isPending ? pending.add(observationUid) : pending.remove(observationUid);
+    if (changed) {
+      await prefs.setStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY, pending.toList());
+    }
+  }
+
+  Future<void> _retryPendingGoogleSheetsSyncs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY) ?? <String>[];
+    for (var uid in pending) {
+      final matches = localObservations.where((observation) => observation.uid == uid && observation.isUploaded == true);
+      if (matches.isEmpty) {
+        // Deleted, or belongs to another account on this device; nothing to retry here
+        continue;
+      }
+      final results = await saveObservationToGoogleSheets(matches.first);
+      final failed = results.any((result) => result.exception != null);
+      await _setPendingGoogleSheetsSync(uid, failed);
     }
   }
 
@@ -462,7 +495,8 @@ class ObservationsService {
           }
 
           final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
-          final googleSheetsException = googleSheetsReturnValue.first.exception;
+          final googleSheetsException = googleSheetsReturnValue.where((value) => value.exception != null).firstOrNull?.exception;
+          await _setPendingGoogleSheetsSync(observation.uid, googleSheetsException != null);
 
           if (googleSheetsException != null) {
             returnValue = ValueMessagePair(false, googleSheetsException.cause);

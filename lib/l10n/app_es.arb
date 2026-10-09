@@ -278,5 +278,8 @@
     "thirtyToOneHundredFeetMetric": "9 - 30 m",
     "moreThanOneHundredFeetMetric": ">30 m",
     "deleteAccountEnterPassword": "Ingresa tu contraseña para confirmar.",
-    "deleteAccountWrongPassword": "Esa contraseña no funcionó, así que tu cuenta no se eliminó."
+    "deleteAccountWrongPassword": "Esa contraseña no funcionó, así que tu cuenta no se eliminó.",
+    "signInWithGoogle": "Iniciar sesión con Google",
+    "signInWithApple": "Iniciar sesión con Apple",
+    "couldNotSignIn": "No se pudo iniciar sesión. Inténtalo de nuevo."
 }

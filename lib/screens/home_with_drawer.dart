@@ -1,4 +1,5 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:dash_flags/dash_flags.dart';
@@ -30,6 +31,7 @@ import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/utils/network_utils.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import '../l10n/translations.dart';
@@ -558,7 +560,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
             // Confirm the password first. Firebase refuses to delete an account without a recent
             // sign-in, and deleting the profile before that check left a login with no profile.
-            var reauthResult = await firebaseAuthService.reauthenticateWithPassword(passwordController.text);
+            var reauthResult = await firebaseAuthService.reauthenticateCurrentUser(password: passwordController.text);
             if (reauthResult != null) {
               showToast(translations.deleteAccountWrongPassword);
               return;
@@ -586,15 +588,18 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(translations.deleteAccountDialogDetails),
-              const SizedBox(height: 16),
-              Text(translations.deleteAccountEnterPassword),
-              TextField(
-                controller: passwordController,
-                obscureText: true,
-                autocorrect: false,
-                enableSuggestions: false,
-                decoration: InputDecoration(labelText: translations.password),
-              ),
+              // Google and Apple accounts confirm with their own sign-in sheet instead of a password
+              if (firebaseAuthService.currentUserProviderIds.contains("password")) ... [
+                const SizedBox(height: 16),
+                Text(translations.deleteAccountEnterPassword),
+                TextField(
+                  controller: passwordController,
+                  obscureText: true,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  decoration: InputDecoration(labelText: translations.password),
+                ),
+              ],
             ],
           ),
           actions: [
@@ -723,7 +728,58 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     onTapRegister: () => {
       setState(() => showSignIn = false)
     },
+    footerChildren: buildSocialSignInButtons(firebaseAuthService),
   );
+
+  /// "Sign in with Google" on every phone, plus "Sign in with Apple" on iPhones, where Apple
+  /// requires it whenever another social sign-in is offered.
+  List<Widget> buildSocialSignInButtons(FirebaseAuthService firebaseAuthService) {
+    return [
+      smallTransparentDivider,
+      ElevatedButton(
+        onPressed: () => signInWithProvider(firebaseAuthService.signInWithGoogle),
+        style: ElevatedButton.styleFrom(
+          padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 14.0),
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black87,
+          shape: const StadiumBorder(),
+        ),
+        child: Text(translations.signInWithGoogle, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
+      ),
+      if (Platform.isIOS) ... [
+        smallTransparentDivider,
+        SizedBox(
+          width: 260,
+          child: SignInWithAppleButton(
+            text: translations.signInWithApple,
+            borderRadius: const BorderRadius.all(Radius.circular(24.0)),
+            onPressed: () => signInWithProvider(firebaseAuthService.signInWithApple),
+          ),
+        ),
+      ],
+    ];
+  }
+
+  Future<void> signInWithProvider(Future<UserCredential?> Function() signIn) async {
+    var firebaseDatabaseService = Provider.of<FirebaseDatabaseService>(context, listen: false);
+    setState(() => loading = true);
+    try {
+      final credential = await signIn();
+      if (credential != null) {
+        // First Google/Apple sign-in creates the account, so give it a profile like email registration does
+        final user = credential.user;
+        if (credential.additionalUserInfo?.isNewUser == true && user != null) {
+          await firebaseDatabaseService.userProfilesService.initializeUser(user.uid);
+        }
+        showToast(translations.successfullyLoggedIn);
+      }
+    } catch (e) {
+      developer.log("Social sign-in failed: $e");
+      showToast(translations.couldNotSignIn);
+    } finally {
+      if (mounted) setState(() => loading = false);
+    }
+  }
 
   Widget buildRegisterScreen(BuildContext context, FirebaseAuthService firebaseAuthService, FirebaseDatabaseService firebaseDatabaseService) {
     return LoginRegisterScreen(
@@ -740,6 +796,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
       onEmailChangedCallback: (value) => { editedEmail = value },
       loginText: translations.login,
       onTapLogin: () => { setState(() => showSignIn = true) },
+      footerChildren: buildSocialSignInButtons(firebaseAuthService),
       registerText: translations.register,
       onTapRegister: () async {
 

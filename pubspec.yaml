@@ -19,6 +19,7 @@ dependencies:
   cloud_firestore: ^6.10.0
 
   google_sign_in: ^7.2.0
+  sign_in_with_apple: ^8.2.0
   flutter_localizations:
     sdk: flutter
     version: ^0.0.0

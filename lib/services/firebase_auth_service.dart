@@ -121,26 +121,91 @@ class FirebaseAuthService {
       return registrationResult;
   }
 
+  // OAuth client IDs from google-services.json (web client) and GoogleService-Info.plist (iOS client).
+  // These are public identifiers, not secrets.
+  static const String _googleWebClientId = "954700599379-ufpa7kr9jvqfvk5ael476cp6dbffmc8b.apps.googleusercontent.com";
+  static const String _googleIosClientId = "954700599379-qp2i96hjt2shcf3hmkoa8dvrb3nvpmp7.apps.googleusercontent.com";
+  bool _isGoogleSignInInitialized = false;
+
+  Future<void> _initializeGoogleSignIn() async {
+    if (_isGoogleSignInInitialized) return;
+    await GoogleSignIn.instance.initialize(
+      clientId: Platform.isIOS ? _googleIosClientId : null,
+      serverClientId: _googleWebClientId,
+    );
+    _isGoogleSignInInitialized = true;
+  }
+
+  Future<AuthCredential> _getGoogleCredential() async {
+    await _initializeGoogleSignIn();
+    final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+    // Firebase only needs the ID token from the Google account
+    return GoogleAuthProvider.credential(idToken: googleUser.authentication.idToken);
+  }
+
+  AppleAuthProvider get _appleProvider => AppleAuthProvider()
+    ..addScope('email')
+    ..addScope('name');
+
+  /// Returns the signed-in credential, or null if the user cancelled. Throws on other errors.
   Future<UserCredential?> signInWithGoogle() async {
     try {
-      // Trigger the authentication flow
-      await GoogleSignIn.instance.initialize();
-      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
+      return await _auth.signInWithCredential(await _getGoogleCredential());
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) return null;
+      rethrow;
+    }
+  }
 
-      // Firebase only needs the ID token from the Google account
-      final credential = GoogleAuthProvider.credential(
-        idToken: googleUser.authentication.idToken,
-      );
+  /// Returns the signed-in credential, or null if the user cancelled. Throws on other errors.
+  /// Apple sign-in is offered on iOS only, where Apple requires it alongside Google sign-in.
+  Future<UserCredential?> signInWithApple() async {
+    try {
+      return await _auth.signInWithProvider(_appleProvider);
+    } on FirebaseAuthException catch (e) {
+      if (e.code == "canceled" || e.code == "web-context-canceled") return null;
+      rethrow;
+    }
+  }
 
-      // Once signed in, return the UserCredential
-      return await FirebaseAuth.instance.signInWithCredential(credential);
-    } catch(e) {
+  /// The sign-in methods on the current account, e.g. "password", "google.com", "apple.com"
+  List<String> get currentUserProviderIds {
+    return _auth.currentUser?.providerData.map((info) => info.providerId).toList() ?? <String>[];
+  }
+
+  /// Firebase only deletes an account after a recent sign-in, so confirm it again first.
+  /// Uses the password for email accounts, or the Google/Apple sign-in sheet otherwise.
+  Future<Object?> reauthenticateCurrentUser({String? password}) async {
+    try {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        return FirebaseAuthException(code: "no-current-user");
+      }
+      final providers = currentUserProviderIds;
+      if (providers.contains("password")) {
+        final email = user.email;
+        if (email == null || password == null) {
+          return FirebaseAuthException(code: "missing-password");
+        }
+        await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: email, password: password));
+      } else if (providers.contains("google.com")) {
+        await user.reauthenticateWithCredential(await _getGoogleCredential());
+      } else if (providers.contains("apple.com")) {
+        await user.reauthenticateWithProvider(_appleProvider);
+      }
       return null;
+    } catch (e) {
+      return e;
     }
   }
 
   Future<FirebaseAuthException?> signOut() async {
     try {
+      if (currentUserProviderIds.contains("google.com")) {
+        // Otherwise Google silently signs the same account back in next time
+        await _initializeGoogleSignIn();
+        await GoogleSignIn.instance.signOut();
+      }
       await _auth.signOut();
       await clearPersistedUserData();
       return null;
@@ -215,21 +280,6 @@ class FirebaseAuthService {
   Future<FirebaseAuthException?> changeCurrentUser(String? photoUrl) async {
     try {
       await _auth.currentUser?.updatePhotoURL(photoUrl);
-      return null;
-    } on FirebaseAuthException catch(e) {
-      return e;
-    }
-  }
-
-  /// Firebase only deletes an account after a recent sign-in, so confirm the password first
-  Future<FirebaseAuthException?> reauthenticateWithPassword(String password) async {
-    try {
-      User? user = _auth.currentUser;
-      var email = user?.email;
-      if (user == null || email == null) {
-        return FirebaseAuthException(code: "no-current-user");
-      }
-      await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: email, password: password));
       return null;
     } on FirebaseAuthException catch(e) {
       return e;

@@ -10,6 +10,13 @@ Every request made for Pika Patrol, collected from the project email history (20
 - **Owner** marks items that are not code work: Rocky Mountain Wild (Megan), Jo, UBC (Mike, Leigh Anne), or Chris.
 - Status was checked on 2026-10-09 against branch `done/doing/alluser-observations-in-one-place-4-manual-redo` (version 3.4.0+334). Much of the recent work is on this branch only and is not yet merged into `main`.
 
+## Progress log
+
+Each pass is one commit on branch `doing/3.5.0-store-blockers`. Items finished in a pass are ticked in the sections below.
+
+- **Pass 1 — store blockers** (`344fa2b`): Flutter 3.47.7 with FVM, target API 36, 16 KB pages, reCAPTCHA 18.6.1, Photo Picker, permissions trimmed, iOS privacy manifest, Swift Package Manager, `record` and `just_audio`.
+- **Pass 2 — audio delete and icon contrast** (`65d9395`): trash can on audio recordings while creating or editing an observation; delete icons on photos and audio cards drawn on a dark circle so they show on any background.
+
 ## People
 
 - **Jo** — Johanna Varner, Colorado Mesa University. Lead scientist.
@@ -24,7 +31,6 @@ Every request made for Pika Patrol, collected from the project email history (20
 
 ## 1. Release blockers (must fix before the next store release)
 
-- [ ] **Security: stop shipping the Google service-account private key to every app user.** The Firestore `googleSheets` collection holds a full service-account key (`pika-patrol@pikajoe-97c5c.iam.gserviceaccount.com`), and the rules let *any signed-in user* read it. Anyone can register, so anyone can take the key. Fix: move the Sheets sync to a server-side Cloud Function triggered by Firestore writes (this also closes GitHub #68), make `googleSheets` admin-only or delete it, then delete that key in Google Cloud and check the service account's roles. Found 2026-10-09 while checking the Firebase console.
 - [x] **Target Android 15 (API 35).** Now targets API 36, which Play requires from Aug 31 2026 (branch `doing/3.5.0-store-blockers`). Google Play blocks every update until this is done. The repo is on 34 because a July 2026 commit lowered it. Megan, Jun 2026, "FW: Update on Pika Patrol APP"; GitHub #73.
 - [x] **Support 16 KB memory page sizes.** All native libraries checked at 16 KB alignment after the toolchain upgrade. Play Console shows this as an error on the 3.3.8 build. The toolchain needs upgrading: Flutter 3.19.6, AGP 7.4.2, Kotlin 1.7.10. Megan, Aug 6 2026, "Please accept Apple policy updates".
 - [ ] **Find out why 3.3.8 drops 915 previously supported devices.** Megan asked to hold the release until this is checked. Same thread, Aug 6 2026.
@@ -214,3 +220,8 @@ These shipped in versions 1.x to 3.0 and are kept here for the record.
 - [x] Release APK no longer flagged as malware on Google Drive. GitHub #14.
 - [x] Native Land Digital key moved to `.env`, with setup docs (Jul 2026).
 - [x] Cross-device sync and Firestore listener fix (3.3.0).
+
+## 18. Final step (Chris decides at the end)
+
+- [ ] **Security: stop shipping the Google service-account private key to every app user.** The Firestore `googleSheets` collection holds a full service-account key (`pika-patrol@pikajoe-97c5c.iam.gserviceaccount.com`), and the rules let *any signed-in user* read it. Anyone can register, so anyone can take the key. Fix: move the Sheets sync to a server-side Cloud Function triggered by Firestore writes (this also closes GitHub #68), make `googleSheets` admin-only or delete it, then delete that key in Google Cloud and check the service account's roles. Found 2026-10-09 while checking the Firebase console. **Held until last by Chris (2026-10-09).**
+

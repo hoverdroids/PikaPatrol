@@ -182,10 +182,10 @@ Every request made for Pika Patrol, collected from the project email history (20
 
 ## 15. Decisions needed
 
-- [ ] **Sheets sync gaps:** pick option (a), (b), (c) or (d) in section 4. Jo and Megan. GitHub #68.
-- [ ] **Auto-share Canadian observations:** confirm geo-based routing. Megan, Mike and Leigh Anne.
-- [ ] **Incidental search duration option:** Megan and CPP.
-- [ ] **Google and Apple sign-in:** build, or drop `google_sign_in`.
+- [x] **Sheets sync gaps:** option (d), re-sync unconfirmed observations on app open. Chris, 2026-10-09. GitHub #68.
+- [x] **Auto-share Canadian observations:** no; Canadian users use the default observation template. Chris, 2026-10-09.
+- [x] **Incidental search duration option:** yes, labeled "Incidental". Chris, 2026-10-09.
+- [x] **Google and Apple sign-in:** build both in 3.5.0. Chris, 2026-10-09.
 - [ ] **Default card image:** keep the pika placeholder or switch to a plain one. Chris and Jo, Jun 2024.
 
 ## 16. Future ideas (out of current scope)

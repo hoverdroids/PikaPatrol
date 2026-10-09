@@ -162,8 +162,9 @@ class _UnusedFilesScreenState extends State<UnusedFilesScreen> with StorageScanS
 
     if (failed.isNotEmpty) showToast(translations.someFilesNotDeleted);
     final deleted = _selected.difference(failed.toSet());
+    scan?.removeDeletedFiles(deleted);
+    storageService.saveScanCache();
     setState(() {
-      scan?.removeDeletedFiles(deleted);
       _selected
         ..clear()
         ..addAll(failed);

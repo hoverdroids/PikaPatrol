@@ -283,9 +283,16 @@ class StorageFileCorrelator {
     List<FileFix> fixes,
     Map<String, String> newUrlsByPath,
     bool Function(String url) isBroken,
+    String? Function(String url) storagePathFromUrl,
   ) {
     List<String> apply(List<String>? urls, bool isImage) {
       final result = [...?urls];
+      // Files the observation already links to with a working link, so a fix never adds one twice
+      final linkedPaths = {
+        for (var url in result)
+          if (!isBroken(url))
+            if (storagePathFromUrl(url) case final path?) path
+      };
       final replaced = <int>{};
       final typed = fixes.where((fix) => fix.isImage == isImage).toList()
         // Exact replacements first, so they keep their own spots
@@ -293,6 +300,12 @@ class StorageFileCorrelator {
       for (var fix in typed) {
         final newUrl = newUrlsByPath[fix.file.path];
         if (newUrl == null || result.contains(newUrl)) continue;
+        // Already linked and working, unless this fix replaces that very link (an expired one)
+        if (linkedPaths.contains(fix.file.path) && fix.match.brokenUrl == null) continue;
+        if (fix.match.brokenUrl != null && !result.contains(fix.match.brokenUrl)
+            && linkedPaths.contains(fix.file.path)) {
+          continue;
+        }
         var index = fix.match.brokenUrl == null ? -1 : result.indexOf(fix.match.brokenUrl!);
         if (index < 0) {
           index = Iterable<int>.generate(result.length)

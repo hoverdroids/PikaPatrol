@@ -24,6 +24,7 @@ import '../model/observation.dart';
 import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
 import 'storage_file_correlator.dart';
+import '../model/storage_scan.dart';
 
 class ObservationsService {
 
@@ -567,40 +568,58 @@ class ObservationsService {
   //endregion
 
   // Applies the admin's chosen link repairs (see StorageFileCorrelator), one observation at a
-  // time: only the photo and recording lists are written, then its sheets are updated. Fixed
-  // files leave the cached scan. Returns how many observations could not be updated.
+  // time. Each observation is read fresh from the server first, because the scan may be days old
+  // and the owner may have changed it since; only the photo and recording lists are written,
+  // then its sheets are updated. Fixed files leave the saved scan. Returns how many observations
+  // could not be updated.
   Future<int> applyFileFixes(StorageScan scan, List<FileFix> fixes) async {
     final service = firebaseDatabaseService.observationsService;
-    final fixesByObservation = <Observation, List<FileFix>>{};
+    final fixesByUid = <String, List<FileFix>>{};
     for (var fix in fixes) {
       final uid = fix.observation.uid;
       if (uid == null || uid.isEmpty) continue;
-      fixesByObservation.putIfAbsent(fix.observation, () => []).add(fix);
+      fixesByUid.putIfAbsent(uid, () => []).add(fix);
     }
 
     var failures = 0;
-    for (var entry in fixesByObservation.entries) {
-      final observation = entry.key;
+    for (var entry in fixesByUid.entries) {
       final observationFixes = entry.value;
+      final Observation observation;
       try {
+        final fresh = await service.getObservationFromServer(entry.key);
+        if (fresh == null) {
+          // Deleted since the scan; nothing to fix
+          scan.removeFixes(observationFixes);
+          continue;
+        }
+        observation = fresh;
         final newUrlsByPath = {
           for (var fix in observationFixes) fix.file.path: await service.downloadUrl(fix.file.path),
         };
-        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath, scan.isBroken);
-        await service.updateMediaUrls(observation.uid!, lists.imageUrls, lists.audioUrls);
+        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath,
+            scan.isBroken, FirebaseObservationsService.storagePathFromUrl);
+        await service.updateMediaUrls(entry.key, lists.imageUrls, lists.audioUrls);
         observation.imageUrls = lists.imageUrls;
         observation.audioUrls = lists.audioUrls;
       } on FirebaseException catch (e) {
-        developer.log('Could not repair links for ${observation.uid}: $e', name: 'ObservationsService');
+        developer.log('Could not repair links for ${entry.key}: $e', name: 'ObservationsService');
         failures++;
         continue;
       }
 
+      // Keep the scan's copy in step, for the other candidates that point to this observation
+      for (var fix in observationFixes) {
+        fix.observation
+          ..imageUrls = observation.imageUrls
+          ..audioUrls = observation.audioUrls;
+      }
       scan.removeFixes(observationFixes);
       _updateOlderSharedObservation(observation);
       final results = await saveObservationToGoogleSheets(observation);
       await _setPendingGoogleSheetsSync(observation.uid, results.any((result) => result.exception != null));
     }
+
+    await service.saveScanCache();
     return failures;
   }
 

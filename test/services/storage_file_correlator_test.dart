@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/storage_file.dart';
+import 'package:pika_patrol/model/storage_scan.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/storage_file_correlator.dart';
 
@@ -107,7 +110,7 @@ void main() {
     const broken = '/data/user/0/cache/cover.jpg';
     final o = Observation(uid: 'o1', imageUrls: [broken, url('images/b.jpg')]);
     final fix = FileFix(file('images/cover.jpg'), [FileMatch(observation: o, certainty: 1, signals: const [], brokenUrl: broken)]);
-    final lists = StorageFileCorrelator.applyFixes(o, [fix], {'images/cover.jpg': url('images/cover.jpg')}, (u) => !u.startsWith('https'));
+    final lists = StorageFileCorrelator.applyFixes(o, [fix], {'images/cover.jpg': url('images/cover.jpg')}, (u) => !u.startsWith('https'), FirebaseObservationsService.storagePathFromUrl);
     expect(lists.imageUrls, [url('images/cover.jpg'), url('images/b.jpg')]);
   });
 
@@ -117,12 +120,44 @@ void main() {
     final first = FileFix(file('images/x.jpg'), [FileMatch(observation: o, certainty: 0.7, signals: const [])]);
     final second = FileFix(file('images/y.jpg'), [FileMatch(observation: o, certainty: 0.6, signals: const [])]);
     final lists = StorageFileCorrelator.applyFixes(o, [first, second],
-        {'images/x.jpg': url('images/x.jpg'), 'images/y.jpg': url('images/y.jpg')}, (u) => !u.startsWith('https'));
+        {'images/x.jpg': url('images/x.jpg'), 'images/y.jpg': url('images/y.jpg')}, (u) => !u.startsWith('https'), FirebaseObservationsService.storagePathFromUrl);
     expect(lists.imageUrls, [url('images/ok.jpg'), url('images/x.jpg'), url('images/y.jpg')]);
   });
 
   test('the random upload prefix is ignored when comparing names', () {
     expect(StorageFileCorrelator.baseName('images/AbCdEfGhIjKlMnOpQrSt_photo.jpg'), 'photo.jpg');
     expect(StorageFileCorrelator.baseName(url('images/photo.jpg')), 'photo.jpg');
+  });
+
+  test('a fix is skipped when the observation already links that file', () {
+    final o = Observation(uid: 'o1', imageUrls: [url('images/x.jpg')]);
+    final fix = FileFix(file('images/x.jpg'), [FileMatch(observation: o, certainty: 0.7, signals: const [])]);
+    final lists = StorageFileCorrelator.applyFixes(o, [fix], {'images/x.jpg': url('images/x.jpg', token: 'new')},
+        (u) => !u.startsWith('https'), FirebaseObservationsService.storagePathFromUrl);
+    expect(lists.imageUrls, [url('images/x.jpg')]);
+  });
+
+  test('a saved scan reads back the same, sharing one observation between fixes', () {
+    final o = Observation(uid: 'o1', name: 'Pika Peak', date: saved, imageUrls: [url('images/gone.jpg')], dateUpdatedInGoogleSheets: saved);
+    final files = [
+      file('images/x.jpg', created: saved.add(const Duration(minutes: 1))),
+      file('images/y.jpg', created: saved.add(const Duration(minutes: 2))),
+      file('images/old.jpg', created: saved.subtract(const Duration(days: 90))),
+    ];
+    final result = correlator([o], files).correlate();
+    final scan = StorageScan(fixes: result.fixes, unused: result.unmatched, observationCount: 1, totalFileCount: 3,
+        missingPaths: {'images/gone.jpg'}, scannedAt: saved);
+
+    final copy = StorageScan.fromJson(jsonDecode(jsonEncode(scan.toJson())) as Map<String, dynamic>)!;
+    expect(copy.fixes.length, scan.fixes.length);
+    expect(copy.fixes.map((f) => f.file.path), scan.fixes.map((f) => f.file.path));
+    expect(copy.fixes.map((f) => f.certainty), scan.fixes.map((f) => f.certainty));
+    expect(copy.fixes.first.match.signals.map((s) => s.kind), scan.fixes.first.match.signals.map((s) => s.kind));
+    expect(identical(copy.fixes[0].observation, copy.fixes[1].observation), isTrue);
+    expect(copy.fixes.first.observation.name, 'Pika Peak');
+    expect(copy.fixes.first.observation.date, saved);
+    expect(copy.unused.single.path, 'images/old.jpg');
+    expect(copy.isBroken(url('images/gone.jpg')), isTrue);
+    expect(copy.isBroken(url('images/new-since-scan.jpg')), isFalse);
   });
 }

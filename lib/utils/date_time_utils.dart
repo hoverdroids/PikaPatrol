@@ -4,6 +4,7 @@ DateTime? parseTime(dynamic date) {
   if (date == null) return null;
   if (date is Timestamp) return date.toDate();
   if (date is DateTime) return date;
+  if (date is String) return DateTime.tryParse(date);
   return null;
 }
 // A short time span that reads the same in English, Spanish and French: "45 s", "12 min",

@@ -1,4 +1,5 @@
 // ignore_for_file: constant_identifier_names
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
@@ -9,54 +10,11 @@ import 'package:pika_patrol/utils/firebase_utils.dart';
 
 import '../model/observation.dart';
 import '../model/storage_file.dart';
+import '../model/storage_scan.dart';
 import 'storage_file_correlator.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
-
-// The result of an admin Storage scan, kept in memory so the file screens can be reopened
-// without scanning again. Fixes and deletes made from those screens update it in place.
-class StorageScan {
-  final List<FileFix> fixes;
-  final List<StorageFile> unused;
-  final int observationCount;
-  int totalFileCount;
-  // Paths of every file in Storage, to tell broken links from working ones
-  final Set<String> existingPaths;
-  final DateTime scannedAt;
-
-  StorageScan({
-    required this.fixes,
-    required this.unused,
-    required this.observationCount,
-    required this.totalFileCount,
-    required this.existingPaths,
-    required this.scannedAt,
-  });
-
-  bool isBroken(String url) {
-    final path = FirebaseObservationsService.storagePathFromUrl(url);
-    return path == null || !existingPaths.contains(path);
-  }
-
-  // Applied fixes leave the list, and their files are no longer unused
-  void removeFixes(Iterable<FileFix> applied) {
-    final appliedSet = applied.toSet();
-    final paths = {for (var fix in appliedSet) fix.file.path};
-    fixes.removeWhere(appliedSet.contains);
-    // A file now linked to one observation is no longer a candidate for another
-    fixes.removeWhere((fix) => paths.contains(fix.file.path) && fix.match.brokenUrl == null);
-    unused.removeWhere((file) => paths.contains(file.path));
-  }
-
-  void removeDeletedFiles(Iterable<StorageFile> files) {
-    final paths = {for (var file in files) file.path};
-    fixes.removeWhere((fix) => paths.contains(fix.file.path));
-    unused.removeWhere((file) => paths.contains(file.path));
-    for (var file in files) {
-      if (existingPaths.remove(file.path)) totalFileCount--;
-    }
-  }
-}
+import 'package:path_provider/path_provider.dart';
 
 class FirebaseObservationsService {
 
@@ -205,114 +163,52 @@ class FirebaseObservationsService {
     return null;
   }
 
-  List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) {
-    return snapshot.docs.map((doc) {
+  List<Observation> _observationsFromSnapshot(QuerySnapshot snapshot) =>
+      snapshot.docs.map((doc) => observationFromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
 
-      final dataMap = doc.data() as Map<String, dynamic>;
+  // The reverse of toFirebaseObservation. Also reads the admin scan cache on disk, where dates
+  // are ISO strings.
+  static Observation observationFromMap(String uid, Map<String, dynamic> dataMap) {
+    List<String> strings(String key) {
+      final List<dynamic>? data = dataMap[key];
+      return data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
+    }
 
-      List<dynamic>? data = dataMap[SIGNS];
-      List<String> signs = data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
-
-      data = dataMap[OTHER_ANIMALS_PRESENT];
-      List<String> otherAnimalsPresent = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[IMAGE_URLS];
-      List<String> imageUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[AUDIO_URLS];
-      List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[SHARED_WITH_PROJECTS];
-      List<String> sharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
-
-      data = dataMap[NOT_SHARED_WITH_PROJECTS];
-      List<String> notSharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
-
-      return Observation(
-          uid: doc.id,
-          observerUid: dataMap[OBSERVER_UID] ?? '',
-          name: dataMap[NAME] ?? '',
-          location: dataMap[LOCATION] ?? '',
-          date: parseTime(dataMap[DATE]),
-          altitudeInMeters: dataMap[ALTITUDE],
-          latitude: dataMap[LATITUDE],
-          longitude: dataMap[LONGITUDE],
-          signs: signs,
-          species: dataMap[SPECIES] ?? Observation.SPECIES_DEFAULT,
-          pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
-          distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
-          searchDuration: dataMap[SEARCH_DURATION] ?? '',
-          talusArea: dataMap[TALUS_AREA] ?? '',
-          temperature: dataMap[TEMPERATURE] ?? '',
-          skies: dataMap[SKIES] ?? '',
-          wind: dataMap[WIND] ?? '',
-          siteHistory: dataMap[SITE_HISTORY] ?? '',
-          otherAnimalsPresent: otherAnimalsPresent,
-          comments: dataMap[COMMENTS] ?? '',
-          imageUrls: imageUrls,
-          audioUrls: audioUrls,
-          sharedWithProjects: sharedWithProjects,
-          notSharedWithProjects: notSharedWithProjects,
-          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS]),
-          isUploaded: dataMap[IS_UPLOADED] ?? true
-
-      );
-    }).toList();
+    return Observation(
+        uid: uid,
+        observerUid: dataMap[OBSERVER_UID] ?? '',
+        name: dataMap[NAME] ?? '',
+        location: dataMap[LOCATION] ?? '',
+        date: parseTime(dataMap[DATE]),
+        altitudeInMeters: (dataMap[ALTITUDE] as num?)?.toDouble(),
+        latitude: (dataMap[LATITUDE] as num?)?.toDouble(),
+        longitude: (dataMap[LONGITUDE] as num?)?.toDouble(),
+        signs: strings(SIGNS),
+        species: dataMap[SPECIES] ?? Observation.SPECIES_DEFAULT,
+        pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
+        distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
+        searchDuration: dataMap[SEARCH_DURATION] ?? '',
+        talusArea: dataMap[TALUS_AREA] ?? '',
+        temperature: dataMap[TEMPERATURE] ?? '',
+        skies: dataMap[SKIES] ?? '',
+        wind: dataMap[WIND] ?? '',
+        siteHistory: dataMap[SITE_HISTORY] ?? '',
+        otherAnimalsPresent: strings(OTHER_ANIMALS_PRESENT),
+        comments: dataMap[COMMENTS] ?? '',
+        imageUrls: strings(IMAGE_URLS),
+        audioUrls: strings(AUDIO_URLS),
+        sharedWithProjects: strings(SHARED_WITH_PROJECTS),
+        notSharedWithProjects: strings(NOT_SHARED_WITH_PROJECTS),
+        dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS]),
+        isUploaded: dataMap[IS_UPLOADED] ?? true
+    );
   }
 
-  List<Observation> _observationsFromSnapshot2(QuerySnapshot snapshot) {
-    return snapshot.docs.map((doc) {
-
-      final dataMap = doc.data() as Map<String, dynamic>;
-
-      List<dynamic>? data = dataMap[SIGNS];
-      List<String> signs = data == null || data.isEmpty ? <String>[] : data.cast<String>().toList();
-
-      data = dataMap[OTHER_ANIMALS_PRESENT];
-      List<String> otherAnimalsPresent = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[IMAGE_URLS];
-      List<String> imageUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[AUDIO_URLS];
-      List<String> audioUrls = data == null || data.isEmpty ? <String>[] :  data.cast<String>().toList();
-
-      data = dataMap[SHARED_WITH_PROJECTS];
-      List<String> sharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
-
-      data = dataMap[NOT_SHARED_WITH_PROJECTS];
-      List<String> notSharedWithProjects = data == null || data.isEmpty ? <String>[]: data.cast<String>().toList();
-
-      return Observation(
-          uid: doc.id,
-          observerUid: dataMap[OBSERVER_UID] ?? '',
-          name: dataMap[NAME] ?? '',
-          location: dataMap[LOCATION] ?? '',
-          date: parseTime(dataMap[DATE]),
-          altitudeInMeters: dataMap[ALTITUDE],
-          latitude: dataMap[LATITUDE],
-          longitude: dataMap[LONGITUDE],
-          signs: signs,
-          species: dataMap[SPECIES] ?? Observation.SPECIES_DEFAULT,
-          pikasDetected: dataMap[PIKAS_DETECTED] ?? '',
-          distanceToClosestPika: dataMap[DISTANCE_TO_CLOSEST_PIKA] ?? '',
-          searchDuration: dataMap[SEARCH_DURATION] ?? '',
-          talusArea: dataMap[TALUS_AREA] ?? '',
-          temperature: dataMap[TEMPERATURE] ?? '',
-          skies: dataMap[SKIES] ?? '',
-          wind: dataMap[WIND] ?? '',
-          siteHistory: dataMap[SITE_HISTORY] ?? '',
-          otherAnimalsPresent: otherAnimalsPresent,
-          comments: dataMap[COMMENTS] ?? '',
-          imageUrls: imageUrls,
-          audioUrls: audioUrls,
-          sharedWithProjects: sharedWithProjects,
-          notSharedWithProjects: notSharedWithProjects,
-          dateUpdatedInGoogleSheets: parseTime(dataMap[DATE_UPDATED_IN_GOOGLE_SHEETS]),
-          isUploaded: dataMap[IS_UPLOADED] ?? true
-
-      );
-    }).toList();
+  // One observation straight from the server, or null if it was deleted
+  Future<Observation?> getObservationFromServer(String uid) async {
+    final doc = await observationsCollection.doc(uid).get(const GetOptions(source: Source.server));
+    final data = doc.data() as Map<String, dynamic>?;
+    return data == null ? null : observationFromMap(doc.id, data);
   }
 
   // Cached so repeated calls return the same Stream instance rather than creating a new
@@ -335,7 +231,7 @@ class FirebaseObservationsService {
       _cachedUserObservationsStream = observationsCollection.where(OBSERVER_UID, whereIn: [userId])
           .orderBy(DATE, descending: true)
           .snapshots()
-          .map(_observationsFromSnapshot2);
+          .map(_observationsFromSnapshot);
     }
     return _cachedUserObservationsStream!;
   }
@@ -405,11 +301,14 @@ class FirebaseObservationsService {
   // Observations come straight from the server and any error stops the scan: a partial or
   // cached list would make files that are in use look unused.
   StorageScan? _cachedScan;
+  static const String _SCAN_CACHE_FILE_NAME = "admin_storage_scan.json";
 
-  // Returns the last scan unless asked to scan again
+  // Returns the last scan, from memory or the phone, unless asked to scan again
   Future<StorageScan> scanStorage({bool rescan = false, void Function(int done, int total)? onProgress}) async {
-    final cached = _cachedScan;
-    if (cached != null && !rescan) return cached;
+    if (!rescan) {
+      final cached = _cachedScan ??= await _loadScanCache();
+      if (cached != null) return cached;
+    }
 
     final snapshot = await observationsCollection.get(const GetOptions(source: Source.server));
     final observations = _observationsFromSnapshot(snapshot);
@@ -460,14 +359,41 @@ class FirebaseObservationsService {
     final unused = result.unmatched.where((file) => file.created == null || file.created!.isBefore(cutoff)).toList()
       ..sort((a, b) => (b.created ?? DateTime(0)).compareTo(a.created ?? DateTime(0)));
 
-    return _cachedScan = StorageScan(
+    _cachedScan = StorageScan(
       fixes: result.fixes,
       unused: unused,
       observationCount: observations.length,
       totalFileCount: refs.length,
-      existingPaths: filesByPath.keys.toSet(),
+      missingPaths: usedPaths.difference(filesByPath.keys.toSet()),
       scannedAt: DateTime.now(),
     );
+    await saveScanCache();
+    return _cachedScan!;
+  }
+
+  Future<File> get _scanCacheFile async => File(join((await getApplicationSupportDirectory()).path, _SCAN_CACHE_FILE_NAME));
+
+  // Call after changing the scan (fixes, deletes, a different observation chosen)
+  Future<void> saveScanCache() async {
+    final scan = _cachedScan;
+    if (scan == null) return;
+    try {
+      await (await _scanCacheFile).writeAsString(jsonEncode(scan.toJson()));
+    } catch (e) {
+      developer.log('Could not save the storage scan: $e', name: 'FirebaseObservationsService');
+    }
+  }
+
+  Future<StorageScan?> _loadScanCache() async {
+    try {
+      final file = await _scanCacheFile;
+      if (!await file.exists()) return null;
+      return StorageScan.fromJson(jsonDecode(await file.readAsString()) as Map<String, dynamic>);
+    } catch (e) {
+      // A damaged or old cache just means scanning again
+      developer.log('Could not read the storage scan: $e', name: 'FirebaseObservationsService');
+      return null;
+    }
   }
 
   // Static, so the background isolate only gets these plain values and not this service

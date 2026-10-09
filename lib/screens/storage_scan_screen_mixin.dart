@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../l10n/translations.dart';
 import '../services/firebase_database_service.dart';
+import '../model/storage_scan.dart';
 import '../services/firebase_observations_service.dart';
 import '../utils/date_time_utils.dart';
 import '../widgets/scan_progress.dart';

@@ -238,6 +238,7 @@ class _CorrelateFilesScreenState extends State<CorrelateFilesScreen> with Storag
     );
     if (chosen != null && mounted) {
       setState(() => fix.chosen = chosen);
+      storageService.saveScanCache();
     }
   }
 

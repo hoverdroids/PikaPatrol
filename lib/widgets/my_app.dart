@@ -5,7 +5,7 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:pika_patrol/l10n/app_localizations.dart';
 
 import '../l10n/translations.dart';
 import '../screens/home_with_drawer.dart';

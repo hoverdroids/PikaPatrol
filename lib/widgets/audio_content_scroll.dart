@@ -1,5 +1,4 @@
 // ignore_for_file: depend_on_referenced_packages
-import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/defaults/dimens.dart';
@@ -8,8 +7,10 @@ import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
 
+enum AudioPlaybackState { stop, play, pause }
+
 // The player/playback state is owned by the parent (ObservationScreenState) and passed in, rather
-// than this widget having its own AssetsAudioPlayer - it used to, and the observation screen's own
+// than this widget having its own audio player - it used to, and the observation screen's own
 // "big" play button had a second, separate player with separate state. The two never synced with
 // each other: pressing one didn't update the other's icon, and both held their own native player
 // resources without either being aware of the other.
@@ -23,7 +24,7 @@ class AudioContentScroll extends StatelessWidget {
   final List<Widget> icons;
   final List<VoidCallback> iconsClickedCallbacks;
   final String emptyListMessage;
-  final PlayerState playerState;
+  final AudioPlaybackState playerState;
   final int playingIndex;
   final void Function(int index) onToggle;
 
@@ -37,7 +38,7 @@ class AudioContentScroll extends StatelessWidget {
     this.icons = const <Widget>[],
     this.iconsClickedCallbacks = const <VoidCallback>[],
     this.emptyListMessage = "",
-    this.playerState = PlayerState.stop,
+    this.playerState = AudioPlaybackState.stop,
     this.playingIndex = -1,
     required this.onToggle,
   });
@@ -120,7 +121,7 @@ class AudioContentScroll extends StatelessWidget {
                   children: <Widget>[
                     Center(
                         child:ThemedPlayButton(
-                          isPlaying: playerState == PlayerState.play && playingIndex == index,
+                          isPlaying: playerState == AudioPlaybackState.play && playingIndex == index,
                           onPressed: () => onToggle(index),
                         )
                     ),

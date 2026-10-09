@@ -2,9 +2,6 @@
 import 'dart:io';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_recorder4/flutter_audio_recorder4.dart';
-import 'package:flutter_audio_recorder4/recorder_state.dart';
-import 'package:flutter_audio_recorder4/recording.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
@@ -13,6 +10,7 @@ import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:record/record.dart';
 import 'dart:developer' as developer;
 
 class AudioRecorderDialog extends StatefulWidget {
@@ -27,8 +25,11 @@ class AudioRecorderDialog extends StatefulWidget {
 class AudioRecorderDialogState extends State<AudioRecorderDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  late FlutterAudioRecorder4 _recorder;
-  RecorderState _recordingStatus = RecorderState.UNSET;
+  final AudioRecorder _recorder = AudioRecorder();
+  RecordState _recordingStatus = RecordState.stop;
+  // True once recording has started at least once, so there is something to save
+  bool _hasRecording = false;
+  String? _tempPath;
   Directory? _directory;
   String? recordingName;
 
@@ -36,6 +37,12 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   void initState() {
     _initAsync();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _recorder.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,7 +59,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                 if (_recordingStatus == RecorderState.RECORDING) ... [
+                 if (_recordingStatus == RecordState.record) ... [
                   Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ThemedIconButton(Icons.pause, onPressedCallback: () => setState(() => _pause()
@@ -87,7 +94,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                           _quitWithoutSaving();
                         },
                       ),
-                      if (_recordingStatus == RecorderState.RECORDING || _recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.STOPPED) ... [
+                      if (_hasRecording) ... [
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ElevatedButton(
@@ -138,46 +145,45 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
         developer.log(e.toString());
       }
 
-      _recorder = FlutterAudioRecorder4(tempPath);
-      await _recorder.initialized;
-      var recording = await _recorder.current(channel: 0);
-      setRecordingStatus(recording);
+      _tempPath = tempPath;
     }
   }
 
   void _pause() async {
-    await _recorder.pause();
-
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    if (_recordingStatus == RecordState.record) {
+      await _recorder.pause();
+    }
+    _setRecordingStatus(RecordState.pause);
   }
 
   void _record() async {
-    _recordingStatus == RecorderState.PAUSED
-        ? await _recorder.resume()
-        : await _recorder.start();
+    var tempPath = _tempPath;
+    if (tempPath == null) return;
 
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    if (_recordingStatus == RecordState.pause) {
+      await _recorder.resume();
+    } else {
+      // hasPermission() shows the system permission dialog when needed
+      if (!await _recorder.hasPermission()) return;
+      await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: tempPath);
+    }
+    _hasRecording = true;
+    _setRecordingStatus(RecordState.record);
   }
 
   void _quitWithoutSaving() async {
-    if (_recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.RECORDING) {
+    if (_recordingStatus != RecordState.stop) {
       await _recorder.stop();
     }
-
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    _setRecordingStatus(RecordState.stop);
 
     if (mounted) Navigator.pop(context, "");
   }
 
   void _save() async {
-    var result = await _recorder.stop();
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    String? resultPath = await _recorder.stop();
+    _setRecordingStatus(RecordState.stop);
 
-    String? resultPath = result.filepath;
     if (resultPath != null && recordingName != null) {
       String ext = path.extension(resultPath).substring(1);//Need to string dot from .extension
       String dir = path.dirname(resultPath);
@@ -194,9 +200,8 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
     }
   }
 
-  void setRecordingStatus(Recording? recording) {
-    var recordingStatus = recording?.recorderState;
-    if (recordingStatus != null) {
+  void _setRecordingStatus(RecordState recordingStatus) {
+    if (mounted) {
       setState(() { _recordingStatus = recordingStatus; });
     }
   }

@@ -124,16 +124,12 @@ class FirebaseAuthService {
   Future<UserCredential?> signInWithGoogle() async {
     try {
       // Trigger the authentication flow
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      await GoogleSignIn.instance.initialize();
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate();
 
-      // Obtain the auth details from the request
-      final GoogleSignInAuthentication? googleAuth = await googleUser
-          ?.authentication;
-
-      // Create a new credential
+      // Firebase only needs the ID token from the Google account
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth?.accessToken,
-        idToken: googleAuth?.idToken,
+        idToken: googleUser.authentication.idToken,
       );
 
       // Once signed in, return the UserCredential
@@ -171,7 +167,8 @@ class FirebaseAuthService {
     try {
       var trimmedEmail = email.trim();
       if (trimmedEmail.isNotEmpty) {
-        await _auth.currentUser?.updateEmail(trimmedEmail);
+        // Firebase sends a verification link to the new address; the email changes once it's clicked
+        await _auth.currentUser?.verifyBeforeUpdateEmail(trimmedEmail);
       }
       return null;
     } on FirebaseAuthException catch(e) {

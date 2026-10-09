@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -116,8 +116,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   bool justKeepToggling = true;
 
-  var assetsAudioPlayer = AssetsAudioPlayer();
-  PlayerState _playerState = PlayerState.stop;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  StreamSubscription<PlayerState>? _audioPlayerStateSubscription;
+  AudioPlaybackState _playerState = AudioPlaybackState.stop;
   int _playingIndex = -1;
 
   bool _isUploading = false;
@@ -161,13 +162,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       _fetchIndigenousTerritoriesForViewing();
     }
 
+    _audioPlayerStateSubscription = _audioPlayer.playerStateStream.listen(_onAudioPlayerStateChanged);
+
     super.initState();
   }
 
   @override
   void dispose() {
     _manualCoordinatesLookupDebounce?.cancel();
-    assetsAudioPlayer.dispose();
+    _audioPlayerStateSubscription?.cancel();
+    _audioPlayer.dispose();
     _scrollController.dispose();
     _colorAnimationController.dispose();
     super.dispose();
@@ -410,11 +414,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   );
 
   // Index 0 - this button always plays the first recording. It shares _playerState/_playingIndex/
-  // assetsAudioPlayer with the per-recording buttons in AudioContentScroll (_buildAudioRecordings)
+  // _audioPlayer with the per-recording buttons in AudioContentScroll (_buildAudioRecordings)
   // so both stay in sync - they used to each own a separate player and separate state, which is why
   // pressing one didn't update the other's icon.
   Widget _buildPlayButton() => ThemedPlayButton(
-    isPlaying: _playerState == PlayerState.play && _playingIndex == 0,
+    isPlaying: _playerState == AudioPlaybackState.play && _playingIndex == 0,
     pauseIcon: Icon(
         Icons.pause,
         color: context.watch<MaterialThemesManager>().colorPalette().secondary,
@@ -441,58 +445,58 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
+  void _onAudioPlayerStateChanged(PlayerState state) {
+    if (state.processingState == ProcessingState.completed) {
+      _audioPlayer.stop();
+      if (!mounted) return;
+      setState(() {
+        _playerState = AudioPlaybackState.stop;
+        _playingIndex = -1;
+      });
+    }
+  }
+
   void _playAudio(int index) async {
     var audioUrls = widget.observationViewModel.observation.audioUrls;
     if (audioUrls == null || index < 0 || index >= audioUrls.length) return;
 
-    if (_playerState == PlayerState.stop || _playingIndex != index) {
-      if (_playerState != PlayerState.stop) {
-        // Await disposal of the previous player before starting the next one - dispose() (like
-        // open()/play()/pause()) is a native platform-channel call, and none of these were being
-        // awaited here before. Firing off "dispose the old player" and "open+play the new player"
-        // without waiting for the first to actually finish let both native player instances end up
-        // alive and fighting over the audio session at the same time, which is what made a second
-        // recording refuse to stop (pause/UI state had moved on to the new player, but the old
-        // native player was still holding the output and never told to release it in time).
-        await assetsAudioPlayer.dispose();
-      }
-
-      var newPlayer = AssetsAudioPlayer();//apparently the audio player needs to be re-instantiated once stopped
-      assetsAudioPlayer = newPlayer;
-      newPlayer.playlistFinished.listen((finished) {
-        // Guard against a stale event from a player that's since been superseded (e.g. the user
-        // tapped another recording again before this one's open/play finished).
-        if (finished && identical(assetsAudioPlayer, newPlayer)) {
-          setState(() {
-            _playerState = PlayerState.stop;
-            _playingIndex = -1;
-          });
-        }
-      });
+    if (_playerState == AudioPlaybackState.stop || _playingIndex != index) {
+      // One player is reused for every recording; stop() releases the previous source first
+      await _audioPlayer.stop();
 
       var audioUrl = audioUrls[index];
-      await newPlayer.open(audioUrl.contains("http") ? Audio.network(audioUrl) : Audio.file(audioUrl));
-      await newPlayer.play();
+      try {
+        if (audioUrl.contains("http")) {
+          await _audioPlayer.setUrl(audioUrl);
+        } else {
+          await _audioPlayer.setFilePath(audioUrl);
+        }
+      } catch (e) {
+        developer.log("Unable to load audio $audioUrl: $e");
+        return;
+      }
 
-      if (!mounted || !identical(assetsAudioPlayer, newPlayer)) return;
-      setState(() {
-        _playingIndex = index;
-        _playerState = PlayerState.play;
-      });
-
-    } else if (_playerState == PlayerState.play) {
-      await assetsAudioPlayer.pause();
       if (!mounted) return;
       setState(() {
-        _playerState = PlayerState.pause;
+        _playingIndex = index;
+        _playerState = AudioPlaybackState.play;
+      });
+      // Not awaited: play() only completes when playback pauses or ends
+      _audioPlayer.play();
+
+    } else if (_playerState == AudioPlaybackState.play) {
+      await _audioPlayer.pause();
+      if (!mounted) return;
+      setState(() {
+        _playerState = AudioPlaybackState.pause;
       });
 
     } else {
-      await assetsAudioPlayer.play();
       if (!mounted) return;
       setState(() {
-        _playerState = PlayerState.play;
+        _playerState = AudioPlaybackState.play;
       });
+      _audioPlayer.play();
     }
   }
 
@@ -1370,14 +1374,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     bool addImages
   ) async {
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    List<PlatformFile> result = await FilePicker.pickFiles(
         type: pickingType,
-        allowedExtensions: allowedExtensions,
-        allowMultiple: true
+        allowedExtensions: allowedExtensions
     );
 
-    // Result is null if user cancelled
-    List<String> filePaths = result?.paths.whereType<String>().toList() ?? <String>[];
+    // Result is empty if user cancelled
+    List<String> filePaths = result.map((file) => file.path).whereType<String>().toList();
     //List<File> files = filePaths.map((path) => File(path)).toList();
 
     /*if (mounted && filePaths.isNotEmpty) {
@@ -1389,13 +1392,13 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   Future<void> _pickSingleFile(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    PlatformFile? result = await FilePicker.pickFile(
         type: pickingType,
         allowedExtensions: allowedExtensions
     );
 
     // Result is null if user cancelled
-    var filePath = result?.files.single.path ?? "";
+    var filePath = result?.path ?? "";
     //File file = File(filePath);
 
     /*if (mounted && filePath.isNotEmpty) {

@@ -4,6 +4,8 @@ import 'dart:developer' as developer;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
 import 'package:pika_patrol/services/observations_service.dart';
@@ -35,6 +37,12 @@ Future<void> main() async {
   //debugPrintGestureArenaDiagnostics = true;
 
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Use the Android Photo Picker, so the app needs no photo/video read permission (Google Play policy)
+  final imagePickerImplementation = ImagePickerPlatform.instance;
+  if (imagePickerImplementation is ImagePickerAndroid) {
+    imagePickerImplementation.useAndroidPhotoPicker = true;
+  }
 
   // Load environment variables from .env file
   bool envLoaded = false;

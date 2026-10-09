@@ -1021,9 +1021,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'The recording could not be saved. Please try again.';
 
   @override
-  String get photoCredit => 'Photo: %s';
-
-  @override
   String get observationOnServer => 'On the server. Last uploaded %s.';
 
   @override
@@ -1032,4 +1029,41 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get observationWaitingToUpload =>
       'Changes are saved on this phone and will upload the next time you\'re online.';
+
+  @override
+  String get duplicateObservations => 'Duplicate observations';
+
+  @override
+  String get duplicateObservationsDescription =>
+      'Observations saved to the server more than once: same person, started within a minute, same site name or coordinates. Pick the copy to keep in each group. It gets every photo, recording and project from the other copies, which are then deleted. No photo or recording files are deleted.';
+
+  @override
+  String get keepThisCopy => 'Keep';
+
+  @override
+  String get copiesCount => '%count% copies';
+
+  @override
+  String get mergeSelected => 'Merge selected';
+
+  @override
+  String get mergeDuplicatesDialogTitle => 'Merge %count% groups?';
+
+  @override
+  String get mergeDuplicatesDialogDescription =>
+      'Each kept copy gets the photos, recordings and projects of its other copies, and the other copies are deleted from the server and the sheets. This can\'t be undone.';
+
+  @override
+  String get noDuplicatesFound => 'No duplicate observations found.';
+
+  @override
+  String get duplicatesMerged => 'Merged %count% groups.';
+
+  @override
+  String get someDuplicatesNotMerged =>
+      '%count% groups could not be merged. Try again later.';
+
+  @override
+  String get couldNotLoadObservations =>
+      'Could not load the observations. Check your connection and try again.';
 }

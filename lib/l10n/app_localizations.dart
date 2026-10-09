@@ -1990,12 +1990,6 @@ abstract class AppLocalizations {
   /// **'The recording could not be saved. Please try again.'**
   String get couldNotSaveRecording;
 
-  /// No description provided for @photoCredit.
-  ///
-  /// In en, this message translates to:
-  /// **'Photo: %s'**
-  String get photoCredit;
-
   /// No description provided for @observationOnServer.
   ///
   /// In en, this message translates to:
@@ -2013,6 +2007,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Changes are saved on this phone and will upload the next time you\'re online.'**
   String get observationWaitingToUpload;
+
+  /// No description provided for @duplicateObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Duplicate observations'**
+  String get duplicateObservations;
+
+  /// No description provided for @duplicateObservationsDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations saved to the server more than once: same person, started within a minute, same site name or coordinates. Pick the copy to keep in each group. It gets every photo, recording and project from the other copies, which are then deleted. No photo or recording files are deleted.'**
+  String get duplicateObservationsDescription;
+
+  /// No description provided for @keepThisCopy.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep'**
+  String get keepThisCopy;
+
+  /// No description provided for @copiesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'%count% copies'**
+  String get copiesCount;
+
+  /// No description provided for @mergeSelected.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge selected'**
+  String get mergeSelected;
+
+  /// No description provided for @mergeDuplicatesDialogTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Merge %count% groups?'**
+  String get mergeDuplicatesDialogTitle;
+
+  /// No description provided for @mergeDuplicatesDialogDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Each kept copy gets the photos, recordings and projects of its other copies, and the other copies are deleted from the server and the sheets. This can\'t be undone.'**
+  String get mergeDuplicatesDialogDescription;
+
+  /// No description provided for @noDuplicatesFound.
+  ///
+  /// In en, this message translates to:
+  /// **'No duplicate observations found.'**
+  String get noDuplicatesFound;
+
+  /// No description provided for @duplicatesMerged.
+  ///
+  /// In en, this message translates to:
+  /// **'Merged %count% groups.'**
+  String get duplicatesMerged;
+
+  /// No description provided for @someDuplicatesNotMerged.
+  ///
+  /// In en, this message translates to:
+  /// **'%count% groups could not be merged. Try again later.'**
+  String get someDuplicatesNotMerged;
+
+  /// No description provided for @couldNotLoadObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load the observations. Check your connection and try again.'**
+  String get couldNotLoadObservations;
 }
 
 class _AppLocalizationsDelegate

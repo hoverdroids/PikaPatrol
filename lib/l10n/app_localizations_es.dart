@@ -62,7 +62,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get year => 'Año';
 
   @override
-  String get species => 'Especies';
+  String get species => 'Especie';
 
   @override
   String get signs => 'Señales';
@@ -1030,9 +1030,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'No se pudo guardar la grabación. Inténtelo de nuevo.';
 
   @override
-  String get photoCredit => 'Foto: %s';
-
-  @override
   String get observationOnServer => 'En el servidor. Última subida: %s.';
 
   @override
@@ -1041,4 +1038,41 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get observationWaitingToUpload =>
       'Los cambios están guardados en este teléfono y se subirán la próxima vez que tenga conexión.';
+
+  @override
+  String get duplicateObservations => 'Observaciones duplicadas';
+
+  @override
+  String get duplicateObservationsDescription =>
+      'Observaciones guardadas en el servidor más de una vez: misma persona, iniciadas con menos de un minuto de diferencia, mismo sitio o coordenadas. Elija la copia que se conserva en cada grupo. Recibe todas las fotos, grabaciones y proyectos de las otras copias, que luego se eliminan. No se borra ningún archivo de foto ni de grabación.';
+
+  @override
+  String get keepThisCopy => 'Conservar';
+
+  @override
+  String get copiesCount => '%count% copias';
+
+  @override
+  String get mergeSelected => 'Combinar selección';
+
+  @override
+  String get mergeDuplicatesDialogTitle => '¿Combinar %count% grupos?';
+
+  @override
+  String get mergeDuplicatesDialogDescription =>
+      'Cada copia conservada recibe las fotos, grabaciones y proyectos de sus otras copias, y las otras copias se eliminan del servidor y de las hojas. Esto no se puede deshacer.';
+
+  @override
+  String get noDuplicatesFound => 'No se encontraron observaciones duplicadas.';
+
+  @override
+  String get duplicatesMerged => 'Se combinaron %count% grupos.';
+
+  @override
+  String get someDuplicatesNotMerged =>
+      'No se pudieron combinar %count% grupos. Inténtelo más tarde.';
+
+  @override
+  String get couldNotLoadObservations =>
+      'No se pudieron cargar las observaciones. Compruebe su conexión e inténtelo de nuevo.';
 }

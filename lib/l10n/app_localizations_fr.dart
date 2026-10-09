@@ -1035,9 +1035,6 @@ class AppLocalizationsFr extends AppLocalizations {
       'L\'enregistrement n\'a pas pu être sauvegardé. Veuillez réessayer.';
 
   @override
-  String get photoCredit => 'Photo : %s';
-
-  @override
   String get observationOnServer => 'Sur le serveur. Dernier envoi : %s.';
 
   @override
@@ -1046,4 +1043,41 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get observationWaitingToUpload =>
       'Les modifications sont enregistrées sur ce téléphone et seront envoyées lors de votre prochaine connexion.';
+
+  @override
+  String get duplicateObservations => 'Observations en double';
+
+  @override
+  String get duplicateObservationsDescription =>
+      'Observations enregistrées plusieurs fois sur le serveur : même personne, commencées à moins d\'une minute d\'intervalle, même site ou mêmes coordonnées. Choisissez la copie à garder dans chaque groupe. Elle reçoit toutes les photos, enregistrements et projets des autres copies, qui sont ensuite supprimées. Aucun fichier photo ou audio n\'est supprimé.';
+
+  @override
+  String get keepThisCopy => 'Garder';
+
+  @override
+  String get copiesCount => '%count% copies';
+
+  @override
+  String get mergeSelected => 'Fusionner la sélection';
+
+  @override
+  String get mergeDuplicatesDialogTitle => 'Fusionner %count% groupes ?';
+
+  @override
+  String get mergeDuplicatesDialogDescription =>
+      'Chaque copie gardée reçoit les photos, enregistrements et projets de ses autres copies, et les autres copies sont supprimées du serveur et des feuilles. Cette action est irréversible.';
+
+  @override
+  String get noDuplicatesFound => 'Aucune observation en double.';
+
+  @override
+  String get duplicatesMerged => '%count% groupes fusionnés.';
+
+  @override
+  String get someDuplicatesNotMerged =>
+      '%count% groupes n\'ont pas pu être fusionnés. Réessayez plus tard.';
+
+  @override
+  String get couldNotLoadObservations =>
+      'Impossible de charger les observations. Vérifiez votre connexion et réessayez.';
 }

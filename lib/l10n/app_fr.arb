@@ -314,8 +314,18 @@
   "scannedAgo": "Vérifié il y a %time%. Tirez vers le bas pour vérifier à nouveau.",
   "recordingNameHint": "Nom de l'enregistrement",
   "couldNotSaveRecording": "L'enregistrement n'a pas pu être sauvegardé. Veuillez réessayer.",
-  "photoCredit": "Photo : %s",
   "observationOnServer": "Sur le serveur. Dernier envoi : %s.",
   "observationOnServerNoDate": "Sur le serveur.",
-  "observationWaitingToUpload": "Les modifications sont enregistrées sur ce téléphone et seront envoyées lors de votre prochaine connexion."
+  "observationWaitingToUpload": "Les modifications sont enregistrées sur ce téléphone et seront envoyées lors de votre prochaine connexion.",
+  "duplicateObservations": "Observations en double",
+  "duplicateObservationsDescription": "Observations enregistrées plusieurs fois sur le serveur : même personne, commencées à moins d'une minute d'intervalle, même site ou mêmes coordonnées. Choisissez la copie à garder dans chaque groupe. Elle reçoit toutes les photos, enregistrements et projets des autres copies, qui sont ensuite supprimées. Aucun fichier photo ou audio n'est supprimé.",
+  "keepThisCopy": "Garder",
+  "copiesCount": "%count% copies",
+  "mergeSelected": "Fusionner la sélection",
+  "mergeDuplicatesDialogTitle": "Fusionner %count% groupes ?",
+  "mergeDuplicatesDialogDescription": "Chaque copie gardée reçoit les photos, enregistrements et projets de ses autres copies, et les autres copies sont supprimées du serveur et des feuilles. Cette action est irréversible.",
+  "noDuplicatesFound": "Aucune observation en double.",
+  "duplicatesMerged": "%count% groupes fusionnés.",
+  "someDuplicatesNotMerged": "%count% groupes n'ont pas pu être fusionnés. Réessayez plus tard.",
+  "couldNotLoadObservations": "Impossible de charger les observations. Vérifiez votre connexion et réessayez."
 }

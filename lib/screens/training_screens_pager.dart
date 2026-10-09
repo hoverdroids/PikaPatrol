@@ -144,7 +144,7 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
 
     for (var index = 0; index < pikas.length; index++) {
       Pika pika = pikas[index];
-      var page = OnboardingScreen(
+      var bla = OnboardingScreen(
           title: translations.get(pika.species),
           imageUrl: "assets/images/${pika.imagePath}",
           backgroundGradientType: index.isEven ? BackgroundGradientType.PRIMARY : BackgroundGradientType.SECONDARY ,
@@ -152,12 +152,10 @@ class TrainingScreensPagerState extends State<TrainingScreensPager> {
           imageFit: BoxFit.cover,
           descriptionTextAlign: TextAlign.justify,
           descriptionFlex: 3,
-          description: pika.photoCredit == null
-              ? translations.get(pika.description)
-              : "${translations.get(pika.description)}\n\n${translations.photoCredit.replaceAll('%s', pika.photoCredit!)}",
+          description: translations.get(pika.description),
           moreInfoUrl: pika.moreInfoLink,
       );
-      pages.add(page);
+      pages.add(bla);
     }
 
     return pages;

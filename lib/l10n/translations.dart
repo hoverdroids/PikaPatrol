@@ -361,10 +361,20 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scannedAgo = ERROR;
   String recordingNameHint = ERROR;
   String couldNotSaveRecording = ERROR;
-  String photoCredit = ERROR;
   String observationOnServer = ERROR;
   String observationOnServerNoDate = ERROR;
   String observationWaitingToUpload = ERROR;
+  String duplicateObservations = ERROR;
+  String duplicateObservationsDescription = ERROR;
+  String keepThisCopy = ERROR;
+  String copiesCount = ERROR;
+  String mergeSelected = ERROR;
+  String mergeDuplicatesDialogTitle = ERROR;
+  String mergeDuplicatesDialogDescription = ERROR;
+  String noDuplicatesFound = ERROR;
+  String duplicatesMerged = ERROR;
+  String someDuplicatesNotMerged = ERROR;
+  String couldNotLoadObservations = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -687,10 +697,20 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     scannedAgo =  AppLocalizations.of(context)?.scannedAgo ?? scannedAgo;
     recordingNameHint =  AppLocalizations.of(context)?.recordingNameHint ?? recordingNameHint;
     couldNotSaveRecording =  AppLocalizations.of(context)?.couldNotSaveRecording ?? couldNotSaveRecording;
-    photoCredit =  AppLocalizations.of(context)?.photoCredit ?? photoCredit;
     observationOnServer =  AppLocalizations.of(context)?.observationOnServer ?? observationOnServer;
     observationOnServerNoDate =  AppLocalizations.of(context)?.observationOnServerNoDate ?? observationOnServerNoDate;
     observationWaitingToUpload =  AppLocalizations.of(context)?.observationWaitingToUpload ?? observationWaitingToUpload;
+    duplicateObservations =  AppLocalizations.of(context)?.duplicateObservations ?? duplicateObservations;
+    duplicateObservationsDescription =  AppLocalizations.of(context)?.duplicateObservationsDescription ?? duplicateObservationsDescription;
+    keepThisCopy =  AppLocalizations.of(context)?.keepThisCopy ?? keepThisCopy;
+    copiesCount =  AppLocalizations.of(context)?.copiesCount ?? copiesCount;
+    mergeSelected =  AppLocalizations.of(context)?.mergeSelected ?? mergeSelected;
+    mergeDuplicatesDialogTitle =  AppLocalizations.of(context)?.mergeDuplicatesDialogTitle ?? mergeDuplicatesDialogTitle;
+    mergeDuplicatesDialogDescription =  AppLocalizations.of(context)?.mergeDuplicatesDialogDescription ?? mergeDuplicatesDialogDescription;
+    noDuplicatesFound =  AppLocalizations.of(context)?.noDuplicatesFound ?? noDuplicatesFound;
+    duplicatesMerged =  AppLocalizations.of(context)?.duplicatesMerged ?? duplicatesMerged;
+    someDuplicatesNotMerged =  AppLocalizations.of(context)?.someDuplicatesNotMerged ?? someDuplicatesNotMerged;
+    couldNotLoadObservations =  AppLocalizations.of(context)?.couldNotLoadObservations ?? couldNotLoadObservations;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1051,10 +1071,20 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "scannedAgo": return scannedAgo;
       case "recordingNameHint": return recordingNameHint;
       case "couldNotSaveRecording": return couldNotSaveRecording;
-      case "photoCredit": return photoCredit;
       case "observationOnServer": return observationOnServer;
       case "observationOnServerNoDate": return observationOnServerNoDate;
       case "observationWaitingToUpload": return observationWaitingToUpload;
+      case "duplicateObservations": return duplicateObservations;
+      case "duplicateObservationsDescription": return duplicateObservationsDescription;
+      case "keepThisCopy": return keepThisCopy;
+      case "copiesCount": return copiesCount;
+      case "mergeSelected": return mergeSelected;
+      case "mergeDuplicatesDialogTitle": return mergeDuplicatesDialogTitle;
+      case "mergeDuplicatesDialogDescription": return mergeDuplicatesDialogDescription;
+      case "noDuplicatesFound": return noDuplicatesFound;
+      case "duplicatesMerged": return duplicatesMerged;
+      case "someDuplicatesNotMerged": return someDuplicatesNotMerged;
+      case "couldNotLoadObservations": return couldNotLoadObservations;
       default: return key;
     }
   }

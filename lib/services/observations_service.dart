@@ -23,6 +23,7 @@ import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
+import 'duplicate_observation_finder.dart';
 import 'storage_file_correlator.dart';
 import '../model/storage_scan.dart';
 
@@ -623,6 +624,56 @@ class ObservationsService {
     return failures;
   }
 
+  // Merges each group into its kept copy and deletes the other copies (see DuplicateObservationFinder).
+  // Every copy is read fresh from the server first. No Storage files are deleted: the kept copy
+  // now links them all, and copies can share files. Sheets lose the deleted copies' rows and get
+  // the merged one. Merged groups leave the cached list. Returns how many groups could not be merged.
+  Future<int> mergeDuplicates(List<DuplicateGroup> groups) async {
+    final service = firebaseDatabaseService.observationsService;
+    var failures = 0;
+    final merged = <DuplicateGroup>[];
+    for (var group in groups) {
+      try {
+        final keep = await service.getObservationFromServer(group.keep.uid!);
+        if (keep == null) {
+          failures++;
+          continue;
+        }
+        final others = <Observation>[];
+        for (var copy in group.others) {
+          final fresh = await service.getObservationFromServer(copy.uid!);
+          if (fresh != null) others.add(fresh);
+        }
+
+        final lists = DuplicateObservationFinder.merge(keep, others, FirebaseObservationsService.storagePathFromUrl);
+        keep.imageUrls = lists.imageUrls;
+        keep.audioUrls = lists.audioUrls;
+        keep.sharedWithProjects = lists.sharedWithProjects;
+        keep.notSharedWithProjects = keep.notSharedWithProjects?.where((p) => !lists.sharedWithProjects.contains(p)).toList();
+        await service.updateMergedObservation(keep);
+
+        for (var copy in others) {
+          final exception = await service.deleteObservation(copy, false, false);
+          if (exception != null) throw exception;
+          for (var sheet in googleSheetsService.pikaPatrolSpreadsheetServices) {
+            await sheet.observationWorksheetService?.deleteObservation(copy);
+          }
+          _updateOlderSharedObservation(copy, deleted: true);
+        }
+
+        _updateOlderSharedObservation(keep);
+        final results = await saveObservationToGoogleSheets(keep);
+        await _setPendingGoogleSheetsSync(keep.uid, results.any((result) => result.exception != null));
+        merged.add(group);
+      } on FirebaseException catch (e) {
+        developer.log('Could not merge duplicates of ${group.keep.uid}: $e', name: 'ObservationsService');
+        failures++;
+      }
+    }
+    service.forgetDuplicates(merged);
+    return failures;
+  }
+
   //region Observation CRUD
   Future<ValueMessagePair?> saveObservation(Observation observation, AppUser? user) async {
 
@@ -732,7 +783,7 @@ class ObservationsService {
 
     // Every observation goes to the master sheet, even when it isn't shared with any project.
     // Copy the list so the observation itself never gets the hidden master project added to it.
-    var sharedWithProjects = {...?observation.sharedWithProjects, GoogleSheetsService.MASTER_PROJECT};
+    var sharedWithProjects = GoogleSheetsService.projectsFor(observation);
 
     GSheetsException? firstException;
 

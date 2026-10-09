@@ -11,6 +11,7 @@ import 'package:pika_patrol/utils/firebase_utils.dart';
 import '../model/observation.dart';
 import '../model/storage_file.dart';
 import '../model/storage_scan.dart';
+import 'duplicate_observation_finder.dart';
 import 'storage_file_correlator.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
@@ -204,6 +205,31 @@ class FirebaseObservationsService {
     );
   }
 
+  // Every observation straight from the server, for the admin tools. One read per observation.
+  // Any error is thrown: a partial or cached list could make those tools act on the wrong data.
+  Future<List<Observation>> getAllObservationsFromServer() async =>
+      _observationsFromSnapshot(await observationsCollection.get(const GetOptions(source: Source.server)));
+
+  List<DuplicateGroup>? _cachedDuplicates;
+
+  // Kept in memory until the admin pulls down to look again
+  Future<List<DuplicateGroup>> findDuplicates({bool refresh = false}) async {
+    final cached = _cachedDuplicates;
+    if (cached != null && !refresh) return cached;
+    return _cachedDuplicates = DuplicateObservationFinder.find(await getAllObservationsFromServer());
+  }
+
+  void forgetDuplicates(List<DuplicateGroup> merged) => _cachedDuplicates?.removeWhere(merged.contains);
+
+  // Writes only what merging duplicates changes
+  Future<void> updateMergedObservation(Observation observation) =>
+      observationsCollection.doc(observation.uid).update({
+        IMAGE_URLS: observation.imageUrls,
+        AUDIO_URLS: observation.audioUrls,
+        SHARED_WITH_PROJECTS: observation.sharedWithProjects,
+        NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
+      });
+
   // One observation straight from the server, or null if it was deleted
   Future<Observation?> getObservationFromServer(String uid) async {
     final doc = await observationsCollection.doc(uid).get(const GetOptions(source: Source.server));
@@ -310,8 +336,7 @@ class FirebaseObservationsService {
       if (cached != null) return cached;
     }
 
-    final snapshot = await observationsCollection.get(const GetOptions(source: Source.server));
-    final observations = _observationsFromSnapshot(snapshot);
+    final observations = await getAllObservationsFromServer();
 
     final refs = <Reference>[
       for (var folder in [IMAGES_FOLDER_NAME, AUDIO_FOLDER_NAME]) ...await _listAll(_storage.ref(folder)),

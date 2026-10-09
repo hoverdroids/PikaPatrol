@@ -314,8 +314,18 @@
     "scannedAgo": "Scanned %time% ago. Pull down to scan again.",
     "recordingNameHint": "Recording name",
     "couldNotSaveRecording": "The recording could not be saved. Please try again.",
-    "photoCredit": "Photo: %s",
     "observationOnServer": "On the server. Last uploaded %s.",
     "observationOnServerNoDate": "On the server.",
-    "observationWaitingToUpload": "Changes are saved on this phone and will upload the next time you're online."
+    "observationWaitingToUpload": "Changes are saved on this phone and will upload the next time you're online.",
+    "duplicateObservations": "Duplicate observations",
+    "duplicateObservationsDescription": "Observations saved to the server more than once: same person, started within a minute, same site name or coordinates. Pick the copy to keep in each group. It gets every photo, recording and project from the other copies, which are then deleted. No photo or recording files are deleted.",
+    "keepThisCopy": "Keep",
+    "copiesCount": "%count% copies",
+    "mergeSelected": "Merge selected",
+    "mergeDuplicatesDialogTitle": "Merge %count% groups?",
+    "mergeDuplicatesDialogDescription": "Each kept copy gets the photos, recordings and projects of its other copies, and the other copies are deleted from the server and the sheets. This can't be undone.",
+    "noDuplicatesFound": "No duplicate observations found.",
+    "duplicatesMerged": "Merged %count% groups.",
+    "someDuplicatesNotMerged": "%count% groups could not be merged. Try again later.",
+    "couldNotLoadObservations": "Could not load the observations. Check your connection and try again."
 }

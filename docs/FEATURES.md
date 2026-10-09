@@ -24,12 +24,12 @@ Every request made for Pika Patrol, collected from the project email history (20
 
 ## 1. Release blockers (must fix before the next store release)
 
-- [ ] **Target Android 15 (API 35).** Google Play blocks every update until this is done. The repo is on 34 because a July 2026 commit lowered it. Megan, Jun 2026, "FW: Update on Pika Patrol APP"; GitHub #73.
-- [ ] **Support 16 KB memory page sizes.** Play Console shows this as an error on the 3.3.8 build. The toolchain needs upgrading: Flutter 3.19.6, AGP 7.4.2, Kotlin 1.7.10. Megan, Aug 6 2026, "Please accept Apple policy updates".
+- [x] **Target Android 15 (API 35).** Now targets API 36, which Play requires from Aug 31 2026 (branch `doing/3.5.0-store-blockers`). Google Play blocks every update until this is done. The repo is on 34 because a July 2026 commit lowered it. Megan, Jun 2026, "FW: Update on Pika Patrol APP"; GitHub #73.
+- [x] **Support 16 KB memory page sizes.** All native libraries checked at 16 KB alignment after the toolchain upgrade. Play Console shows this as an error on the 3.3.8 build. The toolchain needs upgrading: Flutter 3.19.6, AGP 7.4.2, Kotlin 1.7.10. Megan, Aug 6 2026, "Please accept Apple policy updates".
 - [ ] **Find out why 3.3.8 drops 915 previously supported devices.** Megan asked to hold the release until this is checked. Same thread, Aug 6 2026.
-- [ ] **Upgrade reCAPTCHA to 18.4.0 or newer.** Version 18.1.2 has a critical security bug and is deprecated. The repo is on firebase_auth 4.12.0, which likely pulls 18.1.x, so upgrade the Firebase packages. Google Play Console, Apr 2024 and Apr/Jun 2026.
-- [ ] **Remove READ_MEDIA_IMAGES / READ_MEDIA_VIDEO from every track and use the Android Photo Picker.** Google rejected the app over this in Jun 2026. Removing them makes the app available in Canada again. The manifest no longer has them, but `useAndroidPhotoPicker` is not turned on, and old builds on the testing tracks still need replacing. Megan, Jan 2025 and Jun 2026, "Action Required: Your app is not compliant…".
-- [ ] **Add an iOS privacy manifest.** `PrivacyInfo.xcprivacy` is missing. It needs `NSPrivacyAccessedAPITypes` for FileTimestamp and UserDefaults, and Apple has required it since May 2024 (ITMS-91053). App Store Connect, Mar 2024.
+- [x] **Upgrade reCAPTCHA to 18.4.0 or newer.** Resolves to 18.6.1. Version 18.1.2 has a critical security bug and is deprecated. The repo is on firebase_auth 4.12.0, which likely pulls 18.1.x, so upgrade the Firebase packages. Google Play Console, Apr 2024 and Apr/Jun 2026.
+- [ ] **Remove READ_MEDIA_IMAGES / READ_MEDIA_VIDEO from every track and use the Android Photo Picker.** Code done: the Photo Picker is on and the merged manifest has neither permission. Still to do: replace the old builds on the Play testing tracks. Google rejected the app over this in Jun 2026. Removing them makes the app available in Canada again. The manifest no longer has them, but `useAndroidPhotoPicker` is not turned on, and old builds on the testing tracks still need replacing. Megan, Jan 2025 and Jun 2026, "Action Required: Your app is not compliant…".
+- [x] **Add an iOS privacy manifest.** Added `ios/Runner/PrivacyInfo.xcprivacy`. `PrivacyInfo.xcprivacy` is missing. It needs `NSPrivacyAccessedAPITypes` for FileTimestamp and UserDefaults, and Apple has required it since May 2024 (ITMS-91053). App Store Connect, Mar 2024.
 - [ ] **Merge the release branch into `main`** once it has been tested, and update the README version (it still says 3.3.9 / 333).
 - [ ] **Publish to Google Play and the App Store** with release notes. **Owner:** Megan (Play), Jo or Chris (Apple).
 
@@ -147,7 +147,7 @@ Every request made for Pika Patrol, collected from the project email history (20
 - [x] Background audio mode removed (Apple 2.5.4, Oct 2023).
 - [x] Camera and microphone buttons work on iOS 17 (Apple 2.1, Oct 2023).
 - [ ] **Privacy manifest** (see section 1).
-- [ ] **Check whether the `NSLocationAlways*` strings and the `remote-notification` background mode are needed.** The app uses no push notifications, which is also why every upload warns about ITMS-90078. Remove them if unused.
+- [x] **Check whether the `NSLocationAlways*` strings and the `remote-notification` background mode are needed.** Not needed; removed. The app uses no push notifications, which is also why every upload warns about ITMS-90078. Remove them if unused.
 - [ ] **Keep iPad support** with real iPad screenshots (Apple 2.3.3). **Owner:** Jo.
 - [ ] **No Android mentions in the App Store "What's New" text** (Apple 2.3.10). **Owner:** Jo and Megan.
 

@@ -32,7 +32,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 16 — device reach and crash reports**: found why 3.3.8 lost devices (minimum Android went from 5.0 to 6.0; Flutter now needs 7.0); location, GPS, microphone and portrait screen marked optional; native debug symbols in the app bundle.
 - **Pass 17 — old data, pickers, recordings, status**: pre-3.0 local observations no longer overwrite the server; gallery and file pickers no longer ask for permissions they don't need (GitHub #30); recordings save under unique, safe names (GitHub #31); album saves get the iPhone access they need; observation page shows its server status; Collared pika photo credit; localized month.
 - **Pass 18 — duplicates, Collared pika sheet, verifications**: admin duplicate merge tool; Collared pika sheet routing; admin export follows the save rule; Turi's French verified; Spanish species label; photo credit removed (Chris's photo); Collared pika call link found expired.
-- **Pass 19 — store kit**: `docs/store/3.5.0-store-kit.md` with release notes in EN/ES/FR (no platform names, so they work in both stores), Data safety form answers from the code, the developer credit line, and the Play and App Store console steps.
+- **Pass 19 — store kit**: `docs/store/3.5.0-store-kit.md` with release notes in EN/ES/FR (no platform names, so they work in both stores), Data safety form answers from the code, the developer credit line, and the Play and App Store console steps; 13-inch iPad screenshots and the test that takes them; fixed an error on every launch (the brand palette was set during build).
 
 ## People
 
@@ -185,7 +185,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - [x] Camera and microphone buttons work on iOS 17 (Apple 2.1, Oct 2023).
 - [x] **Privacy manifest** (see section 1).
 - [x] **Check whether the `NSLocationAlways*` strings and the `remote-notification` background mode are needed.** Not needed; removed. The app uses no push notifications, which is also why every upload warns about ITMS-90078. Remove them if unused.
-- [ ] **Keep iPad support** with real iPad screenshots (Apple 2.3.3). **Owner:** Jo.
+- [ ] **Keep iPad support** with real iPad screenshots (Apple 2.3.3). Pass 19: four 13-inch iPad screenshots in `docs/store/screenshots/ipad-13/`, taken by `integration_test/store_screenshots_test.dart` (rerun it to refresh them). Still to do: upload them in App Store Connect. **Owner:** Jo or Chris.
 - [x] **No Android mentions in the App Store "What's New" text** (Apple 2.3.10). Pass 19: the 3.5.0 notes in `docs/store/3.5.0-store-kit.md` name no platform.
 
 ## 12. Google Play compliance

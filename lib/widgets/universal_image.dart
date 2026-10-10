@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:pika_patrol/primitives/overlay_mode.dart';
+import 'package:pika_patrol/utils/media_cache.dart';
 
 // Shows an asset, a local file or a Firebase Storage URL. Network images go through
 // cached_network_image, so each photo is downloaded once and then read from the phone's disk.
@@ -57,7 +58,7 @@ class UniversalImage extends StatelessWidget {
     if(path.isEmpty || _isAssetImage(path)) {
       imageProvider = AssetImage(path);
     } else if(_isNetworkImage(path)) {
-      imageProvider = CachedNetworkImageProvider(path);
+      imageProvider = CachedNetworkImageProvider(path, cacheKey: MediaCache.keyFor(path), cacheManager: MediaCache.manager);
     } else {
       imageProvider = FileImage(File(path));
     }
@@ -80,6 +81,8 @@ class UniversalImage extends StatelessWidget {
     } else if(_isNetworkImage(path)) {
       return CachedNetworkImage(
         imageUrl: path,
+        cacheKey: MediaCache.keyFor(path),
+        cacheManager: MediaCache.manager,
         height: height,
         width: width,
         fit: boxFit,

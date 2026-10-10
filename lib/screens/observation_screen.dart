@@ -52,6 +52,7 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
 import '../services/settings_service.dart';
+import '../utils/media_cache.dart';
 import '../utils/firebase_utils.dart';
 import '../utils/network_utils.dart';
 import 'home_with_drawer.dart';
@@ -490,7 +491,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       var audioUrl = audioUrls[index];
       try {
         if (audioUrl.contains("http")) {
-          await _audioPlayer.setUrl(audioUrl);
+          // Downloaded once, then played from the phone
+          await _audioPlayer.setFilePath((await MediaCache.file(audioUrl)).path);
         } else {
           await _audioPlayer.setFilePath(audioUrl);
         }

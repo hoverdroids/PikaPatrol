@@ -446,10 +446,6 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               /*TODO - CHRIS - show user profiles so that they can be delted or have admin access granted. the later will require me interacting with node.js scripts locally*/
             ],
           ],
-          // HeaderList caches listItems in initState and never refreshes it in didUpdateWidget, so a
-          // stable key would leave the checkbox rows permanently showing their first-render state.
-          // Keying on the values that actually change forces a full remount to pick up the update.
-          key: ValueKey('${userProfile == null}-$showIndigenousMapPreference-$showSplashScreenPreference-$isMetricPreference-${settingsService.locale.languageCode}'),
           imageUrl: "assets/images/pika3.jpg",
           avatarImageUrl: "assets/images/pika4.jpg",
           avatarTitle: avatarTitle,

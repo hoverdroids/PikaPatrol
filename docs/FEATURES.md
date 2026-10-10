@@ -36,6 +36,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 20 — cancelled edits**: copying an observation now copies its lists too. Before, removing a photo or recording and pressing back still removed it from the open observation in memory, and a later save deleted the file from Storage. Test in `test/model/observation_copy_test.dart`.
 - **Pass 21 — recording names and template territories**: recording cards show the name the file was given, not the encoded Storage URL. The default template keeps the Indigenous territories and languages with its coordinates, and a new observation whose template has coordinates but no territories looks them up. Tests in `test/utils/observation_template_test.dart`.
 - **Pass 22 — location button**: the location button gives up on a fresh GPS fix after 20 seconds and uses the last known position, instead of waiting forever where the sky can't be seen (which also kept the Indigenous territory lookup from running).
+- **Pass 23 — drawer keeps its place**: changing a setting in the left drawer no longer scrolls it back to the top. material_themes_widgets 1.16.0 makes HeaderList pick up new values on rebuild, so the app no longer remounts it with a changing key.
 
 ## People
 

@@ -1176,10 +1176,10 @@ packages:
     dependency: "direct main"
     description:
       name: material_themes_widgets
-      sha256: fe77581e6d4b9ba4be27f54eea9d863783f532f44f26a8f77a28ccb3ff804093
+      sha256: "455156561e7ac8524c207a6e531f6d74447a7e6c7dcb6d37654c2175ca4d289b"
       url: "https://pub.dev"
     source: hosted
-    version: "1.15.0"
+    version: "1.16.0"
   material_ui:
     dependency: transitive
     description:

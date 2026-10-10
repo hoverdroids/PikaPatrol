@@ -1134,4 +1134,24 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get observationsWithoutLocation =>
       '%count% observaciones no tienen ubicación y no aparecen en el mapa';
+
+  @override
+  String get signInToBecomeSupporter =>
+      'Inicia sesión primero, para que tu donación las desbloquee en tu cuenta.';
+
+  @override
+  String get setSupporterStatus => 'Estado de colaborador';
+
+  @override
+  String get addOneYear => 'Añadir un año';
+
+  @override
+  String get addOneMonth => 'Añadir un mes';
+
+  @override
+  String get endSupporterStatus => 'Terminarlo';
+
+  @override
+  String get supporterStatusUpdated =>
+      'Estado de colaborador actualizado. Aparecerá en su teléfono en menos de una hora.';
 }

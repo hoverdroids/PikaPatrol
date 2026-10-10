@@ -42,7 +42,10 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
   @override
   void initState() {
     super.initState();
-    if (!_canSeeAll) {
+    if (_canSeeAll) {
+      // Only what changed, and at most every 15 minutes
+      Provider.of<ObservationsService>(context, listen: false).syncAllObservations();
+    } else {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) showSupporterDialog(context, userId: _user?.uid);
       });

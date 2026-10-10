@@ -49,6 +49,16 @@ class FirebaseAuthService {
     return until is num ? DateTime.fromMillisecondsSinceEpoch(until.toInt()) : null;
   }
 
+  // Gets a fresh sign-in token, so a new supporter or admin status shows at once instead of
+  // within the hour. The user stream then sends the updated user.
+  Future<void> refreshClaims() async {
+    try {
+      await _auth.currentUser?.getIdToken(true);
+    } on FirebaseAuthException catch (e) {
+      developer.log('Could not refresh the sign-in token: $e', name: 'FirebaseAuthService');
+    }
+  }
+
   Future<String?> getCurrentUserIdToken() async => await _auth.currentUser?.getIdToken();
 
   Future<String?>? getUserIdToken(User? user) => user?.getIdToken();

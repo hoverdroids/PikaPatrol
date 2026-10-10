@@ -394,6 +394,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String thisYear = ERROR;
   String allSpecies = ERROR;
   String observationsWithoutLocation = ERROR;
+  String signInToBecomeSupporter = ERROR;
+  String setSupporterStatus = ERROR;
+  String addOneYear = ERROR;
+  String addOneMonth = ERROR;
+  String endSupporterStatus = ERROR;
+  String supporterStatusUpdated = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -749,6 +755,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     thisYear =  AppLocalizations.of(context)?.thisYear ?? thisYear;
     allSpecies =  AppLocalizations.of(context)?.allSpecies ?? allSpecies;
     observationsWithoutLocation =  AppLocalizations.of(context)?.observationsWithoutLocation ?? observationsWithoutLocation;
+    signInToBecomeSupporter =  AppLocalizations.of(context)?.signInToBecomeSupporter ?? signInToBecomeSupporter;
+    setSupporterStatus =  AppLocalizations.of(context)?.setSupporterStatus ?? setSupporterStatus;
+    addOneYear =  AppLocalizations.of(context)?.addOneYear ?? addOneYear;
+    addOneMonth =  AppLocalizations.of(context)?.addOneMonth ?? addOneMonth;
+    endSupporterStatus =  AppLocalizations.of(context)?.endSupporterStatus ?? endSupporterStatus;
+    supporterStatusUpdated =  AppLocalizations.of(context)?.supporterStatusUpdated ?? supporterStatusUpdated;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1142,6 +1154,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "thisYear": return thisYear;
       case "allSpecies": return allSpecies;
       case "observationsWithoutLocation": return observationsWithoutLocation;
+      case "signInToBecomeSupporter": return signInToBecomeSupporter;
+      case "setSupporterStatus": return setSupporterStatus;
+      case "addOneYear": return addOneYear;
+      case "addOneMonth": return addOneMonth;
+      case "endSupporterStatus": return endSupporterStatus;
+      case "supporterStatusUpdated": return supporterStatusUpdated;
       default: return key;
     }
   }

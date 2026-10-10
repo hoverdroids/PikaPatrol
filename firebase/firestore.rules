@@ -11,6 +11,16 @@ service cloud.firestore {
       allow update, delete: if request.auth != null && (request.auth.uid == resource.data.observerUid || request.auth.token.admin);
       allow read: if true;
     }
+    // Written by the markObservationDeleted function, so devices can drop deleted observations
+    match /deletedObservations/{observation} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Written only by the supporter functions; each person can read their own
+    match /supporters/{userId}/{document=**} {
+      allow read: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin);
+      allow write: if false;
+    }
     match /googleSheets/{credential} {
       allow create: if false;
       allow update, delete: if false;

@@ -346,5 +346,11 @@
     "last12Months": "Last 12 months",
     "thisYear": "This year",
     "allSpecies": "All species",
-    "observationsWithoutLocation": "%count% observations have no location and aren't on the map"
+    "observationsWithoutLocation": "%count% observations have no location and aren't on the map",
+    "signInToBecomeSupporter": "Sign in first, so your gift can unlock these for your account.",
+    "setSupporterStatus": "Supporter status",
+    "addOneYear": "Add a year",
+    "addOneMonth": "Add a month",
+    "endSupporterStatus": "End it",
+    "supporterStatusUpdated": "Supporter status updated. It shows on their phone within the hour."
 }

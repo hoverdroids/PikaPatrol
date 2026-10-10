@@ -24,6 +24,7 @@ import '../model/observation.dart';
 import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
 import 'duplicate_observation_finder.dart';
+import 'observations_mirror.dart';
 import 'storage_file_correlator.dart';
 import '../model/storage_scan.dart';
 
@@ -443,8 +444,34 @@ class ObservationsService {
     }
   }
 
+  // Supporters and admins see every observation, from the copy kept on the device
+  ObservationsMirror? _mirror;
+  StreamSubscription<List<Observation>>? _mirrorSubscription;
+  bool _canSeeAllObservations = false;
+
+  void setCanSeeAllObservations(bool canSeeAll) {
+    if (canSeeAll == _canSeeAllObservations) return;
+    _canSeeAllObservations = canSeeAll;
+    if (canSeeAll) {
+      final mirror = _mirror ??= ObservationsMirror.onDevice(firebaseDatabaseService.observationsService);
+      _mirrorSubscription = mirror.changes.listen((_) => _publishSharedObservations());
+      mirror.sync();
+    } else {
+      _mirrorSubscription?.cancel();
+      _mirrorSubscription = null;
+      _publishSharedObservations();
+    }
+  }
+
+  // At most every 15 minutes unless forced, and only what changed since the last sync
+  Future<void> syncAllObservations({bool force = false}) async {
+    if (_canSeeAllObservations) await _mirror?.sync(force: force);
+  }
+
+  bool get _showsMirror => _canSeeAllObservations && (_mirror?.hasSynced ?? false);
+
   Future<void> loadMoreSharedObservations() async {
-    if (_isLoadingSharedObservations || !_hasMoreSharedObservations) return;
+    if (_showsMirror || _isLoadingSharedObservations || !_hasMoreSharedObservations) return;
     _isLoadingSharedObservations = true;
     try {
       final page = await firebaseDatabaseService.observationsService.getObservationsPage(
@@ -464,6 +491,11 @@ class ObservationsService {
 
   // Keeps loaded pages in step with this device's saves and deletes, without reading them again
   void _updateOlderSharedObservation(Observation observation, {bool deleted = false}) {
+    if (deleted) {
+      _mirror?.remove(observation.uid);
+    } else {
+      _mirror?.put(observation);
+    }
     final index = _olderSharedObservations.indexWhere((older) => older.uid != null && older.uid == observation.uid);
     if (index < 0) return;
     if (deleted) {
@@ -477,9 +509,12 @@ class ObservationsService {
   void _publishSharedObservations() {
     // Newest first: the live observations, then older pages without the ones already shown
     final liveUids = _liveSharedObservations.map((observation) => observation.uid).toSet();
+    final older = _showsMirror
+        ? (_mirror!.observations..sort((a, b) => (b.date ?? DateTime(0)).compareTo(a.date ?? DateTime(0))))
+        : _olderSharedObservations;
     final newestFirst = [
       ..._liveSharedObservations,
-      ..._olderSharedObservations.where((observation) => !liveUids.contains(observation.uid)),
+      ...older.where((observation) => !liveUids.contains(observation.uid)),
     ];
 
     // The card stack shows the last card on top, so the newest goes last

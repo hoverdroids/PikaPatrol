@@ -12,6 +12,7 @@ import '../model/observation.dart';
 import '../model/storage_file.dart';
 import '../model/storage_scan.dart';
 import 'duplicate_observation_finder.dart';
+import 'observations_mirror.dart';
 import 'storage_file_correlator.dart';
 import '../utils/date_time_utils.dart';
 import 'package:path/path.dart';
@@ -25,6 +26,7 @@ class FirebaseObservationsService {
   static const String AUDIO_FOLDER_NAME = "audio";
 
   static const String OBSERVATIONS_COLLECTION_NAME = "observations";
+  static const String DELETED_OBSERVATIONS_COLLECTION_NAME = "deletedObservations";
 
   static const String OBSERVER_UID = "observerUid";
   static const String NAME = "name";
@@ -51,6 +53,9 @@ class FirebaseObservationsService {
   static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
   static const String IS_UPLOADED = "isUploaded";
+  // When an observation last changed, set by the server, so devices can sync only what changed
+  static const String UPDATED_AT = "updatedAt";
+  static const String DELETED_AT = "deletedAt";
   static const String RANDOM_CURRENT_USER_ID = "A9x4ikJ7h6MvaJiYAHx7v9o7zRx5";
 
   static const int FUTURE_TIMEOUT_SECONDS = 3;
@@ -96,7 +101,7 @@ class FirebaseObservationsService {
     try {
       // Calling "set" when a doc with the Id doesn't exist will create it.
       // If a doc exists with the given uid, it will be updated
-      await doc.set(observation.toFirebaseObservation());
+      await doc.set({...observation.toFirebaseObservation(), UPDATED_AT: FieldValue.serverTimestamp()});
     } on FirebaseException catch (e) {
 
       // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
@@ -228,6 +233,7 @@ class FirebaseObservationsService {
         AUDIO_URLS: observation.audioUrls,
         SHARED_WITH_PROJECTS: observation.sharedWithProjects,
         NOT_SHARED_WITH_PROJECTS: observation.notSharedWithProjects,
+        UPDATED_AT: FieldValue.serverTimestamp(),
       });
 
   // One observation straight from the server, or null if it was deleted
@@ -437,7 +443,7 @@ class FirebaseObservationsService {
 
   // Writes only the photo and recording lists, so nothing else on the observation changes
   Future<void> updateMediaUrls(String observationUid, List<String> imageUrls, List<String> audioUrls) =>
-      observationsCollection.doc(observationUid).update({IMAGE_URLS: imageUrls, AUDIO_URLS: audioUrls});
+      observationsCollection.doc(observationUid).update({IMAGE_URLS: imageUrls, AUDIO_URLS: audioUrls, UPDATED_AT: FieldValue.serverTimestamp()});
 
   Future<List<Reference>> _listAll(Reference folder) async {
     final refs = <Reference>[];
@@ -499,6 +505,44 @@ class FirebaseObservationsService {
     );
   }
 
+  // What changed on the server since the last sync, read straight from the server, a page at a
+  // time. With no since, every observation (the first sync on a device). Deletes come from the
+  // markers the markObservationDeleted function leaves. Ties on the time are read again rather
+  // than missed, which costs a read or two.
+  Future<ObservationChanges> getChangesSince(DateTime? since, {int pageSize = 500}) async {
+    const server = GetOptions(source: Source.server);
+    final changes = ObservationChanges();
+
+    Future<void> readAll(Query query, void Function(QueryDocumentSnapshot doc) add) async {
+      DocumentSnapshot? last;
+      while (true) {
+        var page = query.limit(pageSize);
+        if (last != null) page = page.startAfterDocument(last);
+        final snapshot = await page.get(server);
+        snapshot.docs.forEach(add);
+        if (snapshot.docs.length < pageSize) return;
+        last = snapshot.docs.last;
+      }
+    }
+
+    final observations = since == null
+        // Older observations may have no updatedAt yet, so the first sync reads them all
+        ? observationsCollection.orderBy(FieldPath.documentId)
+        : observationsCollection.where(UPDATED_AT, isGreaterThanOrEqualTo: Timestamp.fromDate(since)).orderBy(UPDATED_AT);
+    await readAll(observations, (doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      changes.changed.add((observation: observationFromMap(doc.id, data), at: parseTime(data[UPDATED_AT])));
+    });
+
+    if (since != null) {
+      final deletes = firebaseFirestore.collection(DELETED_OBSERVATIONS_COLLECTION_NAME)
+          .where(DELETED_AT, isGreaterThanOrEqualTo: Timestamp.fromDate(since))
+          .orderBy(DELETED_AT);
+      await readAll(deletes, (doc) => changes.deleted.add((uid: doc.id, at: parseTime((doc.data() as Map<String, dynamic>)[DELETED_AT]))));
+    }
+    return changes;
+  }
+
   Future<List<Observation>> getAllObservations({int? limit}) async {
     Query query = observationsCollection;
     return await getObservations(query, limit: limit);
@@ -553,4 +597,9 @@ extension FirebaseObservation on Observation {
     FirebaseObservationsService.DATE_UPDATED_IN_GOOGLE_SHEETS: dateUpdatedInGoogleSheets,
     FirebaseObservationsService.IS_UPLOADED: isUploaded
   };
+
+  // For saving on the device: dates as ISO strings, which observationFromMap reads back
+  Map<String, dynamic> toJsonObservation() => toFirebaseObservation().map(
+    (key, value) => MapEntry(key, value is DateTime ? value.toIso8601String() : value),
+  );
 }

@@ -63,9 +63,7 @@ class StorageScan {
       addFile(fix.file);
       for (var candidate in fix.candidates) {
         final observation = candidate.observation;
-        observations[observation.uid!] = observation.toFirebaseObservation().map(
-          (key, value) => MapEntry(key, value is DateTime ? value.toIso8601String() : value),
-        );
+        observations[observation.uid!] = observation.toJsonObservation();
       }
     }
     unused.forEach(addFile);

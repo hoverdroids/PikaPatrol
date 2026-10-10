@@ -68,6 +68,7 @@ dependencies:
   cached_network_image: ^3.4.1
   syncfusion_flutter_maps: ^35.1.39
   syncfusion_flutter_charts: ^35.1.39
+  cloud_functions: ^6.5.0
 
 dev_dependencies:
   flutter_test:

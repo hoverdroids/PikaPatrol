@@ -346,5 +346,11 @@
     "last12Months": "Últimos 12 meses",
     "thisYear": "Este año",
     "allSpecies": "Todas las especies",
-    "observationsWithoutLocation": "%count% observaciones no tienen ubicación y no aparecen en el mapa"
+    "observationsWithoutLocation": "%count% observaciones no tienen ubicación y no aparecen en el mapa",
+    "signInToBecomeSupporter": "Inicia sesión primero, para que tu donación las desbloquee en tu cuenta.",
+    "setSupporterStatus": "Estado de colaborador",
+    "addOneYear": "Añadir un año",
+    "addOneMonth": "Añadir un mes",
+    "endSupporterStatus": "Terminarlo",
+    "supporterStatusUpdated": "Estado de colaborador actualizado. Aparecerá en su teléfono en menos de una hora."
 }

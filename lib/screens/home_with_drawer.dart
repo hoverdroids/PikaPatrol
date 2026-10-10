@@ -44,6 +44,7 @@ import 'observations_screen.dart';
 import 'correlate_files_screen.dart';
 import 'duplicate_observations_screen.dart';
 import 'unused_files_screen.dart';
+import '../widgets/set_supporter_dialog.dart';
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -445,6 +446,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               ListItemModel(title: translations.exportFirebaseObservationsToGoogleSheets, itemClickedCallback: () => showExportFirebaseObservationsToGoogleSheetsDialog(), margin: indentationLevel1),
               ListItemModel(title: translations.duplicateObservations, itemClickedCallback: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DuplicateObservationsScreen())), margin: indentationLevel1),
               ListItemModel(title: translations.correlateFiles, itemClickedCallback: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CorrelateFilesScreen())), margin: indentationLevel1),
+              ListItemModel(title: translations.setSupporterStatus, itemClickedCallback: () => showSetSupporterDialog(context), margin: indentationLevel1),
               ListItemModel(title: translations.unusedFiles, itemClickedCallback: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const UnusedFilesScreen())), margin: indentationLevel1),
               if (canInitializeGoogleSheets) ... [
                 ListItemModel(title: translations.initializeGoogleSheets, itemClickedCallback: () => initializeGoogleSheets(), margin: indentationLevel1),

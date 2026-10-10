@@ -2187,6 +2187,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'%count% observations have no location and aren\'t on the map'**
   String get observationsWithoutLocation;
+
+  /// No description provided for @signInToBecomeSupporter.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in first, so your gift can unlock these for your account.'**
+  String get signInToBecomeSupporter;
+
+  /// No description provided for @setSupporterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporter status'**
+  String get setSupporterStatus;
+
+  /// No description provided for @addOneYear.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a year'**
+  String get addOneYear;
+
+  /// No description provided for @addOneMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a month'**
+  String get addOneMonth;
+
+  /// No description provided for @endSupporterStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'End it'**
+  String get endSupporterStatus;
+
+  /// No description provided for @supporterStatusUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporter status updated. It shows on their phone within the hour.'**
+  String get supporterStatusUpdated;
 }
 
 class _AppLocalizationsDelegate

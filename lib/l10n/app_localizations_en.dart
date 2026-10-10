@@ -1125,4 +1125,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get observationsWithoutLocation =>
       '%count% observations have no location and aren\'t on the map';
+
+  @override
+  String get signInToBecomeSupporter =>
+      'Sign in first, so your gift can unlock these for your account.';
+
+  @override
+  String get setSupporterStatus => 'Supporter status';
+
+  @override
+  String get addOneYear => 'Add a year';
+
+  @override
+  String get addOneMonth => 'Add a month';
+
+  @override
+  String get endSupporterStatus => 'End it';
+
+  @override
+  String get supporterStatusUpdated =>
+      'Supporter status updated. It shows on their phone within the hour.';
 }

@@ -148,6 +148,7 @@ Future<void> main() async {
             firebaseDatabaseService.currentUserId = appUser?.uid;
 
             observationsService.firebaseDatabaseService = firebaseDatabaseService;
+            observationsService.setCanSeeAllObservations(appUser?.canSeeAllObservations ?? false);
 
             return StreamBuilder<AppUserProfile?>(
               stream: firebaseDatabaseService.userProfilesService.userProfile,

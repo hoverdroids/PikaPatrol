@@ -535,8 +535,6 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  // The geo fields have no hint: an empty field means not entered, and a "0.0" hint read as a real
-  // coordinate, especially in the default template
   Widget _buildLatLonAltitude() {
     final observation = widget.observationViewModel.observation;
     String latitude = formatCoordinate(observation.latitude);
@@ -568,7 +566,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     showLabel: false,
                     text: editLatitude,
                     textType: ThemeGroupType.POM,
-                    hintText: "",
+                    hintText: "0.0",
                     onStringChangedCallback: (value) => _onManualCoordinateChanged(latitude: value),
                     validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.latitude),
                   ),
@@ -596,7 +594,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     showLabel: false,
                     text: editLongitude,
                     textType: ThemeGroupType.POM,
-                    hintText: "",
+                    hintText: "0.0",
                     onStringChangedCallback: (value) => _onManualCoordinateChanged(longitude: value),
                     validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.longitude),
                   ),
@@ -624,7 +622,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     showLabel: false,
                     text: editAltitudeDisplay,
                     textType: ThemeGroupType.POM,
-                    hintText: "",
+                    hintText: "0.0",
                     onStringChangedCallback: (value) {
                       //tryParse so that clearing the field (or typing mid-edit garbage) clears the
                       //value instead of throwing; in normal mode the validator still requires a number

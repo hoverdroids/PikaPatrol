@@ -1167,16 +1167,18 @@ packages:
   material_themes_manager:
     dependency: "direct main"
     description:
-      path: "../flutter-material-themes-manager"
-      relative: true
-    source: path
+      name: material_themes_manager
+      sha256: b3ae78981dc2382403e491dc6f3024876638429119160eb6ee28990a4311e531
+      url: "https://pub.dev"
+    source: hosted
     version: "1.6.0"
   material_themes_widgets:
     dependency: "direct main"
     description:
-      path: "../flutter-material-themes-widgets"
-      relative: true
-    source: path
+      name: material_themes_widgets
+      sha256: fe77581e6d4b9ba4be27f54eea9d863783f532f44f26a8f77a28ccb3ff804093
+      url: "https://pub.dev"
+    source: hosted
     version: "1.15.0"
   material_ui:
     dependency: transitive

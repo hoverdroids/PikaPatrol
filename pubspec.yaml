@@ -66,12 +66,6 @@ dependencies:
   webview_flutter: ^4.8.0
   package_info_plus: ^10.2.2
   cached_network_image: ^3.4.1
-dependency_overrides:
-  # TEMP: local copies until material_themes_widgets 1.15.0 and material_themes_manager 1.6.0 are on pub.dev. Delete this block after publishing.
-  material_themes_widgets:
-    path: ../flutter-material-themes-widgets
-  material_themes_manager:
-    path: ../flutter-material-themes-manager
 
 dev_dependencies:
   flutter_test:

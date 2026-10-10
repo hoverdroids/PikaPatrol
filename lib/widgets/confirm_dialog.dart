@@ -35,3 +35,20 @@ Future<bool> showConfirmDialog(
   );
   return confirmed == true;
 }
+
+// Tells the user something, with one button to close it
+Future<void> showInfoDialog(BuildContext context, {required String title, required String description, String closeLabel = "OK"}) {
+  return showDialog<void>(
+    context: context,
+    builder: (BuildContext context) => AlertDialog(
+      title: Text(title),
+      content: Text(description),
+      actions: [
+        TextButton(
+          child: Text(closeLabel),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ],
+    ),
+  );
+}

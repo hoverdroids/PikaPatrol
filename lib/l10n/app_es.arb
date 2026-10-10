@@ -327,5 +327,10 @@
     "noDuplicatesFound": "No se encontraron observaciones duplicadas.",
     "duplicatesMerged": "Se combinaron %count% grupos.",
     "someDuplicatesNotMerged": "No se pudieron combinar %count% grupos. Inténtelo más tarde.",
-    "couldNotLoadObservations": "No se pudieron cargar las observaciones. Compruebe su conexión e inténtelo de nuevo."
+    "couldNotLoadObservations": "No se pudieron cargar las observaciones. Compruebe su conexión e inténtelo de nuevo.",
+    "fileTooLarge": "Archivo demasiado grande",
+    "photoTooLargeDescription": "Esta foto pesa %size% MB. Las fotos deben pesar menos de 50 MB para subirse. ¿Añadir una copia más pequeña? La original se queda en tu teléfono.",
+    "recordingTooLargeDescription": "Esta grabación pesa %size% MB. Las grabaciones deben pesar menos de 50 MB para subirse, así que no se añadió. Prueba con una grabación más corta.",
+    "makeSmaller": "Reducir",
+    "couldNotMakePhotoSmaller": "No se pudo reducir esta foto lo suficiente, así que no se añadió"
 }

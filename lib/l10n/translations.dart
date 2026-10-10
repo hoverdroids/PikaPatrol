@@ -375,6 +375,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String duplicatesMerged = ERROR;
   String someDuplicatesNotMerged = ERROR;
   String couldNotLoadObservations = ERROR;
+  String fileTooLarge = ERROR;
+  String photoTooLargeDescription = ERROR;
+  String recordingTooLargeDescription = ERROR;
+  String makeSmaller = ERROR;
+  String couldNotMakePhotoSmaller = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -711,6 +716,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     duplicatesMerged =  AppLocalizations.of(context)?.duplicatesMerged ?? duplicatesMerged;
     someDuplicatesNotMerged =  AppLocalizations.of(context)?.someDuplicatesNotMerged ?? someDuplicatesNotMerged;
     couldNotLoadObservations =  AppLocalizations.of(context)?.couldNotLoadObservations ?? couldNotLoadObservations;
+    fileTooLarge =  AppLocalizations.of(context)?.fileTooLarge ?? fileTooLarge;
+    photoTooLargeDescription =  AppLocalizations.of(context)?.photoTooLargeDescription ?? photoTooLargeDescription;
+    recordingTooLargeDescription =  AppLocalizations.of(context)?.recordingTooLargeDescription ?? recordingTooLargeDescription;
+    makeSmaller =  AppLocalizations.of(context)?.makeSmaller ?? makeSmaller;
+    couldNotMakePhotoSmaller =  AppLocalizations.of(context)?.couldNotMakePhotoSmaller ?? couldNotMakePhotoSmaller;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1085,6 +1095,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "duplicatesMerged": return duplicatesMerged;
       case "someDuplicatesNotMerged": return someDuplicatesNotMerged;
       case "couldNotLoadObservations": return couldNotLoadObservations;
+      case "fileTooLarge": return fileTooLarge;
+      case "photoTooLargeDescription": return photoTooLargeDescription;
+      case "recordingTooLargeDescription": return recordingTooLargeDescription;
+      case "makeSmaller": return makeSmaller;
+      case "couldNotMakePhotoSmaller": return couldNotMakePhotoSmaller;
       default: return key;
     }
   }

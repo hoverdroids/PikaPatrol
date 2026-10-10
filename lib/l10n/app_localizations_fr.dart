@@ -1080,4 +1080,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get couldNotLoadObservations =>
       'Impossible de charger les observations. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get fileTooLarge => 'Fichier trop volumineux';
+
+  @override
+  String get photoTooLargeDescription =>
+      'Cette photo fait %size% Mo. Les photos doivent faire moins de 50 Mo pour être envoyées. Ajouter une copie plus petite ? L\'originale reste sur votre téléphone.';
+
+  @override
+  String get recordingTooLargeDescription =>
+      'Cet enregistrement fait %size% Mo. Les enregistrements doivent faire moins de 50 Mo pour être envoyés, il n\'a donc pas été ajouté. Essayez un enregistrement plus court.';
+
+  @override
+  String get makeSmaller => 'Réduire';
+
+  @override
+  String get couldNotMakePhotoSmaller =>
+      'Impossible de réduire suffisamment cette photo, elle n\'a donc pas été ajoutée';
 }

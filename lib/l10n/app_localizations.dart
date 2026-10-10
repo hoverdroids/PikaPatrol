@@ -2073,6 +2073,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load the observations. Check your connection and try again.'**
   String get couldNotLoadObservations;
+
+  /// No description provided for @fileTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'File too large'**
+  String get fileTooLarge;
+
+  /// No description provided for @photoTooLargeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This photo is %size% MB. Photos must be under 50 MB to upload. Add a smaller copy instead? The original stays on your phone.'**
+  String get photoTooLargeDescription;
+
+  /// No description provided for @recordingTooLargeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'This recording is %size% MB. Recordings must be under 50 MB to upload, so it wasn\'t added. Try a shorter recording.'**
+  String get recordingTooLargeDescription;
+
+  /// No description provided for @makeSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Make smaller'**
+  String get makeSmaller;
+
+  /// No description provided for @couldNotMakePhotoSmaller.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t make this photo small enough, so it wasn\'t added'**
+  String get couldNotMakePhotoSmaller;
 }
 
 class _AppLocalizationsDelegate

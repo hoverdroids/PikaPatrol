@@ -67,6 +67,7 @@ dependencies:
   package_info_plus: ^10.2.2
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.5
+  flutter_image_compress: ^2.5.1
 
 dev_dependencies:
   flutter_test:

@@ -33,6 +33,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 17 — old data, pickers, recordings, status**: pre-3.0 local observations no longer overwrite the server; gallery and file pickers no longer ask for permissions they don't need (GitHub #30); recordings save under unique, safe names (GitHub #31); album saves get the iPhone access they need; observation page shows its server status; Collared pika photo credit; localized month.
 - **Pass 18 — duplicates, Collared pika sheet, verifications**: admin duplicate merge tool; Collared pika sheet routing; admin export follows the save rule; Turi's French verified; Spanish species label; photo credit removed (Chris's photo); Collared pika call link found expired.
 - **Pass 19 — store kit**: `docs/store/3.5.0-store-kit.md` with release notes in EN/ES/FR (no platform names, so they work in both stores), Data safety form answers from the code, the developer credit line, and the Play and App Store console steps; 13-inch iPad screenshots and the test that takes them; fixed an error on every launch (the brand palette was set during build); published material_themes_manager 1.6.0 and material_themes_widgets 1.15.0 to pub.dev and removed the local overrides.
+- **Pass 20 — cancelled edits**: copying an observation now copies its lists too. Before, removing a photo or recording and pressing back still removed it from the open observation in memory, and a later save deleted the file from Storage. Test in `test/model/observation_copy_test.dart`.
 
 ## People
 

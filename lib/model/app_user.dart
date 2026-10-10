@@ -11,6 +11,8 @@ class AppUser {
   final String? photoUrl;
   final String? tenantId;
   final bool isAdmin;
+  // Until when this account is a supporter (a donor to Rocky Mountain Wild); null if it isn't one
+  final DateTime? supporterUntil;
   final String? idToken;
 
   AppUser({
@@ -25,6 +27,11 @@ class AppUser {
     this.photoUrl,
     this.tenantId,
     this.isAdmin = false,
+    this.supporterUntil,
     this.idToken
   });
+
+  // Supporters, and admins, see every observation on the map, dashboard and lists
+  bool get isSupporter => supporterUntil?.isAfter(DateTime.now()) ?? false;
+  bool get canSeeAllObservations => isAdmin || isSupporter;
 }

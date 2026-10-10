@@ -492,6 +492,47 @@ class ObservationsService {
   }
   //endregion
 
+  //region Visible Observations
+  // What the map and dashboard show: this device's observations (the user's own, uploaded or not),
+  // plus the shared observations for supporters and admins. Each observation appears once, and the
+  // device's copy wins because it can hold edits that haven't uploaded yet.
+  static List<Observation> mergeVisibleObservations(List<Observation> own, List<Observation> shared, {required bool includeShared}) {
+    final seen = <String>{};
+    final merged = <Observation>[];
+    for (final observation in [...own, if (includeShared) ...shared]) {
+      final uid = observation.uid ?? "";
+      if (uid.isNotEmpty && !seen.add(uid)) continue;
+      merged.add(observation);
+    }
+    return merged;
+  }
+
+  // A stream per screen: create it once (for example in initState), not in build
+  Stream<List<Observation>> visibleObservationsStream({required bool includeShared}) {
+    late StreamController<List<Observation>> controller;
+    final subscriptions = <StreamSubscription>[];
+    var own = _localObservations;
+    var shared = _sharedObservations;
+    void publish() => controller.add(mergeVisibleObservations(own, shared, includeShared: includeShared));
+
+    controller = StreamController<List<Observation>>(
+      onListen: () {
+        publish();
+        subscriptions.add(localObservationsStream.listen((observations) { own = observations; publish(); }));
+        if (includeShared) {
+          subscriptions.add(sharedObservationsStream.listen((observations) { shared = observations; publish(); }));
+        }
+      },
+      onCancel: () {
+        for (final subscription in subscriptions) {
+          subscription.cancel();
+        }
+      },
+    );
+    return controller.stream;
+  }
+  //endregion
+
   //region User Observations
   final List<Observation> _userObservations = [];
 

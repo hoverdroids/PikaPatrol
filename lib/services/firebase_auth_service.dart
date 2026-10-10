@@ -41,6 +41,14 @@ class FirebaseAuthService {
     return idTokenResult?.claims?.containsKey("admin") == true;
   }
 
+  // The "supporter" claim holds when the supporter status ends, in milliseconds since the epoch.
+  // Only the donation webhook and admins set it (see docs/design/2026-10-10-supporters-plan.md).
+  Future<DateTime?> getSupporterUntil(User? user) async {
+    var idTokenResult = await user?.getIdTokenResult();
+    final until = idTokenResult?.claims?["supporter"];
+    return until is num ? DateTime.fromMillisecondsSinceEpoch(until.toInt()) : null;
+  }
+
   Future<String?> getCurrentUserIdToken() async => await _auth.currentUser?.getIdToken();
 
   Future<String?>? getUserIdToken(User? user) => user?.getIdToken();
@@ -52,6 +60,7 @@ class FirebaseAuthService {
 
     var idToken = await getUserIdToken(user);
     var isAdmin = await getIsAdmin(user);
+    var supporterUntil = await getSupporterUntil(user);
 
     return AppUser(
       uid: user.uid,
@@ -65,6 +74,7 @@ class FirebaseAuthService {
       photoUrl: user.photoURL,
       tenantId: user.tenantId,
       isAdmin: isAdmin,
+      supporterUntil: supporterUntil,
       idToken: idToken
     );
   }

@@ -1066,4 +1066,63 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get couldNotLoadObservations =>
       'Could not load the observations. Check your connection and try again.';
+
+  @override
+  String get supportPikaResearch => 'Support pika research';
+
+  @override
+  String get supporterDescription =>
+      'Supporters of Rocky Mountain Wild see every Pika Patrol observation on the map, the dashboard and the shared list, plus a gallery of every photo. Until then, the map and dashboard show your own observations.';
+
+  @override
+  String get donate => 'Donate';
+
+  @override
+  String get notNow => 'Not now';
+
+  @override
+  String get observationsMap => 'Observations map';
+
+  @override
+  String get dashboard => 'Dashboard';
+
+  @override
+  String get showingYourObservations => 'Showing your observations';
+
+  @override
+  String get showingAllObservations => 'Showing all observations';
+
+  @override
+  String get noObservationsToShow => 'No observations to show yet';
+
+  @override
+  String get observationsCount => 'Observations';
+
+  @override
+  String get sitesCount => 'Sites';
+
+  @override
+  String get observersCount => 'Observers';
+
+  @override
+  String get withPikasCount => 'With pikas';
+
+  @override
+  String get observationsPerMonth => 'Observations per month';
+
+  @override
+  String get allTime => 'All time';
+
+  @override
+  String get last12Months => 'Last 12 months';
+
+  @override
+  String get thisYear => 'This year';
+
+  @override
+  String get allSpecies => 'All species';
+
+  @override
+  String get observationsWithoutLocation =>
+      '%count% observations have no location and aren\'t on the map';
 }

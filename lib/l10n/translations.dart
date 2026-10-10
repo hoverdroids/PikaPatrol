@@ -375,6 +375,25 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String duplicatesMerged = ERROR;
   String someDuplicatesNotMerged = ERROR;
   String couldNotLoadObservations = ERROR;
+  String supportPikaResearch = ERROR;
+  String supporterDescription = ERROR;
+  String donate = ERROR;
+  String notNow = ERROR;
+  String observationsMap = ERROR;
+  String dashboard = ERROR;
+  String showingYourObservations = ERROR;
+  String showingAllObservations = ERROR;
+  String noObservationsToShow = ERROR;
+  String observationsCount = ERROR;
+  String sitesCount = ERROR;
+  String observersCount = ERROR;
+  String withPikasCount = ERROR;
+  String observationsPerMonth = ERROR;
+  String allTime = ERROR;
+  String last12Months = ERROR;
+  String thisYear = ERROR;
+  String allSpecies = ERROR;
+  String observationsWithoutLocation = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -711,6 +730,25 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     duplicatesMerged =  AppLocalizations.of(context)?.duplicatesMerged ?? duplicatesMerged;
     someDuplicatesNotMerged =  AppLocalizations.of(context)?.someDuplicatesNotMerged ?? someDuplicatesNotMerged;
     couldNotLoadObservations =  AppLocalizations.of(context)?.couldNotLoadObservations ?? couldNotLoadObservations;
+    supportPikaResearch =  AppLocalizations.of(context)?.supportPikaResearch ?? supportPikaResearch;
+    supporterDescription =  AppLocalizations.of(context)?.supporterDescription ?? supporterDescription;
+    donate =  AppLocalizations.of(context)?.donate ?? donate;
+    notNow =  AppLocalizations.of(context)?.notNow ?? notNow;
+    observationsMap =  AppLocalizations.of(context)?.observationsMap ?? observationsMap;
+    dashboard =  AppLocalizations.of(context)?.dashboard ?? dashboard;
+    showingYourObservations =  AppLocalizations.of(context)?.showingYourObservations ?? showingYourObservations;
+    showingAllObservations =  AppLocalizations.of(context)?.showingAllObservations ?? showingAllObservations;
+    noObservationsToShow =  AppLocalizations.of(context)?.noObservationsToShow ?? noObservationsToShow;
+    observationsCount =  AppLocalizations.of(context)?.observationsCount ?? observationsCount;
+    sitesCount =  AppLocalizations.of(context)?.sitesCount ?? sitesCount;
+    observersCount =  AppLocalizations.of(context)?.observersCount ?? observersCount;
+    withPikasCount =  AppLocalizations.of(context)?.withPikasCount ?? withPikasCount;
+    observationsPerMonth =  AppLocalizations.of(context)?.observationsPerMonth ?? observationsPerMonth;
+    allTime =  AppLocalizations.of(context)?.allTime ?? allTime;
+    last12Months =  AppLocalizations.of(context)?.last12Months ?? last12Months;
+    thisYear =  AppLocalizations.of(context)?.thisYear ?? thisYear;
+    allSpecies =  AppLocalizations.of(context)?.allSpecies ?? allSpecies;
+    observationsWithoutLocation =  AppLocalizations.of(context)?.observationsWithoutLocation ?? observationsWithoutLocation;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1085,6 +1123,25 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "duplicatesMerged": return duplicatesMerged;
       case "someDuplicatesNotMerged": return someDuplicatesNotMerged;
       case "couldNotLoadObservations": return couldNotLoadObservations;
+      case "supportPikaResearch": return supportPikaResearch;
+      case "supporterDescription": return supporterDescription;
+      case "donate": return donate;
+      case "notNow": return notNow;
+      case "observationsMap": return observationsMap;
+      case "dashboard": return dashboard;
+      case "showingYourObservations": return showingYourObservations;
+      case "showingAllObservations": return showingAllObservations;
+      case "noObservationsToShow": return noObservationsToShow;
+      case "observationsCount": return observationsCount;
+      case "sitesCount": return sitesCount;
+      case "observersCount": return observersCount;
+      case "withPikasCount": return withPikasCount;
+      case "observationsPerMonth": return observationsPerMonth;
+      case "allTime": return allTime;
+      case "last12Months": return last12Months;
+      case "thisYear": return thisYear;
+      case "allSpecies": return allSpecies;
+      case "observationsWithoutLocation": return observationsWithoutLocation;
       default: return key;
     }
   }

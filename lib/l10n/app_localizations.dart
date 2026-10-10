@@ -2073,6 +2073,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not load the observations. Check your connection and try again.'**
   String get couldNotLoadObservations;
+
+  /// No description provided for @supportPikaResearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Support pika research'**
+  String get supportPikaResearch;
+
+  /// No description provided for @supporterDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporters of Rocky Mountain Wild see every Pika Patrol observation on the map, the dashboard and the shared list, plus a gallery of every photo. Until then, the map and dashboard show your own observations.'**
+  String get supporterDescription;
+
+  /// No description provided for @donate.
+  ///
+  /// In en, this message translates to:
+  /// **'Donate'**
+  String get donate;
+
+  /// No description provided for @notNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Not now'**
+  String get notNow;
+
+  /// No description provided for @observationsMap.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations map'**
+  String get observationsMap;
+
+  /// No description provided for @dashboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Dashboard'**
+  String get dashboard;
+
+  /// No description provided for @showingYourObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing your observations'**
+  String get showingYourObservations;
+
+  /// No description provided for @showingAllObservations.
+  ///
+  /// In en, this message translates to:
+  /// **'Showing all observations'**
+  String get showingAllObservations;
+
+  /// No description provided for @noObservationsToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No observations to show yet'**
+  String get noObservationsToShow;
+
+  /// No description provided for @observationsCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations'**
+  String get observationsCount;
+
+  /// No description provided for @sitesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Sites'**
+  String get sitesCount;
+
+  /// No description provided for @observersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Observers'**
+  String get observersCount;
+
+  /// No description provided for @withPikasCount.
+  ///
+  /// In en, this message translates to:
+  /// **'With pikas'**
+  String get withPikasCount;
+
+  /// No description provided for @observationsPerMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Observations per month'**
+  String get observationsPerMonth;
+
+  /// No description provided for @allTime.
+  ///
+  /// In en, this message translates to:
+  /// **'All time'**
+  String get allTime;
+
+  /// No description provided for @last12Months.
+  ///
+  /// In en, this message translates to:
+  /// **'Last 12 months'**
+  String get last12Months;
+
+  /// No description provided for @thisYear.
+  ///
+  /// In en, this message translates to:
+  /// **'This year'**
+  String get thisYear;
+
+  /// No description provided for @allSpecies.
+  ///
+  /// In en, this message translates to:
+  /// **'All species'**
+  String get allSpecies;
+
+  /// No description provided for @observationsWithoutLocation.
+  ///
+  /// In en, this message translates to:
+  /// **'%count% observations have no location and aren\'t on the map'**
+  String get observationsWithoutLocation;
 }
 
 class _AppLocalizationsDelegate

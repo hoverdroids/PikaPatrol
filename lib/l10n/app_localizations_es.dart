@@ -1075,4 +1075,63 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get couldNotLoadObservations =>
       'No se pudieron cargar las observaciones. Compruebe su conexión e inténtelo de nuevo.';
+
+  @override
+  String get supportPikaResearch => 'Apoya la investigación de las picas';
+
+  @override
+  String get supporterDescription =>
+      'Quienes apoyan a Rocky Mountain Wild ven todas las observaciones de Pika Patrol en el mapa, el panel y la lista compartida, además de una galería con todas las fotos. Mientras tanto, el mapa y el panel muestran tus propias observaciones.';
+
+  @override
+  String get donate => 'Donar';
+
+  @override
+  String get notNow => 'Ahora no';
+
+  @override
+  String get observationsMap => 'Mapa de observaciones';
+
+  @override
+  String get dashboard => 'Panel';
+
+  @override
+  String get showingYourObservations => 'Mostrando tus observaciones';
+
+  @override
+  String get showingAllObservations => 'Mostrando todas las observaciones';
+
+  @override
+  String get noObservationsToShow => 'Aún no hay observaciones para mostrar';
+
+  @override
+  String get observationsCount => 'Observaciones';
+
+  @override
+  String get sitesCount => 'Sitios';
+
+  @override
+  String get observersCount => 'Observadores';
+
+  @override
+  String get withPikasCount => 'Con picas';
+
+  @override
+  String get observationsPerMonth => 'Observaciones por mes';
+
+  @override
+  String get allTime => 'Todo';
+
+  @override
+  String get last12Months => 'Últimos 12 meses';
+
+  @override
+  String get thisYear => 'Este año';
+
+  @override
+  String get allSpecies => 'Todas las especies';
+
+  @override
+  String get observationsWithoutLocation =>
+      '%count% observaciones no tienen ubicación y no aparecen en el mapa';
 }

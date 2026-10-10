@@ -38,6 +38,8 @@ import '../l10n/translations.dart';
 import '../model/firebase_registration_result.dart';
 import '../services/settings_service.dart';
 import 'observation_screen.dart';
+import 'observations_dashboard_screen.dart';
+import 'observations_map_screen.dart';
 import 'observations_screen.dart';
 import 'correlate_files_screen.dart';
 import 'duplicate_observations_screen.dart';
@@ -65,6 +67,7 @@ class HomeWithDrawer extends StatefulWidget {
 class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<CurvedNavigationBarState> _navigationBarKey = GlobalKey<CurvedNavigationBarState>();
   final Key _registerKey = UniqueKey();
   final Key _loginKey = UniqueKey();
   final Key _editProfileKey = UniqueKey();
@@ -305,29 +308,32 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
 
   Widget buildBottomNavigationBar(BuildContext context, AppUser? user) {
     return CurvedNavigationBar (//TODO - migrate this into its own widget
+      key: _navigationBarKey,
       color: navbarColor,
       backgroundColor: navbarBgColor,
       buttonBackgroundColor: navbarButtonColor,
       height: navbarHeight,
       items: <Widget>[
-        //Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
         Icon(Icons.loupe, size: navbarIconSize, color: navbarIconColor),
-        //Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
+        Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
+        Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
       ],
       onTap: (index) {
-        showGeoTrackingDialog(context, user);
-        //TODO - combine these when we have more pages
-/*
-            pageController.animateToPage(
-              index,
-              duration: Duration(milliseconds: navbarAnimationDuration),
-              curve: Curves.easeInOut
-            );
-*/
+        switch (index) {
+          case 1:
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ObservationsMapScreen()));
+          case 2:
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ObservationsDashboardScreen()));
+          default:
+            showGeoTrackingDialog(context, user);
+        }
+        // The map and dashboard open as their own screens, so the raised button stays on new observation
+        if (index != 0) {
+          WidgetsBinding.instance.addPostFrameCallback((_) => _navigationBarKey.currentState?.setPage(0));
+        }
       },
       animationDuration: Duration(milliseconds: navbarAnimationDuration),
       animationCurve: Curves.easeInOut,
-      //index: pageController.initialPage,
     );
   }
 

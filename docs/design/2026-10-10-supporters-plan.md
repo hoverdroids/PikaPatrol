@@ -60,8 +60,8 @@ confirm the plan with Apple App Review through the App Review contact form.
   supporter's account and tier), and Every.org calls our webhook when the gift is made. PayPal Giving
   Fund has zero fees but no way to tie a gift to an app account and pays out in 15–45 days, so it
   can't unlock anything.
-- Every.org supports one-time and monthly gifts, not yearly. An annual membership is a one-time gift
-  that lasts 12 months; the app reminds supporters a few weeks before it lapses.
+- Every.org's donate link takes `frequency=YEARLY`, so an annual membership renews by itself. Each
+  yearly gift extends the supporter status by 12 months.
 
 ### RMW setup ("go set this up real quick")
 
@@ -74,7 +74,10 @@ confirm the plan with Apple App Review through the App Review contact form.
 
 ### Supporter status
 
-- A `supporters/{uid}` document: tier, expiry date, adopted pikas, source (Every.org, manual).
+- A `supporter` custom claim on the account holds when the status ends (milliseconds since the epoch),
+  like the existing `admin` claim. The app reads it from the sign-in token, so checking it costs no
+  Firestore reads. Built in 3.6.0: `AppUser.supporterUntil`, `isSupporter`, `canSeeAllObservations`.
+- A `supporters/{uid}` document keeps the details: tier, adopted pikas, gift history, source.
 - Written only by a Cloud Function or an admin, never by the app user. Firestore rules: the owner can
   read their own document; nobody can write from the app.
 - The Every.org webhook (a Cloud Function) checks the partner token, reads the account and tier from

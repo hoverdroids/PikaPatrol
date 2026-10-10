@@ -66,6 +66,8 @@ dependencies:
   webview_flutter: ^4.8.0
   package_info_plus: ^10.2.2
   cached_network_image: ^3.4.1
+  syncfusion_flutter_maps: ^35.1.39
+  syncfusion_flutter_charts: ^35.1.39
 
 dev_dependencies:
   flutter_test:

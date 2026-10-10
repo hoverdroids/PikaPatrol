@@ -58,3 +58,13 @@ Upload the `.ipa` from `build/ios/ipa` with Xcode Organizer or Transporter. Buil
 
 - "Cached Observations" user-facing text has been renamed to "My Observations" for all supported locales.
 - Observation card button text ("View Observation") now refreshes to match the selected locale.
+
+## Spending Kill Switch
+
+Firestore and Cloud Storage have no spend caps, so a kill switch guards against a surprise bill. When the project's monthly budget is reached, it locks Firestore and Storage so only admins can get in. The app stops reading, downloading and uploading, and nothing is deleted. Observations still save on the phone and upload once it reopens. It trips at most once a month.
+
+The switch is a separate Cloud Function from the `firebase-billing-kill-switch` repo. Full setup is in `docs/firebase-runbook.md`.
+
+- **Turn it on:** deploy the kill switch function and connect it to the budget.
+- **Turn it off:** disconnect it from the budget, or delete the `killSwitch` function in the Firebase console.
+- **Reopen after it trips:** from the `firebase/` folder, deploy the normal rules again with `firebase deploy --only firestore:rules,storage`.

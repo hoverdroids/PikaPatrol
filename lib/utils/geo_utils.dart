@@ -1,4 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 
@@ -38,10 +39,18 @@ Future<Position> checkPermissionsAndGetCurrentPosition(Translations translations
     return Future.error(translations.locationPermissionsArePermanentlyDenied);
   }
 
-  // When we reach here, permissions are granted and we can continue accessing the device position
-  Position position = await Geolocator.getCurrentPosition();
-
-  return position;
+  // When we reach here, permissions are granted and we can continue accessing the device position.
+  // Without a time limit this waits forever for a fresh fix where the sky can't be seen (indoors,
+  // deep in talus), so the coordinates and the Indigenous territory lookup never arrive.
+  try {
+    return await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 20)),
+    );
+  } on TimeoutException {
+    final lastKnown = await Geolocator.getLastKnownPosition();
+    if (lastKnown != null) return lastKnown;
+    return Future.error(translations.couldNotRetrieveLocationFromGps);
+  }
 }
 
 String? isValidGeo(String? value, String name) {

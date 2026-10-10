@@ -6,7 +6,7 @@ import 'package:material_themes_widgets/fundamental/buttons_media.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
 import 'package:material_themes_widgets/fundamental/texts.dart';
 import 'package:provider/provider.dart';
-import 'package:path/path.dart';
+import '../services/firebase_observations_service.dart';
 
 enum AudioPlaybackState { stop, play, pause }
 
@@ -142,7 +142,7 @@ class AudioContentScroll extends StatelessWidget {
                       alignment: Alignment.bottomCenter,
                       child: Padding(
                         padding: const EdgeInsets.all(paddingMini),
-                        child: ThemedTitle(basenameWithoutExtension(urls[index]), type:ThemeGroupType.MOM),
+                        child: ThemedTitle(FirebaseObservationsService.fileDisplayName(urls[index]), type:ThemeGroupType.MOM),
                       ),
                     ),
                   ],

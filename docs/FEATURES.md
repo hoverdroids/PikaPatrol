@@ -34,6 +34,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 18 — duplicates, Collared pika sheet, verifications**: admin duplicate merge tool; Collared pika sheet routing; admin export follows the save rule; Turi's French verified; Spanish species label; photo credit removed (Chris's photo); Collared pika call link found expired.
 - **Pass 19 — store kit**: `docs/store/3.5.0-store-kit.md` with release notes in EN/ES/FR (no platform names, so they work in both stores), Data safety form answers from the code, the developer credit line, and the Play and App Store console steps; 13-inch iPad screenshots and the test that takes them; fixed an error on every launch (the brand palette was set during build); published material_themes_manager 1.6.0 and material_themes_widgets 1.15.0 to pub.dev and removed the local overrides.
 - **Pass 20 — cancelled edits**: copying an observation now copies its lists too. Before, removing a photo or recording and pressing back still removed it from the open observation in memory, and a later save deleted the file from Storage. Test in `test/model/observation_copy_test.dart`.
+- **Pass 21 — recording names and template territories**: recording cards show the name the file was given, not the encoded Storage URL. The default template keeps the Indigenous territories and languages with its coordinates, and a new observation whose template has coordinates but no territories looks them up. Tests in `test/utils/observation_template_test.dart`.
 
 ## People
 

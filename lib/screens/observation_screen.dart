@@ -170,6 +170,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     if (!_isEditMode) {
       _fetchIndigenousTerritoriesForViewing();
+    } else {
+      // A new observation can start with coordinates from the default template. Templates saved
+      // before they kept the territories have none, so look them up for those coordinates.
+      final observation = widget.observationViewModel.observation;
+      final latitude = observation.latitude;
+      final longitude = observation.longitude;
+      if (latitude != null && longitude != null && (observation.indigenousTerritories?.isEmpty ?? true)
+          && (observation.indigenousLanguages?.isEmpty ?? true)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _fetchAndSetIndigenousTerritories(latitude, longitude);
+        });
+      }
     }
 
     _audioPlayerStateSubscription = _audioPlayer.playerStateStream.listen(_onAudioPlayerStateChanged);

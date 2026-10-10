@@ -460,6 +460,13 @@ class FirebaseObservationsService {
     return uri.pathSegments.sublist(index + 1).join("/");
   }
 
+  // The name a person gave a file, for showing on its card. Uploaded files are stored as
+  // "<folder>/<random id>_<name>" behind a download URL, so the URL itself reads as an encoded path.
+  static String fileDisplayName(String urlOrPath) {
+    final name = basenameWithoutExtension(storagePathFromUrl(urlOrPath) ?? urlOrPath);
+    return name.replaceFirst(RegExp(r'^[A-Za-z0-9]{20}_'), '');
+  }
+
   Future<List<StorageFile>> deleteStorageFiles(List<StorageFile> files) async {
     final failed = <StorageFile>[];
     for (var file in files) {

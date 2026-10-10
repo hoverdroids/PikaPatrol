@@ -230,13 +230,16 @@ extension Wind on Observation {
 //region Default observation template
 //The default observation template is the set of user-preferred field values applied to every new
 //observation. Identity (uid/observerUid/dbId), date, images, and audio are intentionally excluded -
-//they are always per-observation.
+//they are always per-observation. The Indigenous territories and languages go with the coordinates
+//they were looked up for.
 extension ObservationTemplate on Observation {
   String toTemplateJson() => jsonEncode({
     "location": location,
     "latitude": latitude,
     "longitude": longitude,
     "altitudeInMeters": altitudeInMeters,
+    "indigenousTerritories": indigenousTerritories,
+    "indigenousLanguages": indigenousLanguages,
     "species": species,
     "signs": signs,
     "pikasDetected": pikasDetected,
@@ -287,7 +290,9 @@ Observation observationFromTemplateJson(String? templateJson, {String? observerU
     notSharedWithProjects: stringList("notSharedWithProjects"),
     siteHistory: template["siteHistory"] as String? ?? "",
     comments: template["comments"] as String? ?? "",
-  );
+  )
+    ..indigenousTerritories = stringList("indigenousTerritories")
+    ..indigenousLanguages = stringList("indigenousLanguages");
 }
 //endregion
 

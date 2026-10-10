@@ -733,9 +733,13 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     footerChildren: buildSocialSignInButtons(firebaseAuthService),
   );
 
+  // Hidden for now; set to true to bring the Google and Apple sign-in buttons back
+  static const bool showSocialSignIn = false;
+
   /// "Sign in with Google" on every phone, plus "Sign in with Apple" on iPhones, where Apple
   /// requires it whenever another social sign-in is offered.
   List<Widget> buildSocialSignInButtons(FirebaseAuthService firebaseAuthService) {
+    if (!showSocialSignIn) return [];
     return [
       smallTransparentDivider,
       ElevatedButton(

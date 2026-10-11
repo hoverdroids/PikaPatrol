@@ -400,6 +400,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String addOneMonth = ERROR;
   String endSupporterStatus = ERROR;
   String supporterStatusUpdated = ERROR;
+  String fileTooLarge = ERROR;
+  String photoTooLargeDescription = ERROR;
+  String recordingTooLargeDescription = ERROR;
+  String makeSmaller = ERROR;
+  String couldNotMakePhotoSmaller = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -761,6 +766,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     addOneMonth =  AppLocalizations.of(context)?.addOneMonth ?? addOneMonth;
     endSupporterStatus =  AppLocalizations.of(context)?.endSupporterStatus ?? endSupporterStatus;
     supporterStatusUpdated =  AppLocalizations.of(context)?.supporterStatusUpdated ?? supporterStatusUpdated;
+    fileTooLarge =  AppLocalizations.of(context)?.fileTooLarge ?? fileTooLarge;
+    photoTooLargeDescription =  AppLocalizations.of(context)?.photoTooLargeDescription ?? photoTooLargeDescription;
+    recordingTooLargeDescription =  AppLocalizations.of(context)?.recordingTooLargeDescription ?? recordingTooLargeDescription;
+    makeSmaller =  AppLocalizations.of(context)?.makeSmaller ?? makeSmaller;
+    couldNotMakePhotoSmaller =  AppLocalizations.of(context)?.couldNotMakePhotoSmaller ?? couldNotMakePhotoSmaller;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1160,6 +1170,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "addOneMonth": return addOneMonth;
       case "endSupporterStatus": return endSupporterStatus;
       case "supporterStatusUpdated": return supporterStatusUpdated;
+      case "fileTooLarge": return fileTooLarge;
+      case "photoTooLargeDescription": return photoTooLargeDescription;
+      case "recordingTooLargeDescription": return recordingTooLargeDescription;
+      case "makeSmaller": return makeSmaller;
+      case "couldNotMakePhotoSmaller": return couldNotMakePhotoSmaller;
       default: return key;
     }
   }

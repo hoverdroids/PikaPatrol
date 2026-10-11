@@ -7,44 +7,65 @@ How the Pika Patrol Firebase project (`pikajoe-97c5c`) is kept secure and free o
 The rules live in `firebase/`, so changes can be reviewed and tracked:
 
 - `firebase/firestore.rules`: an exact copy of the live Firestore rules (published Feb 4, 2024).
-- `firebase/storage.rules`: **proposed** Storage rules, not deployed yet. They keep photos and audio publicly readable, but only allow uploads into `images/` and `audio/`, each under 15 MB. Today any signed-in user can write any file of any size anywhere.
+- `firebase/storage.rules`: the live Storage rules (deployed 2026-10-10). Photos and audio stay publicly readable, but uploads only go into `images/` and `audio/`, each under 50 MB. The app checks sizes first and offers to shrink photos that are too large.
 
 Deploy from the `firebase/` folder with the Firebase CLI (`npm install -g firebase-tools`, then `firebase login`):
 
 ```zsh
 cd firebase
-firebase deploy --only storage           # proposed Storage rules
-firebase deploy --only firestore:rules   # Firestore rules (unchanged copy)
+firebase deploy --only storage           # Storage rules
+firebase deploy --only firestore:rules   # Firestore rules
 ```
 
 ## Never get a bill
 
-Firebase now requires the Blaze plan for Cloud Storage. Blaze keeps the free quotas, but anything over them is charged. On 2026-10-09 Storage held 6.45 GB, which is over the 5 GB free tier, so a few cents a month are already accruing.
+Firebase requires the Blaze plan for Cloud Storage. Blaze keeps the free quotas, but anything over them is charged. Google's spend caps (Billing → Budgets & caps) only cover Cloud Run, Cloud Run functions, the Gemini API and Vertex AI, not Firestore or Cloud Storage, which are what Pika Patrol uses.
 
 Protection, in layers:
 
-1. **Kill switch:** the `firebase-billing-kill-switch` repo (sibling folder). A $1 monthly budget publishes to Pub/Sub, and a Cloud Function turns off billing when the budget is reached. Setup steps are in its README. Once it's pushed to GitHub, add it to this repo as a git submodule.
-2. **Budget alerts:** part of the same setup: email at 50%, 90% and 100% of $1.
-3. **Upload limits:** the proposed Storage rules (15 MB, two folders) plus in-app photo compression (2560 px, 85% quality).
-4. **Free-tier region:** check that the bucket `pikajoe-97c5c.appspot.com` is in `us-central1`, `us-east1` or `us-west1` (Firebase console → Storage). Free Storage quota applies only there.
-5. **Request caps (optional):** in Google Cloud console → IAM & Admin → Quotas, set daily limits on the Cloud Firestore API and Cloud Storage just above normal use.
+1. **Kill switch:** the `firebase-billing-kill-switch` repo (sibling folder), in `lock-rules` mode. When the "Pika Patrol Alerts" budget is reached, a Cloud Function publishes Firestore and Storage rules that let only admins in. The app stops reading, downloading and uploading, so the charges stop; nothing is deleted. Setup below.
+2. **Budget alerts:** email at 50%, 90% and 100% of the "Pika Patrol Alerts" budget.
+3. **Upload limits:** the Storage rules (50 MB, two folders), the app's size check, and photo compression (2560 px, 85% quality).
+4. **Caching:** photos and recordings download once and stay on the phone (`MediaCache`), and the shared observations feed is one long-lived listener on the newest five.
+5. **App Check:** once most users have 3.5.0, enforce it for Firestore and Storage, so only the real app gets in.
+
+### Kill switch setup (Chris)
+
+From the `firebase-billing-kill-switch` folder:
+
+1. `cp .env.example .env.pikajoe-97c5c`, then set `ACTION=lock-rules`, `STORAGE_BUCKETS=pikajoe-97c5c.appspot.com`, `DRY_RUN=true`.
+2. `npm install`, then `firebase deploy --only functions:kill-switch --project pikajoe-97c5c`.
+3. Google Cloud console → Billing → Budgets & caps → Pika Patrol Alerts → Edit → Actions → Connect a Pub/Sub topic → `projects/pikajoe-97c5c/topics/billing-budget` → Save.
+4. Google Cloud console → IAM & Admin → IAM → Default compute service account → Edit → add **Firebase Rules Admin**.
+5. Test with a fake message (see the repo's README), check the log says `DRY_RUN: would lock-rules`, then set `DRY_RUN=false` and deploy again.
 
 ### If the kill switch trips
 
-Paid features stop: photo and audio uploads fail, and Sheets syncing may stop. Observations still save on the phone and upload later. To recover:
+Everyone but admins is locked out of Firestore and Storage. Observations still save on the phone and upload later. To recover:
 
 1. Look at Billing → Reports to see what used the money.
-2. Fix the cause, for example a runaway upload loop.
-3. Re-link the billing account: Google Cloud console → Billing → Account management → My projects → the project → Change billing.
+2. Fix the cause, for example a runaway upload loop, or raise the budget.
+3. Reopen: from the `firebase/` folder, `firebase deploy --only firestore:rules,storage`. The switch won't trip again until next month.
+
+## App Check
+
+The app sends App Check tokens from 3.5.0 on. Register these two apps (Firebase console → App Check → Apps). Skip Pika Joe (`com.hoverdroids.pika_joe`): it's the old Android app and nothing uses it.
+
+- **tCubed Studios Pika Patrol** (`com.tcubedstudios.pika_patrol`) → Play Integrity. Needs the **SHA-256 of the app signing key**: Play Console → Pika Patrol → Test and release → App integrity → App signing → App signing key certificate. In Play Console on that same page, link the Google Cloud project `pikajoe-97c5c` under Play Integrity API.
+- **Pika Patrol (iOS)** (`com.tcubedstudios.pikaPatrol`) → App Attest, Team ID `ZNWSMB2USP`. Also register DeviceCheck for phones older than iOS 14: Apple Developer → Keys → new key with DeviceCheck → its Key ID and `.p8` file.
+
+Leave the token time to live at its default (1 hour). Registering is free and changes nothing for users: it only starts the request charts.
+
+**Don't enforce yet.** Enforcement is a separate **Enforce** button per service on the APIs tab (Cloud Firestore, Cloud Storage, Authentication). Leave each one Unenforced until the charts show nearly all requests verified, a few weeks after 3.5.0 ships; enforcing earlier blocks everyone still on 3.4.0. After enforcing, debug builds need a debug token added under the app's menu → Manage debug tokens.
 
 ## Console checklist (Chris)
 
 These can only be done in the Google Cloud or Firebase consoles:
 
-- [ ] Set up the kill switch and budget (see the kill switch README).
+- [ ] Set up the kill switch (see Kill switch setup above).
 - [ ] Check the Storage bucket region (step 4 above).
 - [ ] Restrict the Android and iOS API keys to the app (Google Cloud → APIs & Services → Credentials: Android key → package `com.tcubedstudios.pika_patrol` plus SHA-1s; iOS key → bundle ID `com.tcubedstudios.pikaPatrol`).
-- [ ] Turn on Firebase App Check for Firestore and Storage (Play Integrity on Android, App Attest on iOS). Turning it on also needs an app update, so it's listed separately in FEATURES.md.
+- [ ] Register the apps in App Check now; enforce for Firestore and Storage once most users have 3.5.0 (see App Check above).
 - [ ] Turn on email enumeration protection (Firebase → Authentication → Settings → User actions).
 - [ ] Delete unused OAuth clients (Google Cloud → APIs & Services → Credentials).
 - [ ] Turn on the Google and Apple sign-in providers, and add the debug and Play app-signing SHA-1s to the Android app (see FEATURES.md §9).

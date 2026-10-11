@@ -6,6 +6,7 @@ import 'dart:math';
 import 'dart:developer' as developer;
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:pika_patrol/utils/firebase_utils.dart';
 
 import '../model/observation.dart';
@@ -53,6 +54,10 @@ class FirebaseObservationsService {
   static const String NOT_SHARED_WITH_PROJECTS = "notSharedWithProjects";
   static const String DATE_UPDATED_IN_GOOGLE_SHEETS = "dateUpdatedInGoogleSheets";
   static const String IS_UPLOADED = "isUploaded";
+  // Which app version and platform last saved the observation. Admins use these to see how many
+  // volunteers have updated, for example before turning on App Check.
+  static const String APP_VERSION = "appVersion";
+  static const String APP_PLATFORM = "appPlatform";
   // When an observation last changed, set by the server, so devices can sync only what changed
   static const String UPDATED_AT = "updatedAt";
   static const String DELETED_AT = "deletedAt";
@@ -101,7 +106,7 @@ class FirebaseObservationsService {
     try {
       // Calling "set" when a doc with the Id doesn't exist will create it.
       // If a doc exists with the given uid, it will be updated
-      await doc.set({...observation.toFirebaseObservation(), UPDATED_AT: FieldValue.serverTimestamp()});
+      await doc.set({...observation.toFirebaseObservation(), ...await _savedBy()});
     } on FirebaseException catch (e) {
 
       // Need to reset or the local observation will appear to have been uploaded with a valid ID, that is actually non existent
@@ -123,6 +128,17 @@ class FirebaseObservationsService {
     await onFileDeletesFailed?.call(failedDeletes);
 
     return null;
+  }
+
+  static Map<String, dynamic>? _savedByFields;
+
+  // The fields every save adds: this app's version and platform, and the server's time
+  Future<Map<String, dynamic>> _savedBy() async {
+    final fields = _savedByFields ??= {
+      APP_VERSION: (await PackageInfo.fromPlatform()).version,
+      APP_PLATFORM: Platform.operatingSystem,
+    };
+    return {...fields, UPDATED_AT: FieldValue.serverTimestamp()};
   }
 
   Future<List<String>> _getFileUrls(DocumentReference doc) async {

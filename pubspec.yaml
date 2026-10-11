@@ -69,6 +69,8 @@ dependencies:
   syncfusion_flutter_maps: ^35.1.39
   syncfusion_flutter_charts: ^35.1.39
   cloud_functions: ^6.5.0
+  flutter_cache_manager: ^3.4.5
+  flutter_image_compress: ^2.5.1
 
 dev_dependencies:
   flutter_test:

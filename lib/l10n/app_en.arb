@@ -352,5 +352,10 @@
     "addOneYear": "Add a year",
     "addOneMonth": "Add a month",
     "endSupporterStatus": "End it",
-    "supporterStatusUpdated": "Supporter status updated. It shows on their phone within the hour."
+    "supporterStatusUpdated": "Supporter status updated. It shows on their phone within the hour.",
+    "fileTooLarge": "File too large",
+    "photoTooLargeDescription": "This photo is %size% MB. Photos must be under 50 MB to upload. Add a smaller copy instead? The original stays on your phone.",
+    "recordingTooLargeDescription": "This recording is %size% MB. Recordings must be under 50 MB to upload, so it wasn't added. Try a shorter recording.",
+    "makeSmaller": "Make smaller",
+    "couldNotMakePhotoSmaller": "Couldn't make this photo small enough, so it wasn't added"
 }

@@ -52,8 +52,10 @@ import 'package:webview_flutter/webview_flutter.dart';
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
 import '../services/settings_service.dart';
+import '../utils/media_cache.dart';
 import '../utils/firebase_utils.dart';
 import '../utils/network_utils.dart';
+import '../utils/upload_size.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
@@ -490,7 +492,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       var audioUrl = audioUrls[index];
       try {
         if (audioUrl.contains("http")) {
-          await _audioPlayer.setUrl(audioUrl);
+          // Downloaded once, then played from the phone
+          await _audioPlayer.setFilePath((await MediaCache.file(audioUrl)).path);
         } else {
           await _audioPlayer.setFilePath(audioUrl);
         }
@@ -1405,14 +1408,48 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       context: context,
       builder: (BuildContext context) => const AudioRecorderDialog(),
       barrierDismissible: true
-    ).then((value) => {
+    ).then((value) async {
+      if (value == null || (value as String).isEmpty) return;
+      final fitted = await _fitUploadLimit(value, isImage: false);
+      if (fitted == null || !mounted) return;
       setState(() {
-        if (value != null && (value as String).isNotEmpty) {
-          widget.observationViewModel.observation.audioUrls?.add(value);
-          justKeepToggling = !justKeepToggling;
-        }
-      })
+        widget.observationViewModel.observation.audioUrls?.add(fitted);
+        justKeepToggling = !justKeepToggling;
+      });
     });
+  }
+
+  // Storage refuses files of 50 MB or more, so check before a file joins the observation rather
+  // than let its upload fail later. A photo that's too large can be shrunk to fit; a recording
+  // can't, so the user is told and it isn't added. Returns the path to add, or null.
+  Future<String?> _fitUploadLimit(String path, {required bool isImage}) async {
+    if (!isTooLargeToUpload(path)) return path;
+    final size = sizeInMegabytes(path);
+    if (!mounted) return null;
+
+    if (!isImage) {
+      await showInfoDialog(
+        context,
+        title: translations.fileTooLarge,
+        description: translations.recordingTooLargeDescription.replaceAll("%size%", size),
+        closeLabel: translations.ok,
+      );
+      return null;
+    }
+
+    final shrink = await showConfirmDialog(
+      context,
+      title: translations.fileTooLarge,
+      description: translations.photoTooLargeDescription.replaceAll("%size%", size),
+      confirmLabel: translations.makeSmaller,
+      cancelLabel: translations.cancel,
+      confirmColor: context.read<MaterialThemesManager>().colorPalette().primary,
+    );
+    if (!shrink) return null;
+
+    final smaller = await shrinkImageToFit(path);
+    if (smaller == null) showToast(translations.couldNotMakePhotoSmaller);
+    return smaller;
   }
 
   void _openAudioRecorder() async {
@@ -1432,7 +1469,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
-  void _addMediaUrlsToObservations(List<String> filePaths, bool addImages) {
+  Future<void> _addMediaUrlsToObservations(List<String> pickedPaths, bool addImages) async {
+    final filePaths = <String>[];
+    for (var path in pickedPaths) {
+      final fitted = await _fitUploadLimit(path, isImage: addImages);
+      if (fitted != null) filePaths.add(fitted);
+    }
+    if (!mounted) return;
+
     setState(() {
       for (var filePath in filePaths) {
         if (addImages) {
@@ -1472,7 +1516,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       developer.log("File paths:$filePaths");
     }*/
 
-    _addMediaUrlsToObservations(filePaths, addImages);
+    await _addMediaUrlsToObservations(filePaths, addImages);
   }
 
   Future<void> _pickSingleFile(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
@@ -1492,7 +1536,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }*/
 
     if (filePath.isNotEmpty) {
-      _addMediaUrlsToObservations([filePath], addImages);
+      await _addMediaUrlsToObservations([filePath], addImages);
     }
   }
   

@@ -1,12 +1,14 @@
-// Proposed Storage rules (not yet deployed). The live rules on 2026-10-09 let any signed-in
-// user write any file of any size anywhere in the bucket:
+// Live Storage rules, deployed 2026-10-10. Before that, the rules let any signed-in user write
+// any file of any size anywhere in the bucket:
 //
 //   match /{allPaths=**} { allow read: if true; allow write: if request.auth != null; }
 //
 // These keep public reads (observation photos and audio are shown to everyone) but only allow
-// writes into the app's images/ and audio/ folders, and cap uploads at 15 MB so a runaway or
+// writes into the app's images/ and audio/ folders, and cap uploads at 50 MB so a runaway or
 // abusive client can't fill the bucket and run up a bill.
 // Deploy from this folder with: firebase deploy --only storage
+// (firebase.json names the bucket, because Firebase doesn't report a default bucket for this
+// older project and the deploy otherwise fails with "Your project is being set up")
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
@@ -16,7 +18,7 @@ service firebase.storage {
     match /{folder}/{fileName} {
       allow create, update: if request.auth != null
         && folder in ['images', 'audio']
-        && request.resource.size < 15 * 1024 * 1024;
+        && request.resource.size < 50 * 1024 * 1024;
       allow delete: if request.auth != null && folder in ['images', 'audio'];
     }
   }

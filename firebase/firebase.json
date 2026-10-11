@@ -2,9 +2,12 @@
   "firestore": {
     "rules": "firestore.rules"
   },
-  "storage": {
-    "rules": "storage.rules"
-  },
+  "storage": [
+    {
+      "bucket": "pikajoe-97c5c.appspot.com",
+      "rules": "storage.rules"
+    }
+  ],
   "functions": {
     "source": "functions",
     "runtime": "nodejs22",

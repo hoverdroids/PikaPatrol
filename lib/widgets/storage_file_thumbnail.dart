@@ -1,3 +1,4 @@
+import '../utils/media_cache.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 
@@ -67,7 +68,7 @@ class _StorageFileThumbnailState extends State<StorageFileThumbnail> {
     }
     setState(() => _isPlaying = true);
     try {
-      await player.setUrl(await _url);
+      await player.setFilePath((await MediaCache.file(await _url)).path);
       await player.play();
     } catch (_) {
       // Unplayable file; just show it as stopped

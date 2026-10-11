@@ -1178,4 +1178,23 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get couldNotMakePhotoSmaller =>
       'Impossible de réduire suffisamment cette photo, elle n\'a donc pas été ajoutée';
+
+  @override
+  String get photoGallery => 'Galerie de photos';
+
+  @override
+  String get noPhotosToShow => 'Aucune photo à afficher pour l\'instant';
+
+  @override
+  String get becomeSupporter => 'Devenez donateur';
+
+  @override
+  String get thankYouSupporter =>
+      'Merci de soutenir la recherche sur les pikas';
+
+  @override
+  String get supporterUntil => 'Donateur jusqu\'au %date%';
+
+  @override
+  String get allProjects => 'Tous les projets';
 }

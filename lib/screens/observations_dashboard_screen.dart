@@ -38,6 +38,7 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
   late ObservationViewModel _labels;
   _Period _period = _Period.allTime;
   String? _species;
+  String? _project;
 
   @override
   void initState() {
@@ -76,13 +77,15 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
       body: StreamBuilder<List<Observation>>(
         stream: _observations,
         builder: (context, snapshot) {
-          final stats = ObservationStats.from(_filter(snapshot.data ?? <Observation>[]));
+          final all = snapshot.data ?? <Observation>[];
+          final projects = {for (final observation in all) ...?observation.sharedWithProjects}.toList()..sort();
+          final stats = ObservationStats.from(_filter(all));
           final colors = [palette.primary, palette.secondary, Colors.teal.shade200, Colors.brown.shade300, Colors.blueGrey, Colors.amber.shade700];
 
           return ListView(
             padding: const EdgeInsets.fromLTRB(12.0, 8.0, 12.0, 32.0),
             children: [
-              _buildFilters(palette.primary),
+              _buildFilters(palette.primary, projects),
               _buildTotals(stats, palette.primary),
               if (stats.total == 0)
                 Padding(
@@ -119,13 +122,14 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
     };
     return observations.where((observation) {
       if (_species != null && observation.species != _species) return false;
+      if (_project != null && !(observation.sharedWithProjects?.contains(_project) ?? false)) return false;
       if (from == null) return true;
       final date = observation.date;
       return date != null && !date.isBefore(from);
     }).toList();
   }
 
-  Widget _buildFilters(Color primary) {
+  Widget _buildFilters(Color primary, List<String> projects) {
     Widget chip(String label, bool selected, VoidCallback onSelected) => Padding(
       padding: const EdgeInsets.only(right: 6.0),
       child: ChoiceChip(
@@ -138,9 +142,10 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
       ),
     );
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(children: [
+    Widget row(List<Widget> chips) => SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: chips));
+
+    return Column(children: [
+      row([
         chip(translations.allTime, _period == _Period.allTime, () => _period = _Period.allTime),
         chip(translations.last12Months, _period == _Period.last12Months, () => _period = _Period.last12Months),
         chip(translations.thisYear, _period == _Period.thisYear, () => _period = _Period.thisYear),
@@ -149,7 +154,13 @@ class _ObservationsDashboardScreenState extends State<ObservationsDashboardScree
         for (final (index, species) in translations.speciesDefaultValues.indexed)
           chip(_labels.getSpeciesLabel(index, species), _species == species, () => _species = species),
       ]),
-    );
+      if (projects.isNotEmpty)
+        row([
+          chip(translations.allProjects, _project == null, () => _project = null),
+          for (final project in projects)
+            chip(project, _project == project, () => _project = project),
+        ]),
+    ]);
   }
 
   Widget _buildTotals(ObservationStats stats, Color primary) {

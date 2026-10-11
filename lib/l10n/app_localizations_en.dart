@@ -1163,4 +1163,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get couldNotMakePhotoSmaller =>
       'Couldn\'t make this photo small enough, so it wasn\'t added';
+
+  @override
+  String get photoGallery => 'Photo gallery';
+
+  @override
+  String get noPhotosToShow => 'No photos to show yet';
+
+  @override
+  String get becomeSupporter => 'Become a supporter';
+
+  @override
+  String get thankYouSupporter => 'Thank you for supporting pika research';
+
+  @override
+  String get supporterUntil => 'Supporter until %date%';
+
+  @override
+  String get allProjects => 'All projects';
 }

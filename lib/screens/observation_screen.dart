@@ -27,6 +27,7 @@ import 'package:material_themes_widgets/utils/collection_utils.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:pika_patrol/model/observation.dart';
 import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
@@ -59,6 +60,13 @@ import '../utils/upload_size.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
+// Opens an observation from a list, the map or the gallery. It edits a copy, so leaving without
+// saving changes nothing.
+void openObservation(BuildContext context, Observation observation) {
+  final translations = Provider.of<Translations>(context, listen: false);
+  Navigator.push(context, MaterialPageRoute(builder: (_) => ObservationScreen(ObservationViewModel(observation.copy(), translations))));
+}
+
 class ObservationScreen extends StatefulWidget {
 
   final ObservationViewModel observationViewModel;

@@ -5,6 +5,7 @@ import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:dash_flags/dash_flags.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:liquid_swipe/liquid_swipe.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/clippaths/clip_paths.dart';
@@ -39,12 +40,15 @@ import '../model/firebase_registration_result.dart';
 import '../services/settings_service.dart';
 import 'observation_screen.dart';
 import 'observations_dashboard_screen.dart';
+import 'observations_gallery_screen.dart';
 import 'observations_map_screen.dart';
 import 'observations_screen.dart';
 import 'correlate_files_screen.dart';
 import 'duplicate_observations_screen.dart';
 import 'unused_files_screen.dart';
 import '../widgets/set_supporter_dialog.dart';
+import '../widgets/supporter_dialog.dart';
+import '../services/sponsors_service.dart';
 
 //TODO - CHRIS - these should be somewhere else
 var navbarColor = Colors.white;
@@ -318,6 +322,7 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
         Icon(Icons.loupe, size: navbarIconSize, color: navbarIconColor),
         Icon(Icons.map, size: navbarIconSize, color: navbarIconColor),
         Icon(Icons.show_chart, size: navbarIconSize, color: navbarIconColor),
+        Icon(Icons.photo_library, size: navbarIconSize, color: navbarIconColor),
       ],
       onTap: (index) {
         switch (index) {
@@ -325,10 +330,12 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
             Navigator.push(context, MaterialPageRoute(builder: (_) => const ObservationsMapScreen()));
           case 2:
             Navigator.push(context, MaterialPageRoute(builder: (_) => const ObservationsDashboardScreen()));
+          case 3:
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const ObservationsGalleryScreen()));
           default:
             showGeoTrackingDialog(context, user);
         }
-        // The map and dashboard open as their own screens, so the raised button stays on new observation
+        // The map, dashboard and gallery open as their own screens, so the raised button stays on new observation
         if (index != 0) {
           WidgetsBinding.instance.addPostFrameCallback((_) => _navigationBarKey.currentState?.setPage(0));
         }
@@ -355,6 +362,8 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     }
 
     var canInitializeGoogleSheets = userProfile?.tagline == "initializer";
+    final sponsors = Provider.of<SponsorsService>(context).sponsors;
+    final supporterUntil = user?.isSupporter == true ? user?.supporterUntil : null;
 
     final settingsService = Provider.of<SettingsService>(context);
     final showIndigenousMapPreference = settingsService.showIndigenousMap;
@@ -433,11 +442,27 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
               itemClickedCallback: () => showDefaultObservationTemplateScreen(context),
             ),
             ListItemModel(title: translations.sponsorsAndSupport, titleType: ThemeGroupType.SOM),
+            if (supporterUntil != null)
+              ListItemModel(
+                title: translations.thankYouSupporter,
+                subtitle: translations.supporterUntil.replaceAll("%date%", DateFormat.yMMMd(Localizations.localeOf(context).toString()).format(supporterUntil)),
+                margin: indentationLevel1,
+              )
+            else
+              ListItemModel(title: translations.becomeSupporter, itemClickedCallback: () => showSupporterDialog(context, userId: user?.uid), margin: indentationLevel1),
             ListItemModel(title: translations.coloradoPikaProject, itemClickedCallback: () => launchInBrowser(translations.coloradoPikaProjectUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.rockyMountainWild, itemClickedCallback: () => launchInBrowser(translations.rockyMountainWildUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.denverZoo, itemClickedCallback: () => launchInBrowser(translations.denverZooUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.ifThen, itemClickedCallback: () => launchInBrowser(translations.ifThenUrl ?? ""), margin: indentationLevel1),
             ListItemModel(title: translations.canadianPikaProject, itemClickedCallback: () => launchInBrowser(translations.canadianPikaProjectUrl ?? ""), margin: indentationLevel1),
+            // Sponsoring organizations from Firestore, highest tier first
+            for (final sponsor in sponsors)
+              ListItemModel(
+                title: sponsor.name,
+                subtitle: sponsor.message ?? "",
+                itemClickedCallback: sponsor.url == null ? null : () => launchInBrowser(sponsor.url!),
+                margin: indentationLevel1,
+              ),
             ListItemModel(title: translations.appVersion, titleType: ThemeGroupType.SOM),
             ListItemModel(title: appVersion, margin: indentationLevel1),
             if (isAdmin)...[

@@ -357,5 +357,11 @@
     "photoTooLargeDescription": "Esta foto pesa %size% MB. Las fotos deben pesar menos de 50 MB para subirse. ¿Añadir una copia más pequeña? La original se queda en tu teléfono.",
     "recordingTooLargeDescription": "Esta grabación pesa %size% MB. Las grabaciones deben pesar menos de 50 MB para subirse, así que no se añadió. Prueba con una grabación más corta.",
     "makeSmaller": "Reducir",
-    "couldNotMakePhotoSmaller": "No se pudo reducir esta foto lo suficiente, así que no se añadió"
+    "couldNotMakePhotoSmaller": "No se pudo reducir esta foto lo suficiente, así que no se añadió",
+    "photoGallery": "Galería de fotos",
+    "noPhotosToShow": "Aún no hay fotos para mostrar",
+    "becomeSupporter": "Hazte colaborador",
+    "thankYouSupporter": "Gracias por apoyar la investigación de las picas",
+    "supporterUntil": "Colaborador hasta el %date%",
+    "allProjects": "Todos los proyectos"
 }

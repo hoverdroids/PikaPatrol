@@ -2253,6 +2253,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t make this photo small enough, so it wasn\'t added'**
   String get couldNotMakePhotoSmaller;
+
+  /// No description provided for @photoGallery.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo gallery'**
+  String get photoGallery;
+
+  /// No description provided for @noPhotosToShow.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos to show yet'**
+  String get noPhotosToShow;
+
+  /// No description provided for @becomeSupporter.
+  ///
+  /// In en, this message translates to:
+  /// **'Become a supporter'**
+  String get becomeSupporter;
+
+  /// No description provided for @thankYouSupporter.
+  ///
+  /// In en, this message translates to:
+  /// **'Thank you for supporting pika research'**
+  String get thankYouSupporter;
+
+  /// No description provided for @supporterUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Supporter until %date%'**
+  String get supporterUntil;
+
+  /// No description provided for @allProjects.
+  ///
+  /// In en, this message translates to:
+  /// **'All projects'**
+  String get allProjects;
 }
 
 class _AppLocalizationsDelegate

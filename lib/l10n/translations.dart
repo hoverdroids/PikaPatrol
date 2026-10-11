@@ -405,6 +405,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String recordingTooLargeDescription = ERROR;
   String makeSmaller = ERROR;
   String couldNotMakePhotoSmaller = ERROR;
+  String photoGallery = ERROR;
+  String noPhotosToShow = ERROR;
+  String becomeSupporter = ERROR;
+  String thankYouSupporter = ERROR;
+  String supporterUntil = ERROR;
+  String allProjects = ERROR;
 
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
@@ -771,6 +777,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     recordingTooLargeDescription =  AppLocalizations.of(context)?.recordingTooLargeDescription ?? recordingTooLargeDescription;
     makeSmaller =  AppLocalizations.of(context)?.makeSmaller ?? makeSmaller;
     couldNotMakePhotoSmaller =  AppLocalizations.of(context)?.couldNotMakePhotoSmaller ?? couldNotMakePhotoSmaller;
+    photoGallery =  AppLocalizations.of(context)?.photoGallery ?? photoGallery;
+    noPhotosToShow =  AppLocalizations.of(context)?.noPhotosToShow ?? noPhotosToShow;
+    becomeSupporter =  AppLocalizations.of(context)?.becomeSupporter ?? becomeSupporter;
+    thankYouSupporter =  AppLocalizations.of(context)?.thankYouSupporter ?? thankYouSupporter;
+    supporterUntil =  AppLocalizations.of(context)?.supporterUntil ?? supporterUntil;
+    allProjects =  AppLocalizations.of(context)?.allProjects ?? allProjects;
 
     //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
     //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
@@ -1175,6 +1187,12 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "recordingTooLargeDescription": return recordingTooLargeDescription;
       case "makeSmaller": return makeSmaller;
       case "couldNotMakePhotoSmaller": return couldNotMakePhotoSmaller;
+      case "photoGallery": return photoGallery;
+      case "noPhotosToShow": return noPhotosToShow;
+      case "becomeSupporter": return becomeSupporter;
+      case "thankYouSupporter": return thankYouSupporter;
+      case "supporterUntil": return supporterUntil;
+      case "allProjects": return allProjects;
       default: return key;
     }
   }

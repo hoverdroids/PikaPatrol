@@ -8,6 +8,7 @@ import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
+import 'package:pika_patrol/services/sponsors_service.dart';
 import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
@@ -121,6 +122,9 @@ Future<void> main() async {
         ),
         Provider<ObservationsService>(
             create: (_) => ObservationsService()
+        ),
+        ChangeNotifierProvider(
+            create: (_) => SponsorsService()
         ),
         Provider<GoogleSheetsService>(
           create: (_) => GoogleSheetsService(),

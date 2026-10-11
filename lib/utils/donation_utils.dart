@@ -1,13 +1,16 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'env.dart';
+
 // Donations go to Rocky Mountain Wild through Every.org, which charges nonprofits no platform fee.
 // See docs/design/2026-10-10-supporters-plan.md.
 
-// RMW's Every.org slug or EIN, set once RMW claims its profile. The donate button hides until then.
-const String everyOrgNonprofit = "";
+// RMW's Every.org slug or EIN, set in .env once RMW claims its profile. The donate button hides
+// until then.
+String get everyOrgNonprofit => envValue("EVERYORG_NONPROFIT");
 // From partners@every.org; Every.org calls our webhook for donations made with it
-const String everyOrgWebhookToken = "";
+String get everyOrgWebhookToken => envValue("EVERYORG_WEBHOOK_TOKEN");
 
 bool get canTakeDonations => everyOrgNonprofit.isNotEmpty;
 

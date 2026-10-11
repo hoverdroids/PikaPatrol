@@ -69,3 +69,34 @@ These can only be done in the Google Cloud or Firebase consoles:
 - [ ] Turn on email enumeration protection (Firebase → Authentication → Settings → User actions).
 - [ ] Delete unused OAuth clients (Google Cloud → APIs & Services → Credentials).
 - [ ] Turn on the Google and Apple sign-in providers, and add the debug and Play app-signing SHA-1s to the Android app (see FEATURES.md §9).
+
+## 3.6.0: supporters, map, dashboard, gallery, sponsors
+
+Do these before 3.6.0 goes to the stores, in this order. Nothing here costs money on the free tier.
+
+1. **Rules and functions.** From `firebase/`: `npx -y firebase-tools@15 deploy --only firestore:rules,functions`.
+   This adds the `sponsors`, `supporters` and `deletedObservations` rules and four functions:
+   `stampObservationUpdatedAt`, `markObservationDeleted`, `everyOrgWebhook` and `setSupporter`.
+   The kill switch is a separate codebase, so this deploy leaves it alone.
+2. **Backfill change stamps (once).** From `firebase/functions/`:
+   `gcloud auth application-default login`, then
+   `npm run build && GOOGLE_CLOUD_PROJECT=pikajoe-97c5c node lib/scripts/backfill-updated-at.js`
+   (add `--dry-run` first to see the count).
+3. **Photo thumbnails.** Install the **Resize Images** extension (Firebase console → Extensions) with:
+   sizes `400x400`, resized images path `thumbs`, delete original `No`, convert to `original`,
+   paths to include `/images`, and **backfill existing images** on. The gallery reads
+   `images/thumbs/<name>_400x400.<ext>` and shows the full photo until a thumbnail exists.
+4. **Map tiles.** Make a free MapTiler account, create a key restricted to the app IDs, and set
+   `MAP_TILE_URL` and `MAP_TILE_ATTRIBUTION` in `.env` (see `.env.example`). Without it the map falls
+   back to OpenStreetMap's servers, which is fine for testing only.
+5. **Every.org.** After Rocky Mountain Wild claims its page: set `EVERYORG_NONPROFIT` (and
+   `EVERYORG_WEBHOOK_TOKEN` from partners@every.org) in `.env`; set the function's secret with
+   `firebase functions:secrets:set EVERYORG_WEBHOOK_KEY` and its `EVERYORG_NONPROFIT` param; give
+   Every.org the webhook URL `https://us-central1-pikajoe-97c5c.cloudfunctions.net/everyOrgWebhook?key=<the secret>`.
+   Until `EVERYORG_NONPROFIT` is set the app thanks people but shows no donate link. The link only
+   shows on US phones.
+6. **Sponsors.** In Firestore, add documents to `sponsors` with `name`, `url`, `tier`
+   (`gold`, `silver` or `bronze`), and optionally `message`, `logoUrl` and `expiresAt` (a timestamp).
+   Phones pick up changes within a day.
+7. **Supporters by hand.** Admins use the menu's **Supporter status** to add a year for gifts made
+   by check or at events.

@@ -10,18 +10,26 @@ import '../l10n/translations.dart';
 import '../model/app_user.dart';
 import '../model/observation.dart';
 import '../model/observation_stats.dart';
-import '../model/observation_view_model.dart';
 import '../services/observations_service.dart';
+import '../utils/env.dart';
+import '../utils/map_clusters.dart';
 import '../widgets/supporter_dialog.dart';
 import 'observation_screen.dart';
 
-// TODO(supporters plan): the public OpenStreetMap tile servers don't allow app-scale use. Swap in a
-// keyed tile plan (for example MapTiler or Stadia Maps) and its attribution before 3.6.0 ships.
-const String _tileUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
-const String _tileAttribution = "© OpenStreetMap contributors";
+// The tile server comes from .env (MAP_TILE_URL), because the public OpenStreetMap servers don't
+// allow app-scale use. OpenStreetMap is only the fallback for testing. See .env.example.
+String get _tileUrl {
+  final configured = envValue("MAP_TILE_URL");
+  return configured.isNotEmpty ? configured : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+}
+String get _tileAttribution {
+  final configured = envValue("MAP_TILE_ATTRIBUTION");
+  return envValue("MAP_TILE_URL").isNotEmpty && configured.isNotEmpty ? configured : "© OpenStreetMap contributors";
+}
 
 // Every observation the viewer can see, as a dot on a map: the user's own, or everyone's for
-// supporters and admins. Teal dots found pikas, grey dots didn't. Tapping a dot opens it.
+// supporters and admins. Teal dots found pikas, grey dots didn't. Tapping a dot opens it. Dots
+// that would overlap are drawn as one circle with a count; tapping it zooms in.
 class ObservationsMapScreen extends StatefulWidget {
   const ObservationsMapScreen({super.key});
 
@@ -104,48 +112,129 @@ class _ObservationsMapScreenState extends State<ObservationsMapScreen> {
     child: Text(text, style: const TextStyle(fontSize: 12.0, color: Colors.black87)),
   );
 
+  // Rebuilt only when the dots change; zooming just regroups them
+  final MapTileLayerController _markers = MapTileLayerController();
+  MapZoomPanBehavior? _zoomPan;
+  Object? _locatedKey;
+  List<Observation> _located = [];
+  List<MapCluster<Observation>> _clusters = [];
+  int? _clusteredAtZoom;
+
+  @override
+  void dispose() {
+    _markers.dispose();
+    super.dispose();
+  }
+
   Widget _buildMap(List<Observation> located, Color primary) {
-    final bounds = _boundsOf(located);
+    final key = Object.hashAll(located.map((o) => Object.hash(o.uid, o.latitude, o.longitude, o.pikasDetected)));
+    if (key != _locatedKey || _zoomPan == null) {
+      _locatedKey = key;
+      _located = located;
+      final bounds = _boundsOf(located);
+      // With zooming on, Syncfusion takes the starting view from the zoom behavior, not the layer
+      _zoomPan = MapZoomPanBehavior(
+        focalLatLng: bounds == null ? const MapLatLng(45.0, -112.0) : _center(bounds),
+        zoomLevel: bounds == null ? 4 : 10,
+        latLngBounds: located.length > 1 ? bounds : null,
+        minZoomLevel: 2,
+        maxZoomLevel: 18,
+        enableDoubleTapZooming: true,
+        showToolbar: false,
+      );
+      _clusteredAtZoom = null;
+      _clusters = _clusterAt(_zoomPan!.zoomLevel);
+      // Fitting to the bounds sets the real starting zoom after the first frame
+      WidgetsBinding.instance.addPostFrameCallback((_) => _reclusterFor(_zoomPan?.zoomLevel));
+    }
+
     return SfMaps(
       // A new key when the dots change, so the map rebuilds its markers and refits the view
-      key: ValueKey(Object.hashAll(located.map((o) => Object.hash(o.uid, o.latitude, o.longitude, o.pikasDetected)))),
+      key: ValueKey(key),
       layers: [
         MapTileLayer(
           urlTemplate: _tileUrl,
-          // With zooming on, Syncfusion takes the starting view from the zoom behavior, not the layer
-          zoomPanBehavior: MapZoomPanBehavior(
-            focalLatLng: bounds == null ? const MapLatLng(45.0, -112.0) : _center(bounds),
-            zoomLevel: bounds == null ? 4 : 10,
-            latLngBounds: located.length > 1 ? bounds : null,
-            minZoomLevel: 2,
-            maxZoomLevel: 18,
-            enableDoubleTapZooming: true,
-            showToolbar: false,
-          ),
-          initialMarkersCount: located.length,
-          markerBuilder: (context, index) {
-            final observation = located[index];
-            return MapMarker(
-              latitude: observation.latitude!,
-              longitude: observation.longitude!,
-              child: GestureDetector(
-                onTap: () => _openObservation(observation),
-                child: Container(
-                  width: 16.0,
-                  height: 16.0,
-                  decoration: BoxDecoration(
-                    color: ObservationStats.hasPikas(observation) ? primary : Colors.grey,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2.0),
-                    boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 2.0)],
-                  ),
-                ),
-              ),
-            );
+          controller: _markers,
+          zoomPanBehavior: _zoomPan,
+          initialMarkersCount: _clusters.length,
+          onWillZoom: (details) {
+            final zoom = details.newZoomLevel;
+            WidgetsBinding.instance.addPostFrameCallback((_) => _reclusterFor(zoom));
+            return true;
           },
+          markerBuilder: (context, index) => _marker(_clusters[index], primary),
         ),
       ],
     );
+  }
+
+  List<MapCluster<Observation>> _clusterAt(double zoom) {
+    _clusteredAtZoom = zoom.round();
+    return clusterPoints(_located, latitude: (o) => o.latitude!, longitude: (o) => o.longitude!, zoom: zoom.roundToDouble());
+  }
+
+  // Regroups the dots when the zoom crosses a whole level
+  void _reclusterFor(double? zoom) {
+    if (!mounted || zoom == null || zoom.round() == _clusteredAtZoom) return;
+    _clusters = _clusterAt(zoom);
+    _markers.clearMarkers();
+    for (var index = 0; index < _clusters.length; index++) {
+      _markers.insertMarker(index);
+    }
+  }
+
+  MapMarker _marker(MapCluster<Observation> cluster, Color primary) {
+    if (cluster.isSingle) {
+      final observation = cluster.items.first;
+      return MapMarker(
+        latitude: observation.latitude!,
+        longitude: observation.longitude!,
+        child: GestureDetector(
+          onTap: () => openObservation(context, observation),
+          child: Container(
+            width: 16.0,
+            height: 16.0,
+            decoration: BoxDecoration(
+              color: ObservationStats.hasPikas(observation) ? primary : Colors.grey,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 2.0),
+              boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 2.0)],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // Bigger for more observations, teal if any of them found pikas
+    final size = (24.0 + 18.0 * log(cluster.count) / ln10).clamp(24.0, 56.0);
+    final anyPikas = cluster.items.any(ObservationStats.hasPikas);
+    return MapMarker(
+      latitude: cluster.latitude,
+      longitude: cluster.longitude,
+      child: GestureDetector(
+        onTap: () => _zoomInto(cluster),
+        child: Container(
+          width: size,
+          height: size,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: (anyPikas ? primary : Colors.grey).withValues(alpha: 0.85),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2.0),
+            boxShadow: const [BoxShadow(color: Colors.black38, blurRadius: 2.0)],
+          ),
+          child: Text("${cluster.count}", style: const TextStyle(color: Colors.white, fontSize: 12.0, fontWeight: FontWeight.bold)),
+        ),
+      ),
+    );
+  }
+
+  void _zoomInto(MapCluster<Observation> cluster) {
+    final zoomPan = _zoomPan;
+    if (zoomPan == null) return;
+    zoomPan.focalLatLng = MapLatLng(cluster.latitude, cluster.longitude);
+    zoomPan.zoomLevel = min(zoomPan.zoomLevel + 2, zoomPan.maxZoomLevel);
+    _reclusterFor(zoomPan.zoomLevel);
   }
 
   MapLatLngBounds? _boundsOf(List<Observation> located) {
@@ -170,10 +259,4 @@ class _ObservationsMapScreenState extends State<ObservationsMapScreen> {
     (bounds.northeast.latitude + bounds.southwest.latitude) / 2,
     (bounds.northeast.longitude + bounds.southwest.longitude) / 2,
   );
-
-  void _openObservation(Observation observation) {
-    final translations = Provider.of<Translations>(context, listen: false);
-    final viewModel = ObservationViewModel(observation.copy(), translations);
-    Navigator.push(context, MaterialPageRoute(builder: (_) => ObservationScreen(viewModel)));
-  }
 }

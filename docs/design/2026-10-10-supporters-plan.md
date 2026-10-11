@@ -3,7 +3,8 @@
 **Goal:** give people reasons to donate to Rocky Mountain Wild (RMW) through the app, without fees eating
 the donations and without growing the Firebase bill.
 
-**Status:** draft, 2026-10-10. 3.5.0 ships first from `doing/3.5.0-store-blockers`; this work lives on
+**Status:** phases 1 to 7 built on 2026-10-11 and waiting on the console steps in
+docs/firebase-runbook.md ("3.6.0"). Phase 8 is for 3.7.0. Was a draft on 2026-10-10. 3.5.0 ships first from `doing/3.5.0-store-blockers`; this work lives on
 `doing/3.6.0-supporters` and ships as later versions.
 
 ## What supporters get
@@ -151,6 +152,18 @@ don't need to change for it.
 
 Console and deploy steps (Chris): Cloud Functions deploy, Firestore rules for `supporters`, `sponsors`
 and `deletedObservations`, the Resize Images extension, a map tile key, and the Every.org webhook token.
+
+## What was built, and where it differs
+
+- Map: markers that would overlap merge into one circle with a count (`lib/utils/map_clusters.dart`),
+  instead of a heat map, because Syncfusion Maps has no heat map layer. Tapping a circle zooms in.
+  Tiles come from `MAP_TILE_URL` in `.env`.
+- Dashboard: date, species and project filters. No state or province filter yet: observations don't
+  store one, and working it out from coordinates needs a boundaries file.
+- Gallery: a fourth bottom-bar button. Thumbnails from the Resize Images extension.
+- Sponsors: listed under the existing partner links, not replacing them, so the menu never goes empty.
+- Supporters see a thank-you and their end date in the left menu; everyone else sees Become a supporter.
+- Every.org settings live in `.env`, so turning donations on needs no code change.
 
 ## Open questions
 

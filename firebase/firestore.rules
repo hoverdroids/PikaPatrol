@@ -21,6 +21,11 @@ service cloud.firestore {
       allow read: if request.auth != null && (request.auth.uid == userId || request.auth.token.admin);
       allow write: if false;
     }
+    // Organizations listed under Sponsors and Support. Admins add them in the Firestore console.
+    match /sponsors/{sponsor} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
     match /googleSheets/{credential} {
       allow create: if false;
       allow update, delete: if false;

@@ -303,7 +303,20 @@ class HomeWithDrawerState extends State<HomeWithDrawer> {
     );
   }
 
+  // The app draws behind Android's system buttons and the iPhone home indicator, and
+  // CurvedNavigationBar ignores them. A strip of the bar's color below it lifts the bar clear.
+  // The strip is separate because filling behind the bar would paint over its curved notch.
   Widget buildBottomNavigationBar(BuildContext context, AppUser? user) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildCurvedNavigationBar(context, user),
+        Container(height: MediaQuery.viewPaddingOf(context).bottom, color: navbarColor),
+      ],
+    );
+  }
+
+  Widget _buildCurvedNavigationBar(BuildContext context, AppUser? user) {
     return CurvedNavigationBar (//TODO - migrate this into its own widget
       color: navbarColor,
       backgroundColor: navbarBgColor,

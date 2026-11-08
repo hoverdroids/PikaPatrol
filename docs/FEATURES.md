@@ -37,6 +37,7 @@ Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find th
 - **Pass 21 — recording names and template territories**: recording cards show the name the file was given, not the encoded Storage URL. The default template keeps the Indigenous territories and languages with its coordinates, and a new observation whose template has coordinates but no territories looks them up. Tests in `test/utils/observation_template_test.dart`.
 - **Pass 22 — location button**: the location button gives up on a fresh GPS fix after 20 seconds and uses the last known position, instead of waiting forever where the sky can't be seen (which also kept the Indigenous territory lookup from running).
 - **Pass 23 — drawer keeps its place**: changing a setting in the left drawer no longer scrolls it back to the top. material_themes_widgets 1.16.0 makes HeaderList pick up new values on rebuild, so the app no longer remounts it with a changing key.
+- **3.5.1 — eMudhra certificate security fix** (Firebase notice, Nov 3 2026): `cloud_firestore` 6.10.2, `firebase_core` 4.15.2, `firebase_auth` 6.7.1, `firebase_storage` 13.6.1 and `firebase_app_check` 0.4.9, which bring Firebase iOS SDK 12.19.3 and drop the compromised root certificates; Flutter 3.47.9 with Dart 3.13.7 for the same fix on Android; added the `NSLocationAlwaysAndWhenInUseUsageDescription` text Apple flagged on build 335. Version 3.5.1+336. See https://firebase.google.com/support/guides/compromised-emudhra-intermediate-ca.
 
 ## People
 

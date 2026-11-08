@@ -41,6 +41,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>We need access to the camera and photos so that users can document pika observations by taking photos of pikas or selecting previously taken photos of pikas</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs access to the location to record the locations of pika observations.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>This app needs access to the location to record the locations of pika observations.</string>
 	<key>NSMicrophoneUsageDescription</key>

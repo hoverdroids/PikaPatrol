@@ -56,6 +56,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String password = ERROR;
   String passwordCannotBeEmpty = ERROR;
   String invalidPassword = ERROR;
+  String reEnterPassword = ERROR;
+  String passwordsDoNotMatch = ERROR;
+  String showPassword = ERROR;
+  String hidePassword = ERROR;
   String firstName = ERROR;
   String invalidFirstName = ERROR;
   String lastName = ERROR;
@@ -618,6 +622,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     profile = AppLocalizations.of(context)?.profile ?? profile;
     invalidEmail = AppLocalizations.of(context)?.invalidEmail ?? invalidEmail;
     invalidPassword = AppLocalizations.of(context)?.invalidPassword ?? invalidPassword;
+    reEnterPassword = AppLocalizations.of(context)?.reEnterPassword ?? reEnterPassword;
+    passwordsDoNotMatch = AppLocalizations.of(context)?.passwordsDoNotMatch ?? passwordsDoNotMatch;
+    showPassword = AppLocalizations.of(context)?.showPassword ?? showPassword;
+    hidePassword = AppLocalizations.of(context)?.hidePassword ?? hidePassword;
     invalidFirstName = AppLocalizations.of(context)?.invalidFirstName ?? invalidFirstName;
     invalidLastName = AppLocalizations.of(context)?.invalidLastName ?? invalidLastName;
     invalidZip = AppLocalizations.of(context)?.invalidZip ?? invalidZip;
@@ -997,6 +1005,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "profile": return profile;
       case "invalidEmail": return invalidEmail;
       case "invalidPassword": return invalidPassword;
+      case "reEnterPassword": return reEnterPassword;
+      case "passwordsDoNotMatch": return passwordsDoNotMatch;
+      case "showPassword": return showPassword;
+      case "hidePassword": return hidePassword;
       case "invalidFirstName": return invalidFirstName;
       case "invalidLastName": return invalidLastName;
       case "invalidZip": return invalidZip;

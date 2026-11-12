@@ -743,6 +743,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get invalidPassword => 'Enter a password 6+ chars long';
 
   @override
+  String get reEnterPassword => 'Re-enter password';
+
+  @override
+  String get passwordsDoNotMatch => 'Passwords do not match';
+
+  @override
+  String get showPassword => 'Show password';
+
+  @override
+  String get hidePassword => 'Hide password';
+
+  @override
   String get invalidFirstName => 'First name is required';
 
   @override

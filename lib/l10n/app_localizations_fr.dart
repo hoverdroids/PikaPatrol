@@ -754,6 +754,18 @@ class AppLocalizationsFr extends AppLocalizations {
       'Saisissez un mot de passe d\'au moins 6 caractères';
 
   @override
+  String get reEnterPassword => 'Confirmez le mot de passe';
+
+  @override
+  String get passwordsDoNotMatch => 'Les mots de passe ne correspondent pas';
+
+  @override
+  String get showPassword => 'Afficher le mot de passe';
+
+  @override
+  String get hidePassword => 'Masquer le mot de passe';
+
+  @override
   String get invalidFirstName => 'Le prénom est requis';
 
   @override

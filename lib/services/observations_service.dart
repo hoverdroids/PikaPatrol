@@ -1,17 +1,18 @@
 import 'dart:async';
+import 'dart:developer' as developer;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:data_connection_checker_nulls/data_connection_checker_nulls.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:hive/hive.dart';
 import 'package:gsheets/gsheets.dart';
-import 'package:material_themes_widgets/utils/ui_utils.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:pika_patrol/utils/primitive_utils.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:pika_patrol/main.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
 
@@ -22,24 +23,77 @@ import '../model/local_observation.dart';
 import '../model/observation.dart';
 import '../model/value_message_pair.dart';
 import '../services/firebase_database_service.dart';
+import 'duplicate_observation_finder.dart';
+import 'storage_file_correlator.dart';
+import '../model/storage_scan.dart';
 
 class ObservationsService {
 
   late Translations translations;
   late GoogleSheetsService googleSheetsService;
-  late FirebaseDatabaseService firebaseDatabaseService;//TODO - should this be firebase_observations_service?
+  late FirebaseDatabaseService _firebaseDatabaseService;//TODO - should this be firebase_observations_service?
+  FirebaseDatabaseService get firebaseDatabaseService => _firebaseDatabaseService;
+  set firebaseDatabaseService(FirebaseDatabaseService service) {
+    _firebaseDatabaseService = service;
+    service.observationsService.onFileDeletesFailed = _addPendingFileDeletes;
+    _loadHasPendingRetries();
+  }
+
+  // True when a Sheets sync or a Storage delete still needs retrying, so the app retries when it
+  // comes online even if every observation is already uploaded
+  bool _hasPendingRetries = false;
+  bool get hasPendingRetries => _hasPendingRetries;
+  bool _hasLoadedPendingRetries = false;
+
+  Future<void> _loadHasPendingRetries() async {
+    if (_hasLoadedPendingRetries) return;
+    _hasLoadedPendingRetries = true;
+    await _refreshHasPendingRetries();
+  }
+
+  Future<void> _refreshHasPendingRetries() async {
+    final prefs = await SharedPreferences.getInstance();
+    _hasPendingRetries = (prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY)?.isNotEmpty ?? false)
+        || (prefs.getStringList(_PENDING_FILE_DELETES_KEY)?.isNotEmpty ?? false);
+  }
+
+  void refreshLocalizedCardText() {
+    final localizedViewObservation = translations.viewObservation;
+    var changed = false;
+
+    for (final observation in _localObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    for (final observation in _sharedObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    for (final observation in _userObservations) {
+      if (observation.buttonText != localizedViewObservation) {
+        observation.buttonText = localizedViewObservation;
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      _localObservationsStreamController?.add(_localObservations);
+      _sharedObservationsStreamController?.add(_sharedObservations);
+    }
+  }
 
   //region Empty Observations
   StreamController<List<Observation>>? _emptyObservationsStreamController;
   Stream<List<Observation>> get emptyObservationsStream {
-
-    _emptyObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
+    _emptyObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
           _emptyObservationsStreamController?.add([]);
-        },
-        onCancel: () {
-          _emptyObservationsStreamController?.close();
-          _emptyObservationsStreamController = null;
         }
     );
 
@@ -54,24 +108,132 @@ class ObservationsService {
     return _localObservations;
   }
 
-  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
-  // It's fine to let the StreamController be garbage collected once all the
-  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  // Memoized (created once, never recreated/closed) so the widget tree always pushes into the
+  // same controller. Previously this getter created a *new* StreamController on every call - since
+  // it's read fresh inside a StreamBuilder's `stream:` argument, any rebuild handed StreamBuilder a
+  // different Stream instance and it would resubscribe. Meanwhile setLocalObservations() only ever
+  // pushes into whatever controller this field *currently* points to, so a subscriber holding onto
+  // an older controller (or a moment where the field was null after the last listener cancelled)
+  // silently stopped receiving live updates until something else forced a fresh rebuild/resubscribe
+  // (backgrounding/foregrounding the app, or saving a new observation, which happened to trigger one).
   StreamController<List<Observation>>? _localObservationsStreamController; // ignore: close_sinks
 
   Stream<List<Observation>> get localObservationsStream {
-
-    _localObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
+    _localObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
           _localObservationsStreamController?.add(_localObservations);
-        },
-        onCancel: () {
-          _localObservationsStreamController?.close();
-          _localObservationsStreamController = null;
         }
     );
 
     return _localObservationsStreamController!.stream;
+  }
+
+  // Reads the Hive box directly rather than _localObservations, because _localObservations is
+  // filtered by LocalObservation.canUserEdit(user) - once a user is logged in, an observation with
+  // no observerUid no longer passes that check (it's neither "this user's" nor "no one's, while no
+  // one's logged in"), so it silently drops out of _localObservations and "My Observations" even
+  // though it's still sitting in the box. This is exactly what needs surfacing at login time.
+  List<LocalObservation> getUnassociatedLocalObservations() {
+    var box = Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME);
+    return box.values.where((localObservation) => localObservation.observerUid.isEmpty).toList();
+  }
+
+  Future<void> associateLocalObservationsWithUser(String userId) async {
+    for (var localObservation in getUnassociatedLocalObservations()) {
+      localObservation.observerUid = userId;
+      await localObservation.save();
+    }
+  }
+
+  // Shared by the reconnect-polling listener, the app-resume check, and the post-association
+  // flow - anywhere that just learned "there's a logged-in user and a network, so anything
+  // pending should go up now" rather than waiting for the next unrelated trigger to happen to
+  // fire. In particular: logging in (and therefore associating local observations with the
+  // account) only ever happens while already online, so a connectivity-*change* listener never
+  // fires for it - nothing else was prompting an upload attempt at that moment.
+  //
+  // These triggers can overlap in time (e.g. a connectivity-change fires around the same moment
+  // the associate-with-account dialog is accepted). Each call to saveObservation() mints a brand
+  // new Firestore doc for any observation whose uid is still empty, so two overlapping runs over
+  // the same not-yet-uploaded local observation raced to upload it twice under two different
+  // Firestore doc IDs before either run's result made it back into Hive. Caching the in-flight
+  // Future means a second caller just awaits the first run instead of starting its own.
+  Future<void>? _pendingUploadFuture;
+
+  Future<void> uploadPendingLocalObservations(AppUser user) {
+    return _pendingUploadFuture ??= _uploadPendingLocalObservations(user).whenComplete(() {
+      _pendingUploadFuture = null;
+    });
+  }
+
+  Future<void> _uploadPendingLocalObservations(AppUser user) async {
+    // Refresh from the Hive box first: _localObservations is filtered by canUserEdit(user), so an
+    // observation that was just associated with this user (e.g. via associateLocalObservationsWithUser)
+    // may not have made it into that cache yet - nothing else forces a rebuild before this runs.
+    // Without this, the observation is invisible to the loop below and never gets uploaded.
+    setLocalObservations(Hive.box<LocalObservation>(FirebaseObservationsService.OBSERVATIONS_COLLECTION_NAME), user);
+
+    for (var localObservation in localObservations) {
+      if (!localObservation.isUploaded) {
+        await saveObservation(localObservation, user);
+      }
+    }
+
+    await _retryPendingGoogleSheetsSyncs();
+    await _retryPendingFileDeletes();
+  }
+
+  // Storage files that could not be deleted (for example while offline) are remembered on the
+  // device and retried the next time the app is online, so removed photos and recordings never
+  // stay in Storage, where they would keep costing money.
+  static const String _PENDING_FILE_DELETES_KEY = "pendingFileDeletes";
+
+  Future<void> _addPendingFileDeletes(List<String> fileUrls) async {
+    if (fileUrls.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final pending = (prefs.getStringList(_PENDING_FILE_DELETES_KEY) ?? <String>[]).toSet()..addAll(fileUrls);
+    await prefs.setStringList(_PENDING_FILE_DELETES_KEY, pending.toList());
+    await _refreshHasPendingRetries();
+  }
+
+  Future<void> _retryPendingFileDeletes() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList(_PENDING_FILE_DELETES_KEY) ?? <String>[];
+    if (pending.isEmpty) return;
+    final failed = await firebaseDatabaseService.observationsService.deleteFiles(pending);
+    await prefs.setStringList(_PENDING_FILE_DELETES_KEY, failed);
+    await _refreshHasPendingRetries();
+  }
+
+  // Google Sheets can be unreachable when an observation is saved, after Firebase already has it.
+  // Remember those observations on the device and retry them the next time the app is online,
+  // instead of re-checking every observation (which would cost far more reads).
+  static const String _PENDING_GOOGLE_SHEETS_SYNC_KEY = "pendingGoogleSheetsSync";
+
+  Future<void> _setPendingGoogleSheetsSync(String? observationUid, bool isPending) async {
+    if (observationUid == null || observationUid.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final pending = (prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY) ?? <String>[]).toSet();
+    final changed = isPending ? pending.add(observationUid) : pending.remove(observationUid);
+    if (changed) {
+      await prefs.setStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY, pending.toList());
+      await _refreshHasPendingRetries();
+    }
+  }
+
+  Future<void> _retryPendingGoogleSheetsSyncs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final pending = prefs.getStringList(_PENDING_GOOGLE_SHEETS_SYNC_KEY) ?? <String>[];
+    for (var uid in pending) {
+      final matches = localObservations.where((observation) => observation.uid == uid && observation.isUploaded == true);
+      if (matches.isEmpty) {
+        // Deleted, or belongs to another account on this device; nothing to retry here
+        continue;
+      }
+      final results = await saveObservationToGoogleSheets(matches.first);
+      final failed = results.any((result) => result.exception != null);
+      await _setPendingGoogleSheetsSync(uid, failed);
+    }
   }
 
   //TODO - why is this here vs utils?
@@ -247,140 +409,337 @@ class ObservationsService {
     return _sharedObservations;
   }
 
-  //Based on method_channel_query Stream<QuerySnapshotPlatform> snapshots
-  // It's fine to let the StreamController be garbage collected once all the
-  // subscribers have cancelled; this analyzer warning is safe to ignore.
+  // Memoized for the same reason as _localObservationsStreamController above.
   StreamController<List<Observation>>? _sharedObservationsStreamController; // ignore: close_sinks
 
   Stream<List<Observation>> get sharedObservationsStream {
-
-    _sharedObservationsStreamController = StreamController<List<Observation>>.broadcast(
-        onListen: () async {
-          _sharedObservationsStreamController?.add(_localObservations);
-        },
-        onCancel: () {
-          _sharedObservationsStreamController?.close();
-          _sharedObservationsStreamController = null;
+    _sharedObservationsStreamController ??= StreamController<List<Observation>>.broadcast(
+        onListen: () {
+          _sharedObservationsStreamController?.add(_sharedObservations);
         }
     );
 
     return _sharedObservationsStreamController!.stream;
   }
 
+  // Everyone gets a live view of the newest observations. Admins can also scroll back through
+  // every observation: older ones load one small page at a time as they near the end, and pages
+  // already loaded stay in memory, so nothing is read twice in a session.
+  static const int SHARED_OBSERVATIONS_PAGE_SIZE = 10;
+
+  List<Observation> _liveSharedObservations = [];
+  final List<Observation> _olderSharedObservations = [];
+  DocumentSnapshot? _lastSharedObservationsPageDocument;
+  bool _hasMoreSharedObservations = true;
+  bool _isLoadingSharedObservations = false;
+
   setSharedObservations(AsyncSnapshot<List<Observation>> sharedObservationsOnFirebase) {
     if (sharedObservationsOnFirebase.hasData) {
       var data = sharedObservationsOnFirebase.data;
       if (data != null) {
-        _sharedObservations = data;
-
-        _sharedObservations = _sharedObservations.reversed.toList();
-        for (var sharedObservation in  _sharedObservations) {
-          sharedObservation.buttonText = translations.viewObservation;
-        }
-
-        _sharedObservationsStreamController?.add(_sharedObservations);
+        _liveSharedObservations = data;
+        _publishSharedObservations();
       }
     }
+  }
+
+  Future<void> loadMoreSharedObservations() async {
+    if (_isLoadingSharedObservations || !_hasMoreSharedObservations) return;
+    _isLoadingSharedObservations = true;
+    try {
+      final page = await firebaseDatabaseService.observationsService.getObservationsPage(
+        startAfter: _lastSharedObservationsPageDocument,
+        pageSize: SHARED_OBSERVATIONS_PAGE_SIZE,
+      );
+      _lastSharedObservationsPageDocument = page.lastDocument;
+      _hasMoreSharedObservations = page.observations.length == SHARED_OBSERVATIONS_PAGE_SIZE;
+      _olderSharedObservations.addAll(page.observations);
+      _publishSharedObservations();
+    } on FirebaseException catch (e) {
+      developer.log('Could not load more shared observations: $e', name: 'ObservationsService');
+    } finally {
+      _isLoadingSharedObservations = false;
+    }
+  }
+
+  // Keeps loaded pages in step with this device's saves and deletes, without reading them again
+  void _updateOlderSharedObservation(Observation observation, {bool deleted = false}) {
+    final index = _olderSharedObservations.indexWhere((older) => older.uid != null && older.uid == observation.uid);
+    if (index < 0) return;
+    if (deleted) {
+      _olderSharedObservations.removeAt(index);
+    } else {
+      _olderSharedObservations[index] = observation.copy();
+    }
+    _publishSharedObservations();
+  }
+
+  void _publishSharedObservations() {
+    // Newest first: the live observations, then older pages without the ones already shown
+    final liveUids = _liveSharedObservations.map((observation) => observation.uid).toSet();
+    final newestFirst = [
+      ..._liveSharedObservations,
+      ..._olderSharedObservations.where((observation) => !liveUids.contains(observation.uid)),
+    ];
+
+    // The card stack shows the last card on top, so the newest goes last
+    _sharedObservations = newestFirst.reversed.toList();
+    for (var sharedObservation in  _sharedObservations) {
+      sharedObservation.buttonText = translations.viewObservation;
+    }
+
+    _sharedObservationsStreamController?.add(_sharedObservations);
   }
   //endregion
 
   //region User Observations
-  List<Observation> _userObservations = [];
+  final List<Observation> _userObservations = [];
 
   List<Observation> get userObservations {
     return _userObservations;
   }
 
   setUserObservations(AsyncSnapshot<List<Observation>> userObservationsOnFirebase) async {
-    /*if (userObservationsOnFirebase.hasData) {
-      var data = userObservationsOnFirebase.data;
-      if (data != null) {
-        _userObservations = data;
+    if (userObservationsOnFirebase.hasError) {
+      // e.g. a missing Firestore composite index or a security rules rejection - this fails
+      // silently otherwise, so log it to make that class of regression visible.
+      developer.log(
+        'Failed to fetch user observations from Firestore: ${userObservationsOnFirebase.error}',
+        name: 'ObservationsService',
+      );
+      return;
+    }
 
-        _userObservations = _userObservations.reversed.toList();
-        for (var userObservation in _userObservations) {
+    if (!userObservationsOnFirebase.hasData) return;
 
-          var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocallySavedObservation(localObservation, userObservation)).toList();
+    var remoteObservations = userObservationsOnFirebase.data;
+    if (remoteObservations == null) return;
 
-          // There are no local observations matching the remote observations.
-          // So, add the remote observation to the local cache to allow the user to restore their observations from another device,
-          // or after an uninstall and reinstall.
-          if (localVersionsOfObservation.isEmpty) {
-            await saveLocalObservation(userObservation);
-          }
+    for (var remoteObservation in remoteObservations) {
+      var localVersionsOfObservation = _localObservations.where((localObservation) => _isLocallySavedObservation(localObservation, remoteObservation)).toList();
 
+      // There's no local copy of this remote observation yet - e.g. it was created on another
+      // device, or this is a fresh install. Cache it locally so "My Observations" (which only
+      // reads the local cache, not Firestore directly) can show it without another server call.
+      if (localVersionsOfObservation.isEmpty) {
+        remoteObservation.buttonText = translations.viewObservation;
+        await saveLocalObservation(remoteObservation);
+      }
+    }
 
-          //TODO
-          for (var localObservationWithSameUid in localVersionsOfObservation) {
-            //Is the local observation more up to date?
-            // Trigger remote update
-
-            //Is the remote observation more up to date?
-            //  Don't trigger remote update
-            //  Trigger local update
-
-
-            //Are the local and remote observations the same?
-            //  don't do anything
-          }
-
-
-          userObservation.buttonText = translations.viewObservation;
+    // Refresh photo and recording links on local copies that have no unsent edits, so links an
+    // admin repaired (or that changed on another device) reach this phone too. Older versions kept
+    // the local copy's broken links forever.
+    for (var remoteObservation in remoteObservations) {
+      for (var localObservation in _localObservations.where((local) => local.isUploaded && local.uid == remoteObservation.uid)) {
+        final imagesChanged = !listEquals(localObservation.imageUrls, remoteObservation.imageUrls);
+        final audioChanged = !listEquals(localObservation.audioUrls, remoteObservation.audioUrls);
+        if (imagesChanged || audioChanged) {
+          localObservation.imageUrls = [...?remoteObservation.imageUrls];
+          localObservation.audioUrls = [...?remoteObservation.audioUrls];
+          await saveLocalObservation(localObservation);
         }
       }
-    }*/
+    }
+
+    // Prune the other direction too: a local observation that was previously synced to Firestore
+    // but is no longer in this fetch is one that got deleted - by this device before this listener
+    // caught up, or by another device entirely. Without this, deleting an uploaded observation on
+    // one device would never be reflected in another device's local cache. Purely local,
+    // never-uploaded observations are left untouched - they're not ours to prune based on what
+    // Firestore has. No extra network calls: this reuses the already-open userObservations
+    // listener's data instead of asking the server anything new.
+    //
+    // Must check isUploaded here, not isRemoteObservation()/uid != null: LocalObservation.uid is a
+    // non-nullable String defaulting to "" (never actually null), so an Observation built from one
+    // via setLocalObservations always has uid != null - isRemoteObservation() was true even for a
+    // brand-new, never-uploaded local observation. That made every local observation look like it
+    // had already been synced and was now "deleted remotely" the moment nothing matched it in the
+    // current fetch, which for a logged-out user (whose fetch is always an empty list) meant any
+    // observation just saved locally got immediately pruned again.
+    var deletedRemotely = _localObservations.where((localObservation) {
+      if (!localObservation.isUploaded) return false;
+      return !remoteObservations.any((remoteObservation) => _isLocallySavedObservation(localObservation, remoteObservation));
+    }).toList();
+
+    for (var staleObservation in deletedRemotely) {
+      await deleteLocalObservation(staleObservation);
+    }
   }
   //endregion
+
+  // Applies the admin's chosen link repairs (see StorageFileCorrelator), one observation at a
+  // time. Each observation is read fresh from the server first, because the scan may be days old
+  // and the owner may have changed it since; only the photo and recording lists are written,
+  // then its sheets are updated. Fixed files leave the saved scan. Returns how many observations
+  // could not be updated.
+  Future<int> applyFileFixes(StorageScan scan, List<FileFix> fixes) async {
+    final service = firebaseDatabaseService.observationsService;
+    final fixesByUid = <String, List<FileFix>>{};
+    for (var fix in fixes) {
+      final uid = fix.observation.uid;
+      if (uid == null || uid.isEmpty) continue;
+      fixesByUid.putIfAbsent(uid, () => []).add(fix);
+    }
+
+    var failures = 0;
+    for (var entry in fixesByUid.entries) {
+      final observationFixes = entry.value;
+      final Observation observation;
+      try {
+        final fresh = await service.getObservationFromServer(entry.key);
+        if (fresh == null) {
+          // Deleted since the scan; nothing to fix
+          scan.removeFixes(observationFixes);
+          continue;
+        }
+        observation = fresh;
+        final newUrlsByPath = {
+          for (var fix in observationFixes) fix.file.path: await service.downloadUrl(fix.file.path),
+        };
+        final lists = StorageFileCorrelator.applyFixes(observation, observationFixes, newUrlsByPath,
+            scan.isBroken, FirebaseObservationsService.storagePathFromUrl);
+        await service.updateMediaUrls(entry.key, lists.imageUrls, lists.audioUrls);
+        observation.imageUrls = lists.imageUrls;
+        observation.audioUrls = lists.audioUrls;
+      } on FirebaseException catch (e) {
+        developer.log('Could not repair links for ${entry.key}: $e', name: 'ObservationsService');
+        failures++;
+        continue;
+      }
+
+      // Keep the scan's copy in step, for the other candidates that point to this observation
+      for (var fix in observationFixes) {
+        fix.observation
+          ..imageUrls = observation.imageUrls
+          ..audioUrls = observation.audioUrls;
+      }
+      scan.removeFixes(observationFixes);
+      _updateOlderSharedObservation(observation);
+      final results = await saveObservationToGoogleSheets(observation);
+      await _setPendingGoogleSheetsSync(observation.uid, results.any((result) => result.exception != null));
+    }
+
+    await service.saveScanCache();
+    return failures;
+  }
+
+  // Merges each group into its kept copy and deletes the other copies (see DuplicateObservationFinder).
+  // Every copy is read fresh from the server first. No Storage files are deleted: the kept copy
+  // now links them all, and copies can share files. Sheets lose the deleted copies' rows and get
+  // the merged one. Merged groups leave the cached list. Returns how many groups could not be merged.
+  Future<int> mergeDuplicates(List<DuplicateGroup> groups) async {
+    final service = firebaseDatabaseService.observationsService;
+    var failures = 0;
+    final merged = <DuplicateGroup>[];
+    for (var group in groups) {
+      try {
+        final keep = await service.getObservationFromServer(group.keep.uid!);
+        if (keep == null) {
+          failures++;
+          continue;
+        }
+        final others = <Observation>[];
+        for (var copy in group.others) {
+          final fresh = await service.getObservationFromServer(copy.uid!);
+          if (fresh != null) others.add(fresh);
+        }
+
+        final lists = DuplicateObservationFinder.merge(keep, others, FirebaseObservationsService.storagePathFromUrl);
+        keep.imageUrls = lists.imageUrls;
+        keep.audioUrls = lists.audioUrls;
+        keep.sharedWithProjects = lists.sharedWithProjects;
+        keep.notSharedWithProjects = keep.notSharedWithProjects?.where((p) => !lists.sharedWithProjects.contains(p)).toList();
+        await service.updateMergedObservation(keep);
+
+        for (var copy in others) {
+          final exception = await service.deleteObservation(copy, false, false);
+          if (exception != null) throw exception;
+          for (var sheet in googleSheetsService.pikaPatrolSpreadsheetServices) {
+            await sheet.observationWorksheetService?.deleteObservation(copy);
+          }
+          _updateOlderSharedObservation(copy, deleted: true);
+        }
+
+        _updateOlderSharedObservation(keep);
+        final results = await saveObservationToGoogleSheets(keep);
+        await _setPendingGoogleSheetsSync(keep.uid, results.any((result) => result.exception != null));
+        merged.add(group);
+      } on FirebaseException catch (e) {
+        developer.log('Could not merge duplicates of ${group.keep.uid}: $e', name: 'ObservationsService');
+        failures++;
+      }
+    }
+    service.forgetDuplicates(merged);
+    return failures;
+  }
 
   //region Observation CRUD
   Future<ValueMessagePair?> saveObservation(Observation observation, AppUser? user) async {
 
     var returnValue = ValueMessagePair<bool>(true, null);
 
-    // TODO: we need an online/offline widget that triggers updates so that we don't have to ask this question every time
-    // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
-    // saved for others to register sooner
-    var hasConnection = await DataConnectionChecker().hasConnection;
-
     if (user == null) {
+      // Not logged in: this is always a local-only save, so skip the connectivity probe below -
+      // DataConnectionChecker pings real hosts and can take several seconds (much longer when
+      // actually offline), and its result was never used on this branch anyway. Awaiting it here
+      // just delayed the local save (further down) for no reason.
       returnValue = ValueMessagePair(false, translations.youMustLoginToUploadAnObservationObservationSavedLocally);
-    } else if (!hasConnection) {
-      //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
-      //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
-
-      returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
     } else {
-      // "Date" can be set manually by the user to indicate the date the observation was made.
-      // So, do not set the date using DateTime.now!
-      // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
-      // Also, if there is no connection, then all remote updates will fail, so don't worry about trying to update the dateUpdatedInGoogleSheets as it will just be reset to the original value
+      // TODO: we need an online/offline widget that triggers updates so that we don't have to ask this question every time
+      // Or, given that the online/offline service will poll, maybe request an update at given time or at least request the current state which is then
+      // saved for others to register sooner
+      var hasConnection = await DataConnectionChecker().hasConnection;
 
-      //dateUpdatedInGoogleSheets is updated here so that Firebase is up-to-date without having to write twice (second write would occur after Google Sheets is updated)
-      final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
-      observation.dateUpdatedInGoogleSheets = DateTime.now();
+      if (!hasConnection) {
+        //No need to modify dateUpdatedInGoogleSheets since it is only modified when there is a connection and both Firebase and Google Sheets are updated
+        //No need to modify isUploaded since that is only set to false when the observation is saved by the user and an attempt is made to save to Firebase
 
-      final firebaseReturnValue = await saveObservationToFirebase(observation);
-      final firebaseException = firebaseReturnValue?.message;
-      final firebaseUpdated = firebaseException == null && observation.uid != null;
-
-      if (firebaseUpdated) {
-        final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
-        final googleSheetsException = googleSheetsReturnValue.first.exception;
-
-        if (googleSheetsException != null) {
-          returnValue = ValueMessagePair(false, googleSheetsException.cause);
-        } else {
-          returnValue = ValueMessagePair(true, translations.observationSavedSuccessfully);
-        }
+        returnValue = ValueMessagePair(false, translations.noConnectionFoundObservationSavedLocally);
       } else {
-        //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
-        //Or, if the uid is not null, but there was an exception, then don't update Google Sheets because the observation wasn't updated in Firebase
-        observation.dateUpdatedInGoogleSheets = originalDateUpdatedInGoogleSheets;
+        // "Date" can be set manually by the user to indicate the date the observation was made.
+        // So, do not set the date using DateTime.now!
+        // Instead, track the date updated to google sheets in order to determine the last time an observation was updated and successfully synced
+        // Also, if there is no connection, then all remote updates will fail, so don't worry about trying to update the dateUpdatedInGoogleSheets as it will just be reset to the original value
 
-        if (firebaseException != null) {
-          returnValue = ValueMessagePair(false, firebaseException);
+        //dateUpdatedInGoogleSheets is updated here so that Firebase is up-to-date without having to write twice (second write would occur after Google Sheets is updated)
+        final originalDateUpdatedInGoogleSheets = observation.dateUpdatedInGoogleSheets;
+        observation.dateUpdatedInGoogleSheets = DateTime.now();
+
+        final firebaseReturnValue = await saveObservationToFirebase(observation);
+        final firebaseException = firebaseReturnValue?.message;
+        final firebaseUpdated = firebaseException == null && observation.uid != null;
+
+        if (firebaseUpdated) {
+          // Persist the Firebase result (isUploaded + real uid) to Hive right away, before the
+          // slower/less reliable Google Sheets sync runs. Otherwise, if the app is interrupted
+          // during that sync, Hive is left showing isUploaded: false with an empty uid even though
+          // Firebase already has the doc - so any later retry re-uploads it and, because uid is
+          // still empty, mints a second Firebase doc for the same local observation.
+          if (observation.isUserObservation(user) || observation.isNonLoggedInUserObservation(user)) {
+            await saveLocalObservation(observation);
+          }
+          _updateOlderSharedObservation(observation);
+
+          final List<GSheetsValue> googleSheetsReturnValue = await saveObservationToGoogleSheets(observation);
+          final googleSheetsException = googleSheetsReturnValue.where((value) => value.exception != null).firstOrNull?.exception;
+          await _setPendingGoogleSheetsSync(observation.uid, googleSheetsException != null);
+
+          if (googleSheetsException != null) {
+            returnValue = ValueMessagePair(false, googleSheetsException.cause);
+          } else {
+            returnValue = ValueMessagePair(true, translations.observationSavedSuccessfully);
+          }
         } else {
-          returnValue = ValueMessagePair(false, translations.unknownErrorUploadingToServerObservationSavedLocally);
+          //If the uid is null then a new observation was not uploaded to Firebase, so don't update Google Sheets
+          //Or, if the uid is not null, but there was an exception, then don't update Google Sheets because the observation wasn't updated in Firebase
+          observation.dateUpdatedInGoogleSheets = originalDateUpdatedInGoogleSheets;
+
+          if (firebaseException != null) {
+            returnValue = ValueMessagePair(false, firebaseException);
+          } else {
+            returnValue = ValueMessagePair(false, translations.unknownErrorUploadingToServerObservationSavedLocally);
+          }
         }
       }
     }
@@ -410,10 +769,7 @@ class ObservationsService {
       observation.audioUrls = await firebaseDatabaseService.observationsService.uploadFiles(audioUrls, false);//TODO - do not upload if no chane
     }
 
-    //TODO - determine if there are any images that were uploaded and associated with this observation that are no longer associated; delete them from the database
-
-    //TODO - modify files in the file host now, based on the updated observation files list
-
+    // addOrUpdateObservation also deletes Storage files the user removed from the observation
     return await firebaseDatabaseService.observationsService.addOrUpdateObservation(observation);
   }
 
@@ -425,15 +781,16 @@ class ObservationsService {
 
     List<GSheetsValue> returnValues = [];
 
-    var sharedWithProjects = observation.sharedWithProjects;
-    sharedWithProjects?.add("Pika Patrol");
+    // Every observation goes to the master sheet, even when it isn't shared with any project.
+    // Copy the list so the observation itself never gets the hidden master project added to it.
+    var sharedWithProjects = GoogleSheetsService.projectsFor(observation);
 
     GSheetsException? firstException;
 
     //Update all organization's spreadsheets even if an exception is thrown for one of them, since a single sheet can have an error while others are don't
     for (var service in googleSheetsService.pikaPatrolSpreadsheetServices) {
       GSheetsValue<bool>? returnValue;
-      if (sharedWithProjects?.contains(service.organization) == true) {
+      if (sharedWithProjects.contains(service.organization)) {
         returnValue = await service.observationWorksheetService?.addOrUpdateObservation(observation);
       } else {
         //TODO - it would be nice if we could know if the observation was previously shared with the organization, but now isn't
@@ -462,35 +819,13 @@ class ObservationsService {
       await deleteLocalObservation(observation);
     }
 
-    //TODO -  this is where we need to delete the observation images and audio, not in the collection
-
+    // Deleting from Firebase also deletes the observation's photos and recordings from Storage
     FirebaseException? firebaseException;
     if (context.mounted && deleteFromFirebase) {
       var databaseService = Provider.of<FirebaseDatabaseService>(context, listen: false); //TODO - CHRIS - allow use with emulators
       firebaseException = await databaseService.observationsService.deleteObservation(observation, deleteImages, deleteAudio);
+      _updateOlderSharedObservation(observation, deleted: true);
     }
-
-    /*
-    TODO - figure out where I was going with the following
-      if (bool deleteImages, bool deleteAudio) {
-        //delete files here instead of in the observationCollection in order to separate concerns
-        //if for example, we change the file host, then there will not be a need to change the code other than swapping out the file host implementation
-
-        //for this to work, need a list of urls for the files
-
-        var exception = deleteImages ? await deleteFiles(FOLDER_NAME, observation.imageUrls) : null;
-        if (exception != null) {
-          return exception;
-        }
-
-        exception = deleteAudio ? await deleteFiles(FOLDER_NAME, observation.audioUrls) : null;
-        if (exception != null) {
-          return exception;
-        }
-      }
-
-
-     */
 
     if (context.mounted && deleteFromGoogleSheets) {
       var sheetsService = Provider.of<GoogleSheetsService>(context, listen: false);

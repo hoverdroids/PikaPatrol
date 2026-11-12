@@ -54,7 +54,11 @@ class CardScrollWidget extends StatelessWidget {
 
       List<Widget> cardList = <Widget>[];
 
-      for (var cardIndex = 0; cardIndex < cards.length; cardIndex++) {
+      // Only the cards near the current one are visible: older ones hide behind it and newer ones
+      // are off screen. Building just these keeps long lists fast and only loads their images.
+      final firstCard = max(0, currentCardPosition.floor() - 4);
+      final lastCard = min(cards.length - 1, currentCardPosition.ceil() + 1);
+      for (var cardIndex = firstCard; cardIndex <= lastCard; cardIndex++) {
         cardList.add(_buildCard(cardIndex, primaryCardLeft, horizontalInset));
       }
 
@@ -142,7 +146,8 @@ class CardScrollWidget extends StatelessWidget {
 
   Widget _buildIcon(IconData? icon) => Align(
     alignment: Alignment.topLeft,
-    child: ThemedIconButton(icon, type: ThemeGroupType.MOI, onPressedCallback: () => {}),
+    // Status only (uploaded or waiting), drawn on a dark circle so it shows on any photo
+    child: icon == null ? const SizedBox.shrink() : ThemedOverlayIconButton(icon, onPressedCallback: () {}),
   );
 
   Widget _buildTitleAndMoreDetailsButton(String? title, String? buttonText, CardLayout cardLayout) => Align(
@@ -152,7 +157,7 @@ class CardScrollWidget extends StatelessWidget {
       crossAxisAlignment: cardLayout == CardLayout.bottomLeft ? CrossAxisAlignment.start : CrossAxisAlignment.center,
       children: <Widget>[
         if (title != null) ... [
-          _buildTitle(title, cardLayout),
+          Flexible(child: _buildTitle(title, cardLayout)),
           const SizedBox(height: 10.0),
         ],
         if (buttonText != null) ... [
@@ -167,6 +172,8 @@ class CardScrollWidget extends StatelessWidget {
     child: Text(
       title ?? "!!! NO TITLE !!!",
       textAlign: cardLayout == CardLayout.bottomLeft ? TextAlign.start : TextAlign.center,
+      maxLines: 2,
+      overflow: TextOverflow.ellipsis,
       style: const TextStyle(color: Colors.white, fontSize: 25.0, fontFamily: "SF-Pro-Text-Regular")
     ),
   );

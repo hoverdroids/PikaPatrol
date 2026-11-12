@@ -1,0 +1,263 @@
+# Pika Patrol Feature List
+
+Every request made for Pika Patrol, collected from the project email history (2022 to October 2026) and the GitHub issues. We work from this list to finish the app and publish it to Google Play and the App Store.
+
+## How to use this list
+
+- `[x]` means done and confirmed in the code, or shipped in a store release.
+- `[ ]` means not done, or only partly done. A note says what is missing.
+- Each item names who asked, when, and the email thread or GitHub issue it came from.
+- **Owner** marks items that are not code work: Rocky Mountain Wild (Megan), Jo, UBC (Mike, Leigh Anne), or Chris.
+- Status was checked on 2026-10-09 against branch `done/doing/alluser-observations-in-one-place-4-manual-redo` (version 3.4.0+334). Much of the recent work is on this branch only and is not yet merged into `main`.
+
+## Progress log
+
+Each pass is one or more commits on branch `doing/3.5.0-store-blockers`; find them with `git log --grep "Pass N"`. Items finished in a pass are ticked in the sections below.
+
+- **Pass 1 — store blockers** (`344fa2b`): Flutter 3.47.7 with FVM, target API 36, 16 KB pages, reCAPTCHA 18.6.1, Photo Picker, permissions trimmed, iOS privacy manifest, Swift Package Manager, `record` and `just_audio`.
+- **Pass 2 — audio delete and icon contrast** (`65d9395`): trash can on audio recordings while creating or editing an observation; delete icons on photos and audio cards drawn on a dark circle so they show on any background.
+- **Pass 3 — data fixes**: hidden master project always on; partner sheets get no names or emails; coordinates at 5 decimals; password check before account deletion; camera photos saved to the gallery; photos compressed before upload.
+- **Pass 4 — Sheets retry and social sign-in**: failed Sheets updates retried when back online; Sign in with Google (all phones) and Apple (iPhone).
+- **Pass 5 — content and look**: territory wording and Native Land source link; call pro-tip; chip selection beyond color; "Incidental" search duration; https IF/THEN link; splash file names; stub and TODO cleanup; thank-you message.
+- **Pass 6 — Firebase rules and billing cap**: Firestore and proposed Storage rules in `firebase/`; billing kill-switch function in its own repo; `docs/firebase-runbook.md` with the console checklist.
+- **Pass 7 — card status, string tool, version 3.5.0**: clearer upload status icons and info text; `tool/add_strings.py`; version 3.5.0+335.
+- **Pass 8 — App Check**: the app activates Firebase App Check so enforcement can be turned on later.
+- **Pass 9 — checklist tidy**: ticked items already covered by earlier passes or decisions; units check.
+- **Pass 10 — Chris's test feedback**: form no longer goes blank after saving; first photo stays the cover; photo cards fill without stretching; confirm before deleting a photo or recording; removed files are deleted from Storage (retried when offline); admins page back through every shared observation; photos cached on the phone.
+- **Pass 11 — unused files cleanup**: admin-only "Unused files" screen in the left menu shows Storage photos and recordings that no observation uses, in a grid to preview, select and delete.
+- **Pass 12 — correlate files**: admin "Correlate files" screen pairs broken photo and recording links with the stored file most likely to be the right one, for bulk repair; Unused files now only shows files that match nothing; fixed a pass 10 cleanup bug that compared URLs instead of paths; repaired links reach the owner's phone.
+- **Pass 13 — brand colors**: chips, badges and admin screens back to the app's teal (pass 5 had darkened chips to a shade that read as green); app theme now has a color scheme from the palette (material_themes_manager 1.6.0), so progress bars, dialog buttons and checkboxes are teal instead of Flutter's default purple.
+- **Pass 14 — scored file matching**: Correlate files scores every unused file against every observation and shows a percent, with the clues behind it and a chooser for the next-best observations; both file screens reuse one cached scan (pull down to scan again) and have Select all and Clear buttons; matching runs off the main thread.
+- **Pass 15 — saved scan**: the admin file scan is saved on the phone and survives restarts; fixes re-read each observation from the server first so an old scan never overwrites newer changes; one shared observation parser replaces two copies.
+- **Pass 16 — device reach and crash reports**: found why 3.3.8 lost devices (minimum Android went from 5.0 to 6.0; Flutter now needs 7.0); location, GPS, microphone and portrait screen marked optional; native debug symbols in the app bundle.
+- **Pass 17 — old data, pickers, recordings, status**: pre-3.0 local observations no longer overwrite the server; gallery and file pickers no longer ask for permissions they don't need (GitHub #30); recordings save under unique, safe names (GitHub #31); album saves get the iPhone access they need; observation page shows its server status; Collared pika photo credit; localized month.
+- **Pass 18 — duplicates, Collared pika sheet, verifications**: admin duplicate merge tool; Collared pika sheet routing; admin export follows the save rule; Turi's French verified; Spanish species label; photo credit removed (Chris's photo); Collared pika call link found expired.
+- **Pass 19 — store kit**: `docs/store/3.5.0-store-kit.md` with release notes in EN/ES/FR (no platform names, so they work in both stores), Data safety form answers from the code, the developer credit line, and the Play and App Store console steps; 13-inch iPad screenshots and the test that takes them; fixed an error on every launch (the brand palette was set during build); published material_themes_manager 1.6.0 and material_themes_widgets 1.15.0 to pub.dev and removed the local overrides.
+- **Pass 20 — cancelled edits**: copying an observation now copies its lists too. Before, removing a photo or recording and pressing back still removed it from the open observation in memory, and a later save deleted the file from Storage. Test in `test/model/observation_copy_test.dart`.
+- **Pass 21 — recording names and template territories**: recording cards show the name the file was given, not the encoded Storage URL. The default template keeps the Indigenous territories and languages with its coordinates, and a new observation whose template has coordinates but no territories looks them up. Tests in `test/utils/observation_template_test.dart`.
+- **Pass 22 — location button**: the location button gives up on a fresh GPS fix after 20 seconds and uses the last known position, instead of waiting forever where the sky can't be seen (which also kept the Indigenous territory lookup from running).
+- **Pass 23 — drawer keeps its place**: changing a setting in the left drawer no longer scrolls it back to the top. material_themes_widgets 1.16.0 makes HeaderList pick up new values on rebuild, so the app no longer remounts it with a changing key.
+- **3.5.1 — eMudhra certificate security fix** (Firebase notice, Nov 3 2026): `cloud_firestore` 6.10.2, `firebase_core` 4.15.2, `firebase_auth` 6.7.1, `firebase_storage` 13.6.1 and `firebase_app_check` 0.4.9, which bring Firebase iOS SDK 12.19.3 and drop the compromised root certificates; Flutter 3.47.9 with Dart 3.13.7 for the same fix on Android; added the `NSLocationAlwaysAndWhenInUseUsageDescription` text Apple flagged on build 335. Version 3.5.1+336. See https://firebase.google.com/support/guides/compromised-emudhra-intermediate-ca.
+- **3.5.1 — add button clear of the system bars** (Megan, Oct 21 2026): Android 15 and up draw the app behind the system buttons, which covered the add observation button. A strip of the bar's color below the bottom bar lifts it clear on Android and above the iPhone home indicator.
+
+## People
+
+- **Jo** — Johanna Varner, Colorado Mesa University. Lead scientist.
+- **Megan** — Megan Mueller, Rocky Mountain Wild (RMW). Owns the store accounts and the contracts.
+- **Mike** — Michael Russello, UBC Okanagan. Funds the Canadian work.
+- **Leigh Anne** — Leigh Anne Isaac, BC government. Canadian co-lead and tester.
+- **Denver Zoo** — Stefan, Julie and Alex. Co-owner of the app with RMW.
+- **Turi** — French translation reviewer.
+- **Volunteers** — bug reports come from the CPP and Cascades Pika Watch volunteers through the "report a bug" Google form.
+
+---
+
+## 1. Release blockers (must fix before the next store release)
+
+- [x] **Target Android 15 (API 35).** Now targets API 36, which Play requires from Aug 31 2026 (branch `doing/3.5.0-store-blockers`). Google Play blocks every update until this is done. The repo is on 34 because a July 2026 commit lowered it. Megan, Jun 2026, "FW: Update on Pika Patrol APP"; GitHub #73.
+- [x] **Support 16 KB memory page sizes.** All native libraries checked at 16 KB alignment after the toolchain upgrade. Play Console shows this as an error on the 3.3.8 build. The toolchain needs upgrading: Flutter 3.19.6, AGP 7.4.2, Kotlin 1.7.10. Megan, Aug 6 2026, "Please accept Apple policy updates".
+- [x] **Find out why 3.3.8 drops 915 previously supported devices.** Found in pass 16 by comparing the release builds: 3.1.0 supported Android 5.0 (API 21) and up, while 3.3.x and 3.4.0 shipped with Android 6.0 (API 23). Builds with Flutter 3.47 need Android 7.0 (API 24): Flutter requires it, Firebase needs API 23, and Play's target-API rule rules out staying on old Flutter, so those 2014–2015 phones can't come back. To win other devices back, pass 16 marks location, GPS, microphone, camera autofocus and portrait screen as optional hardware, so Play stops hiding the app from Wi-Fi tablets and Chromebooks. Check the device count in Play Console after uploading. Megan asked to hold the release until this is checked. Same thread, Aug 6 2026.
+- [x] **Upgrade reCAPTCHA to 18.4.0 or newer.** Resolves to 18.6.1. Version 18.1.2 has a critical security bug and is deprecated. The repo is on firebase_auth 4.12.0, which likely pulls 18.1.x, so upgrade the Firebase packages. Google Play Console, Apr 2024 and Apr/Jun 2026.
+- [ ] **Remove READ_MEDIA_IMAGES / READ_MEDIA_VIDEO from every track and use the Android Photo Picker.** Code done: the Photo Picker is on and the merged manifest has neither permission. Still to do: replace the old builds on the Play testing tracks. Google rejected the app over this in Jun 2026. Removing them makes the app available in Canada again. The manifest no longer has them, but `useAndroidPhotoPicker` is not turned on, and old builds on the testing tracks still need replacing. Megan, Jan 2025 and Jun 2026, "Action Required: Your app is not compliant…".
+- [x] **Add an iOS privacy manifest.** Added `ios/Runner/PrivacyInfo.xcprivacy`. `PrivacyInfo.xcprivacy` is missing. It needs `NSPrivacyAccessedAPITypes` for FileTimestamp and UserDefaults, and Apple has required it since May 2024 (ITMS-91053). App Store Connect, Mar 2024.
+- [ ] **Merge the release branch into `main`** once it has been tested. (README version updated to 3.5.0 / 335 in pass 7.)
+- [ ] **Publish to Google Play and the App Store** with release notes. **Owner:** Megan (Play), Jo or Chris (Apple).
+
+## 2. Offline and cached observations, and sync
+
+- [ ] **Cached observations keep asking to upload after they have already uploaded.** Reported on iOS and Android by Jo, Julie, Megan and several volunteers. The 2026 commits fix several causes, but volunteers still reported it in Jul and Oct 2026 (possibly on old builds). Confirm the fix on the newest build. GitHub #64; "Pika patrol issues/questions" (May 2024); "FW: Pika patrol bug feedback - still not seeing a fix…" (Oct 2026).
+- [ ] **Editing cached observations offline must save.** Pass 10 found a likely cause: the screen could swap in a fresh copy of the observation when the keyboard closed, losing edits (fixed). Pass 3 review: the save path does mark edited observations for re-upload; the report may predate the July 2026 fixes. Needs a hands-on test on the newest build: airplane mode, create, edit text, save, reopen, then go online and check Firebase. A volunteer records in airplane mode and proofreads at home before uploading. Edits made offline are lost, so typos get uploaded. Edits must stick, and uploading should send everything at once. Volunteer report, Aug 2025, "Where are we with app updates?"; Oct 2026 follow-up.
+- [x] **Make edits to an already-uploaded observation reach the server, and show which version is on the server.** Pass 17: an observation's page now says "On the server. Last uploaded <date>." or that changes are saved on the phone and waiting to upload; saving an edit marks it for upload (pass 3) and the form no longer resets (pass 10). The month on the page also follows the app's language now. Volunteer, Oct 2024, "FW: Pika Patrol app problems and questions".
+- [x] **Show a clear status on each card: uploaded, waiting to upload, or failed.** Done in pass 7: a cloud with a check mark means uploaded, a clock means waiting; both drawn on a dark circle; the My observations info text now explains them (EN/ES/FR) and no longer says uploaded observations stay off the device. A volunteer could not tell what the cloud icon meant. Oct 2024 (same thread); Chris, Aug 2025.
+- [x] Users see all of their own observations on every device, including after a reinstall. Chris, Sep 2024; done 2026-07-28.
+- [x] With two accounts on one phone, only the logged-in account's observations show, and the other account's local observations are never deleted. Chris, Sep 2024, "Fwd: Correction on recent bug report…".
+- [x] Logged-out observations are no longer deleted, and offline duplicates are fixed (3.3.4 to 3.3.9, Jul 2026).
+- [x] Deletions sync across devices (3.3.2).
+- [x] "Cached Observations" renamed to "My observations", with an info button. Jo and Megan, Oct 2023; renamed again Jul 2026.
+- [x] Users can delete their own observations; admins can edit or delete any (3.0.0).
+- [x] **The form looks the same before and after saving.** Fixed in pass 10: the screen made a fresh observation whenever Flutter rebuilt its page (for example when the keyboard closed), wiping the form. This may also be the cause of the offline-edits report above. Chris, 2026-10-09.
+- [x] **Admins can scroll back through every observation** in Shared observations. Older ones load ten at a time as the admin nears the end, loaded pages stay in memory, and only the cards near the current one are drawn. Everyone else still sees the newest five. Chris, 2026-10-09 (pass 10).
+- [x] **Old data model:** observations saved before 3.0 have no "uploaded" flag. Pass 17: the Hive adapter now treats an old record with a server uid as uploaded (so it is never re-uploaded over the server's species and projects) and gives it the American pika species it always had; old records without a uid still upload. Chris, Jul 2024.
+- [ ] **Check that broken image links are fixed for older observations.** Pass 12 adds the tools: admin "Correlate files" finds links whose token changed, phone paths saved instead of Storage links, and links to missing files, and proposes the matching stored file (same name, or uploaded near when the observation was made or saved) for bulk repair. Phones now take repaired links from the server when their copy has no unsent edits. Still to do: an admin runs it and checks the results. Images broke when Firebase gave a re-uploaded image a new access token, and saved local copies kept the broken URL. Chris, Jun–Sep 2024.
+
+## 3. Observation form
+
+- [x] Species limited to American pika (first and default) and Collared pika. Other Asian species stay hidden. Jo and Megan, Jan and Feb 2024, "More Pika species!" and "iOS build submitted".
+- [x] Done in pass 5. **Remove the leftover TODO about American pika showing twice** (observation_screen.dart:1550), after checking it no longer happens.
+- [x] "Other" option for other animals, with free text. Jo, Sep 2023.
+- [x] **Latitude and longitude at 5 decimal places everywhere.** Fixed in pass 3: GPS and typed values are rounded to 5 places and shown with 5. Editing and the map header show 5, but the read-only view shows 3, and typed input is not limited. Jo, Aug 2022 and Jun 2024, "List of projects to include in the app"; GitHub #50 and #58.
+- [x] Altitude in feet, plus an imperial/metric preference. Jo, Sep 2023; Leigh Anne, Aug 2026. Done in 3.4.0.
+- [x] Covered by the units setting added in 3.4.0, which shows temperature in Celsius when Metric is chosen. **Show Celsius next to Fahrenheit for temperature** (for example "45°F (7°C)"), or have the units setting cover temperature. Leigh Anne, Aug 2026.
+- [x] Checked in pass 9: the units setting only changes labels; stored values are unchanged (altitude has always been stored in meters). **Units in Google Sheets stay imperial.** The display setting must not change stored data. Jo, Aug 2026. Check this holds.
+- [x] Altitude no longer shows 0 offline on Android 13. Jo, Sep 2023 (2.0.0 rework). Retest.
+- [x] Date can be changed with the calendar button. GitHub #23.
+- [x] Default observation template, with default species and default projects. Chris, Aug 2026; agreed by Jo, Mike, Megan and Leigh Anne. Done in 3.4.0.
+- [x] **Add a search duration option for incidental sightings that were not a standard search.** Done in pass 5: "Incidental" is the first option. Leigh Anne, Aug 2026. Jo deferred to Megan, since the field comes from CPP. **Decision:** Megan.
+- [x] Talus area hints in sports-field sizes ("Show hints").
+- [x] **Make the selected state of choice chips visible in sunlight, and not by color alone.** Done in pass 5: dark fill, thick black border, bold text and a check mark. Chips now swap color (teal with white text versus grey). The request was a dark background with light text, **and** a thicker or darker border or a check icon, so that color is not the only cue. Test this outdoors. Volunteer via Jo, Aug 2025; GitHub #72 (still open).
+- [x] Done in pass 5: "Thank you! Your observation was uploaded." in EN/ES/FR. **Show a "Thank you for submitting your observation" message** after upload. Today there is only a "saved successfully" toast. GitHub #71 (low priority, needs funding).
+- [ ] **Minor form changes from the Canadian partner meetings** (to be decided). Jo and Mike planned to meet partners and provincial data centres; Mike noted the provincial staff were on strike (Oct 14 2025) and no list has come since. **Owner:** Jo and Mike, to send the list or confirm there are none. Jo, Oct 2025, "Canadian pika project updates to Pika Patrol app".
+
+## 4. Projects and data sharing (Google Sheets)
+
+- [x] Projects list: Colorado Pika Project, Cascades Pika Watch, PikaNET, Glacier NP, Mt. Rainier NP, Cascades Forest Conservancy, Montana Pika Project, Nevada Pika Atlas, Canadian Pika Project, Utah Pika Watch. Jo, Apr–Jun 2024, Nov 2024 and Jul 2026.
+- [x] Denver Zoo, RMW and IF/THEN removed from the projects list. Jo, Feb 2024.
+- [x] New observations start with no projects selected. Jo, Jul 2024 (3.0.3).
+- [x] **Hidden "Pika Patrol" project always on, so every observation reaches the master sheet.** Fixed in pass 3: always added during sync, never written into the observation itself. Today it is added only while syncing to Sheets, and it is skipped when the project list is empty (observations_service.dart:527). It also changes the observation's own list. Jo, Feb and Jul 2024.
+- [x] Each project gets its own sheet, updated on add, edit and delete, and an observation is removed from a project's sheet when that project is unticked (3.0.0).
+- [x] **Remove observer names and emails from the sheets shared with partners.** Fixed in pass 3: user profiles are written to the master sheet only. Partner sheets that already have a User Profiles tab still need it cleared by hand (**Owner:** Jo or Megan). Today the User Profiles tab is written to every project's sheet. Megan wants partner sheets to have no personal data. Chris proposed one master sheet that feeds the others. Megan, Feb 2026, "a couple of questions about app data use agreement".
+- [ ] **Add a sheet (or filter) of all Collared pika observations** for provincial governments and land managers. Code done in pass 18: every Collared pika observation (in any language) also goes to a hidden "Collared Pika" project sheet, and leaves it if the species changes. **Owner:** Chris to create the spreadsheet, share it with the service account, and add it as "Collared Pika" to the googleSheets credentials in Firestore; then run the admin export to backfill. Yukon partner via Jo, Oct 2025.
+- [x] Decided no (Chris, 2026-10-09): Canadian users set the project once in the default observation template. **Send observations made in Canada to the Canadian Pika Project automatically**, even if the observer picks another project or none. Megan says the privacy policy likely allows it. Leigh Anne and Jo, Aug 2026. **Decision:** confirm the approach, then build it.
+- [x] **Firebase-to-Sheets gaps.** Option (d) done in pass 4: observations whose Sheets update failed are remembered on the phone and retried when the app is next online. (Superseded later if the Sheets sync moves server-side, §18.) If Sheets is down, the sheet never gets the update. Options: (a) the user re-saves, (b) a manual fix, (c) admin full sync (expensive), or (d) check unsynced items when the app opens. Jo and Megan need to choose. GitHub #68 (Should Discuss).
+- [x] Admin-only "export all" and "initialize sheets" (3.0.0).
+- [ ] **Backfill older Canadian observations into the Canadian sheet** if Mike or Leigh Anne want them. Chris, Jul 2026.
+- [ ] **Remove stale rows from the master sheet.** Rows for observations already deleted from Firebase remain. For example, four 2024 test observations under spragucm@gmail.com are in the sheet but not in Firestore (checked 2026-10-09).
+- [ ] **Clean up the partner sheets** made before the default changed to "none". Each one received every observation. Also decide whether the IF/THEN, Denver Zoo and RMW sheets should still exist. **Owner:** Jo and Megan. Chris, Jul 2024. Pass 18 fixed the cause in the admin export, which added every observation a user hadn't opted out of; it now follows the same rule as saving.
+
+## 5. Indigenous content (UBC grant)
+
+- [x] Look up Native Land Digital territories and languages from the GPS location. Jo, Mike and Lizzy, Feb–Apr 2026, "Indigenous content in app".
+- [x] Look up territories for manually typed coordinates too. Mike, Jul 2026.
+- [x] Clickable territory links, and an in-app Native Land map (an extra, beyond the request).
+- [x] The map's auto-open can be turned off on the map screen itself, as well as in User Settings. Mike found the auto-open distracting. Jul 2026.
+- [x] **Use the agreed wording, "Traditional territory of the XX, YY, ZZ people".** Done in pass 5, in the observation and the pop-up, in EN/ES/FR. The app now shows "Indigenous Territories" and "Indigenous Languages" headings. Jo, Apr 30 2026, "Pika Patrol Indigenous Content".
+- [x] **Show the Native Land Digital source with a link to how they map territories.** Done in pass 5: "Source: Native Land Digital" links to native-land.ca/about/how-it-works. Leigh Anne asked for the reference, and Jo thought it was shown, but the code has no attribution. Aug 2026.
+- [ ] **Year 2 extra: Indigenous names for American and Collared pikas**, if funding and content come in. Mike, Jan 2025; Jo, Apr 2026.
+
+## 6. Languages
+
+- [x] Spanish across the whole app, with a language switcher (3.0.0). Megan and Jo, 2022–2024.
+- [ ] **Have a professional check the Spanish** and fix it based on user feedback. The first pass was Google Translate plus Annika's sheet. Review was planned through QHM or Patagonia Catchfire. Jo and Megan, Jan 2024; IF/THEN report, Sep 2024.
+- [x] French translation (3.3.8/3.4.0), with proofreader fixes. Mike, Dec 2024 to Jul 2026.
+- [x] **Apply Turi's French suggestions** (Jul 30 2026, "French Translation Suggestions.docx"). Verified in pass 18: every suggestion is in the app (Cieux, Histoire du site, Connexion/Déconnexion, A vu un pika, Vous devez remplir le formulaire en entier, lower-case months, Ajouter une ou plusieurs espèces, profils utilisateurs/d'utilisateurs, Impossible d'obtenir la position GPS, Remplissez tout le formulaire). On Turi's note to check the Spanish: "campos" is standard for form fields; the species label was changed from "Especies" to "Especie".
+- [x] Pass 5 and 7 added Spanish and French for every new string (first drafts; include them in the Spanish and French reviews). **Translate new text into French and Spanish**, for example the "Traditional territory" wording and the call pro-tip. Jo offered to do these. Oct 2025.
+- [x] Pass 7: `tool/add_strings.py` adds a string to every language file and `translations.dart` in one step. **Make it easier to add new languages**, using one translation sheet with a column per language. Chris, Dec 2024.
+
+## 7. Training materials
+
+- [x] Collared pika page, with an image and text that tells it apart from the American pika. Jo, Nov 2023.
+- [ ] **Add the Collared pika call audio to its page.** Jo sent the call as an iCloud shared video ("Pika Patrol App draft scope of work", Nov 2023); checked in pass 18 and the link has expired. **Owner:** Jo to resend the recording or video. Jo, Nov 2023.
+- [x] **Credit the Collared pika photo to Katie Christie (optional).** Not needed: Chris confirmed the photo in the app is his own and needs no credit (2026-10-09). Jo, Nov 2023.
+- [x] Done in pass 5 (French is a first draft for Turi to check). **Add the "Hear them roar" pro-tip:** "Pikas often respond to recorded calls, so if you don't see any, try playing this call with your speaker sound up!" Add it in English, Spanish (Annika's version) and French. Jo, Jan 2024; Megan approved.
+- [ ] **Add a link to the on-demand trip leader training in the main menu.** Only mentioned as a pitch in Jo's IF/THEN final-report draft ("Are you sick of us yet?", Sep 27 2024), with no link given. **Owner:** Jo to send the training URL, or drop it. IF/THEN report, Sep 2024.
+
+## 8. Menu, branding and links
+
+- [x] App Help and Info link. GitHub #39.
+- [x] Map of Pika Observations link (https://pikapartners.org/pikapatrolmap/).
+- [x] Take Climate Action link (formerly "Carbon"). GitHub #13.
+- [x] Sponsors and Support: Colorado Pika Project, RMW, Denver Zoo, IF/THEN, Canadian Pika Project (https://blogs.ubc.ca/russellolab/canadian-pika-project/).
+- [x] **Change the IF/THEN link to https.** Done in pass 5. The app uses `http://www.ifthenshecan.org/`; Jo asked for `https://www.ifthenshecan.org`. Mar 2022.
+- [x] **Replace the "Front Range Pika Project" splash with the Colorado Pika Project name and logo.** The splash already showed the CPP logo; pass 5 renamed the leftover Front Range file and class names. The project was renamed in 2022, but the splash still shows the old name. Megan, Feb 2022.
+- [x] IF/THEN logo (orange on white) on the splash. Jo, Mar 2022.
+- [x] Splash screen can be turned off in User Settings (2026).
+- [x] App version shown in the menu (3.2.1).
+- [x] Stub removed in pass 5. **Remove the leftover `developer.log('Play Video')` stub,** or link the Kristi Odom tutorial video (https://vimeo.com/1011836237) from App Help if wanted. Sep 2024.
+- [ ] **Possible future: Oregon Zoo on the splash.** Jo, May 2024 (only if they join).
+
+## 9. Accounts and login
+
+- [x] Forgot password, through a Firebase email. Jo, Feb 2023 (2.0.0).
+- [x] Change email and password in the profile (3.0.0).
+- [x] Profile no longer asks for the password again right after registering (3.0.2).
+- [x] Required profile fields are enforced after login (2.0.0).
+- [x] **Account deletion must remove the login as well as the profile.** Fixed in pass 3: the user confirms their password first, so Firebase always allows the deletion; nothing is deleted if the password is wrong. (Google and Apple sign-in users will need the same step when those are added.) Today the profile is deleted first. If Firebase needs a recent sign-in, the login stays, so the user can still sign in but can't edit a profile. Reported by a volunteer, Sep 2024. Apple 5.1.1(v).
+- [x] **Sign in with Google and with Apple.** Done in pass 4: Google on all phones, Apple on iPhones; new accounts get a profile; account deletion re-confirms with the matching sign-in. **Console steps for Chris:** turn on the Google and Apple providers in Firebase Authentication; add the debug SHA-1 `DA:2D:C2:F6:8E:FA:D1:D2:40:12:3C:5D:0B:C4:B4:C3:8E:90:DC:4D` and the Play app-signing SHA-1 to the Android app in Firebase; turn on the Sign in with Apple capability for App ID `com.tcubedstudios.pikaPatrol`. Chris listed both in Sep 2024, and Jo listed them in the UBC "misc" items. `google_sign_in` is in pubspec but unused. If Google sign-in ships, Apple sign-in is required on iOS. **Decision:** build both or remove the unused package.
+- [ ] **Turn on email enumeration protection in Firebase Auth.** Firebase notice, Feb 2024 (no reply in the thread).
+
+## 10. Photos and media
+
+- [x] **Save photos taken in the app to the phone's camera roll.** Fixed in pass 3: saved to a "Pika Patrol" album with `gal`. A volunteer lost photos because of this. Jul 2026, "FW: New ideas about Pika Patrol app bug on iPhone…".
+- [x] **Cache images** (for example cached_network_image) so cards don't stay blank while loading. Done in pass 10 with cached_network_image: each photo downloads once, which also cuts Storage download costs. Chris, Jun 2024.
+- [x] **Resize or compress photos before upload.** Fixed in pass 3: camera photos capped at 2560 px and 85% quality; library photos compressed to 85% quality. Existing photos in Storage are unchanged. Large phone photos are slow, and Firebase Storage was at 89 percent of the free limit. Chris and Megan, Jun 2024 and Jun 2025.
+- [x] **Recheck GitHub #31** ("Audio recording won't save") **and #30** ("Can't take a picture after choosing to upload a photo"). Pass 17 found causes for both. #31: recordings were renamed to the typed name, so reusing a name replaced the earlier recording on Android and failed the save on iPhone, and names with characters like "/" failed everywhere; each recording now gets its own folder and a safe file name, and a failed save says so. #30: picking from the gallery first asked for camera, Photos, media-library and storage permissions, and any refusal (including iPhone's "Select Photos" limited access) stopped the picker; the system pickers need none, so the checks are gone. Also: saving to the Pika Patrol album now asks for the full Photos access iPhone needs for albums, and the recorder's buttons and hint are translated. Close both issues after a hands-on check.
+- [x] Camera crash and image cropper fixed. GitHub #1.
+- [x] Unused media permissions removed (Jul 2026).
+- [x] Delete button on audio recordings while creating or editing an observation. Chris, 2026-10-09 (pass 2).
+- [x] Delete icons on photo and audio cards drawn on a dark circle with a light outline, so they show on any background. Chris, 2026-10-09 (pass 2).
+- [x] **Photo cards fill their slot** without stretching or bars, so the shadow sits under the photo. Chris, 2026-10-09 (pass 10).
+- [x] **The first photo added stays the cover** after uploading. Uploads finished in random order and were saved in that order. Chris, 2026-10-09 (pass 10).
+- [x] **Ask before deleting a photo or recording,** since it can't be undone (EN/ES/FR). Chris, 2026-10-09 (pass 10).
+- [x] **Removed photos and recordings are deleted from Firebase Storage,** not just from the observation. Deleting an observation deletes its files too. Deletes that fail, for example offline, are retried when the app is next online. New uploads get a unique name so two observations never share a file. Chris, 2026-10-09 (pass 10).
+- [x] **Admins can merge duplicate observations.** Before Jul 2026, two upload attempts could race and save one offline observation twice. Left menu → Admin settings → Duplicate observations groups copies (same person, started within a minute, same site name or coordinates); pick the copy to keep, check groups, merge. The kept copy gets every photo, recording and project; the others are deleted from Firebase and the sheets; no files are deleted. Chris, 2026-10-09 (pass 18).
+- [x] **Admins can find and delete unused files** left in Storage by older app versions. Left menu → Admin settings → Unused files: a grid of photos (tap to enlarge) and recordings (tap to play), with sizes and dates, select all, and a confirmation before deleting. It reads every observation from the server and stops on any error, so files in use never look unused; files from the last day are skipped. Chris, 2026-10-09 (pass 11).
+- [x] **Admins can re-link stored files to observations with broken photos** (the white image with a red X volunteers reported). Left menu → Admin settings → Correlate files: each broken link with its most likely file, a reason (link expired, same file name, or uploaded N minutes from the observation) and a confidence (certain, likely, possible); check rows, then fix together. Fixes replace the broken entry in place, so the cover stays first, and update the sheets. Unused files now leaves out files that have a likely match. Chris, 2026-10-09 (pass 12).
+- [x] **Percent certainty for file matches, and matches for observations without a broken link.** Exact matches (expired link, same file name) are 100%. Otherwise clues combine: uploaded within moments of a file the observation already has, the time in a cropped photo's file name near when the observation was started, uploaded near the observation's last save or after its date, and a broken link of the same kind; a close second-best lowers the score. Tap a row to pick another observation or open one to compare. The scan is saved on the phone (pass 15), so it survives restarts until an admin pulls down to scan again; fixes re-read each observation from the server before writing, so an old scan can't overwrite newer changes. Chris, 2026-10-09 (pass 14).
+
+## 11. Apple App Store compliance
+
+- [x] Purpose strings for camera, photos, microphone and location, with examples (Apple 5.1.1). GitHub #49 and #51.
+- [x] Background audio mode removed (Apple 2.5.4, Oct 2023).
+- [x] Camera and microphone buttons work on iOS 17 (Apple 2.1, Oct 2023).
+- [x] **Privacy manifest** (see section 1).
+- [x] **Check whether the `NSLocationAlways*` strings and the `remote-notification` background mode are needed.** Not needed; removed. The app uses no push notifications, which is also why every upload warns about ITMS-90078. Remove them if unused.
+- [ ] **Keep iPad support** with real iPad screenshots (Apple 2.3.3). Pass 19: four 13-inch iPad screenshots in `docs/store/screenshots/ipad-13/`, taken by `integration_test/store_screenshots_test.dart` (rerun it to refresh them). Still to do: upload them in App Store Connect. **Owner:** Jo or Chris.
+- [x] **No Android mentions in the App Store "What's New" text** (Apple 2.3.10). Pass 19: the 3.5.0 notes in `docs/store/3.5.0-store-kit.md` name no platform.
+
+## 12. Google Play compliance
+
+- [x] Target API 35, 16 KB pages, Photo Picker and reCAPTCHA (see section 1). Code done in pass 1.
+- [x] Prominent location disclosure before the location permission. GitHub #15 and #41.
+- [x] Android App Bundle (.aab) is built.
+- [x] **Upload the deobfuscation mapping file and native debug symbols with each release** to clear the Play warnings. Pass 16: the app bundle now carries both (the R8 mapping and native symbol tables), so uploading the .aab is enough.
+- [ ] **Make the app available in Canada.** Megan added Canada under Countries/regions in Jun 2026, but the update is stuck behind the permission rejection. Send BC partners the APK download link until it's fixed. **Owner:** Megan and Chris. Aug 2026.
+- [ ] **Keep the Data safety form accurate:** location, photos, audio, user content, account info, encrypted in transit, and account deletion link. **Owner:** Megan. Updated Apr 2024.
+- [ ] **Developer account verification** (D-U-N-S), if still pending. **Owner:** Megan. Dec 2023 to Jun 2024.
+
+## 13. Firebase, security and billing
+
+- [x] **Keep Firestore and Storage security rules in the repo.** Done in pass 6: `firebase/` holds the live Firestore rules and proposed Storage rules (see docs/firebase-runbook.md). There are no `firestore.rules`, `storage.rules` or `firebase.json` files, so the rules can't be reviewed or versioned. Chris said they were fixed in Dec 2024. IF/THEN report, Sep 2024.
+- [ ] **Review Storage rules.** Pass 6: proposed rules keep public reads, limit uploads to `images/` and `audio/` under 15 MB. **Owner:** Chris to deploy. Originally: Unauthenticated read was turned on in Sep 2024 to work around broken image tokens. Decide whether that is acceptable, or switch to unique file names and authenticated reads.
+- [ ] **Restrict Google API keys** (Android and iOS app restrictions). Google flagged a "Publicly accessible API key" in Feb 2025. Native Land key moved to `.env` in Jul 2026.
+- [ ] **Blaze plan safeguards:** Pass 6: kill-switch Cloud Function and $1 budget setup written (repo `firebase-billing-kill-switch`, local only so far) plus a runbook. **Owner:** Chris to push the repo, add it as a submodule, and run the setup. Originally: a $1 budget alert, a check that the Storage bucket is in a free-tier region, and an optional automatic cap. Megan added RMW's card on Aug 6 2026, and RMW can't afford surprise bills. Chris, Jul–Aug 2026.
+- [ ] **Decide a storage strategy** (image size limits and compression, retention). Chris, Jun 2025. As of 2026-10-09 Storage holds 6.45 GB, which is over the 5 GB free tier, so the project is already paying a little for storage on the Blaze plan.
+- [x] **App Check in the app.** Pass 8: the app sends App Check tokens (Play Integrity on Android, App Attest with DeviceCheck fallback on iOS). **Owner:** Chris to register the apps under App Check in the Firebase console, then turn on enforcement for Firestore and Storage once most users have 3.5.0.
+- [ ] **Clean up unused OAuth clients.** Google notices, Jun 2025 and Aug 2026.
+- [ ] **Look into Google for Nonprofits / Cloud credits.** **Owner:** Megan. Aug 2023 and Oct 2024.
+
+## 14. Store, legal and admin tasks (not code)
+
+- [ ] **Data use agreement for partners**, covering credit wording ("built by tCubed Studios…", or "built and updated by"), personal data and imperial units. **Owner:** Megan and Jo. Feb and Aug 2026.
+- [ ] **Privacy policy update** now with pro-bono attorneys. Add sharing with universities and any iNaturalist sharing if it goes ahead. **Owner:** Megan. Aug 2026.
+- [ ] **Accept Apple agreements when they appear.** Chris is now an Apple admin (Aug 2026). **Owner:** Megan.
+- [ ] **Close out the UBC contract** after Mike signs off on the pushed fixes. **Owner:** Megan, Jo and Mike. Aug 2026.
+- [ ] **Keep TestFlight testers current** (Mike and Leigh Anne added Jul 2026). **Owner:** Jo and Chris.
+- [ ] **Give Chris developer credit, and link the GitHub source,** on the CPP app page and in the store listings. Megan, Sep 2022 (never answered).
+
+## 15. Decisions needed
+
+- [x] **Sheets sync gaps:** option (d), re-sync unconfirmed observations on app open. Chris, 2026-10-09. GitHub #68.
+- [x] **Auto-share Canadian observations:** no; Canadian users use the default observation template. Chris, 2026-10-09.
+- [x] **Incidental search duration option:** yes, labeled "Incidental". Chris, 2026-10-09.
+- [x] **Google and Apple sign-in:** build both in 3.5.0. Chris, 2026-10-09.
+- [x] **Default card image:** keep the pika placeholder (default, 2026-10-09). keep the pika placeholder or switch to a plain one. Chris and Jo, Jun 2024.
+
+## 16. Future ideas (out of current scope)
+
+- [ ] Share observations to iNaturalist, either automatically or by batch CSV. Needs a privacy policy update. Mike, Aug 2026.
+- [x] Thank-you message after submitting. GitHub #71 (pass 5).
+- [ ] More pika species (the Asian species are coded but hidden). Kept to North American species for now. Jo and Megan, Jan 2024.
+- [ ] Two-way sync, where edits in Sheets flow back to Firebase. Chris, Feb 2024.
+
+## 17. Done earlier (history)
+
+These shipped in versions 1.x to 3.0 and are kept here for the record.
+
+- [x] Drawer menu freeze in release builds fixed (1.1.0). GitHub #3.
+- [x] Colorado Pika Project name and logo in the menu (1.1.1). GitHub #7 and #8.
+- [x] Version code goes up with every release. GitHub #47.
+- [x] In-app account deletion (1.4.0). GitHub #48.
+- [x] Clearer save and upload flow for offline observations (1.5.0). GitHub #32 and #46.
+- [x] Firebase observations paginated. GitHub #4.
+- [x] Target API 30, then 33 (2.0.0). GitHub #6 and #52.
+- [x] Android 13 fixes. GitHub #56.
+- [x] More obvious submit button. GitHub #57.
+- [x] Password reset. GitHub #55.
+- [x] Release APK no longer flagged as malware on Google Drive. GitHub #14.
+- [x] Native Land Digital key moved to `.env`, with setup docs (Jul 2026).
+- [x] Cross-device sync and Firestore listener fix (3.3.0).
+
+## 18. Final step (Chris decides at the end)
+
+- [ ] **Security: stop shipping the Google service-account private key to every app user.** The Firestore `googleSheets` collection holds a full service-account key (`pika-patrol@pikajoe-97c5c.iam.gserviceaccount.com`), and the rules let *any signed-in user* read it. Anyone can register, so anyone can take the key. Fix: move the Sheets sync to a server-side Cloud Function triggered by Firestore writes (this also closes GitHub #68), make `googleSheets` admin-only or delete it, then delete that key in Google Cloud and check the service account's roles. Found 2026-10-09 while checking the Firebase console. **Held until last by Chris (2026-10-09).**
+

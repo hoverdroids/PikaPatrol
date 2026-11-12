@@ -25,19 +25,22 @@ class ObservationsPage extends StatefulWidget {
   ObservationsPageState createState() => ObservationsPageState();
 }
 
-class ObservationsPageState extends State<ObservationsPage> {
+class ObservationsPageState extends State<ObservationsPage> with WidgetsBindingObserver {
 
   late Translations translations;
   late ObservationsService observationsService;
 
   final Key _emptySharedObservationsScrollerKey = UniqueKey();
+  // Stays the same as pages load, so the scroller keeps its place
+  final Key _sharedObservationsScrollerKey = UniqueKey();
   final Key _emptyLocalObservationsScrollerKey = UniqueKey();
 
   bool _isLocalObservationsDialogShowing = false;
 
+  // Also true when a Sheets sync or Storage delete is waiting to be retried
   bool localObservationsNeedUploaded() {
     final localObservations = observationsService.localObservations;
-    return localObservations.isNotEmpty && localObservations.any((Observation observation) => !observation.isUploaded);
+    return observationsService.hasPendingRetries || localObservations.any((Observation observation) => !observation.isUploaded);
   }
 
   late StreamSubscription<DataConnectionStatus> _dataConnectionStatusListener;
@@ -45,6 +48,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
 
     // actively listen for status updates
     // this will cause DataConnectionChecker to check periodically
@@ -65,8 +70,34 @@ class ObservationsPageState extends State<ObservationsPage> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _dataConnectionStatusListener.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // The DataConnectionChecker polling loop above only runs while its timer keeps firing, and
+    // Android suspends Dart timers once the app is backgrounded (especially after Doze kicks in).
+    // So if the device goes offline, the app gets backgrounded, and connectivity comes back while
+    // it's still in the background, the polling loop may never get a chance to notice - nothing
+    // was re-checking on resume. This catches that case: whenever the app comes back to the
+    // foreground, immediately check for a connection and upload anything pending, rather than
+    // waiting on the timer to eventually catch up (which it may never do while backgrounded).
+    if (state == AppLifecycleState.resumed) {
+      _checkConnectionAndUpload();
+    }
+  }
+
+  Future<void> _checkConnectionAndUpload() async {
+    if (!mounted) return;
+    var user = Provider.of<AppUser?>(context, listen: false);
+    if (user == null || !localObservationsNeedUploaded()) return;
+
+    var hasConnection = await DataConnectionChecker().hasConnection;
+    if (hasConnection && mounted) {
+      _uploadLocalObservations(user);
+    }
   }
 
   @override
@@ -116,20 +147,13 @@ class ObservationsPageState extends State<ObservationsPage> {
                           final observations = observationsService.sharedObservations;
 
                           if (observations.isNotEmpty) {
+                            // Admins can scroll back through every observation, a page at a time
+                            final isAdmin = Provider.of<AppUser?>(context, listen: false)?.isAdmin == true;
                             return CardScroller(
                               observations,
-                              key: Key(observations.hashCode.toString()),
-                              onTapCard: (index) => {
-                                Navigator.push( context,
-                                  MaterialPageRoute(
-                                    builder: (_) {
-                                      final translations = Provider.of<Translations>(context);
-                                      final viewModel = ObservationViewModel(observations[index].copy(), translations);
-                                      return ObservationScreen(viewModel);
-                                    },
-                                  ),
-                                )
-                              }
+                              key: _sharedObservationsScrollerKey,
+                              onTapCard: (index) => _openObservation(context, observations[index]),
+                              onNearStart: isAdmin ? observationsService.loadMoreSharedObservations : null
                             );
                           }
 
@@ -180,20 +204,8 @@ class ObservationsPageState extends State<ObservationsPage> {
                             return CardScroller(
                                 localObservations,
                                 key: Key(localObservations.hashCode.toString()),//using hash for key so that build is called and stack is correctly displayed after observations change
-                                onTapCard: (index) => {
-                                  Navigator.push( context,
-                                    MaterialPageRoute(
-                                      builder: (_) {
-                                        //Open the observation screen with a previously created local observation
-                                        //This observation may or may not have been uploaded
-                                        final translations = Provider.of<Translations>(context);
-                                        final observation = localObservations[index].copy();
-                                        final observationViewModel = ObservationViewModel(observation, translations);
-                                        return ObservationScreen(observationViewModel);
-                                      },
-                                    ),
-                                  )
-                                }
+                                //The local observation may or may not have been uploaded
+                                onTapCard: (index) => _openObservation(context, localObservations[index])
                             );
                           }
 
@@ -211,6 +223,13 @@ class ObservationsPageState extends State<ObservationsPage> {
           ],
         )
     );
+  }
+
+  // Copies the observation once, outside the route builder, so a rebuilt route keeps the user's
+  // edits instead of making a fresh copy.
+  void _openObservation(BuildContext context, Observation observation) {
+    final viewModel = ObservationViewModel(observation.copy(), translations);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ObservationScreen(viewModel)));
   }
 
   List<Observation> _createDefaultObservations() => [
@@ -261,13 +280,8 @@ class ObservationsPageState extends State<ObservationsPage> {
   }
 
   Future _uploadLocalObservations(AppUser user) async {
-
-    for (var localObservation in observationsService.localObservations) {
-      if (!localObservation.isUploaded) {
-        final returnValue = await observationsService.saveObservation(localObservation, user);
-        //saving in the background, so don't toast
-      }
-    }
+    //saving in the background, so don't toast
+    await observationsService.uploadPendingLocalObservations(user);
   }
 
 

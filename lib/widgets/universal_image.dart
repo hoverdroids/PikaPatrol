@@ -1,8 +1,13 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 
 import 'package:pika_patrol/primitives/overlay_mode.dart';
+import 'package:pika_patrol/utils/media_cache.dart';
 
+// Shows an asset, a local file or a Firebase Storage URL. Network images go through
+// cached_network_image, so each photo is downloaded once and then read from the phone's disk.
+// That keeps cards from going blank while loading, and keeps Storage download costs down.
 class UniversalImage extends StatelessWidget {
 
   static const DEFAULT_COLOR = Colors.black;
@@ -53,7 +58,7 @@ class UniversalImage extends StatelessWidget {
     if(path.isEmpty || _isAssetImage(path)) {
       imageProvider = AssetImage(path);
     } else if(_isNetworkImage(path)) {
-      imageProvider = NetworkImage(path);
+      imageProvider = CachedNetworkImageProvider(path, cacheKey: MediaCache.keyFor(path), cacheManager: MediaCache.manager);
     } else {
       imageProvider = FileImage(File(path));
     }
@@ -74,8 +79,10 @@ class UniversalImage extends StatelessWidget {
         image: AssetImage(path),
       );
     } else if(_isNetworkImage(path)) {
-      return Image.network(
-        path,
+      return CachedNetworkImage(
+        imageUrl: path,
+        cacheKey: MediaCache.keyFor(path),
+        cacheManager: MediaCache.manager,
         height: height,
         width: width,
         fit: boxFit,
@@ -109,5 +116,7 @@ class UniversalImage extends StatelessWidget {
   }
 
   bool _isAssetImage(String path) => path.contains("assets/images");
-  bool _isNetworkImage(String path) => path.contains("https://");
+  bool _isNetworkImage(String path) => isNetworkImage(path);
+
+  static bool isNetworkImage(String path) => path.contains("https://");
 }

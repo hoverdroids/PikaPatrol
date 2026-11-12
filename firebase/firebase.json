@@ -1,0 +1,11 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "storage": [
+    {
+      "bucket": "pikajoe-97c5c.appspot.com",
+      "rules": "storage.rules"
+    }
+  ]
+}

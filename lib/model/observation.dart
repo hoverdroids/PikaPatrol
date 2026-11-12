@@ -15,6 +15,8 @@ class Observation extends card.CardModel {
   double? altitudeInMeters;
   double? longitude;
   double? latitude;
+  List<String>? indigenousTerritories;
+  List<String>? indigenousLanguages;
   String? name;
   String? location;
   DateTime? date;
@@ -82,7 +84,7 @@ class Observation extends card.CardModel {
     this.isUploaded = false,
     super.buttonText,
     super.cardLayout,
-    IconData? uploadedIcon = Icons.cloud_upload,
+    IconData? uploadedIcon = Icons.cloud_done,
     IconData? notUploadedIcon = Icons.access_time_filled
   }){
     this.signs = signs ?? <String>[];
@@ -103,6 +105,8 @@ class Observation extends card.CardModel {
     return imgUrls.elementAt(0);
   }
 
+  // Lists are copied, not shared: the form edits the copy in place, so a shared list would leak
+  // unsaved changes (for example a removed photo) back into the original when the user backs out.
   Observation copy(
     {
       int? dbId,
@@ -148,7 +152,7 @@ class Observation extends card.CardModel {
     latitude: latitude ?? this.latitude,
     longitude: longitude ?? this.longitude,
     species: species ?? this.species,
-    signs: signs ?? this.signs,
+    signs: signs ?? this.signs?.toList(),
     pikasDetected: pikasDetected ?? this.pikasDetected,
     distanceToClosestPika: distanceToClosestPika ?? this.distanceToClosestPika,
     searchDuration: searchDuration ?? this.searchDuration,
@@ -158,16 +162,16 @@ class Observation extends card.CardModel {
     wind: wind ?? this.wind,
     siteHistory: siteHistory ?? this.siteHistory,
     comments: comments ?? this.comments,
-    imageUrls: imageUrls ?? this.imageUrls,
-    audioUrls: audioUrls ?? this.audioUrls,
-    otherAnimalsPresent: otherAnimalsPresent ?? this.otherAnimalsPresent,
-    sharedWithProjects: sharedWithProjects ?? this.sharedWithProjects,
-    notSharedWithProjects: notSharedWithProjects ?? this.notSharedWithProjects,
+    imageUrls: imageUrls ?? this.imageUrls?.toList(),
+    audioUrls: audioUrls ?? this.audioUrls?.toList(),
+    otherAnimalsPresent: otherAnimalsPresent ?? this.otherAnimalsPresent?.toList(),
+    sharedWithProjects: sharedWithProjects ?? this.sharedWithProjects?.toList(),
+    notSharedWithProjects: notSharedWithProjects ?? this.notSharedWithProjects?.toList(),
     dateUpdatedInGoogleSheets: dateUpdatedInGoogleSheets ?? this.dateUpdatedInGoogleSheets,
     isUploaded: isUploaded ?? this.isUploaded,
     buttonText: buttonText ?? this.buttonText,
     cardLayout: cardLayout ?? this.cardLayout,
-    uploadedIcon: uploadedIcon ?? Icons.cloud_upload,
+    uploadedIcon: uploadedIcon ?? Icons.cloud_done,
     notUploadedIcon: notUploadedIcon ?? Icons.access_time_filled
   );
 }

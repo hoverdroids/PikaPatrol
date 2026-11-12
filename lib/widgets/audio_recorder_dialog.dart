@@ -2,9 +2,6 @@
 import 'dart:io';
 import 'package:file/local.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_recorder4/flutter_audio_recorder4.dart';
-import 'package:flutter_audio_recorder4/recorder_state.dart';
-import 'package:flutter_audio_recorder4/recording.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:material_themes_widgets/forms/form_fields.dart';
 import 'package:material_themes_widgets/fundamental/icons.dart';
@@ -13,6 +10,9 @@ import 'package:material_themes_widgets/utils/validators.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
+import 'package:record/record.dart';
+import 'package:material_themes_widgets/utils/ui_utils.dart';
+import '../l10n/translations.dart';
 import 'dart:developer' as developer;
 
 class AudioRecorderDialog extends StatefulWidget {
@@ -27,8 +27,11 @@ class AudioRecorderDialog extends StatefulWidget {
 class AudioRecorderDialogState extends State<AudioRecorderDialog> {
 
   final _formKey = GlobalKey<FormState>();
-  late FlutterAudioRecorder4 _recorder;
-  RecorderState _recordingStatus = RecorderState.UNSET;
+  final AudioRecorder _recorder = AudioRecorder();
+  RecordState _recordingStatus = RecordState.stop;
+  // True once recording has started at least once, so there is something to save
+  bool _hasRecording = false;
+  String? _tempPath;
   Directory? _directory;
   String? recordingName;
 
@@ -36,6 +39,12 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
   void initState() {
     _initAsync();
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _recorder.dispose();
+    super.dispose();
   }
 
   @override
@@ -52,7 +61,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
-                 if (_recordingStatus == RecorderState.RECORDING) ... [
+                 if (_recordingStatus == RecordState.record) ... [
                   Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: ThemedIconButton(Icons.pause, onPressedCallback: () => setState(() => _pause()
@@ -67,7 +76,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                 ],
                 ThemedEditableLabelValue(
                   showLabel: false,
-                  hintText: "Recording Name",
+                  hintText: Provider.of<Translations>(context).recordingNameHint,
                   validator:  (value) => nonEmptyValidator(value, "Name", true),
                   onStringChangedCallback: (value) => setState(() => recordingName = value ),
                 ),
@@ -82,12 +91,12 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                           backgroundColor: context.watch<MaterialThemesManager>().colorPalette().lightBg,
                           shape: const StadiumBorder(),
                         ),
-                        child: ThemedTitle("Cancel", type: ThemeGroupType.MOM),
+                        child: ThemedTitle(Provider.of<Translations>(context).cancel, type: ThemeGroupType.MOM),
                         onPressed: () {
                           _quitWithoutSaving();
                         },
                       ),
-                      if (_recordingStatus == RecorderState.RECORDING || _recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.STOPPED) ... [
+                      if (_hasRecording) ... [
                         Padding(
                           padding: const EdgeInsets.all(8.0),
                           child: ElevatedButton(
@@ -96,7 +105,7 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
                               backgroundColor: context.watch<MaterialThemesManager>().colorPalette().primary,
                               shape: const StadiumBorder(),
                             ),
-                            child: ThemedTitle("Save", type: ThemeGroupType.MOP),
+                            child: ThemedTitle(Provider.of<Translations>(context).save, type: ThemeGroupType.MOP),
                             onPressed: () {
                               if (_formKey.currentState?.validate() == true) {
                                 _formKey.currentState?.save();
@@ -138,65 +147,76 @@ class AudioRecorderDialogState extends State<AudioRecorderDialog> {
         developer.log(e.toString());
       }
 
-      _recorder = FlutterAudioRecorder4(tempPath);
-      await _recorder.initialized;
-      var recording = await _recorder.current(channel: 0);
-      setRecordingStatus(recording);
+      _tempPath = tempPath;
     }
   }
 
   void _pause() async {
-    await _recorder.pause();
-
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    if (_recordingStatus == RecordState.record) {
+      await _recorder.pause();
+    }
+    _setRecordingStatus(RecordState.pause);
   }
 
   void _record() async {
-    _recordingStatus == RecorderState.PAUSED
-        ? await _recorder.resume()
-        : await _recorder.start();
+    var tempPath = _tempPath;
+    if (tempPath == null) return;
 
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    if (_recordingStatus == RecordState.pause) {
+      await _recorder.resume();
+    } else {
+      // hasPermission() shows the system permission dialog when needed
+      if (!await _recorder.hasPermission()) return;
+      await _recorder.start(const RecordConfig(encoder: AudioEncoder.aacLc), path: tempPath);
+    }
+    _hasRecording = true;
+    _setRecordingStatus(RecordState.record);
   }
 
   void _quitWithoutSaving() async {
-    if (_recordingStatus == RecorderState.PAUSED || _recordingStatus == RecorderState.RECORDING) {
+    if (_recordingStatus != RecordState.stop) {
       await _recorder.stop();
     }
-
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    _setRecordingStatus(RecordState.stop);
 
     if (mounted) Navigator.pop(context, "");
   }
 
   void _save() async {
-    var result = await _recorder.stop();
-    var recording = await _recorder.current(channel: 0);
-    setRecordingStatus(recording);
+    String? resultPath = await _recorder.stop();
+    _setRecordingStatus(RecordState.stop);
 
-    String? resultPath = result.filepath;
-    if (resultPath != null && recordingName != null) {
-      String ext = path.extension(resultPath).substring(1);//Need to string dot from .extension
-      String dir = path.dirname(resultPath);
-      String newPath = path.join(dir, '$recordingName.$ext');
+    final name = recordingName;
+    if (resultPath == null || name == null) {
+      if (mounted) Navigator.pop(context);
+      return;
+    }
 
-      developer.log("NewPath:$newPath ext:$ext dir:$dir");
+    try {
+      // Each recording gets its own folder, so a name used before never replaces an earlier
+      // recording (Android) or makes the save fail (iPhone). Characters a file name can't hold
+      // become "_". The name shown in the app stays what the volunteer typed. GitHub #31.
+      final ext = path.extension(resultPath);
+      final folder = Directory(path.join(path.dirname(resultPath), 'recordings', '${DateTime.now().millisecondsSinceEpoch}'));
+      await folder.create(recursive: true);
+      final safeName = name.trim().replaceAll(RegExp(r'[\\/:*?"<>|\x00-\x1F]'), '_');
+      final newPath = path.join(folder.path, '${safeName.isEmpty ? 'recording' : safeName}$ext');
 
-      File file = File(resultPath);
-      await file.rename(newPath);
+      // Copy rather than rename: the temp file is replaced on the next recording either way
+      await File(resultPath).copy(newPath);
 
       if (mounted) Navigator.pop(context, newPath);
-    } else {
-      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      developer.log("Could not save recording: $e");
+      if (mounted) {
+        showToast(Provider.of<Translations>(context, listen: false).couldNotSaveRecording);
+        Navigator.pop(context);
+      }
     }
   }
 
-  void setRecordingStatus(Recording? recording) {
-    var recordingStatus = recording?.recorderState;
-    if (recordingStatus != null) {
+  void _setRecordingStatus(RecordState recordingStatus) {
+    if (mounted) {
       setState(() { _recordingStatus = recordingStatus; });
     }
   }

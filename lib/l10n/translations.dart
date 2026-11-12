@@ -1,7 +1,7 @@
 // ignore_for_file: non_constant_identifier_names
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:pika_patrol/l10n/app_localizations.dart';
 
 class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 
@@ -56,6 +56,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String password = ERROR;
   String passwordCannotBeEmpty = ERROR;
   String invalidPassword = ERROR;
+  String reEnterPassword = ERROR;
+  String passwordsDoNotMatch = ERROR;
+  String showPassword = ERROR;
+  String hidePassword = ERROR;
   String firstName = ERROR;
   String invalidFirstName = ERROR;
   String lastName = ERROR;
@@ -152,6 +156,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String denverZooUrl = ERROR;
   String ifThen = ERROR;
   String ifThenUrl = ERROR;
+  String canadianPikaProject = ERROR;
+  String canadianPikaProjectUrl = ERROR;
+  String appVersion = ERROR;
   String ok = ERROR;
   String cancel = ERROR;
   String couldNotSignInWithThoseCredentials = ERROR;
@@ -168,6 +175,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String noRecordingsToPlay = ERROR;
   String fetchingLocation = ERROR;
   String location = ERROR;
+  String indigenousTerritories = ERROR;
+  String indigenousLanguages = ERROR;
+  String lookingUpIndigenousTerritories = ERROR;
+  String noIndigenousTerritoryFound = ERROR;
+  String failedToFetchTerritoryData = ERROR;
+  String cannotRequestIndigenousTerritoriesOffline = ERROR;
+  String associateLocalObservationsDialogTitle = ERROR;
+  String associateLocalObservationsDialogDescription = ERROR;
+  String associateLocalObservations = ERROR;
+  String doNotAssociateLocalObservations = ERROR;
   String siteName = ERROR;
   String january = ERROR;
   String february = ERROR;
@@ -182,16 +199,11 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String november = ERROR;
   String december = ERROR;
   String delete = ERROR;
+  String deleteObservationDialogTitle = ERROR;
+  String deleteObservationDialogDescription = ERROR;
   String couldNotOpenRecorder = ERROR;
   String didNotAddImage = ERROR;
   String didNotAddAudio = ERROR;
-  String couldNotOpenFilePickerAcceptCameraPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptPhotosPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptStoragePermissions = ERROR;
-  String couldNotOpenFilePickerAcceptMediaPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptExternalStoragePermissions = ERROR;
-  String couldNotOpenFilePickerAcceptVideosPermissions = ERROR;
-  String couldNotOpenFilePickerAcceptMediaLibraryPermissions = ERROR;
   String unsupportedOperation = ERROR;
   String errorWhenTryingToCropImage = ERROR;
   String couldNotOpenCameraAcceptCameraPermissions = ERROR;
@@ -222,12 +234,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
   String scatPileOnboardingDetails = ERROR;
   String scatOnboardingTitle = ERROR;
   String scatOnboardingDetails = ERROR;
-  String deleteObservationDialogTitle = ERROR;
-  String deleteObservationDialogDescription = ERROR;
-  String observationSavedSuccessfully = ERROR;
-  String unknownErrorUploadingToServerObservationSavedLocally = ERROR;
-  String fillInAllFormFields = ERROR;
-
   String unsureMoreThanOne = ERROR;
   late List<String> pikasDetectedKeys;
   late List<String> pikasDetectedDefaultValues;
@@ -281,46 +287,107 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
 
   String observationDeleted = ERROR;
   String observationNotDeleted = ERROR;
+  String observationSavedSuccessfully = ERROR;
+  String unknownErrorUploadingToServerObservationSavedLocally = ERROR;
+  String fillInAllFormFields = ERROR;
   String initializeGoogleSheets = ERROR;
 
   String localObservationsNeedUploadedDialogTitle = ERROR;
   String localObservationsNeedUploadedDialogDescription = ERROR;
 
+  String userSettings = ERROR;
+  String indigenousMap = ERROR;
+  String indigenousMapDescription = ERROR;
+  String splashScreen = ERROR;
+  String splashScreenDescription = ERROR;
+  String units = ERROR;
+  String imperial = ERROR;
+  String metric = ERROR;
+  String feet = ERROR;
+  String meters = ERROR;
+  String altitudeMetric = ERROR;
+  String defaultObservation = ERROR;
+  String defaultObservationDescription = ERROR;
+  String defaultObservationSaved = ERROR;
+  String coldMetric = ERROR;
+  String coolMetric = ERROR;
+  String warmMetric = ERROR;
+  String hotMetric = ERROR;
+  String lessThan3000FeetMetric = ERROR;
+  String threeThousandToTenThousandFeetMetric = ERROR;
+  String tenThousandToFiftyThousandFeetMetric = ERROR;
+  String greaterThanOneAcreMetric = ERROR;
+  String lessThan10FeetMetric = ERROR;
+  String tenTo30FeetMetric = ERROR;
+  String thirtyToOneHundredFeetMetric = ERROR;
+  String moreThanOneHundredFeetMetric = ERROR;
+  String deleteAccountEnterPassword = ERROR;
+  String deleteAccountWrongPassword = ERROR;
+  String signInWithGoogle = ERROR;
+  String signInWithApple = ERROR;
+  String couldNotSignIn = ERROR;
+  String traditionalTerritoryOf = ERROR;
+  String nativeLandSource = ERROR;
+  String incidental = ERROR;
+  String deleteImageDialogTitle = ERROR;
+  String deleteAudioDialogTitle = ERROR;
+  String deleteMediaDialogDescription = ERROR;
+  String unusedFiles = ERROR;
+  String unusedFilesDescription = ERROR;
+  String unusedFilesSelected = ERROR;
+  String noUnusedFiles = ERROR;
+  String selectAll = ERROR;
+  String deleteSelected = ERROR;
+  String deleteUnusedFilesDialogTitle = ERROR;
+  String deleteUnusedFilesDialogDescription = ERROR;
+  String couldNotFindUnusedFiles = ERROR;
+  String someFilesNotDeleted = ERROR;
+  String correlateFiles = ERROR;
+  String correlateFilesDescription = ERROR;
+  String checkingFiles = ERROR;
+  String fixReasonRefreshLink = ERROR;
+  String fixReasonSameName = ERROR;
+  String fixSelectedLinks = ERROR;
+  String fixLinksDialogTitle = ERROR;
+  String fixLinksDialogDescription = ERROR;
+  String noBrokenLinksFound = ERROR;
+  String linksFixed = ERROR;
+  String someLinksNotFixed = ERROR;
+  String matchUploadedWithLinkedFile = ERROR;
+  String matchMadeNearObservationStart = ERROR;
+  String matchUploadedNearSave = ERROR;
+  String matchUploadedAfterObservationDate = ERROR;
+  String matchObservationHasBrokenLink = ERROR;
+  String matchCloseRunnerUp = ERROR;
+  String selectAbove90 = ERROR;
+  String clearSelection = ERROR;
+  String otherPossibleObservations = ERROR;
+  String scannedAgo = ERROR;
+  String recordingNameHint = ERROR;
+  String couldNotSaveRecording = ERROR;
+  String observationOnServer = ERROR;
+  String observationOnServerNoDate = ERROR;
+  String observationWaitingToUpload = ERROR;
+  String duplicateObservations = ERROR;
+  String duplicateObservationsDescription = ERROR;
+  String keepThisCopy = ERROR;
+  String copiesCount = ERROR;
+  String mergeSelected = ERROR;
+  String mergeDuplicatesDialogTitle = ERROR;
+  String mergeDuplicatesDialogDescription = ERROR;
+  String noDuplicatesFound = ERROR;
+  String duplicatesMerged = ERROR;
+  String someDuplicatesNotMerged = ERROR;
+  String couldNotLoadObservations = ERROR;
+  String fileTooLarge = ERROR;
+  String photoTooLargeDescription = ERROR;
+  String recordingTooLargeDescription = ERROR;
+  String makeSmaller = ERROR;
+  String couldNotMakePhotoSmaller = ERROR;
+
   //This must be called before MaterialApp sets localizations
   init (BuildContext context) {
     update(context);
-    otherAnimalsPresentKeys = ["bats", "brownCappedRosyFinch", "cattle", "marmots", "mountainGoats", "ptarmigans", "raptors", "weasels", "woodrats", "other"];
-    otherAnimalsPresentDefaultValues = [bats, brownCappedRosyFinch, cattle, marmots, mountainGoats, ptarmigans, raptors, weasels, woodrats, other];
-
-    pikasDetectedKeys = ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
-    pikasDetectedDefaultValues = ["0", "1", "2", "3", "4", "5", ">5", ">10", unsureMoreThanOne];
-
-    signsKeys = ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
-    signsDefaultValues = [sawPika, heardPikaCalls, haypileOld, haypileNew, haypileOther, scatOld, scatNew, scatOther];
-
-    skiesKeys = ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
-    skiesDefaultValues = [clear, partlyCloudy, overcast, rainDrizzle, snow];
-
-    speciesKeys = ["americanPika", "collaredPika"];
-    speciesDefaultValues = [americanPika, collaredPika];
-
-    talusAreaKeys = ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
-    talusAreaDefaultValues = [lessThan3000Feet, threeThousandToTenThousandFeet, tenThousandToFiftyThousandFeet, greaterThanOneAcre];
-
-    talusAreaHintsKeys = ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
-    talusAreaHintsDefaultValues = [smallerThanTennisCourt, tennisCourtToBaseballInfield, baseballInfieldToFootballField, largerThanFootballField];
-    
-    temperatureKeys = ["cold", "cool", "warm", "hot"];
-    temperatureDefaultValues = [cold, cool, warm, hot];
-
-    windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
-    windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
-
-    distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
-    distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
-
-    searchDurationKeys = ["lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
-    searchDurationDefaultValues = [lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   update (BuildContext context) {
@@ -442,6 +509,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     denverZooUrl =  AppLocalizations.of(context)?.denverZooUrl ?? denverZooUrl;
     ifThen =  AppLocalizations.of(context)?.ifThen ?? ifThen;
     ifThenUrl =  AppLocalizations.of(context)?.ifThenUrl ?? ifThenUrl;
+    canadianPikaProject =  AppLocalizations.of(context)?.canadianPikaProject ?? canadianPikaProject;
+    canadianPikaProjectUrl =  AppLocalizations.of(context)?.canadianPikaProjectUrl ?? canadianPikaProjectUrl;
+    appVersion =  AppLocalizations.of(context)?.appVersion ?? appVersion;
     ok =  AppLocalizations.of(context)?.ok ?? ok;
     cancel = AppLocalizations.of(context)?.cancel ?? cancel;
     couldNotSignInWithThoseCredentials =  AppLocalizations.of(context)?.couldNotSignInWithThoseCredentials ?? couldNotSignInWithThoseCredentials;
@@ -458,6 +528,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     noRecordingsToPlay =  AppLocalizations.of(context)?.noRecordingsToPlay ?? noRecordingsToPlay;
     fetchingLocation =  AppLocalizations.of(context)?.fetchingLocation ?? fetchingLocation;
     location =  AppLocalizations.of(context)?.location ?? location;
+    indigenousTerritories =  AppLocalizations.of(context)?.indigenousTerritories ?? indigenousTerritories;
+    indigenousLanguages =  AppLocalizations.of(context)?.indigenousLanguages ?? indigenousLanguages;
+    lookingUpIndigenousTerritories =  AppLocalizations.of(context)?.lookingUpIndigenousTerritories ?? lookingUpIndigenousTerritories;
+    noIndigenousTerritoryFound =  AppLocalizations.of(context)?.noIndigenousTerritoryFound ?? noIndigenousTerritoryFound;
+    failedToFetchTerritoryData =  AppLocalizations.of(context)?.failedToFetchTerritoryData ?? failedToFetchTerritoryData;
+    cannotRequestIndigenousTerritoriesOffline =  AppLocalizations.of(context)?.cannotRequestIndigenousTerritoriesOffline ?? cannotRequestIndigenousTerritoriesOffline;
+    associateLocalObservationsDialogTitle =  AppLocalizations.of(context)?.associateLocalObservationsDialogTitle ?? associateLocalObservationsDialogTitle;
+    associateLocalObservationsDialogDescription =  AppLocalizations.of(context)?.associateLocalObservationsDialogDescription ?? associateLocalObservationsDialogDescription;
+    associateLocalObservations =  AppLocalizations.of(context)?.associateLocalObservations ?? associateLocalObservations;
+    doNotAssociateLocalObservations =  AppLocalizations.of(context)?.doNotAssociateLocalObservations ?? doNotAssociateLocalObservations;
     siteName =  AppLocalizations.of(context)?.siteName ?? siteName;
     january =  AppLocalizations.of(context)?.january ?? january;
     february =  AppLocalizations.of(context)?.february ?? february;
@@ -475,13 +555,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     couldNotOpenRecorder =  AppLocalizations.of(context)?.couldNotOpenRecorder ?? couldNotOpenRecorder;
     didNotAddImage =  AppLocalizations.of(context)?.didNotAddImage ?? didNotAddImage;
     didNotAddAudio =  AppLocalizations.of(context)?.didNotAddAudio ?? didNotAddAudio;
-    couldNotOpenFilePickerAcceptCameraPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptCameraPermissions ?? couldNotOpenFilePickerAcceptCameraPermissions;
-    couldNotOpenFilePickerAcceptPhotosPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptPhotosPermissions ?? couldNotOpenFilePickerAcceptPhotosPermissions;
-    couldNotOpenFilePickerAcceptStoragePermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptStoragePermissions ?? couldNotOpenFilePickerAcceptStoragePermissions;
-    couldNotOpenFilePickerAcceptMediaPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptMediaPermissions ?? couldNotOpenFilePickerAcceptMediaPermissions;
-    couldNotOpenFilePickerAcceptExternalStoragePermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptExternalStoragePermissions ?? couldNotOpenFilePickerAcceptExternalStoragePermissions;
-    couldNotOpenFilePickerAcceptVideosPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptVideosPermissions ?? couldNotOpenFilePickerAcceptVideosPermissions;
-    couldNotOpenFilePickerAcceptMediaLibraryPermissions = AppLocalizations.of(context)?.couldNotOpenFilePickerAcceptMediaLibraryPermissions ?? couldNotOpenFilePickerAcceptMediaLibraryPermissions;
     unsupportedOperation = AppLocalizations.of(context)?.unsupportedOperation ?? unsupportedOperation;
     errorWhenTryingToCropImage = AppLocalizations.of(context)?.errorWhenTryingToCropImage ?? errorWhenTryingToCropImage;
     couldNotOpenCameraAcceptCameraPermissions = AppLocalizations.of(context)?.couldNotOpenCameraAcceptCameraPermissions ?? couldNotOpenCameraAcceptCameraPermissions;
@@ -549,6 +622,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     profile = AppLocalizations.of(context)?.profile ?? profile;
     invalidEmail = AppLocalizations.of(context)?.invalidEmail ?? invalidEmail;
     invalidPassword = AppLocalizations.of(context)?.invalidPassword ?? invalidPassword;
+    reEnterPassword = AppLocalizations.of(context)?.reEnterPassword ?? reEnterPassword;
+    passwordsDoNotMatch = AppLocalizations.of(context)?.passwordsDoNotMatch ?? passwordsDoNotMatch;
+    showPassword = AppLocalizations.of(context)?.showPassword ?? showPassword;
+    hidePassword = AppLocalizations.of(context)?.hidePassword ?? hidePassword;
     invalidFirstName = AppLocalizations.of(context)?.invalidFirstName ?? invalidFirstName;
     invalidLastName = AppLocalizations.of(context)?.invalidLastName ?? invalidLastName;
     invalidZip = AppLocalizations.of(context)?.invalidZip ?? invalidZip;
@@ -563,6 +640,134 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
     observationSavedSuccessfully = AppLocalizations.of(context)?.observationSavedSuccessfully ?? observationSavedSuccessfully;
     unknownErrorUploadingToServerObservationSavedLocally = AppLocalizations.of(context)?.unknownErrorUploadingToServerObservationSavedLocally ?? unknownErrorUploadingToServerObservationSavedLocally;
     fillInAllFormFields = AppLocalizations.of(context)?.fillInAllFormFields ?? fillInAllFormFields;
+    userSettings = AppLocalizations.of(context)?.userSettings ?? userSettings;
+    indigenousMap = AppLocalizations.of(context)?.indigenousMap ?? indigenousMap;
+    indigenousMapDescription = AppLocalizations.of(context)?.indigenousMapDescription ?? indigenousMapDescription;
+    splashScreen = AppLocalizations.of(context)?.splashScreen ?? splashScreen;
+    splashScreenDescription = AppLocalizations.of(context)?.splashScreenDescription ?? splashScreenDescription;
+    units = AppLocalizations.of(context)?.units ?? units;
+    imperial = AppLocalizations.of(context)?.imperial ?? imperial;
+    metric = AppLocalizations.of(context)?.metric ?? metric;
+    feet = AppLocalizations.of(context)?.feet ?? feet;
+    meters = AppLocalizations.of(context)?.meters ?? meters;
+    altitudeMetric = AppLocalizations.of(context)?.altitudeMetric ?? altitudeMetric;
+    defaultObservation = AppLocalizations.of(context)?.defaultObservation ?? defaultObservation;
+    defaultObservationDescription = AppLocalizations.of(context)?.defaultObservationDescription ?? defaultObservationDescription;
+    defaultObservationSaved = AppLocalizations.of(context)?.defaultObservationSaved ?? defaultObservationSaved;
+    coldMetric = AppLocalizations.of(context)?.coldMetric ?? coldMetric;
+    coolMetric = AppLocalizations.of(context)?.coolMetric ?? coolMetric;
+    warmMetric = AppLocalizations.of(context)?.warmMetric ?? warmMetric;
+    hotMetric = AppLocalizations.of(context)?.hotMetric ?? hotMetric;
+    lessThan3000FeetMetric = AppLocalizations.of(context)?.lessThan3000FeetMetric ?? lessThan3000FeetMetric;
+    threeThousandToTenThousandFeetMetric = AppLocalizations.of(context)?.threeThousandToTenThousandFeetMetric ?? threeThousandToTenThousandFeetMetric;
+    tenThousandToFiftyThousandFeetMetric = AppLocalizations.of(context)?.tenThousandToFiftyThousandFeetMetric ?? tenThousandToFiftyThousandFeetMetric;
+    greaterThanOneAcreMetric = AppLocalizations.of(context)?.greaterThanOneAcreMetric ?? greaterThanOneAcreMetric;
+    lessThan10FeetMetric = AppLocalizations.of(context)?.lessThan10FeetMetric ?? lessThan10FeetMetric;
+    tenTo30FeetMetric = AppLocalizations.of(context)?.tenTo30FeetMetric ?? tenTo30FeetMetric;
+    thirtyToOneHundredFeetMetric = AppLocalizations.of(context)?.thirtyToOneHundredFeetMetric ?? thirtyToOneHundredFeetMetric;
+    moreThanOneHundredFeetMetric = AppLocalizations.of(context)?.moreThanOneHundredFeetMetric ?? moreThanOneHundredFeetMetric;
+    deleteAccountEnterPassword =  AppLocalizations.of(context)?.deleteAccountEnterPassword ?? deleteAccountEnterPassword;
+    deleteAccountWrongPassword =  AppLocalizations.of(context)?.deleteAccountWrongPassword ?? deleteAccountWrongPassword;
+    signInWithGoogle =  AppLocalizations.of(context)?.signInWithGoogle ?? signInWithGoogle;
+    signInWithApple =  AppLocalizations.of(context)?.signInWithApple ?? signInWithApple;
+    couldNotSignIn =  AppLocalizations.of(context)?.couldNotSignIn ?? couldNotSignIn;
+    traditionalTerritoryOf =  AppLocalizations.of(context)?.traditionalTerritoryOf ?? traditionalTerritoryOf;
+    nativeLandSource =  AppLocalizations.of(context)?.nativeLandSource ?? nativeLandSource;
+    incidental =  AppLocalizations.of(context)?.incidental ?? incidental;
+    deleteImageDialogTitle =  AppLocalizations.of(context)?.deleteImageDialogTitle ?? deleteImageDialogTitle;
+    deleteAudioDialogTitle =  AppLocalizations.of(context)?.deleteAudioDialogTitle ?? deleteAudioDialogTitle;
+    deleteMediaDialogDescription =  AppLocalizations.of(context)?.deleteMediaDialogDescription ?? deleteMediaDialogDescription;
+    unusedFiles =  AppLocalizations.of(context)?.unusedFiles ?? unusedFiles;
+    unusedFilesDescription =  AppLocalizations.of(context)?.unusedFilesDescription ?? unusedFilesDescription;
+    unusedFilesSelected =  AppLocalizations.of(context)?.unusedFilesSelected ?? unusedFilesSelected;
+    noUnusedFiles =  AppLocalizations.of(context)?.noUnusedFiles ?? noUnusedFiles;
+    selectAll =  AppLocalizations.of(context)?.selectAll ?? selectAll;
+    deleteSelected =  AppLocalizations.of(context)?.deleteSelected ?? deleteSelected;
+    deleteUnusedFilesDialogTitle =  AppLocalizations.of(context)?.deleteUnusedFilesDialogTitle ?? deleteUnusedFilesDialogTitle;
+    deleteUnusedFilesDialogDescription =  AppLocalizations.of(context)?.deleteUnusedFilesDialogDescription ?? deleteUnusedFilesDialogDescription;
+    couldNotFindUnusedFiles =  AppLocalizations.of(context)?.couldNotFindUnusedFiles ?? couldNotFindUnusedFiles;
+    someFilesNotDeleted =  AppLocalizations.of(context)?.someFilesNotDeleted ?? someFilesNotDeleted;
+    correlateFiles =  AppLocalizations.of(context)?.correlateFiles ?? correlateFiles;
+    correlateFilesDescription =  AppLocalizations.of(context)?.correlateFilesDescription ?? correlateFilesDescription;
+    checkingFiles =  AppLocalizations.of(context)?.checkingFiles ?? checkingFiles;
+    fixReasonRefreshLink =  AppLocalizations.of(context)?.fixReasonRefreshLink ?? fixReasonRefreshLink;
+    fixReasonSameName =  AppLocalizations.of(context)?.fixReasonSameName ?? fixReasonSameName;
+    fixSelectedLinks =  AppLocalizations.of(context)?.fixSelectedLinks ?? fixSelectedLinks;
+    fixLinksDialogTitle =  AppLocalizations.of(context)?.fixLinksDialogTitle ?? fixLinksDialogTitle;
+    fixLinksDialogDescription =  AppLocalizations.of(context)?.fixLinksDialogDescription ?? fixLinksDialogDescription;
+    noBrokenLinksFound =  AppLocalizations.of(context)?.noBrokenLinksFound ?? noBrokenLinksFound;
+    linksFixed =  AppLocalizations.of(context)?.linksFixed ?? linksFixed;
+    someLinksNotFixed =  AppLocalizations.of(context)?.someLinksNotFixed ?? someLinksNotFixed;
+    matchUploadedWithLinkedFile =  AppLocalizations.of(context)?.matchUploadedWithLinkedFile ?? matchUploadedWithLinkedFile;
+    matchMadeNearObservationStart =  AppLocalizations.of(context)?.matchMadeNearObservationStart ?? matchMadeNearObservationStart;
+    matchUploadedNearSave =  AppLocalizations.of(context)?.matchUploadedNearSave ?? matchUploadedNearSave;
+    matchUploadedAfterObservationDate =  AppLocalizations.of(context)?.matchUploadedAfterObservationDate ?? matchUploadedAfterObservationDate;
+    matchObservationHasBrokenLink =  AppLocalizations.of(context)?.matchObservationHasBrokenLink ?? matchObservationHasBrokenLink;
+    matchCloseRunnerUp =  AppLocalizations.of(context)?.matchCloseRunnerUp ?? matchCloseRunnerUp;
+    selectAbove90 =  AppLocalizations.of(context)?.selectAbove90 ?? selectAbove90;
+    clearSelection =  AppLocalizations.of(context)?.clearSelection ?? clearSelection;
+    otherPossibleObservations =  AppLocalizations.of(context)?.otherPossibleObservations ?? otherPossibleObservations;
+    scannedAgo =  AppLocalizations.of(context)?.scannedAgo ?? scannedAgo;
+    recordingNameHint =  AppLocalizations.of(context)?.recordingNameHint ?? recordingNameHint;
+    couldNotSaveRecording =  AppLocalizations.of(context)?.couldNotSaveRecording ?? couldNotSaveRecording;
+    observationOnServer =  AppLocalizations.of(context)?.observationOnServer ?? observationOnServer;
+    observationOnServerNoDate =  AppLocalizations.of(context)?.observationOnServerNoDate ?? observationOnServerNoDate;
+    observationWaitingToUpload =  AppLocalizations.of(context)?.observationWaitingToUpload ?? observationWaitingToUpload;
+    duplicateObservations =  AppLocalizations.of(context)?.duplicateObservations ?? duplicateObservations;
+    duplicateObservationsDescription =  AppLocalizations.of(context)?.duplicateObservationsDescription ?? duplicateObservationsDescription;
+    keepThisCopy =  AppLocalizations.of(context)?.keepThisCopy ?? keepThisCopy;
+    copiesCount =  AppLocalizations.of(context)?.copiesCount ?? copiesCount;
+    mergeSelected =  AppLocalizations.of(context)?.mergeSelected ?? mergeSelected;
+    mergeDuplicatesDialogTitle =  AppLocalizations.of(context)?.mergeDuplicatesDialogTitle ?? mergeDuplicatesDialogTitle;
+    mergeDuplicatesDialogDescription =  AppLocalizations.of(context)?.mergeDuplicatesDialogDescription ?? mergeDuplicatesDialogDescription;
+    noDuplicatesFound =  AppLocalizations.of(context)?.noDuplicatesFound ?? noDuplicatesFound;
+    duplicatesMerged =  AppLocalizations.of(context)?.duplicatesMerged ?? duplicatesMerged;
+    someDuplicatesNotMerged =  AppLocalizations.of(context)?.someDuplicatesNotMerged ?? someDuplicatesNotMerged;
+    couldNotLoadObservations =  AppLocalizations.of(context)?.couldNotLoadObservations ?? couldNotLoadObservations;
+    fileTooLarge =  AppLocalizations.of(context)?.fileTooLarge ?? fileTooLarge;
+    photoTooLargeDescription =  AppLocalizations.of(context)?.photoTooLargeDescription ?? photoTooLargeDescription;
+    recordingTooLargeDescription =  AppLocalizations.of(context)?.recordingTooLargeDescription ?? recordingTooLargeDescription;
+    makeSmaller =  AppLocalizations.of(context)?.makeSmaller ?? makeSmaller;
+    couldNotMakePhotoSmaller =  AppLocalizations.of(context)?.couldNotMakePhotoSmaller ?? couldNotMakePhotoSmaller;
+
+    //The keys/default-values lists must be rebuilt every update, not captured once in init: init is
+    //called above MaterialApp where AppLocalizations isn't available yet, and the app language can
+    //change at runtime. A stale list left the choice-chip values in the previously loaded language,
+    //so a stored value like "American Pika" no longer matched any default and showed up as a
+    //duplicate chip instead of selecting the existing one.
+    otherAnimalsPresentKeys = ["bats", "brownCappedRosyFinch", "cattle", "marmots", "mountainGoats", "ptarmigans", "raptors", "weasels", "woodrats", "other"];
+    otherAnimalsPresentDefaultValues = [bats, brownCappedRosyFinch, cattle, marmots, mountainGoats, ptarmigans, raptors, weasels, woodrats, other];
+
+    pikasDetectedKeys = ["0", "1", "2", "3", "4", "5", ">5", ">10", "unsureMoreThanOne"];
+    pikasDetectedDefaultValues = ["0", "1", "2", "3", "4", "5", ">5", ">10", unsureMoreThanOne];
+
+    signsKeys = ["sawPika", "heardPikaCalls", "haypileOld", "haypileNew", "haypileOther", "scatOld", "scatNew", "scatOther"];
+    signsDefaultValues = [sawPika, heardPikaCalls, haypileOld, haypileNew, haypileOther, scatOld, scatNew, scatOther];
+
+    skiesKeys = ["clear", "partlyCloudy", "overcast", "rainDrizzle", "snow"];
+    skiesDefaultValues = [clear, partlyCloudy, overcast, rainDrizzle, snow];
+
+    speciesKeys = ["americanPika", "collaredPika"];
+    speciesDefaultValues = [americanPika, collaredPika];
+
+    talusAreaKeys = ["lessThan3000Feet", "threeThousandToTenThousandFeet", "tenThousandToFiftyThousandFeet", "greaterThanOneAcre"];
+    talusAreaDefaultValues = [lessThan3000Feet, threeThousandToTenThousandFeet, tenThousandToFiftyThousandFeet, greaterThanOneAcre];
+
+    talusAreaHintsKeys = ["smallerThanTennisCourt", "tennisCourtToBaseballInfield", "baseballInfieldToFootballField", "largerThanFootballField"];
+    talusAreaHintsDefaultValues = [smallerThanTennisCourt, tennisCourtToBaseballInfield, baseballInfieldToFootballField, largerThanFootballField];
+
+    temperatureKeys = ["cold", "cool", "warm", "hot"];
+    temperatureDefaultValues = [cold, cool, warm, hot];
+
+    windKeys = ["lowBendsGrasses", "mediumBendsBranches", "highBendsTrees"];
+    windDefaultValues = [lowBendsGrasses, mediumBendsBranches, highBendsTrees];
+
+    distanceToClosestPikaKeys = ["lessThan10Feet", "tenTo30Feet", "thirtyToOneHundredFeet", "moreThanOneHundredFeet"];
+    distanceToClosestPikaDefaultValues = [lessThan10Feet, tenTo30Feet, thirtyToOneHundredFeet, moreThanOneHundredFeet];
+
+    // "Incidental" is for sightings that weren't part of a standardized search
+    searchDurationKeys = ["incidental", "lessThanFiveMin", "fiveToTenMin", "tenToTwentyMin", "twentyToThirtyMin", "moreThanThirtyMin"];
+    searchDurationDefaultValues = [incidental, lessThanFiveMin, fiveToTenMin, tenToTwentyMin, twentyToThirtyMin, moreThanThirtyMin];
   }
 
   //It would be better to use reflection on AppLocalizations but mirrors isn't available in Flutter and
@@ -687,6 +892,9 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "denverZooUrl": return denverZooUrl;
       case "ifThen": return ifThen;
       case "ifThenUrl": return ifThenUrl;
+      case "canadianPikaProject": return canadianPikaProject;
+      case "canadianPikaProjectUrl": return canadianPikaProjectUrl;
+      case "appVersion": return appVersion;
       case "ok": return ok;
       case "cancel": return cancel;
       case "couldNotSignInWithThoseCredentials": return couldNotSignInWithThoseCredentials;
@@ -703,6 +911,16 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "noRecordingsToPlay": return noRecordingsToPlay;
       case "fetchingLocation": return fetchingLocation;
       case "location": return location;
+      case "indigenousTerritories": return indigenousTerritories;
+      case "indigenousLanguages": return indigenousLanguages;
+      case "lookingUpIndigenousTerritories": return lookingUpIndigenousTerritories;
+      case "noIndigenousTerritoryFound": return noIndigenousTerritoryFound;
+      case "failedToFetchTerritoryData": return failedToFetchTerritoryData;
+      case "cannotRequestIndigenousTerritoriesOffline": return cannotRequestIndigenousTerritoriesOffline;
+      case "associateLocalObservationsDialogTitle": return associateLocalObservationsDialogTitle;
+      case "associateLocalObservationsDialogDescription": return associateLocalObservationsDialogDescription;
+      case "associateLocalObservations": return associateLocalObservations;
+      case "doNotAssociateLocalObservations": return doNotAssociateLocalObservations;
       case "siteName": return siteName;
       case "january": return january;
       case "february": return february;
@@ -720,13 +938,6 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "couldNotOpenRecorder": return couldNotOpenRecorder;
       case "didNotAddImage": return didNotAddImage;
       case "didNotAddAudio": return didNotAddAudio;
-      case "couldNotOpenFilePickerAcceptCameraPermissions": return couldNotOpenFilePickerAcceptCameraPermissions;
-      case "couldNotOpenFilePickerAcceptPhotosPermissions": return couldNotOpenFilePickerAcceptPhotosPermissions;
-      case "couldNotOpenFilePickerAcceptStoragePermissions": return couldNotOpenFilePickerAcceptStoragePermissions;
-      case "couldNotOpenFilePickerAcceptMediaPermissions": return couldNotOpenFilePickerAcceptMediaPermissions;
-      case "couldNotOpenFilePickerAcceptExternalStoragePermissions": return couldNotOpenFilePickerAcceptExternalStoragePermissions;
-      case "couldNotOpenFilePickerAcceptVideosPermissions": return couldNotOpenFilePickerAcceptVideosPermissions;
-      case "couldNotOpenFilePickerAcceptMediaLibraryPermissions": return couldNotOpenFilePickerAcceptMediaLibraryPermissions;
       case "unsupportedOperation": return unsupportedOperation;
       case "errorWhenTryingToCropImage": return errorWhenTryingToCropImage;
       case "couldNotOpenCameraAcceptCameraPermissions": return couldNotOpenCameraAcceptCameraPermissions;
@@ -794,6 +1005,10 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "profile": return profile;
       case "invalidEmail": return invalidEmail;
       case "invalidPassword": return invalidPassword;
+      case "reEnterPassword": return reEnterPassword;
+      case "passwordsDoNotMatch": return passwordsDoNotMatch;
+      case "showPassword": return showPassword;
+      case "hidePassword": return hidePassword;
       case "invalidFirstName": return invalidFirstName;
       case "invalidLastName": return invalidLastName;
       case "invalidZip": return invalidZip;
@@ -808,6 +1023,95 @@ class Translations with ChangeNotifier, DiagnosticableTreeMixin {
       case "observationSavedSuccessfully": return observationSavedSuccessfully;
       case "unknownErrorUploadingToServerObservationSavedLocally": return unknownErrorUploadingToServerObservationSavedLocally;
       case "fillInAllFormFields": return fillInAllFormFields;
+      case "userSettings": return userSettings;
+      case "indigenousMap": return indigenousMap;
+      case "indigenousMapDescription": return indigenousMapDescription;
+      case "splashScreen": return splashScreen;
+      case "splashScreenDescription": return splashScreenDescription;
+      case "units": return units;
+      case "imperial": return imperial;
+      case "metric": return metric;
+      case "feet": return feet;
+      case "meters": return meters;
+      case "altitudeMetric": return altitudeMetric;
+      case "defaultObservation": return defaultObservation;
+      case "defaultObservationDescription": return defaultObservationDescription;
+      case "defaultObservationSaved": return defaultObservationSaved;
+      case "coldMetric": return coldMetric;
+      case "coolMetric": return coolMetric;
+      case "warmMetric": return warmMetric;
+      case "hotMetric": return hotMetric;
+      case "lessThan3000FeetMetric": return lessThan3000FeetMetric;
+      case "threeThousandToTenThousandFeetMetric": return threeThousandToTenThousandFeetMetric;
+      case "tenThousandToFiftyThousandFeetMetric": return tenThousandToFiftyThousandFeetMetric;
+      case "greaterThanOneAcreMetric": return greaterThanOneAcreMetric;
+      case "lessThan10FeetMetric": return lessThan10FeetMetric;
+      case "tenTo30FeetMetric": return tenTo30FeetMetric;
+      case "thirtyToOneHundredFeetMetric": return thirtyToOneHundredFeetMetric;
+      case "moreThanOneHundredFeetMetric": return moreThanOneHundredFeetMetric;
+      case "deleteAccountEnterPassword": return deleteAccountEnterPassword;
+      case "deleteAccountWrongPassword": return deleteAccountWrongPassword;
+      case "signInWithGoogle": return signInWithGoogle;
+      case "signInWithApple": return signInWithApple;
+      case "couldNotSignIn": return couldNotSignIn;
+      case "traditionalTerritoryOf": return traditionalTerritoryOf;
+      case "nativeLandSource": return nativeLandSource;
+      case "incidental": return incidental;
+      case "deleteImageDialogTitle": return deleteImageDialogTitle;
+      case "deleteAudioDialogTitle": return deleteAudioDialogTitle;
+      case "deleteMediaDialogDescription": return deleteMediaDialogDescription;
+      case "unusedFiles": return unusedFiles;
+      case "unusedFilesDescription": return unusedFilesDescription;
+      case "unusedFilesSelected": return unusedFilesSelected;
+      case "noUnusedFiles": return noUnusedFiles;
+      case "selectAll": return selectAll;
+      case "deleteSelected": return deleteSelected;
+      case "deleteUnusedFilesDialogTitle": return deleteUnusedFilesDialogTitle;
+      case "deleteUnusedFilesDialogDescription": return deleteUnusedFilesDialogDescription;
+      case "couldNotFindUnusedFiles": return couldNotFindUnusedFiles;
+      case "someFilesNotDeleted": return someFilesNotDeleted;
+      case "correlateFiles": return correlateFiles;
+      case "correlateFilesDescription": return correlateFilesDescription;
+      case "checkingFiles": return checkingFiles;
+      case "fixReasonRefreshLink": return fixReasonRefreshLink;
+      case "fixReasonSameName": return fixReasonSameName;
+      case "fixSelectedLinks": return fixSelectedLinks;
+      case "fixLinksDialogTitle": return fixLinksDialogTitle;
+      case "fixLinksDialogDescription": return fixLinksDialogDescription;
+      case "noBrokenLinksFound": return noBrokenLinksFound;
+      case "linksFixed": return linksFixed;
+      case "someLinksNotFixed": return someLinksNotFixed;
+      case "matchUploadedWithLinkedFile": return matchUploadedWithLinkedFile;
+      case "matchMadeNearObservationStart": return matchMadeNearObservationStart;
+      case "matchUploadedNearSave": return matchUploadedNearSave;
+      case "matchUploadedAfterObservationDate": return matchUploadedAfterObservationDate;
+      case "matchObservationHasBrokenLink": return matchObservationHasBrokenLink;
+      case "matchCloseRunnerUp": return matchCloseRunnerUp;
+      case "selectAbove90": return selectAbove90;
+      case "clearSelection": return clearSelection;
+      case "otherPossibleObservations": return otherPossibleObservations;
+      case "scannedAgo": return scannedAgo;
+      case "recordingNameHint": return recordingNameHint;
+      case "couldNotSaveRecording": return couldNotSaveRecording;
+      case "observationOnServer": return observationOnServer;
+      case "observationOnServerNoDate": return observationOnServerNoDate;
+      case "observationWaitingToUpload": return observationWaitingToUpload;
+      case "duplicateObservations": return duplicateObservations;
+      case "duplicateObservationsDescription": return duplicateObservationsDescription;
+      case "keepThisCopy": return keepThisCopy;
+      case "copiesCount": return copiesCount;
+      case "mergeSelected": return mergeSelected;
+      case "mergeDuplicatesDialogTitle": return mergeDuplicatesDialogTitle;
+      case "mergeDuplicatesDialogDescription": return mergeDuplicatesDialogDescription;
+      case "noDuplicatesFound": return noDuplicatesFound;
+      case "duplicatesMerged": return duplicatesMerged;
+      case "someDuplicatesNotMerged": return someDuplicatesNotMerged;
+      case "couldNotLoadObservations": return couldNotLoadObservations;
+      case "fileTooLarge": return fileTooLarge;
+      case "photoTooLargeDescription": return photoTooLargeDescription;
+      case "recordingTooLargeDescription": return recordingTooLargeDescription;
+      case "makeSmaller": return makeSmaller;
+      case "couldNotMakePhotoSmaller": return couldNotMakePhotoSmaller;
       default: return key;
     }
   }

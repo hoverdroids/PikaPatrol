@@ -1,16 +1,21 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:developer' as developer;
+
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pika_patrol/model/google_sheets_credential_adapter.dart';
 import 'package:pika_patrol/services/observations_service.dart';
 import 'package:pika_patrol/services/firebase_google_sheets_database_service.dart';
 import 'package:pika_patrol/services/firebase_observations_service.dart';
 import 'package:pika_patrol/services/google_sheets_service.dart';
-import 'package:pika_patrol/services/pika_patrol_spreadsheet_service.dart';
 import 'package:pika_patrol/services/settings_service.dart';
 import 'package:pika_patrol/services/firebase_auth_service.dart';
 import 'package:pika_patrol/services/firebase_database_service.dart';
-import 'package:pika_patrol/utils/observation_utils.dart';
+import 'package:pika_patrol/services/native_land_service.dart';
 import 'package:pika_patrol/widgets/my_app.dart';
 import 'package:provider/provider.dart';
 import 'package:material_themes_manager/material_themes_manager.dart';
@@ -20,7 +25,9 @@ import 'model/app_user_profile.dart';
 import 'model/google_sheets_credential.dart';
 import 'model/local_observation.dart';
 import 'model/local_observation_adapter.dart';
+import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'firebase_options.dart';
 
 import 'model/observation.dart';
@@ -30,6 +37,42 @@ const useEmulators = false;
 Future<void> main() async {
 
   //debugPrintGestureArenaDiagnostics = true;
+
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Use the Android Photo Picker, so the app needs no photo/video read permission (Google Play policy)
+  final imagePickerImplementation = ImagePickerPlatform.instance;
+  if (imagePickerImplementation is ImagePickerAndroid) {
+    imagePickerImplementation.useAndroidPhotoPicker = true;
+  }
+
+  // Load environment variables from .env file
+  bool envLoaded = false;
+  try {
+    await dotenv.load(fileName: '.env');
+    envLoaded = true;
+    developer.log('[main] Loaded .env from project root asset path.');
+  } catch (e) {
+    developer.log('[main] Failed to load .env using fileName=.env: $e');
+  }
+
+  if (!envLoaded) {
+    try {
+      await dotenv.load(fileName: 'assets/.env');
+      envLoaded = true;
+      developer.log('[main] Loaded .env from assets/.env path.');
+    } catch (e) {
+      developer.log('[main] Failed to load .env using fileName=assets/.env: $e');
+    }
+  }
+
+  if (!envLoaded) {
+    developer.log('[main] No .env file was loaded. Environment variables may be missing.');
+  }
+
+  // Log key loading state once at startup (never logs the key value).
+  NativeLandService.logApiKeyStatus();
+
   await Hive.initFlutter();
   Hive.registerAdapter(LocalObservationAdapter());
   Hive.registerAdapter(GoogleSheetsCredentialAdapter());
@@ -38,11 +81,23 @@ Future<void> main() async {
   await Hive.openBox<GoogleSheetsCredential>(FirebaseGoogleSheetsDatabaseService.GOOGLE_SHEETS_COLLECTION_NAME);
 
   //https://codewithandrea.com/articles/flutter-firebase-flutterfire-cli/
-  WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // App Check lets Firebase reject requests that don't come from the real app. It has no effect
+  // until enforcement is turned on in the Firebase console (docs/firebase-runbook.md).
+  await FirebaseAppCheck.instance.activate(
+    providerAndroid: kDebugMode ? const AndroidDebugProvider() : const AndroidPlayIntegrityProvider(),
+    providerApple: kDebugMode ? const AppleDebugProvider() : const AppleAppAttestWithDeviceCheckFallbackProvider(),
+  );
+
+  // Read this ahead of runApp() so MyApp knows on its very first build whether to show the
+  // splash screens - by the time SettingsService's own (async) load finishes, the Navigator has
+  // already built its initial route and switching MaterialApp's `home` afterward has no effect.
+  final prefs = await SharedPreferences.getInstance();
+  final showSplashScreen = prefs.getBool(SettingsService.PREFERENCE_SHOW_SPLASH_SCREEN) ?? true;
 
   runApp(
     // Providers are above [MyApp] instead of inside it, so that tests can use [MyApp] while mocking the providers
@@ -50,7 +105,7 @@ Future<void> main() async {
       // Globally useful providers that don't depend on other provider values or build context
       providers: [
         ChangeNotifierProvider(
-            create: (_) => MaterialThemesManager()
+            create: (_) => MaterialThemesManager()..updateColorPalette(MyApp.colorPalette)
         ),
         Provider<FirebaseAuthService>(
             create: (_) => FirebaseAuthService(useEmulators)//Only one service to avoid multiple connections to firebase
@@ -145,7 +200,7 @@ Future<void> main() async {
                                             value: googleSheetsCredentials
                                         )
                                       ],
-                                      child: const MyApp()
+                                      child: MyApp(showSplashScreen: showSplashScreen)
                                   );
                                 }
                               );

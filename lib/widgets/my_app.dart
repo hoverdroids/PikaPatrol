@@ -5,29 +5,36 @@ import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:pika_patrol/l10n/l10n.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'package:pika_patrol/l10n/app_localizations.dart';
 
 import '../l10n/translations.dart';
+import '../screens/home_with_drawer.dart';
 import '../screens/splash/partners_splash_screens_pager.dart';
 import '../services/settings_service.dart';
 
 class MyApp extends StatelessWidget {
 
-  const MyApp({super.key});
+  // Decided once at startup (see main()) rather than watched reactively: MaterialApp only
+  // consults `home` when it generates the initial route, so changing this value after the
+  // Navigator's first route is built has no effect on the running app - the setting change
+  // is picked up the next time the app is launched instead.
+  final bool showSplashScreen;
+
+  const MyApp({super.key, this.showSplashScreen = true});
+
+  // The brand colors. Set once when the MaterialThemesManager is created (see main()), because
+  // setting them during build notifies listeners mid-build, which Flutter rejects.
+  static final ColorPalette colorPalette = ColorPalette(
+      primary: Colors.teal,
+      primaryAccent: Colors.tealAccent,
+      secondary: const Color.fromARGB(255, 139, 69, 19),
+      secondaryAccent: const Color.fromARGB(255, 111, 55, 15),
+      lightPrimaryContrast: Colors.white,
+      lightContrastImportant: Colors.grey
+  );
 
   @override
   Widget build(BuildContext context) {
-
-    //First things first...set our theme to fit our brand!
-    ColorPalette colorPalette = ColorPalette(
-        primary: Colors.teal,
-        primaryAccent: Colors.tealAccent,
-        secondary: const Color.fromARGB(255, 139, 69, 19),
-        secondaryAccent: const Color.fromARGB(255, 111, 55, 15),
-        lightPrimaryContrast: Colors.white,
-        lightContrastImportant: Colors.grey
-    );
-    context.watch<MaterialThemesManager>().updateColorPalette(colorPalette);
 
     //Lock the app to one orientation
     SystemChrome.setPreferredOrientations([
@@ -50,7 +57,9 @@ class MyApp extends StatelessWidget {
 
     return MaterialApp(
         title: "Pika Patrol",//This doesn't matter and can't be translated because localization isn't applied until MaterialApp is instantiated
-        home: const PartnersSplashScreensPager(),
+        home: showSplashScreen
+            ? const PartnersSplashScreensPager()
+            : const HomeWithDrawer(),
         debugShowCheckedModeBanner: false,
         themeMode: context.watch<MaterialThemesManager>().getThemeMode(),
         theme: context.watch<MaterialThemesManager>().getPrimaryLightTheme(),

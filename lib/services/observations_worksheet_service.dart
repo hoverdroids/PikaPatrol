@@ -104,16 +104,9 @@ class ObservationsWorksheetService extends WorksheetService {
 
   Future<GSheetsValue<bool>> addOrUpdateObservations(List<Observation> observations, String organization) async {
     for (var observation in observations) {
-      //Null shared projects means there haven't been options added to the observation, so share with everybody
-      //Empty would mean the user actively doesn't want the observation shared
-      // var sharedWithProjects = observation.sharedWithProjects;
-      // var doesntHaveSharedWithProjects = sharedWithProjects == null;
-      var projectIncluded = observation.sharedWithProjects?.contains(organization) ?? false;
-      var projectExcluded = observation.notSharedWithProjects?.contains(organization) ?? false;
-      if (projectIncluded || !projectExcluded) {
-        // If project was specifically included, then the observation has been updated since the latest models were updated to include sharedWithProject
-        // If project was not specifically included, and it wasn't excluded, then either the project is new in Firebase or the observation is old and
-        // wasn't tracking sharedWithProjects. So, include it until the observation is updated to exclude it.
+      // Same rule as saving an observation. This used to add every observation the user hadn't
+      // explicitly opted out of, which filled partner sheets with observations never shared with them.
+      if (GoogleSheetsService.projectsFor(observation).contains(organization)) {
         var returnValue = await addOrUpdateObservation(observation);
 
         if (returnValue.exception != null) {

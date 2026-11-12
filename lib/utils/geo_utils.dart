@@ -1,4 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
+import 'dart:async';
 import 'package:geolocator/geolocator.dart';
 import 'package:material_themes_widgets/utils/ui_utils.dart';
 
@@ -38,14 +39,18 @@ Future<Position> checkPermissionsAndGetCurrentPosition(Translations translations
     return Future.error(translations.locationPermissionsArePermanentlyDenied);
   }
 
-  // When we reach here, permissions are granted and we can continue accessing the device position
-  Position position = await Geolocator.getCurrentPosition();
-
-  if (position == null) {
-    showToast(translations.couldNotRetrieveLocationFromGps);
+  // When we reach here, permissions are granted and we can continue accessing the device position.
+  // Without a time limit this waits forever for a fresh fix where the sky can't be seen (indoors,
+  // deep in talus), so the coordinates and the Indigenous territory lookup never arrive.
+  try {
+    return await Geolocator.getCurrentPosition(
+      locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 20)),
+    );
+  } on TimeoutException {
+    final lastKnown = await Geolocator.getLastKnownPosition();
+    if (lastKnown != null) return lastKnown;
+    return Future.error(translations.couldNotRetrieveLocationFromGps);
   }
-
-  return position;
 }
 
 String? isValidGeo(String? value, String name) {
@@ -58,3 +63,14 @@ double FEET_PER_METER = 3.28084;
 double feetToMeters(double feet) => feet / FEET_PER_METER;
 
 double metersToFeet(double meter) => meter * FEET_PER_METER;
+
+/// Latitude and longitude are kept to 5 decimal places (about 1.1 m), which is as precise as phone GPS gets
+const int coordinateDecimalPlaces = 5;
+
+double roundCoordinate(double value) {
+  return double.parse(value.toStringAsFixed(coordinateDecimalPlaces));
+}
+
+String formatCoordinate(double? value) {
+  return value?.toStringAsFixed(coordinateDecimalPlaces) ?? "";
+}

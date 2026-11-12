@@ -1,8 +1,10 @@
 // ignore_for_file: depend_on_referenced_packages
+import 'dart:convert';
 import 'dart:async';
 import 'dart:developer' as developer;
 import 'dart:io';
-import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:gal/gal.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:chips_choice/chips_choice.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -29,39 +31,84 @@ import 'package:pika_patrol/model/observation_view_model.dart';
 import 'package:pika_patrol/utils/observation_utils.dart';
 import 'package:provider/provider.dart';
 import 'package:pika_patrol/model/app_user.dart';
+import '../services/native_land_service.dart';
 
 import 'package:pika_patrol/screens/training_screens_pager.dart';
 import 'package:pika_patrol/widgets/audio_content_scroll.dart';
 import 'package:pika_patrol/widgets/circular_clipper.dart';
+import 'package:pika_patrol/widgets/confirm_dialog.dart';
 import 'package:pika_patrol/widgets/content_scroll.dart';
+import 'package:pika_patrol/widgets/universal_image.dart';
+import 'package:pika_patrol/primitives/overlay_mode.dart';
 import 'package:pika_patrol/utils/geo_utils.dart';
 import 'package:pika_patrol/widgets/audio_recorder_dialog.dart';
 import 'package:intl/intl.dart';  //for date format
 import 'package:material_themes_manager/material_themes_manager.dart';
 import 'package:path_provider/path_provider.dart';
 
+import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
+
 import '../l10n/translations.dart';
 import '../services/observations_service.dart';
+import '../services/settings_service.dart';
+import '../utils/media_cache.dart';
 import '../utils/firebase_utils.dart';
+import '../utils/network_utils.dart';
+import '../utils/upload_size.dart';
 import 'home_with_drawer.dart';
 
 // ignore: must_be_immutable
 class ObservationScreen extends StatefulWidget {
 
   final ObservationViewModel observationViewModel;
-  late bool isEditMode;
 
-  ObservationScreen(this.observationViewModel, {super.key}) {//TODO - might as well pass the edit mode instead of relying on the uid
-    //When opening after a user clicks a card, show a previously created observation in viewing mode.
-    //When opening after a user clicks the add observation button, show a new observation in edit mode.
-    isEditMode = observationViewModel.observation.isNewObservation();
-  }
+  //When true, this screen edits the default observation template (the values applied to every new
+  //observation) instead of a real observation: images/audio are hidden and saving writes the
+  //template to preferences rather than uploading.
+  final bool isTemplate;
+
+  const ObservationScreen(this.observationViewModel, {this.isTemplate = false, super.key});
 
   @override
   ObservationScreenState createState() => ObservationScreenState();
 }
 
 class ObservationScreenState extends State<ObservationScreen> with TickerProviderStateMixin {
+
+  static const String _nativeLandMapUrl = 'https://native-land.ca/maps/native-land';
+
+  // Native Land's map page only has toggleable overlay layers for these
+  // categories (see its `allLayers` list); "territories" isn't one of them,
+  // and passing it as `?category=` clobbers the default `languages` layer
+  // without showing anything in return.
+  static const Set<String> _nativeLandMapToggleableCategories = {'languages', 'treaties', 'greetings'};
+
+  // chips_choice's default chip style is identical for selected and unselected, so the two
+  // states are nearly indistinguishable without this. Note: ChipsChoice's own `choiceActiveStyle`
+  // widget parameter isn't actually wired up in the installed package version, so the selected
+  // look has to be set via C2ChipStyle.toned's `selectedStyle` instead, which is. backgroundOpacity
+  // must be set to 1 explicitly - toned()'s default of .12 otherwise washes out these colors into
+  // a barely-visible tint, which is what made selected/unselected hard to tell apart in the first place.
+  static final C2ChipStyle _choiceChipStyle = C2ChipStyle.toned(
+    backgroundColor: Colors.grey.shade200,
+    backgroundOpacity: 1,
+    foregroundColor: Colors.black87,
+    borderColor: Colors.grey.shade400,
+    borderStyle: BorderStyle.solid,
+    // Selected chips differ by more than color (GitHub #72): dark fill, thick dark border, bold
+    // text and a check mark, so they read clearly in sunlight, with polarized sunglasses, or
+    // with limited color vision.
+    selectedStyle: C2ChipStyle(
+      backgroundColor: Colors.teal,
+      backgroundOpacity: 1,
+      foregroundColor: Colors.white,
+      foregroundStyle: const TextStyle(fontWeight: FontWeight.bold),
+      borderColor: Colors.black,
+      borderWidth: 3,
+      checkmarkColor: Colors.white,
+    ),
+  );
 
   final _formKey = GlobalKey<FormState>();
 
@@ -75,13 +122,31 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   bool justKeepToggling = true;
 
-  var assetsAudioPlayer = AssetsAudioPlayer();
-  PlayerState _playerState = PlayerState.stop;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  StreamSubscription<PlayerState>? _audioPlayerStateSubscription;
+  AudioPlaybackState _playerState = AudioPlaybackState.stop;
+  int _playingIndex = -1;
 
   bool _isUploading = false;
 
   bool _hideGeoFields = false;
   final bool _hideDateFields = false;
+
+  // Display-only units preference; backing data is unchanged by this choice (altitude is always
+  // stored in meters, and the choice values for distance/talus/temperature are always stored as
+  // their imperial English strings).
+  bool _isMetric = false;
+
+  // Debounces the Indigenous territory lookup for manually-typed coordinates: onStringChangedCallback
+  // fires on every keystroke, and both latitude and longitude are separate fields, so firing the
+  // lookup immediately would spam the API (and pop the Native Land map) mid-keystroke.
+  Timer? _manualCoordinatesLookupDebounce;
+
+  // Fetched fresh whenever an observation is opened in read-only (view) mode, kept only in local
+  // widget state - unlike the edit-mode flow, this is never written back onto the observation
+  // (nothing to persist for a view that doesn't save), and intentionally skips toasts/the map dialog.
+  List<Territory>? _readOnlyTerritories;
+  List<Territory>? _readOnlyLanguages;
 
   bool _scrollListener(ScrollNotification scrollInfo) {
     if (scrollInfo.metrics.axis == Axis.vertical) {
@@ -94,17 +159,54 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
   late Translations translations;
 
+  // Kept in the state, not the widget, so a rebuilt widget can't flip the screen out of edit mode
+  late bool _isEditMode;
+
   @override
   void initState() {
+    //When opening after a user clicks a card, show a previously created observation in viewing mode.
+    //When opening after a user clicks the add observation button, show a new observation in edit mode.
+    _isEditMode = widget.observationViewModel.observation.isNewObservation();
     _scrollController = ScrollController();
     _colorAnimationController = AnimationController(vsync: this, duration: const Duration(seconds: 0));
+
+    if (!_isEditMode) {
+      _fetchIndigenousTerritoriesForViewing();
+    } else {
+      // A new observation can start with coordinates from the default template. Templates saved
+      // before they kept the territories have none, so look them up for those coordinates.
+      final observation = widget.observationViewModel.observation;
+      final latitude = observation.latitude;
+      final longitude = observation.longitude;
+      if (latitude != null && longitude != null && (observation.indigenousTerritories?.isEmpty ?? true)
+          && (observation.indigenousLanguages?.isEmpty ?? true)) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _fetchAndSetIndigenousTerritories(latitude, longitude);
+        });
+      }
+    }
+
+    _audioPlayerStateSubscription = _audioPlayer.playerStateStream.listen(_onAudioPlayerStateChanged);
 
     super.initState();
   }
 
   @override
+  void dispose() {
+    _manualCoordinatesLookupDebounce?.cancel();
+    _audioPlayerStateSubscription?.cancel();
+    _audioPlayer.dispose();
+    _scrollController.dispose();
+    _colorAnimationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     translations = Provider.of<Translations>(context);
+    final settingsService = Provider.of<SettingsService>(context);
+    _isMetric = settingsService.isMetric;
+    showTalusAreaHints = settingsService.showHints;
 
     final user = Provider.of<AppUser?>(context);
 
@@ -132,13 +234,15 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     _buildHeaderImage(context),
                     _buildHeader(),
                     _buildFields(),
-                    smallTransparentDivider,
-                    _buildImages(
-                        context.watch<MaterialThemesManager>().colorPalette().primary,
-                        context.watch<MaterialThemesManager>().colorPalette().primary
-                    ),
-                    smallTransparentDivider,
-                    _buildAudioRecordings(),
+                    if (!widget.isTemplate) ... [
+                      smallTransparentDivider,
+                      _buildImages(
+                          context.watch<MaterialThemesManager>().colorPalette().primary,
+                          context.watch<MaterialThemesManager>().colorPalette().primary
+                      ),
+                      smallTransparentDivider,
+                      _buildAudioRecordings(),
+                    ],
                     if (showDeleteButton) ... [
                       _buildDeleteButtonForForm(context)
                     ],
@@ -170,22 +274,44 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       return IconTitleIconFakeAppBar(
         shape: const StadiumBorder(),
         backgroundColor: _colorTween.value,
-        title: translations.makeObservation,
+        title: widget.isTemplate ? translations.defaultObservation : translations.makeObservation,
         titleType: ThemeGroupType.MOS,
         leftIcon: Icons.arrow_back,
         leftIconType: ThemeGroupType.MOS,
         leftIconClickedCallback: () => Navigator.pop(context),
-        rightIcon: widget.isEditMode ? Icons.check : Icons.edit,
+        rightIcon: _isEditMode ? Icons.check : Icons.edit,
         showRightIcon: showRightIcon,
         rightIconType: ThemeGroupType.MOS,
         rightIconClickedCallback: () async {
-          if (!widget.isEditMode) {
+          if (!_isEditMode) {
             setState(() {
-              widget.isEditMode = true;
+              _isEditMode = true;
+
+              // Entering edit mode switches the territories/languages display over to the
+              // observation's own fields (since edit mode lets those change via GPS/manual
+              // coordinates). Seed them from what read-only viewing already fetched so the
+              // list doesn't disappear for observations that predate this feature or were
+              // never re-geocoded in edit mode.
+              final observation = widget.observationViewModel.observation;
+              if ((observation.indigenousTerritories?.isEmpty ?? true) && (_readOnlyTerritories?.isNotEmpty ?? false)) {
+                observation.indigenousTerritories = _encodeIndigenousEntries(_readOnlyTerritories!);
+              }
+              if ((observation.indigenousLanguages?.isEmpty ?? true) && (_readOnlyLanguages?.isNotEmpty ?? false)) {
+                observation.indigenousLanguages = _encodeIndigenousEntries(_readOnlyLanguages!);
+              }
             });
           } else {
             if (_formKey.currentState?.validate() == true) {
               _formKey.currentState?.save();
+
+              if (widget.isTemplate) {
+                //Persist the template values instead of uploading an observation
+                final settingsService = Provider.of<SettingsService>(context, listen: false);
+                await settingsService.setDefaultObservationTemplateJson(widget.observationViewModel.observation.toTemplateJson());
+                showToast(translations.defaultObservationSaved);
+                if (context.mounted) Navigator.pop(context);
+                return;
+              }
 
               setState((){
                 _isUploading = true;
@@ -204,8 +330,9 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
               setState((){
                 _isUploading = false;
-                widget.isEditMode = false;
+                _isEditMode = false;
               });
+              _fetchIndigenousTerritoriesForViewing();
             } else {
               //The following isn't required because the form will show the error messages
               //showToast(translations.fillInAllFormFields);
@@ -229,7 +356,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildHeaderImage(BuildContext context) => GestureDetector(
-    onTap: () => widget.isEditMode ? _openFileExplorer(true, FileType.image, [], true) : {},
+    //The template stores no images, so don't let the user pick one from its page
+    onTap: () => _isEditMode && !widget.isTemplate ? _openFileExplorer(true, FileType.image, [], true) : {},
     child: SizedBox(
       height: 330,
       child: Stack(
@@ -246,19 +374,23 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               child: _buildImage(),
             ),
           ),
-          Positioned.fill(
-            child: Align(
-              alignment: Alignment.bottomCenter,
-              child: RawMaterialButton(
-                //padding: EdgeInsets.all(0.0),
-                //elevation: 12.0,
-                onPressed: () => developer.log('Play Video'),
-                shape: const CircleBorder(),
-                fillColor: Colors.white,
-                child: widget.isEditMode ? _buildRecordButton() : _buildPlayButton(),
+          //The template stores no audio, so don't show its record button
+          if (!widget.isTemplate) ... [
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: RawMaterialButton(
+                  //padding: EdgeInsets.all(0.0),
+                  //elevation: 12.0,
+                  // The record/play button inside handles the tap; this only draws the white circle
+                  onPressed: () {},
+                  shape: const CircleBorder(),
+                  fillColor: Colors.white,
+                  child: _isEditMode ? _buildRecordButton() : _buildPlayButton(),
+                ),
               ),
             ),
-          ),
+          ],
           /*Positioned( //TODO
             bottom: 10.0,
             left: 10.0,
@@ -268,7 +400,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               onPressedCallback: () => developoer.log('Allow user to manually select a geo point'),
             )
         ),*/
-          if(widget.isEditMode) ... [
+          if(_isEditMode) ... [
             Positioned(
               bottom: 10.0,
               left: 10.0,
@@ -306,8 +438,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     ),
   );
 
+  // Index 0 - this button always plays the first recording. It shares _playerState/_playingIndex/
+  // _audioPlayer with the per-recording buttons in AudioContentScroll (_buildAudioRecordings)
+  // so both stay in sync - they used to each own a separate player and separate state, which is why
+  // pressing one didn't update the other's icon.
   Widget _buildPlayButton() => ThemedPlayButton(
-    isPlaying: _playerState == PlayerState.play,
+    isPlaying: _playerState == AudioPlaybackState.play && _playingIndex == 0,
     pauseIcon: Icon(
         Icons.pause,
         color: context.watch<MaterialThemesManager>().colorPalette().secondary,
@@ -318,7 +454,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     onPressed: () {
       var audioUrls = widget.observationViewModel.observation.audioUrls;
       if (audioUrls != null && audioUrls.isNotEmpty) {
-        _playAudio(audioUrls[0]);
+        _playAudio(0);
       } else {
         showToast(translations.noRecordingsToPlay);
       }
@@ -334,70 +470,84 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  void _playAudio(String audioUrl) {
-    if (_playerState == PlayerState.stop) {
+  void _onAudioPlayerStateChanged(PlayerState state) {
+    if (state.processingState == ProcessingState.completed) {
+      _audioPlayer.stop();
+      if (!mounted) return;
       setState(() {
-        _playerState = PlayerState.play;
+        _playerState = AudioPlaybackState.stop;
+        _playingIndex = -1;
       });
-      assetsAudioPlayer = AssetsAudioPlayer();//apparently the audio player needs to be re-instantiated once stopped
-      assetsAudioPlayer.playlistAudioFinished.listen((Playing playing){
-        setState(() {
-          _playerState = PlayerState.stop;
-        });
-      });
-      assetsAudioPlayer.open(audioUrl.contains("http") ? Audio.network(audioUrl) : Audio.file(audioUrl));
-      assetsAudioPlayer.play();
-
-    } else if (_playerState == PlayerState.play) {
-      setState(() {
-        _playerState = PlayerState.pause;
-      });
-      assetsAudioPlayer.pause();
-
-    } else {
-      setState(() {
-        _playerState = PlayerState.play;
-      });
-      assetsAudioPlayer.play();
     }
   }
 
+  void _playAudio(int index) async {
+    var audioUrls = widget.observationViewModel.observation.audioUrls;
+    if (audioUrls == null || index < 0 || index >= audioUrls.length) return;
+
+    if (_playerState == AudioPlaybackState.stop || _playingIndex != index) {
+      // One player is reused for every recording; stop() releases the previous source first
+      await _audioPlayer.stop();
+
+      var audioUrl = audioUrls[index];
+      try {
+        if (audioUrl.contains("http")) {
+          // Downloaded once, then played from the phone
+          await _audioPlayer.setFilePath((await MediaCache.file(audioUrl)).path);
+        } else {
+          await _audioPlayer.setFilePath(audioUrl);
+        }
+      } catch (e) {
+        developer.log("Unable to load audio $audioUrl: $e");
+        return;
+      }
+
+      if (!mounted) return;
+      setState(() {
+        _playingIndex = index;
+        _playerState = AudioPlaybackState.play;
+      });
+      // Not awaited: play() only completes when playback pauses or ends
+      _audioPlayer.play();
+
+    } else if (_playerState == AudioPlaybackState.play) {
+      await _audioPlayer.pause();
+      if (!mounted) return;
+      setState(() {
+        _playerState = AudioPlaybackState.pause;
+      });
+
+    } else {
+      if (!mounted) return;
+      setState(() {
+        _playerState = AudioPlaybackState.play;
+      });
+      _audioPlayer.play();
+    }
+  }
+
+  // The first image is always the cover
   Widget _buildImage() {
     var imageUrls = widget.observationViewModel.observation.imageUrls ?? <String>[];
-    if(imageUrls.isEmpty) {
-      return const Image(
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        image: AssetImage("assets/images/add_image.png"),
-      );
-    } else if(imageUrls[0].contains("https://")) {
-      return Image.network(
-        imageUrls[0],
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    } else {
-      return Image.file(
-        File(imageUrls[0]),
-        height: 300.0,
-        width: double.infinity,
-        fit: BoxFit.cover,
-      );
-    }
+    //The template page doesn't allow adding images, so show a pika instead of the +image prompt
+    var emptyAssetPath = widget.isTemplate ? "assets/images/pika3.jpg" : "assets/images/add_image.png";
+    return UniversalImage(
+      imageUrls.isEmpty ? emptyAssetPath : imageUrls[0],
+      overlayMode: OverlayMode.never,
+      height: 300.0,
+    );
   }
 
   Widget _buildLatLonAltitude() {
     final observation = widget.observationViewModel.observation;
-    String latitude = observation.latitude?.toStringAsFixed(3) ?? "";
-    String editLatitude = observation.latitude?.toStringAsFixed(5) ?? "";
-    String longitude = observation.longitude?.toStringAsFixed(3) ?? "";
-    String editLongitude = observation.longitude?.toStringAsFixed(5) ?? "";
+    String latitude = formatCoordinate(observation.latitude);
+    String editLatitude = latitude;
+    String longitude = formatCoordinate(observation.longitude);
+    String editLongitude = longitude;
 
     double? altMeters = observation.altitudeInMeters;
-    String altitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";//Display altitude is shortened
-    String editAltitudeInMeters = altMeters != null ? metersToFeet(altMeters).toStringAsFixed(2) : "";    //Editable altitude is full length
+    String altitudeDisplay = altMeters != null ? (_isMetric ? altMeters : metersToFeet(altMeters)).toStringAsFixed(2) : "";//Display altitude is shortened
+    String editAltitudeDisplay = altitudeDisplay;    //Editable altitude is full length
 
     return Row(
       children: <Widget>[
@@ -414,14 +564,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
-                else if (widget.isEditMode) ...[
+                else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: editLatitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.latitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, translations.latitude),
+                    onStringChangedCallback: (value) => _onManualCoordinateChanged(latitude: value),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.latitude),
                   ),
                 ] else ... [
                   ThemedTitle(latitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -442,14 +592,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                ] else if (widget.isEditMode) ...[
+                ] else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
                     text: editLongitude,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
-                    onStringChangedCallback: (value) => { widget.observationViewModel.observation.longitude = double.parse(value) },
-                    validator: (value) => isValidGeo(value, translations.longitude),
+                    onStringChangedCallback: (value) => _onManualCoordinateChanged(longitude: value),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.longitude),
                   ),
                 ] else ... [
                   ThemedTitle(longitude, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
@@ -464,26 +614,28 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
             alignment: Alignment.centerLeft,
             child:Column(
               children: <Widget>[
-                ThemedSubTitle(translations.altitude, type: ThemeGroupType.POM),
+                ThemedSubTitle(_isMetric ? translations.altitudeMetric : translations.altitude, type: ThemeGroupType.POM),
                 tinyTransparentDivider,
                 if (_hideGeoFields) ... [
                   //A hack state because geo fields not updating from self location button
                   //Don't add another ThemedEditableLabelValue here; it'll just create the same issue of not updating
-                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
-                ] else if (widget.isEditMode) ...[
+                  ThemedTitle(altitudeDisplay, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                ] else if (_isEditMode) ...[
                   ThemedEditableLabelValue(
                     showLabel: false,
-                    text: editAltitudeInMeters,
+                    text: editAltitudeDisplay,
                     textType: ThemeGroupType.POM,
                     hintText: "0.0",
                     onStringChangedCallback: (value) {
-                      var altitudeInFeet = double.parse(value);
-                      widget.observationViewModel.observation.altitudeInMeters = feetToMeters(altitudeInFeet);
+                      //tryParse so that clearing the field (or typing mid-edit garbage) clears the
+                      //value instead of throwing; in normal mode the validator still requires a number
+                      var altitude = double.tryParse(value);
+                      widget.observationViewModel.observation.altitudeInMeters = altitude == null ? null : (_isMetric ? altitude : feetToMeters(altitude));
                     },
-                    validator: (value) => isValidGeo(value, translations.altitude),
+                    validator: (value) => widget.isTemplate ? null : isValidGeo(value, translations.altitude),
                   )
                 ] else ...[
-                  ThemedTitle(altitudeInMeters, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
+                  ThemedTitle(altitudeDisplay, type: ThemeGroupType.MOM, emphasis: Emphasis.HIGH),
                 ]
               ],
             ),
@@ -493,29 +645,380 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
+  // Mirrors what happens after a GPS fix (_getCurrentPositionAndUpdateUi): once both latitude and
+  // longitude are valid numbers, look up Indigenous territories/languages and optionally show the
+  // Native Land map, same as the automatic flow. Debounced because onStringChangedCallback fires on
+  // every keystroke and latitude/longitude are edited as two separate fields.
+  void _onManualCoordinateChanged({String? latitude, String? longitude}) {
+    final observation = widget.observationViewModel.observation;
+
+    if (latitude != null) {
+      if (latitude.trim().isEmpty) {
+        //Clearing the field clears the value (e.g. removing a default from the observation template)
+        observation.latitude = null;
+        return;
+      }
+      final parsed = double.tryParse(latitude);
+      if (parsed == null) return;
+      observation.latitude = roundCoordinate(parsed);
+    }
+
+    if (longitude != null) {
+      if (longitude.trim().isEmpty) {
+        observation.longitude = null;
+        return;
+      }
+      final parsed = double.tryParse(longitude);
+      if (parsed == null) return;
+      observation.longitude = roundCoordinate(parsed);
+    }
+
+    _manualCoordinatesLookupDebounce?.cancel();
+    _manualCoordinatesLookupDebounce = Timer(const Duration(milliseconds: 1200), () {
+      if (!mounted) return;
+
+      final currentLatitude = observation.latitude;
+      final currentLongitude = observation.longitude;
+      if (currentLatitude == null || currentLongitude == null) return;
+
+      _fetchAndSetIndigenousTerritories(currentLatitude, currentLongitude);
+      _maybeShowNativeLandMapForGps(currentLatitude, currentLongitude);
+    });
+  }
+
   _getCurrentPositionAndUpdateUi() async {
     showToast(translations.fetchingLocation);
 
     await checkPermissionsAndGetCurrentPosition(translations)
-      .then((Position position) {
-        String lat = position.latitude.toStringAsFixed(2);
-        String lon = position.longitude.toStringAsFixed(2);
+      .then((Position position) async {
+        String lat = formatCoordinate(position.latitude);
+        String lon = formatCoordinate(position.longitude);
         String alt = position.altitude.toStringAsFixed(2);
+        
+        // Delay before showing location toast to avoid overlap
+        await Future.delayed(const Duration(milliseconds: 1500));
         showToast("${translations.location}:\n$lat $lon $alt");
 
         setState(() {
           final observation = widget.observationViewModel.observation;
-          observation.latitude = position.latitude;
-          observation.longitude = position.longitude;
+          observation.latitude = roundCoordinate(position.latitude);
+          observation.longitude = roundCoordinate(position.longitude);
           observation.altitudeInMeters = position.altitude;
 
           _hideGeoFields = true;
           resetHideGeoFields();
         });
+
+        // Fetch Indigenous territories for this location
+        await _fetchAndSetIndigenousTerritories(position.latitude, position.longitude);
+
+        // Show the Native Land map in-app when the user opted in and internet is available.
+        await _maybeShowNativeLandMapForGps(position.latitude, position.longitude);
       })
       .catchError((e) {
-        showToast("$e");
+        // Delay before showing error toast to avoid overlap
+        Future.delayed(const Duration(milliseconds: 1500)).then((_) {
+          showToast("$e");
+        });
       });
+  }
+
+  _fetchAndSetIndigenousTerritories(double latitude, double longitude) async {
+    try {
+      final hasInternet = await isConnectedToNetwork();
+      if (!hasInternet) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+        showToast(translations.cannotRequestIndigenousTerritoriesOffline);
+        return;
+      }
+
+      // Check if the API is available
+      if (!NativeLandService.isAvailable) {
+        await Future.delayed(const Duration(milliseconds: 1500));
+        showToast('Indigenous territory lookup requires a Native Land API key.\nAdd NATIVE_LAND_API_KEY to your local .env file.');
+        return;
+      }
+      
+      // Delay before showing territory lookup toast
+      await Future.delayed(const Duration(milliseconds: 1500));
+      showToast(translations.lookingUpIndigenousTerritories ?? "Looking up Indigenous territories...");
+      
+      // Fetch both territories and languages
+      final territories = await NativeLandService.getTerritoriesAt(
+        latitude: latitude,
+        longitude: longitude,
+      );
+      
+      final languages = await NativeLandService.getLanguagesAt(
+        latitude: latitude,
+        longitude: longitude,
+      );
+
+      if (territories.isNotEmpty || languages.isNotEmpty) {
+        setState(() {
+          final observation = widget.observationViewModel.observation;
+          observation.indigenousTerritories = _encodeIndigenousEntries(territories);
+          observation.indigenousLanguages = _encodeIndigenousEntries(languages);
+        });
+
+        // Show toast with found territories and languages
+        String territoryNames = territories
+            .map((t) => t.name)
+            .join(', ');
+        String languageNames = languages
+            .map((l) => l.name)
+            .join(', ');
+        
+        String message = '';
+        if (territoryNames.isNotEmpty) {
+          message += translations.traditionalTerritoryOf.replaceAll('%s', territoryNames);
+        }
+        if (languageNames.isNotEmpty) {
+          if (message.isNotEmpty) message += '\n';
+          message += '${translations.indigenousLanguages ?? "Indigenous Languages"}: $languageNames';
+        }
+        
+        if (message.isNotEmpty) {
+          // Delay before showing territory results toast
+          await Future.delayed(const Duration(milliseconds: 1500));
+          showToast(message);
+        }
+      } else {
+        // Delay before showing no territory found toast
+        await Future.delayed(const Duration(milliseconds: 1500));
+        showToast(translations.noIndigenousTerritoryFound ?? "No Indigenous territory data found for this location.");
+      }
+    } catch (e) {
+      developer.log('Error fetching Indigenous territories: $e');
+      // Delay before showing error toast
+      await Future.delayed(const Duration(milliseconds: 1500));
+      showToast('Error: ${translations.failedToFetchTerritoryData ?? "Failed to fetch territory data"}');
+    }
+  }
+
+  // Looks up Indigenous territories/languages for a read-only observation view. Unlike
+  // _fetchAndSetIndigenousTerritories (the edit-mode flow), this never mutates the observation
+  // model and never shows a toast or the Native Land map - it just fetches quietly and updates
+  // local state so _buildIndigenousTerritoryInfo can render the result.
+  Future<void> _fetchIndigenousTerritoriesForViewing() async {
+    final observation = widget.observationViewModel.observation;
+    final latitude = observation.latitude;
+    final longitude = observation.longitude;
+    if (latitude == null || longitude == null) return;
+    if (!NativeLandService.isAvailable) return;
+
+    try {
+      final hasInternet = await isConnectedToNetwork();
+      if (!hasInternet) return;
+
+      final territories = await NativeLandService.getTerritoriesAt(latitude: latitude, longitude: longitude);
+      final languages = await NativeLandService.getLanguagesAt(latitude: latitude, longitude: longitude);
+
+      if (!mounted) return;
+      setState(() {
+        _readOnlyTerritories = territories;
+        _readOnlyLanguages = languages;
+      });
+    } catch (e) {
+      developer.log('Error fetching Indigenous territories for viewing: $e');
+    }
+  }
+
+  Future<void> _maybeShowNativeLandMapForGps(double latitude, double longitude) async {
+    final settings = Provider.of<SettingsService>(context, listen: false);
+    final showMap = await settings.getShowIndigenousMap();
+    if (!showMap) return;
+
+    final hasInternet = await isConnectedToNetwork();
+    if (!hasInternet) return;
+
+    if (!mounted) return;
+
+    final firstSelection = _firstAvailableIndigenousSelection();
+    if (firstSelection != null) {
+      await _showNativeLandMapForSelection(
+        selectionName: firstSelection.value,
+        selectionCategory: firstSelection.key,
+      );
+      return;
+    }
+
+    _showNativeLandMapDialog(
+      mapUrl: _buildFallbackNativeLandMapUrl(latitude: latitude, longitude: longitude),
+      latitude: latitude,
+      longitude: longitude,
+    );
+  }
+
+  MapEntry<String, String>? _firstAvailableIndigenousSelection() {
+    final observation = widget.observationViewModel.observation;
+    final territories = observation.indigenousTerritories ?? <String>[];
+    if (territories.isNotEmpty) {
+      return MapEntry('territories', territories.first.split('|||').first);
+    }
+
+    final languages = observation.indigenousLanguages ?? <String>[];
+    if (languages.isNotEmpty) {
+      return MapEntry('languages', languages.first.split('|||').first);
+    }
+
+    return null;
+  }
+
+  String _buildNativeLandMapUrl({
+    String? category,
+    NativeLandMapSelection? selection,
+  }) {
+    final queryParameters = <String, String>{};
+
+    if (category != null && _nativeLandMapToggleableCategories.contains(category)) {
+      queryParameters['category'] = category;
+    }
+    if (selection != null) {
+      queryParameters['bbox'] = selection.bboxQuery;
+      queryParameters['center'] = selection.centerQuery;
+    }
+
+    if (queryParameters.isEmpty) {
+      return _nativeLandMapUrl;
+    }
+
+    return Uri.parse(_nativeLandMapUrl).replace(queryParameters: queryParameters).toString();
+  }
+
+  String _buildFallbackNativeLandMapUrl({
+    required double latitude,
+    required double longitude,
+  }) {
+    const delta = 0.25;
+    final bbox = [longitude - delta, latitude - delta, longitude + delta, latitude + delta];
+    return Uri.parse(_nativeLandMapUrl).replace(queryParameters: {
+      'bbox': jsonEncode(bbox),
+      'center': '$longitude,$latitude',
+    }).toString();
+  }
+
+  Future<void> _showNativeLandMapForSelection({
+    required String selectionName,
+    required String selectionCategory,
+  }) async {
+    final hasInternet = await isConnectedToNetwork();
+    if (!hasInternet) {
+      showToast('Internet connection is required to open the Native Land map.');
+      return;
+    }
+
+    if (!mounted) return;
+    final observation = widget.observationViewModel.observation;
+    final resolvedSelection = await NativeLandService.resolveMapSelection(
+      name: selectionName,
+      category: selectionCategory,
+    );
+
+    final mapUrl = resolvedSelection != null
+        ? _buildNativeLandMapUrl(
+            category: selectionCategory,
+            selection: resolvedSelection,
+          )
+        : (observation.latitude != null && observation.longitude != null)
+            ? _buildFallbackNativeLandMapUrl(
+                latitude: observation.latitude!,
+                longitude: observation.longitude!,
+              )
+            : _buildNativeLandMapUrl(category: selectionCategory);
+
+    _showNativeLandMapDialog(
+      selectionName: selectionName,
+      mapUrl: mapUrl,
+      latitude: observation.latitude,
+      longitude: observation.longitude,
+    );
+  }
+
+  Future<void> _showNativeLandMapDialog({
+    required String mapUrl,
+    String? selectionName,
+    double? latitude,
+    double? longitude,
+  }) async {
+    final controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..loadRequest(Uri.parse(mapUrl));
+
+    final settings = Provider.of<SettingsService>(context, listen: false);
+    var autoOpenMap = await settings.getShowIndigenousMap();
+    if (!mounted) return;
+
+    await showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return Dialog(
+              insetPadding: EdgeInsets.zero,
+              clipBehavior: Clip.hardEdge,
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    // Controls row above the map
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: Row(
+                        children: [
+                          if (latitude != null && longitude != null) ...[
+                            const Icon(Icons.my_location, size: 16),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                selectionName == null
+                                    ? 'GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}'
+                                    : '$selectionName — GPS: ${latitude.toStringAsFixed(5)}, ${longitude.toStringAsFixed(5)}',
+                                style: const TextStyle(fontSize: 12),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ] else
+                            const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.close),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            tooltip: 'Close',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Divider(height: 1),
+                    // Map fills the rest
+                    Expanded(
+                      child: WebViewWidget(controller: controller),
+                    ),
+                    const Divider(height: 1),
+                    Container(
+                      color: Colors.white,
+                      child: CheckboxListTile(
+                        dense: true,
+                        activeColor: Colors.teal,
+                        controlAffinity: ListTileControlAffinity.leading,
+                        title: const Text('Automatically open map'),
+                        value: autoOpenMap,
+                        onChanged: (enabled) async {
+                          final newValue = enabled ?? false;
+                          setDialogState(() {
+                            autoOpenMap = newValue;
+                          });
+                          await settings.setShowIndigenousMap(newValue);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   resetHideGeoFields() async {
@@ -526,9 +1029,29 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     });
   }
 
+  // Whether the server has this version of the observation, so volunteers know their edits arrived
+  Widget _buildUploadStatus() {
+    final observation = widget.observationViewModel.observation;
+    final uploadedAt = observation.dateUpdatedInGoogleSheets;
+    final locale = Localizations.localeOf(context).toString();
+    final text = !observation.isUploaded
+        ? translations.observationWaitingToUpload
+        : uploadedAt == null
+            ? translations.observationOnServerNoDate
+            : translations.observationOnServer.replaceAll('%s', DateFormat.yMMMd(locale).add_jm().format(uploadedAt.toLocal()));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(observation.isUploaded ? Icons.cloud_done : Icons.access_time_filled, size: 18.0),
+        const SizedBox(width: 6.0),
+        Flexible(child: ThemedBody(text, type: ThemeGroupType.MOM)),
+      ],
+    );
+  }
+
   Widget _buildHeader() {
     var date = widget.observationViewModel.observation.date;
-    String month = date == null ? "" : DateFormat.yMMMMd('en_US').format(date).split(" ")[0];
+    String month = date == null ? "" : DateFormat.MMMM(Localizations.localeOf(context).toString()).format(date);
     String day = date == null ? "" : date.day.toString();
     String year = date == null ? "" : date.year.toString();
 
@@ -539,24 +1062,29 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         children: <Widget>[
           _buildLatLonAltitude(),
           smallTransparentDivider,
-          if(widget.isEditMode) ... [
+          if(_isEditMode) ... [
             ThemedEditableLabelValue(
               showLabel: false,
               text: widget.observationViewModel.observation.location ?? "",
               textType: ThemeGroupType.POM,
               hintText: translations.siteName,
               onStringChangedCallback: (value) => { widget.observationViewModel.observation.location = value },
-              validator: (value) => nonEmptyValidator(value, translations.siteName, true),
+              //The template is all optional - it only pre-fills new observations
+              validator: (value) => widget.isTemplate ? null : nonEmptyValidator(value, translations.siteName, true),
             )
           ] else ... [
             ThemedH5(widget.observationViewModel.observation.location?.toUpperCase(), type: ThemeGroupType.POM, emphasis: Emphasis.HIGH),
+            if (!widget.isTemplate && !widget.observationViewModel.observation.isNewObservation()) ... [
+              smallTransparentDivider,
+              _buildUploadStatus(),
+            ],
           ],
           //TODO - smallTransparentDivider,
           //TODO - ThemedTitle('⭐ ⭐ ⭐ ⭐', type: ThemeGroupType.SOM),//TODO - hide until we allow jo
           smallTransparentDivider,
           Row(
             children: <Widget>[
-              if(widget.isEditMode) ... [
+              if(_isEditMode) ... [
                 ThemedIconButton(
                     Icons.date_range,
                     iconSize: IconSize.MEDIUM,
@@ -618,7 +1146,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                     ),
                   ),
               ),
-              if(widget.isEditMode) ... [
+              if(_isEditMode) ... [
                 ThemedIconButton(
                     null,
                     iconSize: IconSize.MEDIUM,
@@ -627,6 +1155,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
               ],
             ],
           ),
+          smallTransparentDivider,
+          _buildIndigenousTerritoryInfo(),
         ],
       ),
     );
@@ -656,9 +1186,124 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
+  // Entries stored on the observation are encoded as "name|||url" or just "name" for
+  // backwards compatibility.
+  MapEntry<String, String?> _decodeIndigenousEntry(String entry) {
+    final parts = entry.split('|||');
+    return MapEntry(parts[0], parts.length > 1 ? parts[1] : null);
+  }
+
+  MapEntry<String, String?> _indigenousEntryFromTerritory(Territory territory) {
+    final url = territory.properties != null && territory.properties != territory.name
+        ? territory.properties
+        : null;
+    return MapEntry(territory.name, url);
+  }
+
+  // Encodes territories/languages as "name|||url" (or just "name") to match the format
+  // persisted on the observation and understood by _decodeIndigenousEntry.
+  List<String> _encodeIndigenousEntries(List<Territory> entries) {
+    return entries
+        .map((e) => e.properties != null && e.properties != e.name ? '${e.name}|||${e.properties}' : e.name)
+        .toList();
+  }
+
+  Widget _buildIndigenousTerritoryInfo() {
+    final List<MapEntry<String, String?>> territoryEntries;
+    final List<MapEntry<String, String?>> languageEntries;
+
+    if (_isEditMode) {
+      final observation = widget.observationViewModel.observation;
+      territoryEntries = (observation.indigenousTerritories ?? <String>[]).map(_decodeIndigenousEntry).toList();
+      languageEntries = (observation.indigenousLanguages ?? <String>[]).map(_decodeIndigenousEntry).toList();
+    } else {
+      territoryEntries = (_readOnlyTerritories ?? <Territory>[]).map(_indigenousEntryFromTerritory).toList();
+      languageEntries = (_readOnlyLanguages ?? <Territory>[]).map(_indigenousEntryFromTerritory).toList();
+    }
+
+    if (territoryEntries.isEmpty && languageEntries.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    Widget entryRow(MapEntry<String, String?> entry, IconData icon, String category) {
+      final name = entry.key;
+      final url = entry.value;
+
+      final nameWidget = url != null
+          ? GestureDetector(
+              onTap: () async {
+                final uri = Uri.tryParse(url);
+                if (uri != null && await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              child: Text(
+                name,
+                style: const TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Colors.grey,
+                ),
+              ),
+            )
+          : ThemedBody(name, type: ThemeGroupType.MOM);
+
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4.0),
+        child: Row(
+          children: [
+            GestureDetector(
+              onTap: () => _showNativeLandMapForSelection(selectionName: name, selectionCategory: category),
+              child: Icon(icon, size: 32, color: Colors.grey),
+            ),
+            const SizedBox(width: 10),
+            Flexible(child: nameWidget),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (territoryEntries.isNotEmpty) ...[
+          ThemedSubTitle(
+            translations.indigenousTerritories ?? "Indigenous Territories",
+            type: ThemeGroupType.POM,
+          ),
+          miniTransparentDivider,
+          ThemedBody(
+            translations.traditionalTerritoryOf.replaceAll('%s', territoryEntries.map((t) => t.key).join(', ')),
+            type: ThemeGroupType.MOM,
+          ),
+          miniTransparentDivider,
+          ...territoryEntries.map((t) => entryRow(t, Icons.map, 'territories')),
+          if (languageEntries.isNotEmpty) smallTransparentDivider,
+        ],
+        if (languageEntries.isNotEmpty) ...[
+          ThemedSubTitle(
+            translations.indigenousLanguages ?? "Indigenous Languages",
+            type: ThemeGroupType.POM,
+          ),
+          miniTransparentDivider,
+          ...languageEntries.map((l) => entryRow(l, Icons.map, 'languages')),
+        ],
+        if (territoryEntries.isNotEmpty || languageEntries.isNotEmpty) ...[
+          miniTransparentDivider,
+          GestureDetector(
+            onTap: () => launchUrl(Uri.parse("https://native-land.ca/about/how-it-works/"), mode: LaunchMode.externalApplication),
+            child: Text(
+              translations.nativeLandSource,
+              style: const TextStyle(fontSize: 12, decoration: TextDecoration.underline, color: Colors.grey),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
   Widget _buildImages(Color color1, Color color2) {
 
-    var icons = !widget.isEditMode ? <Widget>[] : [
+    var icons = !_isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.image, onPressedCallback: () => _openFileExplorer(true, FileType.image, [], true)),
       ThemedIconButton(Icons.camera_alt, onPressedCallback: () => {
         _takePictureAndCrop(
@@ -685,23 +1330,35 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageWidth: 250.0,
       icons: icons,
       onDeleteClickedCallback: (value) => { _removeImage(value) },
-      showDeleteButtonOnCard: widget.isEditMode
+      showDeleteButtonOnCard: _isEditMode
     );
   }
 
-  _removeImage(path) {
+  // Removing a photo or recording can't be undone once the observation is saved, so ask first
+  Future<bool> _confirmDeleteMedia(String title) async {
+    final confirmed = await showConfirmDialog(
+      context,
+      title: title,
+      description: translations.deleteMediaDialogDescription,
+      confirmLabel: translations.delete,
+      cancelLabel: translations.cancel,
+    );
+    return confirmed && mounted;
+  }
+
+  _removeImage(path) async {
+    if (!await _confirmDeleteMedia(translations.deleteImageDialogTitle)) return;
+
     setState(() {
       //remove image from the observation
       widget.observationViewModel.observation.imageUrls?.remove(path);
       needsUpdated = true;
     });
-
-    showToast("${translations.delete} $path");
   }
 
   Widget _buildAudioRecordings() {
 
-    var icons = !widget.isEditMode ? <Widget>[] : [
+    var icons = !_isEditMode ? <Widget>[] : [
       ThemedIconButton(Icons.audiotrack, onPressedCallback: () => _openFileExplorer(true, FileType.custom, ['3gp','aa','aac','aax','act','aiff','alac','amr','ape','au','awb','dss','dvf','flac','gsm','iklax','kvs','m4a','m4b','m4p','mmf','movpkg','mp3','mpc','msv','nmf','ogg','oga','mogg','opus','ra','rm','raw','rf64','sln','tta','voc','vox','wav','wma','wv','webm','8svx','cda'], false)),
       ThemedIconButton(Icons.mic, onPressedCallback: () => { _openAudioRecorder()})
     ];
@@ -713,7 +1370,35 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       imageHeight: 200.0,
       imageWidth: 250.0,
       icons: icons,
+      playerState: _playerState,
+      playingIndex: _playingIndex,
+      onToggle: _playAudio,
+      onDeleteClickedCallback: _removeAudio,
+      showDeleteButtonOnCard: _isEditMode,
     );
+  }
+
+  void _removeAudio(String url) async {
+    var audioUrls = widget.observationViewModel.observation.audioUrls;
+    if (audioUrls == null) return;
+
+    if (!await _confirmDeleteMedia(translations.deleteAudioDialogTitle)) return;
+
+    // Stop playback first if this recording, or one after it, is selected: removing it shifts the indexes
+    var index = audioUrls.indexOf(url);
+    if (index >= 0 && _playingIndex >= index) {
+      await _audioPlayer.stop();
+    }
+    if (!mounted) return;
+
+    setState(() {
+      if (index >= 0 && _playingIndex >= index) {
+        _playerState = AudioPlaybackState.stop;
+        _playingIndex = -1;
+      }
+      audioUrls.remove(url);
+      needsUpdated = true;
+    });
   }
 
   void showAudioRecorderDialog() {
@@ -723,14 +1408,48 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       context: context,
       builder: (BuildContext context) => const AudioRecorderDialog(),
       barrierDismissible: true
-    ).then((value) => {
+    ).then((value) async {
+      if (value == null || (value as String).isEmpty) return;
+      final fitted = await _fitUploadLimit(value, isImage: false);
+      if (fitted == null || !mounted) return;
       setState(() {
-        if (value != null && (value as String).isNotEmpty) {
-          widget.observationViewModel.observation.audioUrls?.add(value);
-          justKeepToggling = !justKeepToggling;
-        }
-      })
+        widget.observationViewModel.observation.audioUrls?.add(fitted);
+        justKeepToggling = !justKeepToggling;
+      });
     });
+  }
+
+  // Storage refuses files of 50 MB or more, so check before a file joins the observation rather
+  // than let its upload fail later. A photo that's too large can be shrunk to fit; a recording
+  // can't, so the user is told and it isn't added. Returns the path to add, or null.
+  Future<String?> _fitUploadLimit(String path, {required bool isImage}) async {
+    if (!isTooLargeToUpload(path)) return path;
+    final size = sizeInMegabytes(path);
+    if (!mounted) return null;
+
+    if (!isImage) {
+      await showInfoDialog(
+        context,
+        title: translations.fileTooLarge,
+        description: translations.recordingTooLargeDescription.replaceAll("%size%", size),
+        closeLabel: translations.ok,
+      );
+      return null;
+    }
+
+    final shrink = await showConfirmDialog(
+      context,
+      title: translations.fileTooLarge,
+      description: translations.photoTooLargeDescription.replaceAll("%size%", size),
+      confirmLabel: translations.makeSmaller,
+      cancelLabel: translations.cancel,
+      confirmColor: context.read<MaterialThemesManager>().colorPalette().primary,
+    );
+    if (!shrink) return null;
+
+    final smaller = await shrinkImageToFit(path);
+    if (smaller == null) showToast(translations.couldNotMakePhotoSmaller);
+    return smaller;
   }
 
   void _openAudioRecorder() async {
@@ -750,7 +1469,14 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }
   }
 
-  void _addMediaUrlsToObservations(List<String> filePaths, bool addImages) {
+  Future<void> _addMediaUrlsToObservations(List<String> pickedPaths, bool addImages) async {
+    final filePaths = <String>[];
+    for (var path in pickedPaths) {
+      final fitted = await _fitUploadLimit(path, isImage: addImages);
+      if (fitted != null) filePaths.add(fitted);
+    }
+    if (!mounted) return;
+
     setState(() {
       for (var filePath in filePaths) {
         if (addImages) {
@@ -776,32 +1502,33 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     bool addImages
   ) async {
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    List<PlatformFile> result = await FilePicker.pickFiles(
         type: pickingType,
         allowedExtensions: allowedExtensions,
-        allowMultiple: true
+        compressionQuality: pickingType == FileType.image ? photoQuality : 0
     );
 
-    // Result is null if user cancelled
-    List<String> filePaths = result?.paths.whereType<String>().toList() ?? <String>[];
+    // Result is empty if user cancelled
+    List<String> filePaths = result.map((file) => file.path).whereType<String>().toList();
     //List<File> files = filePaths.map((path) => File(path)).toList();
 
     /*if (mounted && filePaths.isNotEmpty) {
       developer.log("File paths:$filePaths");
     }*/
 
-    _addMediaUrlsToObservations(filePaths, addImages);
+    await _addMediaUrlsToObservations(filePaths, addImages);
   }
 
   Future<void> _pickSingleFile(FileType pickingType, List<String> allowedExtensions, bool addImages) async {
 
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
+    PlatformFile? result = await FilePicker.pickFile(
         type: pickingType,
-        allowedExtensions: allowedExtensions
+        allowedExtensions: allowedExtensions,
+        compressionQuality: pickingType == FileType.image ? photoQuality : 0
     );
 
     // Result is null if user cancelled
-    var filePath = result?.files.single.path ?? "";
+    var filePath = result?.path ?? "";
     //File file = File(filePath);
 
     /*if (mounted && filePath.isNotEmpty) {
@@ -809,89 +1536,16 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     }*/
 
     if (filePath.isNotEmpty) {
-      _addMediaUrlsToObservations([filePath], addImages);
+      await _addMediaUrlsToObservations([filePath], addImages);
     }
   }
   
+  // No permission is asked for here. The system photo picker (Android) and PHPicker or document
+  // picker (iOS) give the app only what the user selects, without any permission. Asking for
+  // camera, Photos or media library access first used to stop the gallery from opening when any
+  // was refused, including iPhone's "Select Photos" (limited) choice. GitHub #30.
   void _openFileExplorer(bool isMultiPick, FileType pickingType, List<String> allowedExtensions, bool addImages) async {
     try {
-      var isAndroid = Platform.isAndroid;
-      var isIos = Platform.isIOS;
-
-      if (isAndroid || isIos) {
-        var isCameraPermissionGranted = await Permission.camera.request().isGranted;
-        if (!isCameraPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptCameraPermissions);
-          return;
-        }
-      }
-
-      if (isAndroid) {
-
-        //Devices running Android 13 (API level 33) and above require the photos permission and don't
-        //even have storage permission. Device before that only have storage permission.
-        //So, if either is accepted then the system has the correct permissions for the given sdk
-        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
-        var isVideosPermissionGranted = await Permission.videos.request().isGranted;
-        var isAudioPermissionGranted = await Permission.audio.request().isGranted;
-
-        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
-        var isMediaLocationPermissionGranted = await Permission.accessMediaLocation.request().isGranted;
-        var isManageExternalStoragePermissionGranted = await Permission.manageExternalStorage.request().isGranted;
-
-        var allPreSdk33FilePermissionsGranted = isStoragePermissionGranted && isMediaLocationPermissionGranted && isManageExternalStoragePermissionGranted;
-        var allSdk33FilePermissionsGranted = isPhotosPermissionGranted && isVideosPermissionGranted && isAudioPermissionGranted;
-        var allSdkSpecificPermissionsGranted = allPreSdk33FilePermissionsGranted || allSdk33FilePermissionsGranted;
-
-        if (!allSdkSpecificPermissionsGranted) {
-          if (!isPhotosPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
-            return;
-          }
-
-          if (!isStoragePermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-            return;
-          }
-
-          if (!isMediaLocationPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptMediaPermissions);
-            return;
-          }
-
-          if (!isManageExternalStoragePermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptExternalStoragePermissions);
-            return;
-          }
-
-
-          if (!isVideosPermissionGranted) {
-            showToast(translations.couldNotOpenFilePickerAcceptVideosPermissions);
-            return;
-          }
-        }
-      }
-
-      if (isIos) {
-        var isMediaLibraryPermissionGranted = await Permission.mediaLibrary.request().isGranted;
-        if (!isMediaLibraryPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptMediaLibraryPermissions);
-          return;
-        }
-
-        var isPhotosPermissionGranted = await Permission.photos.request().isGranted;
-        if (!isPhotosPermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptPhotosPermissions);
-          return;
-        }
-
-        var isStoragePermissionGranted = await Permission.storage.request().isGranted;
-        if (!isStoragePermissionGranted) {
-          showToast(translations.couldNotOpenFilePickerAcceptStoragePermissions);
-          return;
-        }
-      }
-
       if (isMultiPick) {
         await _pickMultipleFiles(pickingType, allowedExtensions, addImages);
       } else {
@@ -899,6 +1553,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       }
     } on PlatformException catch (e) {
       developer.log("${translations.unsupportedOperation}: $e");
+    }
+  }
+
+  static const double maxPhotoDimension = 2560;
+  static const int photoQuality = 85;
+
+  Future<void> _savePhotoToGallery(String path) async {
+    try {
+      // Saving into an album needs full Photos access on iPhone; add-only access can't make albums
+      if (!await Gal.hasAccess(toAlbum: true)) {
+        await Gal.requestAccess(toAlbum: true);
+      }
+      await Gal.putImage(path, album: translations.appName);
+    } catch (e) {
+      // Saving to the gallery is a convenience; the photo is still added to the observation
+      developer.log("Unable to save photo to gallery: $e");
     }
   }
 
@@ -969,13 +1639,22 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
 
     //Take picture with camera ...
     var imagePicker = ImagePicker();
-    XFile? selected = await imagePicker.pickImage(source: ImageSource.camera);
+    // Large phone photos are slow to upload and fill Firebase Storage, so cap the size
+    XFile? selected = await imagePicker.pickImage(
+      source: ImageSource.camera,
+      maxWidth: maxPhotoDimension,
+      maxHeight: maxPhotoDimension,
+      imageQuality: photoQuality,
+    );
 
     var selectedPath = selected?.path;
     
     if (selectedPath == null) {
       showToast(translations.errorWhenTryingToTakePicture);
     } else {
+      // Keep a copy in the phone's photo gallery so the volunteer never loses the picture
+      _savePhotoToGallery(selectedPath);
+
       _cropImage(
           selectedPath,
           toolbarColor,
@@ -994,7 +1673,8 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
   }
 
   Widget _buildPikaSpecies() {
-    var speciesValues = widget.observationViewModel.getSpeciesValues();//TODO - CHRIS - using this inline results in American Pika showing twice; not sure why
+    // Keep in a local: calling getSpeciesValues() inline listed American Pika twice
+    var speciesValues = widget.observationViewModel.getSpeciesValues();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1003,16 +1683,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ThemedSubTitle(translations.species, type: ThemeGroupType.POM),
-            /*if (widget.isEditMode)...[
+            /*if (_isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherSpeciesDialog())
           ]*/
           ],
         ),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.species,
           onChanged: (value) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.species = value)
             }
           },
@@ -1054,9 +1736,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.signs, type: ThemeGroupType.POM),
         ChipsChoice<String>.multiple(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.signs ?? <String>[],
           onChanged: (val) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.signs = val)
             }
           },
@@ -1082,9 +1766,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.pikasDetected, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: pikasDetectedEmpty ? null : pikasDetected,//empty shows empty bubble instead of nothing selected
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() {
                   //If selected the same value as before, unset the value
                   widget.observationViewModel.observation.pikasDetected = widget.observationViewModel.observation.pikasDetected == val ? null : val;
@@ -1110,16 +1796,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.distanceToClosestPika, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.distanceToClosestPika,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.distanceToClosestPika = val)
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: widget.observationViewModel.getDistanceToClosestPikaValues(),
               value: (i, v) => v,
-              label: (i, v) => widget.observationViewModel.getDistanceToClosestPikaLabel(i, v),
+              label: (i, v) => widget.observationViewModel.getDistanceToClosestPikaLabel(i, v, metric: _isMetric),
               tooltip: (i, v) => v,
             )
         )
@@ -1135,9 +1823,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.searchDuration, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.searchDuration,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.searchDuration = val)
               }
             },
@@ -1152,7 +1842,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     );
   }
 
-  bool showTalusAreaHints = false;
+  bool showTalusAreaHints = false;//seeded from the persisted preference in build
   Widget _buildTalusAreaChoices() {
 
     return Column(
@@ -1170,23 +1860,27 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
                 value: showTalusAreaHints,
                 onChanged: (boolVal) {
                   setState(() => showTalusAreaHints = boolVal);
+                  //Persist so the choice sticks across observations and app restarts
+                  Provider.of<SettingsService>(context, listen: false).setShowHints(boolVal);
                 }
             )
           ],
         ),
         ChipsChoice<String>.single(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.talusArea,
             onChanged: (val) => {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState(() => widget.observationViewModel.observation.talusArea = val)
               }
             },
             choiceItems: C2Choice.listFrom<String, String>(
               source: widget.observationViewModel.getTalusAreaValues(),
               value: (i, v) => v,
-              label: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
-              tooltip: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints),
+              label: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints, metric: _isMetric),
+              tooltip: (i, v) => widget.observationViewModel.getTalusAreaLabel(i, v, showTalusAreaHints, metric: _isMetric),
             )
         )
       ],
@@ -1202,16 +1896,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         ThemedSubTitle(translations.temperature, type: ThemeGroupType.POM),
         ChipsChoice<String>.single(
           padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+          choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
           value: widget.observationViewModel.observation.temperature,
           onChanged: (val) => {
-            if (widget.isEditMode) {
+            if (_isEditMode) {
               setState(() => widget.observationViewModel.observation.temperature = val)
             }
           },
           choiceItems: C2Choice.listFrom<String, String>(
             source: widget.observationViewModel.getTemperatureValues(),
             value: (i, v) => v,
-            label: (i, v) => widget.observationViewModel.getTemperatureLabel(i, v),
+            label: (i, v) => widget.observationViewModel.getTemperatureLabel(i, v, metric: _isMetric),
             tooltip: (i, v) => v,
           )
         )
@@ -1226,9 +1922,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.skies, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.skies,
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.skies = val)
           }
         },
@@ -1249,9 +1947,11 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
       ThemedSubTitle(translations.wind, type: ThemeGroupType.POM),
       ChipsChoice<String>.single(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.wind,
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.wind = val)
           }
         },
@@ -1273,16 +1973,18 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ThemedSubTitle(translations.otherAnimalsPresent, type: ThemeGroupType.POM),
-          if (widget.isEditMode)...[
+          if (_isEditMode)...[
             ThemedIconButton(Icons.add, onPressedCallback: () => _openAddOtherAnimalsDialog())
           ]
         ],
       ),
       ChipsChoice<String>.multiple(
         padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+        choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
         value: widget.observationViewModel.observation.otherAnimalsPresent ?? <String>[],
         onChanged: (val) => {
-          if (widget.isEditMode) {
+          if (_isEditMode) {
             setState(() => widget.observationViewModel.observation.otherAnimalsPresent = val)
           }
         },
@@ -1326,7 +2028,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
     //is still empty after logging in, until user restarts app
     //This list needs to be available offlline as well.
     if (approvedOrganizations.isEmpty) {
-      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
+      approvedOrganizations = ["Colorado Pika Project", "Cascades Pika Watch", "PikaNET (Mountain Studies Institute)", "Glacier National Park", "Mt. Rainier National Park", "Cascades Forest Conservancy", "Montana Pika Project", "Nevada Pika Atlas", "Canadian Pika Project", "Utah Pika Watch"];//"Pika Patrol", "Denver Zoo", "IF/THEN", , "Rocky Mountain Wild"
     }
 
     var observation = widget.observationViewModel.observation;
@@ -1354,7 +2056,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             ThemedSubTitle(translations.sharedWithProjects, type: ThemeGroupType.POM),
-            // if (widget.isEditMode)...[
+            // if (_isEditMode)...[
             //   ThemedIconButton(Icons.add, onPressedCallback: () => _openSharedWithProjectsDialog())
             // ]
           ],
@@ -1362,10 +2064,12 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         if(sharedWithProjects.isNotEmpty || notSharedWithProjects.isNotEmpty) ... [
           ChipsChoice<String>.multiple(
             padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 0.0),
+            choiceStyle: _choiceChipStyle,
+          choiceCheckmark: true,
             value: widget.observationViewModel.observation.sharedWithProjects ?? <String>[],
             onChanged: (updatedSharedWithProjects) =>
             {
-              if (widget.isEditMode) {
+              if (_isEditMode) {
                 setState((){
                   final observation = widget.observationViewModel.observation;
                   sharedWithProjects = updatedSharedWithProjects;
@@ -1421,7 +2125,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         smallTransparentDivider,
         ThemedSubTitle(translations.siteHistory, type: ThemeGroupType.POM),
         miniTransparentDivider,
-        if(widget.isEditMode) ... [
+        if(_isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observationViewModel.observation.siteHistory ?? "",
@@ -1456,7 +2160,7 @@ class ObservationScreenState extends State<ObservationScreen> with TickerProvide
         smallTransparentDivider,
         ThemedSubTitle(translations.comments, type: ThemeGroupType.POM),
         miniTransparentDivider,
-        if(widget.isEditMode) ... [
+        if(_isEditMode) ... [
           ThemedEditableLabelValue(
             showLabel: false,
             text: widget.observationViewModel.observation.comments ?? "",

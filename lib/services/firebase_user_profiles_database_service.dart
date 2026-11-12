@@ -152,7 +152,7 @@ class FirebaseUserProfilesDatabaseService {
     );
 
     var shouldUpdate = true;
-    var isCurrentUser = updatedUserProfile.uid == this.currentUserId;
+    var isCurrentUser = updatedUserProfile.uid == currentUserId;
     if (isCurrentUser) {
       var cachedUserProfile = await getCurrentUserProfileFromCache();
       shouldUpdate = areUserProfilesDifferent(cachedUserProfile, updatedUserProfile);
